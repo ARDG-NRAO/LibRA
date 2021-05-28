@@ -1,0 +1,624 @@
+//-*- C++ -*-
+#define NEED_UNDERSCORES
+#if defined(NEED_UNDERSCORES)
+#define gpbwproj gpbwproj_
+#define dpbwproj dpbwproj_
+#define dpbwgrad dpbwgrad_
+#endif
+  
+  extern "C" { 
+    void gpbwproj(Double *uvw,
+		  Double *dphase,
+		  const Complex *values,
+		  Int *nvispol,
+		  Int *nvischan,
+		  Int *dopsf,
+		  const Int *flag,
+		  const Int *rflag,
+		  const Float *weight,
+		  Int *nrow,
+		  Int *rownum,
+		  Double *scale,
+		  Double *offset,
+		  Complex *grid,
+		  Int *nx,
+		  Int *ny,
+		  Int *npol,
+		  Int *nchan,
+		  const Double *freq,
+		  const Double *c,
+		  Int *support,
+		  Int *convsize,
+		  Int *sampling,
+		  Int *wconvsize,
+		  Complex *convfunc,
+		  Int *chanmap,
+		  Int *polmap,
+		  Int *polused,
+		  Double *sumwt,
+		  Int *ant1,
+		  Int *ant2,
+		  Int *nant,
+		  Int *scanno,
+		  Double *sigma,
+		  Float *raoff,
+		  Float *decoff,
+		  Double *area,
+		  Int *doGrad,
+		  Int *doPointingCorrection,
+		  Int *nPA,
+		  Int *paIndex,
+		  Int *CFMap,
+		  Int *ConjCFMap,
+		  Double *currentCFPA, Double *actualPA,Double *cfRefFreq_p);
+    void dpbwproj(Double *uvw,
+		  Double *dphase,
+		  Complex *values,
+		  Int *nvispol,
+		  Int *nvischan,
+		  const Int *flag,
+		  const Int *rflag,
+		  Int *nrow,
+		  Int *rownum,
+		  Double *scale,
+		  Double *offset,
+		  const Complex *grid,
+		  Int *nx,
+		  Int *ny,
+		  Int *npol,
+		  Int *nchan,
+		  const Double *freq,
+		  const Double *c,
+		  Int *support,
+		  Int *convsize,
+		  Int *sampling,
+		  Int *wconvsize,
+		  Complex *convfunc,
+		  Int *chanmap,
+		  Int *polmap,
+		  Int *polused,
+		  Int *ant1, 
+		  Int *ant2, 
+		  Int *nant, 
+		  Int *scanno,
+		  Double *sigma, 
+		  Float *raoff, Float *decoff,
+		  Double *area, 
+		  Int *dograd,
+		  Int *doPointingCorrection,
+		  Int *nPA,
+		  Int *paIndex,
+		  Int *CFMap,
+		  Int *ConjCFMap,
+		  Double *currentCFPA, Double *actualPA, Double *cfRefFreq_p);
+    void dpbwgrad(Double *uvw,
+		  Double *dphase,
+		  Complex *values,
+		  Int *nvispol,
+		  Int *nvischan,
+		  Complex *gazvalues,
+		  Complex *gelvalues,
+		  Int *doconj,
+		  const Int *flag,
+		  const Int *rflag,
+		  Int *nrow,
+		  Int *rownum,
+		  Double *scale,
+		  Double *offset,
+		  const Complex *grid,
+		  Int *nx,
+		  Int *ny,
+		  Int *npol,
+		  Int *nchan,
+		  const Double *freq,
+		  const Double *c,
+		  Int *support,
+		  Int *convsize,
+		  Int *sampling,
+		  Int *wconvsize,
+		  Complex *convfunc,
+		  Int *chanmap,
+		  Int *polmap,
+		  Int *polused,
+		  Int *ant1, 
+		  Int *ant2, 
+		  Int *nant, 
+		  Int *scanno,
+		  Double *sigma, 
+		  Float *raoff, Float *decoff,
+		  Double *area, 
+		  Int *dograd,
+		  Int *doPointingCorrection,
+		  Int *nPA,
+		  Int *paIndex,
+		  Int *CFMap,
+		  Int *ConjCFMap,
+		  Double *currentCFPA, Double *actualPA, Double *cfRefFreq_p);
+  }
+  //
+  //----------------------------------------------------------------------
+  //
+  void AWProjectFT::runFortranGet(Matrix<Double>& uvw,Vector<Double>& dphase,
+				   Cube<Complex>& visdata,
+				   IPosition& s,
+				   //				Cube<Complex>& gradVisAzData,
+				   //				Cube<Complex>& gradVisElData,
+				   //				IPosition& gradS,
+				   Int& Conj,
+				   Cube<Int>& flags,Vector<Int>& rowFlags,
+				   Int& rownr,Vector<Double>& actualOffset,
+				   Array<Complex>* dataPtr,
+				   Int& aNx, Int& aNy, Int& npol, Int& nchan,
+				   VisBuffer& vb,Int& Nant_p, Int& scanNo,
+				   Double& sigma,
+				   Array<Float>& l_off,
+				   Array<Float>& m_off,
+				   Double area,
+				   Int& doGrad,
+				   Int paIndex)
+  {
+    LogIO log_l(LogOrigin("AWProjectFT", "runFortranGet"));
+    (void)Conj; //To supress the warning
+    enum whichGetStorage {RAOFF,DECOFF,UVW,DPHASE,VISDATA,GRADVISAZ,GRADVISEL,
+			  FLAGS,ROWFLAGS,UVSCALE,ACTUALOFFSET,DATAPTR,VBFREQ,
+			  CONVSUPPORT,CONVFUNC,CHANMAP,POLMAP,VBANT1,VBANT2,CONJCFMAP,CFMAP};
+    Vector<Bool> deleteThem(21);
+    
+    Double *uvw_p, *dphase_p, *actualOffset_p, *vb_freq_p, *uvScale_p;
+    Complex *visdata_p, *dataPtr_p, *f_convFunc_p;
+    Int *flags_p, *rowFlags_p, *chanMap_p, *polMap_p, *convSupport_p, *vb_ant1_p, *vb_ant2_p,
+      *ConjCFMap_p, *CFMap_p;
+    Float *l_off_p, *m_off_p;
+    Double actualPA;
+    
+    Vector<Int> ConjCFMap, CFMap;
+    /*
+      ConjCFMap = CFMap = polMap;
+      CFMap = makeConjPolMap(vb);
+    */
+    Int N;
+    actualPA = getVBPA(vb);
+
+    N=polMap.nelements();
+    CFMap = polMap; ConjCFMap = polMap;
+    for(Int i=0;i<N;i++) CFMap[i] = polMap[N-i-1];
+    
+    Array<Complex> rotatedConvFunc;
+//     SynthesisUtils::rotateComplexArray(log_l, convFunc_p, cfs_p.coordSys,
+// 				       rotatedConvFunc,(currentCFPA-actualPA),"CUBIC");
+    // SynthesisUtils::rotateComplexArray(log_l, convFunc_p, cfs_p.coordSys,
+    // 				       rotatedConvFunc,0.0,"LINEAR");
+    SynthesisUtils::rotateComplexArray(log_l, *(cfs_p.data), /*convFunc_p,*/ cfs_p.coordSys,
+    				       rotatedConvFunc,(currentCFPA-actualPA),"LINEAR");
+
+    ConjCFMap = polMap;
+    makeCFPolMap(vb,cfStokes_p,CFMap);
+    makeConjPolMap(vb,CFMap,ConjCFMap);
+
+    
+    ConjCFMap_p     = ConjCFMap.getStorage(deleteThem(CONJCFMAP));
+    CFMap_p         = CFMap.getStorage(deleteThem(CFMAP));
+    
+    uvw_p           = uvw.getStorage(deleteThem(UVW));
+    dphase_p        = dphase.getStorage(deleteThem(DPHASE));
+    visdata_p       = visdata.getStorage(deleteThem(VISDATA));
+    //  gradVisAzData_p = gradVisAzData.getStorage(deleteThem(GRADVISAZ));
+    //  gradVisElData_p = gradVisElData.getStorage(deleteThem(GRADVISEL));
+    flags_p         = flags.getStorage(deleteThem(FLAGS));
+    rowFlags_p      = rowFlags.getStorage(deleteThem(ROWFLAGS));
+    uvScale_p       = uvScale.getStorage(deleteThem(UVSCALE));
+    actualOffset_p  = actualOffset.getStorage(deleteThem(ACTUALOFFSET));
+    dataPtr_p       = dataPtr->getStorage(deleteThem(DATAPTR));
+    vb_freq_p       = vb.frequency().getStorage(deleteThem(VBFREQ));
+    convSupport_p   = cfs_p.xSupport.getStorage(deleteThem(CONVSUPPORT));
+    //    f_convFunc_p      = convFunc_p.getStorage(deleteThem(CONVFUNC));
+    f_convFunc_p      = rotatedConvFunc.getStorage(deleteThem(CONVFUNC));
+    chanMap_p       = chanMap.getStorage(deleteThem(CHANMAP));
+    polMap_p        = polMap.getStorage(deleteThem(POLMAP));
+    vb_ant1_p       = vb.antenna1().getStorage(deleteThem(VBANT1));
+    vb_ant2_p       = vb.antenna2().getStorage(deleteThem(VBANT2));
+    l_off_p     = l_off.getStorage(deleteThem(RAOFF));
+    m_off_p    = m_off.getStorage(deleteThem(DECOFF));
+    
+    //    Int npa=convSupport.shape()(2),actualConvSize;
+    Int npa=1,actualConvSize;
+    Int paIndex_Fortran = paIndex;
+    actualConvSize = cfs_p.data->shape()(0);
+    
+    //    IPosition shp=convSupport.shape();
+    
+    dpbwproj(uvw_p,
+	     dphase_p,
+	     //		  vb.modelVisCube().getStorage(del),
+	     visdata_p,
+	     &s.asVector()(0),
+	     &s.asVector()(1),
+	     //	   gradVisAzData_p,
+	     //	   gradVisElData_p,
+	     //	    &gradS(0),
+	     //	    &gradS(1),
+	     //	   &Conj,
+	     flags_p,
+	     rowFlags_p,
+	     &s.asVector()(2),
+	     &rownr,
+	     uvScale_p,
+	     actualOffset_p,
+	     dataPtr_p,
+	     &aNx,
+	     &aNy,
+	     &npol,
+	     &nchan,
+	     vb_freq_p,
+	     &C::c,
+	     convSupport_p,
+	     &actualConvSize,
+	     &convSampling,
+	     &wConvSize,
+	     f_convFunc_p,
+	     chanMap_p,
+	     polMap_p,
+	     &polInUse_p,
+	     vb_ant1_p,
+	     vb_ant2_p,
+	     &Nant_p,
+	     &scanNo,
+	     &sigma,
+	     l_off_p, m_off_p,
+	     &area,
+	     &doGrad,
+	     &doPointing,
+	     &npa,
+	     &paIndex_Fortran,
+	     CFMap_p,
+	     ConjCFMap_p,
+	     &currentCFPA
+	     ,&actualPA,&cfRefFreq_p
+	     );
+    
+    ConjCFMap.freeStorage((const Int *&)ConjCFMap_p,deleteThem(CONJCFMAP));
+    CFMap.freeStorage((const Int *&)CFMap_p,deleteThem(CFMAP));
+    
+    l_off.freeStorage((const Float*&)l_off_p,deleteThem(RAOFF));
+    m_off.freeStorage((const Float*&)m_off_p,deleteThem(DECOFF));
+    uvw.freeStorage((const Double*&)uvw_p,deleteThem(UVW));
+    dphase.freeStorage((const Double*&)dphase_p,deleteThem(DPHASE));
+    visdata.putStorage(visdata_p,deleteThem(VISDATA));
+    flags.freeStorage((const Int*&) flags_p,deleteThem(FLAGS));
+    rowFlags.freeStorage((const Int *&)rowFlags_p,deleteThem(ROWFLAGS));
+    actualOffset.freeStorage((const Double*&)actualOffset_p,deleteThem(ACTUALOFFSET));
+    dataPtr->freeStorage((const Complex *&)dataPtr_p,deleteThem(DATAPTR));
+    uvScale.freeStorage((const Double*&) uvScale_p,deleteThem(UVSCALE));
+    vb.frequency().freeStorage((const Double*&)vb_freq_p,deleteThem(VBFREQ));
+    cfs_p.xSupport.freeStorage((const Int*&)convSupport_p,deleteThem(CONVSUPPORT));
+    //    convFunc_p.freeStorage((const Complex *&)f_convFunc_p,deleteThem(CONVFUNC));
+    chanMap.freeStorage((const Int*&)chanMap_p,deleteThem(CHANMAP));
+    polMap.freeStorage((const Int*&) polMap_p,deleteThem(POLMAP));
+    vb.antenna1().freeStorage((const Int*&) vb_ant1_p,deleteThem(VBANT1));
+    vb.antenna2().freeStorage((const Int*&) vb_ant2_p,deleteThem(VBANT2));
+  }
+  //
+  //----------------------------------------------------------------------
+  //
+  void AWProjectFT::runFortranGetGrad(Matrix<Double>& uvw,Vector<Double>& dphase,
+				       Cube<Complex>& visdata,
+				       IPosition& s,
+				       Cube<Complex>& gradVisAzData,
+				       Cube<Complex>& gradVisElData,
+				       //				     IPosition& gradS,
+				       Int& Conj,
+				       Cube<Int>& flags,Vector<Int>& rowFlags,
+				       Int& rownr,Vector<Double>& actualOffset,
+				       Array<Complex>* dataPtr,
+				       Int& aNx, Int& aNy, Int& npol, Int& nchan,
+				       VisBuffer& vb,Int& Nant_p, Int& scanNo,
+				       Double& sigma,
+				       Array<Float>& l_off,
+				       Array<Float>& m_off,
+				       Double area,
+				       Int& doGrad,
+				       Int paIndex)
+  {
+    LogIO log_l(LogOrigin("AWProjectFT", "runFortranGetGrad"));
+    enum whichGetStorage {RAOFF,DECOFF,UVW,DPHASE,VISDATA,GRADVISAZ,GRADVISEL,
+			  FLAGS,ROWFLAGS,UVSCALE,ACTUALOFFSET,DATAPTR,VBFREQ,
+			  CONVSUPPORT,CONVFUNC,CHANMAP,POLMAP,VBANT1,VBANT2,CONJCFMAP,CFMAP};
+    Vector<Bool> deleteThem(21);
+    
+    Double *uvw_p, *dphase_p, *actualOffset_p, *vb_freq_p, *uvScale_p;
+    Complex *visdata_p, *dataPtr_p, *f_convFunc_p;
+    Complex *gradVisAzData_p, *gradVisElData_p;
+    Int *flags_p, *rowFlags_p, *chanMap_p, *polMap_p, *convSupport_p, *vb_ant1_p, *vb_ant2_p,
+      *ConjCFMap_p, *CFMap_p;
+    Float *l_off_p, *m_off_p;
+    Double actualPA;
+
+    Vector<Int> ConjCFMap, CFMap;
+    actualPA = getVBPA(vb);
+    ConjCFMap = polMap;
+    makeCFPolMap(vb,cfStokes_p,CFMap);
+    makeConjPolMap(vb,CFMap,ConjCFMap);
+
+    Array<Complex> rotatedConvFunc;
+//     SynthesisUtils::rotateComplexArray(log_l, convFunc_p, cfs_p.coordSys,
+//  				       rotatedConvFunc,(currentCFPA-actualPA),"LINEAR");
+    SynthesisUtils::rotateComplexArray(log_l, *(cfs_p.data) /*convFunc_p*/, cfs_p.coordSys,
+    				       rotatedConvFunc,0.0);
+    // SynthesisUtils::rotateComplexArray(log_l, convFunc_p, cfs_p.coordSys,
+    // 				       rotatedConvFunc,(currentCFPA-actualPA),"LINEAR");
+
+    ConjCFMap_p     = ConjCFMap.getStorage(deleteThem(CONJCFMAP));
+    CFMap_p         = CFMap.getStorage(deleteThem(CFMAP));
+    
+    uvw_p           = uvw.getStorage(deleteThem(UVW));
+    dphase_p        = dphase.getStorage(deleteThem(DPHASE));
+    visdata_p       = visdata.getStorage(deleteThem(VISDATA));
+    gradVisAzData_p = gradVisAzData.getStorage(deleteThem(GRADVISAZ));
+    gradVisElData_p = gradVisElData.getStorage(deleteThem(GRADVISEL));
+    flags_p         = flags.getStorage(deleteThem(FLAGS));
+    rowFlags_p      = rowFlags.getStorage(deleteThem(ROWFLAGS));
+    uvScale_p       = uvScale.getStorage(deleteThem(UVSCALE));
+    actualOffset_p  = actualOffset.getStorage(deleteThem(ACTUALOFFSET));
+    dataPtr_p       = dataPtr->getStorage(deleteThem(DATAPTR));
+    vb_freq_p       = vb.frequency().getStorage(deleteThem(VBFREQ));
+    convSupport_p   = cfs_p.xSupport.getStorage(deleteThem(CONVSUPPORT));
+    //    f_convFunc_p      = convFunc_p.getStorage(deleteThem(CONVFUNC));
+    f_convFunc_p      = rotatedConvFunc.getStorage(deleteThem(CONVFUNC));
+    chanMap_p       = chanMap.getStorage(deleteThem(CHANMAP));
+    polMap_p        = polMap.getStorage(deleteThem(POLMAP));
+    vb_ant1_p       = vb.antenna1().getStorage(deleteThem(VBANT1));
+    vb_ant2_p       = vb.antenna2().getStorage(deleteThem(VBANT2));
+    l_off_p     = l_off.getStorage(deleteThem(RAOFF));
+    m_off_p    = m_off.getStorage(deleteThem(DECOFF));
+    
+    //    Int npa=convSupport.shape()(2),actualConvSize;
+    Int npa=1,actualConvSize;
+    Int paIndex_Fortran = paIndex;
+    actualConvSize = cfs_p.data->shape()(0);
+    
+    //    IPosition shp=convSupport.shape();
+
+    dpbwgrad(uvw_p,
+	     dphase_p,
+	     //		  vb.modelVisCube().getStorage(del),
+	     visdata_p,
+	     &s.asVector()(0),
+	     &s.asVector()(1),
+	     gradVisAzData_p,
+	     gradVisElData_p,
+	     //	    &gradS(0),
+	     //	    &gradS(1),
+	     &Conj,
+	     flags_p,
+	     rowFlags_p,
+	     &s.asVector()(2),
+	     &rownr,
+	     uvScale_p,
+	     actualOffset_p,
+	     dataPtr_p,
+	     &aNx,
+	     &aNy,
+	     &npol,
+	     &nchan,
+	     vb_freq_p,
+	     &C::c,
+	     convSupport_p,
+	     &actualConvSize,
+	     &convSampling,
+	     &wConvSize,
+	     f_convFunc_p,
+	     chanMap_p,
+	     polMap_p,
+	     &polInUse_p,
+	     vb_ant1_p,
+	     vb_ant2_p,
+	     &Nant_p,
+	     &scanNo,
+	     &sigma,
+	     l_off_p, m_off_p,
+	     &area,
+	     &doGrad,
+	     &doPointing,
+	     &npa,
+	     &paIndex_Fortran,
+	     CFMap_p,
+	     ConjCFMap_p,
+	     &currentCFPA
+	     ,&actualPA,&cfRefFreq_p
+	     );
+
+    ConjCFMap.freeStorage((const Int *&)ConjCFMap_p,deleteThem(CONJCFMAP));
+    CFMap.freeStorage((const Int *&)CFMap_p,deleteThem(CFMAP));
+    
+    l_off.freeStorage((const Float*&)l_off_p,deleteThem(RAOFF));
+    m_off.freeStorage((const Float*&)m_off_p,deleteThem(DECOFF));
+    uvw.freeStorage((const Double*&)uvw_p,deleteThem(UVW));
+    dphase.freeStorage((const Double*&)dphase_p,deleteThem(DPHASE));
+    visdata.putStorage(visdata_p,deleteThem(VISDATA));
+    gradVisAzData.putStorage(gradVisAzData_p,deleteThem(GRADVISAZ));
+    gradVisElData.putStorage(gradVisElData_p,deleteThem(GRADVISEL));
+    flags.freeStorage((const Int*&) flags_p,deleteThem(FLAGS));
+    rowFlags.freeStorage((const Int *&)rowFlags_p,deleteThem(ROWFLAGS));
+    actualOffset.freeStorage((const Double*&)actualOffset_p,deleteThem(ACTUALOFFSET));
+    dataPtr->freeStorage((const Complex *&)dataPtr_p,deleteThem(DATAPTR));
+    uvScale.freeStorage((const Double*&) uvScale_p,deleteThem(UVSCALE));
+    vb.frequency().freeStorage((const Double*&)vb_freq_p,deleteThem(VBFREQ));
+    cfs_p.xSupport.freeStorage((const Int*&)convSupport_p,deleteThem(CONVSUPPORT));
+    //    convFunc_p.freeStorage((const Complex *&)f_convFunc_p,deleteThem(CONVFUNC));
+    chanMap.freeStorage((const Int*&)chanMap_p,deleteThem(CHANMAP));
+    polMap.freeStorage((const Int*&) polMap_p,deleteThem(POLMAP));
+    vb.antenna1().freeStorage((const Int*&) vb_ant1_p,deleteThem(VBANT1));
+    vb.antenna2().freeStorage((const Int*&) vb_ant2_p,deleteThem(VBANT2));
+  }
+  //
+  //----------------------------------------------------------------------
+  //
+  void AWProjectFT::runFortranPut(Matrix<Double>& uvw,Vector<Double>& dphase,
+				   const Complex& visdata,
+				   IPosition& s,
+				   //				Cube<Complex>& gradVisAzData,
+				   //				Cube<Complex>& gradVisElData,
+				   //				IPosition& gradS,
+				   Int& Conj,
+				   Cube<Int>& flags,Vector<Int>& rowFlags,
+				   const Matrix<Float>& weight,
+				   Int& rownr,Vector<Double>& actualOffset,
+				   Array<Complex>& dataPtr,
+				   Int& aNx, Int& aNy, Int& npol, Int& nchan,
+				   const VisBuffer& vb,Int& Nant_p, Int& scanNo,
+				   Double& sigma,
+				   Array<Float>& l_off,
+				   Array<Float>& m_off,
+				   Matrix<Double>& sumWeight,
+				   Double& area,
+				   Int& doGrad,
+				   Int& doPSF,
+				   Int paIndex)
+  {
+    LogIO log_l(LogOrigin("AWProjectFT", "runFortranPut"));
+
+    (void)Conj; //To supress the warning
+    enum whichGetStorage {RAOFF,DECOFF,UVW,DPHASE,VISDATA,GRADVISAZ,GRADVISEL,
+			  FLAGS,ROWFLAGS,UVSCALE,ACTUALOFFSET,DATAPTR,VBFREQ,
+			  CONVSUPPORT,CONVFUNC,CHANMAP,POLMAP,VBANT1,VBANT2,WEIGHT,
+			  SUMWEIGHT,CONJCFMAP,CFMAP};
+    Vector<Bool> deleteThem(23);
+    
+    Double *uvw_p, *dphase_p, *actualOffset_p, *vb_freq_p, *uvScale_p;
+    Complex *dataPtr_p, *f_convFunc_p;
+    //  Complex *gradVisAzData_p, *gradVisElData_p;
+    Int *flags_p, *rowFlags_p, *chanMap_p, *polMap_p, *convSupport_p, *vb_ant1_p, *vb_ant2_p,
+      *ConjCFMap_p, *CFMap_p;
+    Float *l_off_p, *m_off_p;
+    Float *weight_p;Double *sumwt_p;
+    Double actualPA;
+    const Complex *visdata_p=&visdata;
+    
+    Vector<Int> ConjCFMap, CFMap;
+    actualPA = getVBPA(vb);
+    ConjCFMap = polMap;
+
+    Array<Complex> rotatedConvFunc;
+//    SynthesisUtils::rotateComplexArray(log_l, convFunc_p, cfs_p.coordSys,
+//				       rotatedConvFunc,(currentCFPA-actualPA),"LINEAR");
+    SynthesisUtils::rotateComplexArray(log_l, *(cfs_p.data) /*convFunc_p*/, cfs_p.coordSys,
+ 				       rotatedConvFunc,0.0,"LINEAR");
+
+    /*
+    CFMap = polMap; ConjCFMap = polMap;
+    CFMap = makeConjPolMap(vb);
+    */
+    makeCFPolMap(vb,cfStokes_p,CFMap);
+    makeConjPolMap(vb,CFMap,ConjCFMap);
+
+    ConjCFMap_p     = ConjCFMap.getStorage(deleteThem(CONJCFMAP));
+    CFMap_p         = CFMap.getStorage(deleteThem(CFMAP));
+    
+    uvw_p           = uvw.getStorage(deleteThem(UVW));
+    dphase_p        = dphase.getStorage(deleteThem(DPHASE));
+    //  visdata_p       = visdata.getStorage(deleteThem(VISDATA));
+    //  gradVisAzData_p = gradVisAzData.getStorage(deleteThem(GRADVISAZ));
+    //  gradVisElData_p = gradVisElData.getStorage(deleteThem(GRADVISEL));
+    flags_p         = flags.getStorage(deleteThem(FLAGS));
+    rowFlags_p      = rowFlags.getStorage(deleteThem(ROWFLAGS));
+    uvScale_p       = uvScale.getStorage(deleteThem(UVSCALE));
+    actualOffset_p  = actualOffset.getStorage(deleteThem(ACTUALOFFSET));
+    dataPtr_p       = dataPtr.getStorage(deleteThem(DATAPTR));
+    vb_freq_p       = (Double *)(vb.frequency().getStorage(deleteThem(VBFREQ)));
+    convSupport_p   = cfs_p.xSupport.getStorage(deleteThem(CONVSUPPORT));
+    //    f_convFunc_p      = convFunc_p.getStorage(deleteThem(CONVFUNC));
+    f_convFunc_p      = rotatedConvFunc.getStorage(deleteThem(CONVFUNC));
+    chanMap_p       = chanMap.getStorage(deleteThem(CHANMAP));
+    polMap_p        = polMap.getStorage(deleteThem(POLMAP));
+    vb_ant1_p       = (Int *)(vb.antenna1().getStorage(deleteThem(VBANT1)));
+    vb_ant2_p       = (Int *)(vb.antenna2().getStorage(deleteThem(VBANT2)));
+    l_off_p     = l_off.getStorage(deleteThem(RAOFF));
+    m_off_p    = m_off.getStorage(deleteThem(DECOFF));
+    weight_p        = (Float *)(weight.getStorage(deleteThem(WEIGHT)));
+    sumwt_p         = sumWeight.getStorage(deleteThem(SUMWEIGHT));
+    
+    
+    //    Int npa=convSupport.shape()(2),actualConvSize;
+    Int npa=1,actualConvSize;
+    Int paIndex_Fortran = paIndex; 
+    actualConvSize = cfs_p.data->shape()(0);
+    
+    //    IPosition shp=convSupport.shape();
+    
+    gpbwproj(uvw_p,
+	     dphase_p,
+	     //		  vb.modelVisCube().getStorage(del),
+	     visdata_p,
+	     &s.asVector()(0),
+	     &s.asVector()(1),
+	     //	   gradVisAzData_p,
+	     //	   gradVisElData_p,
+	     //	    &gradS(0),
+	     //	    &gradS(1),
+	     //	   &Conj,
+	     &doPSF,
+	     flags_p,
+	     rowFlags_p,
+	     weight_p,
+	     &s.asVector()(2),
+	     &rownr,
+	     uvScale_p,
+	     actualOffset_p,
+	     dataPtr_p,
+	     &aNx,
+	     &aNy,
+	     &npol,
+	     &nchan,
+	     vb_freq_p,
+	     &C::c,
+	     convSupport_p,
+	     &actualConvSize,
+	     &convSampling,
+	     &wConvSize,
+	     f_convFunc_p,
+	     chanMap_p,
+	     polMap_p,
+	     &polInUse_p,
+	     sumwt_p,
+	     vb_ant1_p,
+	     vb_ant2_p,
+	     &Nant_p,
+	     &scanNo,
+	     &sigma,
+	     l_off_p, m_off_p,
+	     &area,
+	     &doGrad,
+	     &doPointing,
+	     &npa,
+	     &paIndex_Fortran,
+	     CFMap_p,
+	     ConjCFMap_p,
+	     &currentCFPA
+	     ,&actualPA,&cfRefFreq_p
+	     );
+    
+    ConjCFMap.freeStorage((const Int *&)ConjCFMap_p,deleteThem(CONJCFMAP));
+    CFMap.freeStorage((const Int *&)CFMap_p,deleteThem(CFMAP));
+    
+    l_off.freeStorage((const Float*&)l_off_p,deleteThem(RAOFF));
+    m_off.freeStorage((const Float*&)m_off_p,deleteThem(DECOFF));
+    uvw.freeStorage((const Double*&)uvw_p,deleteThem(UVW));
+    dphase.freeStorage((const Double*&)dphase_p,deleteThem(DPHASE));
+    //  visdata.putStorage(visdata_p,deleteThem(VISDATA));
+    //  gradVisAzData.putStorage(gradVisAzData_p,deleteThem(GRADVISAZ));
+    //  gradVisElData.putStorage(gradVisElData_p,deleteThem(GRADVISEL));
+    flags.freeStorage((const Int*&) flags_p,deleteThem(FLAGS));
+    rowFlags.freeStorage((const Int *&)rowFlags_p,deleteThem(ROWFLAGS));
+    actualOffset.freeStorage((const Double*&)actualOffset_p,deleteThem(ACTUALOFFSET));
+    dataPtr.freeStorage((const Complex *&)dataPtr_p,deleteThem(DATAPTR));
+    uvScale.freeStorage((const Double*&) uvScale_p,deleteThem(UVSCALE));
+    vb.frequency().freeStorage((const Double*&)vb_freq_p,deleteThem(VBFREQ));
+    cfs_p.xSupport.freeStorage((const Int*&)convSupport_p,deleteThem(CONVSUPPORT));
+    //    convFunc_p.freeStorage((const Complex *&)f_convFunc_p,deleteThem(CONVFUNC));
+    chanMap.freeStorage((const Int*&)chanMap_p,deleteThem(CHANMAP));
+    polMap.freeStorage((const Int*&) polMap_p,deleteThem(POLMAP));
+    vb.antenna1().freeStorage((const Int*&) vb_ant1_p,deleteThem(VBANT1));
+    vb.antenna2().freeStorage((const Int*&) vb_ant2_p,deleteThem(VBANT2));
+    weight.freeStorage((const Float*&)weight_p,deleteThem(WEIGHT));
+    sumWeight.putStorage(sumwt_p,deleteThem(SUMWEIGHT));
+  }
