@@ -53,6 +53,9 @@ public:
   // Type of Jones matrix according to nPar()
   virtual Jones::JonesType jonesType() { return Jones::Diagonal; };
 
+  // This type is smoothable
+  virtual casacore::Bool smoothable() { return true; };
+
   // Nominally, we will only use parallel hands for now
   virtual casacore::Bool phandonly() { return true; };
 

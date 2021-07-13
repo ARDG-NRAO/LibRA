@@ -197,9 +197,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     std::shared_ptr<SIImageStore> imstore;
     if( nterms>1 )
-      { imstore = std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, nterms, true ));   }
+      { imstore = std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, nterms, true, true ));   }
     else
-      { imstore = std::shared_ptr<SIImageStore>(new SIImageStore( imagename, true ));   }
+      { imstore = std::shared_ptr<SIImageStore>(new SIImageStore( imagename, true, true ));   }
   
 
     os << "Fitting PSF beam for Imagestore : " << imstore->getName() << LogIO::POST;
@@ -2678,6 +2678,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       MDoppler mdop(sysvelvalue, MDoppler::RELATIVISTIC);
       dataChanFreq=mdop.shiftFrequency(dataChanFreq);
       dataChanWidth=mdop.shiftFrequency(dataChanWidth);
+      if (std::isnan(dataChanFreq[0]) || std::isnan(dataChanFreq[dataChanFreq.nelements()-1])) {
+	throw(AipsError("The Doppler shift correction of the data channel frequencies resulted in 'NaN' using the radial velocity = "+
+              String::toString(sysvelvalue)+". Typically this indicates a problem in the ephemeris data being used.")); 
+      }
     }
     
     if (!getImFreq(chanFreq, chanFreqStep, refPix, specmode, obsEpoch, 

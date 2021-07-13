@@ -267,11 +267,11 @@ void StandardTsys::specify(const Record& specify) {
       // Increment tsys counter
       ++tsyscount(ispw,thisant);
 
-      negTsys(ispw,thisant)+=ntrue(currtsys<FLT_MIN);
+      negTsys(ispw,thisant)+=nfalse(currtsys>=FLT_MIN);
 
       // Issue warnings for completely bogus Tsys spectra (per pol)
       for (Int ipol=0;ipol<npol;++ipol) {
-        if (nfalse(Matrix<Float>(currtsys).row(ipol)<FLT_MIN)==0)
+        if (ntrue(Matrix<Float>(currtsys).row(ipol)>=FLT_MIN)==0)
 	  logSink() << "  Tsys data for ant id=" 
 		    << thisant << " (pol=" << ipol<< ")"
 		    << " in spw " << ispw
@@ -282,8 +282,8 @@ void StandardTsys::specify(const Record& specify) {
     }
     // Flag any Tsys<=0.0
     
-    LogicalArray mask((solveAllRPar()<FLT_MIN));
-    MaskedArray<Bool> negs(solveAllParOK(),mask);
+    LogicalArray mask((solveAllRPar()>=FLT_MIN));
+    MaskedArray<Bool> negs(solveAllParOK(),!mask);
     negs=false;
 
     Bool uniform=True;

@@ -376,13 +376,20 @@ bool SingleDishMS::prepare_for_process(string const &in_column_name,
   LogIO os(_ORIGIN);
   AlwaysAssert(msname_ != "", AipsError);
   // define a column to read data from
-  if (in_column_name == "float_data") {
+  string in_column_name_lower = in_column_name;
+  std::transform(
+    in_column_name_lower.begin(),
+    in_column_name_lower.end(),
+    in_column_name_lower.begin(),
+    [](unsigned char c) {return std::tolower(c);}
+  );
+  if (in_column_name_lower == "float_data") {
     in_column_ = MS::FLOAT_DATA;
     visCubeAccessor_ = GetCubeFromFloat;
-  } else if (in_column_name == "corrected") {
+  } else if (in_column_name_lower == "corrected") {
     in_column_ = MS::CORRECTED_DATA;
     visCubeAccessor_ = GetCubeFromCorrected;
-  } else if (in_column_name == "data") {
+  } else if (in_column_name_lower == "data") {
     in_column_ = MS::DATA;
     visCubeAccessor_ = GetCubeFromData;
   } else {
@@ -1873,7 +1880,14 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
   std::vector<LIBSAKURA_SYMBOL(LSQFitContextFloat) *> bl_contexts;
   bl_contexts.clear();
   size_t bltype = BaselineType_kPolynomial;
-  if (blfunc == "chebyshev") {
+  string blfunc_lower = blfunc;
+  std::transform(
+    blfunc_lower.begin(),
+    blfunc_lower.end(),
+    blfunc_lower.begin(),
+    [](unsigned char c) {return std::tolower(c);}
+  );
+  if (blfunc_lower == "chebyshev") {
     bltype = BaselineType_kChebyshev;
   }
 

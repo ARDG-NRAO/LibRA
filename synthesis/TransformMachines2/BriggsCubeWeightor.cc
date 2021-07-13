@@ -1,5 +1,5 @@
 //# BriggsCubeWeight.cc: Implementation for Briggs weighting for cubes
-//# Copyright (C) 2018-2019
+//# Copyright (C) 2018-2021
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -106,18 +106,20 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
     //cout << "BriggsCubeWeightor::initImgWeightCol " << endl;
     
     CoordinateSystem cs=templateimage.coordinates();
+    
 	if(initialized_p && nx_p==templateimage.shape()(0) && ny_p==templateimage.shape()(1)){
 		
 		Double freq=cs.toWorld(IPosition(4,0,0,0,0))[3];
 		if(freq==refFreq_p)
 		return imWgtColName_p;
 	}
-	  
+        refFreq_p=cs.toWorld(IPosition(4,0,0,0,0))[3];
 	visWgt_p=vi.getImagingWeightGenerator();
-    VisImagingWeight vWghtNat("natural");
+        VisImagingWeight vWghtNat("natural");
 	vi.useImagingWeight(vWghtNat);
 	vi::VisBuffer2 *vb=vi.getVisBuffer();
 	std::vector<pair<Int, Int> > fieldsToUse;
+        std::set<Int> msInUse;
 	rownr_t nrows=0;
 	String ephemtab("");
 	if(inRec.isDefined("ephemeristable")){
@@ -125,11 +127,11 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	}
 	Double freqbeg=cs.toWorld(IPosition(4,0,0,0,0))[3];
 	Double freqend=cs.toWorld(IPosition(4,0,0,0,templateimage.shape()[3]-1))[3];
-	uInt swingpad=estimateSwingChanPad(vi, cs, templateimage.shape()[3],
-					   ephemtab);
+
 	for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
 	  for (vi.origin(); vi.more(); vi.next()) {
 	    nrows+=vb->nRows();
+            msInUse.insert(vb->msId());
 	if(multiField_p){
 		
 				pair<Int, Int> ms_field=make_pair(vb->msId(), vb->fieldId()[0]);
@@ -141,8 +143,11 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 		}
 	}
 	wgtTab_p=nullptr;
+        Int tmpInt;
+        inRec.get("freqinterpmethod", tmpInt);
+        freqInterpMethod_p=static_cast<InterpolateArray1D<Double, Complex >::InterpolationMethod>(tmpInt);
 	ostringstream oss;
-	oss << std::setprecision(12) << nrows << "_" << freqbeg << "_" << freqend << "_"<< rmode_p << "_" << robust_p;
+	oss << std::setprecision(12) << nrows << "_" << freqbeg << "_" << freqend << "_"<< rmode_p << "_" << robust_p << "_interp_"<< tmpInt ;
 
 	//cerr << "STRING " << oss.str() << endl;;
 	imWgtColName_p=makeScratchImagingWeightTable(wgtTab_p, oss.str());
@@ -160,166 +165,199 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	if(fieldsToUse.size()==0)
 		fieldsToUse.push_back(make_pair(Int(-1),Int(-1)));
 	//cerr << "FIELDs to use " << Vector<pair<Int,Int> >(fieldsToUse) << endl;
-	for (uInt k=0; k < fieldsToUse.size(); ++k){
-		vi.originChunks();
-		vi.origin();
-		//cerr << "####nchannels " << vb->nChannels() << " swingpad " << swingpad << endl; 
-		IPosition shp=templateimage.shape();
-		nx_p=shp[0];
-		ny_p=shp[1];
-		CoordinateSystem cs=templateimage.coordinates();
-		refFreq_p=cs.toWorld(IPosition(4,0,0,0,0))[3];
-		Vector<String> units = cs.worldAxisUnits();
-		units[0]="rad"; units[1]="rad";
-		cs.setWorldAxisUnits(units);
-		Vector<Double> incr=cs.increment();
-		uscale_p=(nx_p*incr[0]);
-		vscale_p=(ny_p*incr[1]);
-		uorigin_p=nx_p/2;
-		vorigin_p=ny_p/2;
-		//IPosition shp=templateimage.shape();
-		shp[3]=shp[3]+swingpad; //add extra channels at begining and end;
-		Vector<Double> refpix=cs.referencePixel();
-		refpix[3]+=swingpad/2;
-		cs.setReferencePixel(refpix);
-		TempImage<Complex> newTemplate(shp, cs);
-		Matrix<Double>  sumWgts;
-		  
-		initializeFTMachine(0, newTemplate, inRec);
-		Matrix<Float> dummy;
-    
-		ft_p[0]->initializeToSky(newTemplate, dummy, *vb);
-		Vector<Double> convFunc(2+superUniformBox_p, 1.0);
-		//cerr << "superuniform box " << superUniformBox_p << endl;
-		ft_p[0]->modifyConvFunc(convFunc, superUniformBox_p, 1);
-		for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
-			for (vi.origin(); vi.more(); vi.next()) {
-	
-	//cerr << "key and index "<< key << "   " << index << "   " << multiFieldMap_p[key] << endl; 
-				if((vb->fieldId()[0] == fieldsToUse[k].second &&  vb->msId()== fieldsToUse[k].first) || fieldsToUse[k].first==-1){
-					ft_p[0]->put(*vb, -1, true, FTMachine::PSF);
-				}
-			
-			}
-		}
-		Array<Float> griddedWeight;
-		ft_p[0]->getGrid(griddedWeight);
-    //cerr << index << " griddedWeight Shape " << griddedWeight.shape() << endl;
-		//grids_p[index]->put(griddedWeight.reform(newTemplate.shape()));
-		sumWgts=ft_p[0]->getSumWeights();
-		//cerr << "sumweight " << sumWgts[index] << endl;
-		//clear the ftmachine
-		ft_p[0]->finalizeToSky();
-  
-		////Lets reset vi before returning 
-		vi.originChunks();
-		vi.origin();
-  
-		Int nchan=newTemplate.shape()(3);
-		//cerr << "rmode " << rmode_p << endl;
-    
-		for (uInt chan=0; chan < uInt(nchan); ++ chan){
-			IPosition start(4,0,0,0,chan);
-			IPosition end(4,nx_p-1,ny_p-1,0,chan);
-			Matrix<Float> gwt(griddedWeight(start, end).reform(IPosition(2, nx_p, ny_p)));
-			if ((rmode_p=="norm" || rmode_p=="bwtaper") && (sumWgts(0,chan)> 0.0)) { //See CAS-13021 for bwtaper algorithm details
-                
-//                ///TESTOO
-//                {
-//                   CoordinateSystem cstemp=CoordinateUtil::makeCoordinateSystem(gwt.shape(), True);
-//                   PagedImage<Float> gulu(gwt.shape(), cstemp, "BWweightdensity_v3"+String::toString(chan));
-//                   gulu.put(gwt);
-//                }
 
-                
-                
-			//os << "Normal robustness, robust = " << robust << LogIO::POST;
-				Double sumlocwt = 0.;
-				for(Int vgrid=0;vgrid<ny_p;vgrid++) {
-					for(Int ugrid=0;ugrid<nx_p;ugrid++) {
-						if(gwt(ugrid, vgrid)>0.0) sumlocwt+=square(gwt(ugrid,vgrid));
-					}
-				}
-				f2_p[0][chan] = square(5.0*pow(10.0,Double(-robust_p))) / (sumlocwt / (2*sumWgts(0,chan)));
-				d2_p[0][chan] = 1.0;
-                
-                //cout << "sumlocwt " << sumlocwt << endl;
-                //cout << "sumWgts "  << sumWgts << endl;
-                //cout << "f2_p[0]" << f2_p[0] << endl;
+        Bool inOneGo=True;
+        uInt allSwingPad=4;
+        //if multifield each field weight density are independent so no other field
+        //or ms  fields would contribute
+        if( !multiField_p ){
+         allSwingPad=estimateSwingChanPad(vi, -1, cs, templateimage.shape()[3],
+                                                ephemtab);
+        }
+        if(msInUse.size() > 1){
+          
+          if((allSwingPad > 4) && (allSwingPad >   uInt(templateimage.shape()[3]/10)))
+            inOneGo=False;
+          //cerr << "allSwingPad " << allSwingPad << " inOneGo " << inOneGo << endl;
 
-			}
-			else if (rmode_p=="abs") {
-				//os << "Absolute robustness, robust = " << robust << ", noise = "
-				//   << noise.get("Jy").getValue() << "Jy" << LogIO::POST;
-				f2_p[0][chan] = square(robust_p);
-				d2_p[0][chan] = 2.0 * square(noise_p.get("Jy").getValue());
-	
-			}
-			else {
-				f2_p[0][chan] = 1.0;
-				d2_p[0][chan] = 0.0;
-			}
-      
-		}//chan
+        }
+        ///////////////
+        //cerr << "###fieldsInUSE " << Vector<pair<Int, Int> >(fieldsToUse) << endl;;
+        //inOneGo=True;
 
+        /////////////////////////////
+        if(inOneGo){
+          fillImgWeightCol(vi, inRec, -1, fieldsToUse, allSwingPad, templateimage.shape(), cs);
+        }
+        else{
+          ///Lets process the ms independently as swingpad can become very large for MSs seperated by large epochs
+          for (auto msiter=msInUse.begin(); msiter != msInUse.end(); ++msiter){
+            uInt swingpad=estimateSwingChanPad(vi, *msiter, cs, templateimage.shape()[3],
+                                             ephemtab);
+          fillImgWeightCol(vi, inRec, *msiter, fieldsToUse, swingpad, templateimage.shape(), cs);
 
-		//std::ofstream myfile;
-		//myfile.open (wgtTab_p->tableName()+".txt");
-		
-		
-		for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
-			for (vi.origin(); vi.more(); vi.next()) {
-				if((vb->fieldId()[0] == fieldsToUse[k].second &&  vb->msId()== fieldsToUse[k].first) || fieldsToUse[k].first==-1){
-					Matrix<Float> imweight;
-					/*///////////
-					std::vector<Int> cmap=(ft_p[0]->channelMap(*vb)).tovector();
-					int n=0;
-					std::for_each(cmap.begin(), cmap.end(), [&n, &myfile](int &val){if(val > -1)myfile << " " << n; n++; });
-					myfile << "----msid " << vb->msId() << endl;
-					/////////////////////////////*/
-					getWeightUniform(griddedWeight, imweight, *vb);
-					rownr_t nRows=vb->nRows();
-					//Int nChans=vb->nChannels();
-					Vector<uInt> msId(nRows, uInt(vb->msId()));
-					RowNumbers rowidsnr=vb->rowIds();
-                                        Vector<uInt>rowids(rowidsnr.nelements());
-                                        convertArray(rowids, rowidsnr);
-					wgtTab_p->addRow(nRows, False);
-					rownr_t endrow=wgtTab_p->nrow()-1;
-					rownr_t beginrow=endrow-nRows+1;
-						//Slicer sl(IPosition(2,beginrow,0), IPosition(2,endrow,nChans-1), Slicer::endIsLast);
-					ArrayColumn<Float> col(*wgtTab_p, "IMAGING_WEIGHT");
-						//cerr << "sl length " << sl.length() << " array shape " << fakeweight.shape() << " col length " << col.nrow() << endl;
-					//col.putColumnRange(sl, fakeweight);
-					//cerr << "nrows " << nRows << " imweight.shape " << imweight.shape() << endl;
-					for (rownr_t row=0; row < nRows; ++row)
-						col.put(beginrow+row, imweight.column(row));
-					
-					Slicer sl2(IPosition(1, endrow-nRows+1), IPosition(1, endrow), Slicer::endIsLast);
-					ScalarColumn<uInt> col2(*wgtTab_p,"MSID");
-					col2.putColumnRange(sl2, msId);
-					ScalarColumn<uInt> col3(*wgtTab_p, "ROWID");
-                                        
-					col3.putColumnRange(sl2, rowids);
-				}
-			}
-		}
-		//myfile.close();
-		
-		
-	}
-		
+          }
+        }
 	initialized_p=True;
 	wgtTab_p->unlock();
 	return imWgtColName_p;
 	  
 }
 
-  Int BriggsCubeWeightor::estimateSwingChanPad(vi::VisibilityIterator2& vi, const CoordinateSystem& cs, const Int imNChan, const String& ephemtab){
-
+  void BriggsCubeWeightor::fillImgWeightCol(vi::VisibilityIterator2& vi, const Record&  inRec, const Int msid, std::vector<pair<Int, Int> >& fieldsToUse, const uInt swingpad, const IPosition& origShp, CoordinateSystem csOrig){
     vi::VisBuffer2 *vb=vi.getVisBuffer();
+    for (uInt k=0; k < fieldsToUse.size(); ++k){
+      vi.originChunks();
+      vi.origin();
+      //cerr << "####nchannels " << vb->nChannels() << " swingpad " << swingpad << endl; 
+      IPosition shp=origShp;
+      nx_p=shp[0];
+      ny_p=shp[1];
+      CoordinateSystem cs= csOrig;
+      //CoordinateSystem cs=templateimage.coordinates();
+      
+      Vector<String> units = cs.worldAxisUnits();
+      units[0]="rad"; units[1]="rad";
+      cs.setWorldAxisUnits(units);
+      Vector<Double> incr=cs.increment();
+      uscale_p=(nx_p*incr[0]);
+      vscale_p=(ny_p*incr[1]);
+      uorigin_p=nx_p/2;
+      vorigin_p=ny_p/2;
+      //IPosition shp=templateimage.shape();
+      shp[3]=shp[3]+swingpad; //add extra channels at begining and end;
+      Vector<Double> refpix=cs.referencePixel();
+      refpix[3]+=swingpad/2;
+      cs.setReferencePixel(refpix);
+      //cerr << "REFPIX " << refpix << " new SHAPE " << shp  << " swigpad " << swingpad  << " msid "<< msid << " fieldToUse.msid " <<fieldsToUse[k].first << " fieldid " <<  fieldsToUse[k].second << endl;
+      TempImage<Complex> newTemplate(shp, cs);
+      Matrix<Double>  sumWgts;
+            
+      initializeFTMachine(0, newTemplate, inRec);
+      Matrix<Float> dummy;
+      //cerr << "new template shape " << newTemplate.shape() << endl;
+      ft_p[0]->initializeToSky(newTemplate, dummy, *vb);
+      Vector<Double> convFunc(2+superUniformBox_p, 1.0);
+      //cerr << "superuniform box " << superUniformBox_p << endl;
+      ft_p[0]->modifyConvFunc(convFunc, superUniformBox_p, 1);
+      for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
+        for (vi.origin(); vi.more(); vi.next()) {
+          //cerr << "key and index "<< key << "   " << index << "   " << multiFieldMap_p[key] << endl; 
+          if((vb->fieldId()[0] == fieldsToUse[k].second &&  vb->msId()== fieldsToUse[k].first) || fieldsToUse[k].first==-1){
+            ft_p[0]->put(*vb, -1, true, FTMachine::PSF);
+          }
+          
+        }
+      }
+      Array<Float> griddedWeight;
+      ft_p[0]->getGrid(griddedWeight);
+      //cerr  << " griddedWeight Shape " << griddedWeight.shape() << endl;
+      //grids_p[index]->put(griddedWeight.reform(newTemplate.shape()));
+      sumWgts=ft_p[0]->getSumWeights();
+      //cerr << "sumweight " << sumWgts[index] << endl;
+      //clear the ftmachine
+      ft_p[0]->finalizeToSky();
+            
+           
+      Int nchan=newTemplate.shape()(3);
+      //cerr << "rmode " << rmode_p << endl;
+      
+      for (uInt chan=0; chan < uInt(nchan); ++ chan){
+        IPosition start(4,0,0,0,chan);
+        IPosition end(4,nx_p-1,ny_p-1,0,chan);
+        Matrix<Float> gwt(griddedWeight(start, end).reform(IPosition(2, nx_p, ny_p)));
+        if ((rmode_p=="norm" || rmode_p=="bwtaper") && (sumWgts(0,chan)> 0.0)) { //See CAS-13021 for bwtaper algorithm details
+          //os << "Normal robustness, robust = " << robust << LogIO::POST;
+          Double sumlocwt = 0.;
+          for(Int vgrid=0;vgrid<ny_p;vgrid++) {
+            for(Int ugrid=0;ugrid<nx_p;ugrid++) {
+              if(gwt(ugrid, vgrid)>0.0) sumlocwt+=square(gwt(ugrid,vgrid));
+            }
+          }
+          f2_p[0][chan] = square(5.0*pow(10.0,Double(-robust_p))) / (sumlocwt / (2*sumWgts(0,chan)));
+          d2_p[0][chan] = 1.0;
+          
+        }
+        else if (rmode_p=="abs") {
+          //os << "Absolute robustness, robust = " << robust << ", noise = "
+          //   << noise.get("Jy").getValue() << "Jy" << LogIO::POST;
+          f2_p[0][chan] = square(robust_p);
+          d2_p[0][chan] = 2.0 * square(noise_p.get("Jy").getValue());
+          
+        }
+        else {
+          f2_p[0][chan] = 1.0;
+          d2_p[0][chan] = 0.0;
+              }
+        
+      }//chan
+            
+            
+      //std::ofstream myfile;
+      //myfile.open (wgtTab_p->tableName()+".txt");
+      vi.originChunks();
+      vi.origin(); 
+      for (vi.originChunks(); vi.moreChunks(); vi.nextChunk()) {
+        for (vi.origin(); vi.more(); vi.next()) {
+          if((msid < 0) || ((vb->msId()) == (msid))){
+            if((vb->fieldId()[0] == fieldsToUse[k].second &&  vb->msId()== fieldsToUse[k].first) || fieldsToUse[k].first==-1){
+              Matrix<Float> imweight;
+              /*///////////
+                std::vector<Int> cmap=(ft_p[0]->channelMap(*vb)).tovector();
+                int n=0;
+                std::for_each(cmap.begin(), cmap.end(), [&n, &myfile](int &val){if(val > -1)myfile << " " << n; n++; });
+                myfile << "----msid " << vb->msId() << endl;
+                    /////////////////////////////*/
+              getWeightUniform(griddedWeight, imweight, *vb);
+              rownr_t nRows=vb->nRows();
+              //Int nChans=vb->nChannels();
+              Vector<uInt> msId(nRows, uInt(vb->msId()));
+              RowNumbers rowidsnr=vb->rowIds();
+              Vector<uInt>rowids(rowidsnr.nelements());
+              convertArray(rowids, rowidsnr);
+              wgtTab_p->addRow(nRows, False);
+              rownr_t endrow=wgtTab_p->nrow()-1;
+              rownr_t beginrow=endrow-nRows+1;
+              //Slicer sl(IPosition(2,beginrow,0), IPosition(2,endrow,nChans-1), Slicer::endIsLast);
+              ArrayColumn<Float> col(*wgtTab_p, "IMAGING_WEIGHT");
+              //cerr << "sl length " << sl.length() << " array shape " << fakeweight.shape() << " col length " << col.nrow() << endl;
+              //col.putColumnRange(sl, fakeweight);
+              //cerr << "nrows " << nRows << " imweight.shape " << imweight.shape() << endl;
+              for (rownr_t row=0; row < nRows; ++row)
+                col.put(beginrow+row, imweight.column(row));
+              
+              Slicer sl2(IPosition(1, endrow-nRows+1), IPosition(1, endrow), Slicer::endIsLast);
+              ScalarColumn<uInt> col2(*wgtTab_p,"MSID");
+              col2.putColumnRange(sl2, msId);
+              ScalarColumn<uInt> col3(*wgtTab_p, "ROWID");
+              
+              col3.putColumnRange(sl2, rowids);
+            }
+          }
+        }
+      }
+		//myfile.close();
+		
+            
+    }
+  
+	 ////Lets reset vi before returning 
     vi.originChunks();
     vi.origin();
+
+
+
+
+
+  }
+  
+
+  Int BriggsCubeWeightor::estimateSwingChanPad(vi::VisibilityIterator2& vi, const Int msid, const CoordinateSystem& cs, const Int imNChan, const String& ephemtab){
+
+    
+    vi.originChunks();
+    vi.origin();
+    vi::VisBuffer2 *vb=vi.getVisBuffer();
     Double freqbeg=cs.toWorld(IPosition(4,0,0,0,0))[3];
 	Double freqend=cs.toWorld(IPosition(4,0,0,0,imNChan-1))[3];
 	Double freqincr=fabs(cs.increment()[3]);
@@ -341,70 +379,67 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	///////
 	for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
 	  for (vi.origin(); vi.more(); vi.next()) {
-	    if((msID != vb->msId()) || (fieldID != vb->fieldId()(0)) || (spwID!=vb->spectralWindows()(0))){
-	      msID=vb->msId();
-	      fieldID = vb->fieldId()(0);
-	      spwID = vb->spectralWindows()(0);
-	      Double localBeg, localEnd;
-	      Double localNchan=imNChan >1 ? Double(imNChan-1) : 1.0;
-	      
-	      if(freqbeg < freqend){
-		localBeg=freqbeg;
-		localEnd=freqend;
-	      }
-	      else{
-		localBeg=freqend;
-		localEnd=freqbeg;
-	      }
-              localBeg-=freqincr/2.0;
-              localEnd+=freqincr/2.0;
-              Double localStep=fabs(localEnd-localBeg)/localNchan;
-	      Vector<Int> spw, start, nchan;
-	      if(ephemtab.size() != 0){
-		MSUtil::getSpwInSourceFreqRange( spw,start,nchan,vb->ms(), 
-						 localBeg,localEnd, localStep,
-						 ephemtab,fieldID);
-	      }
-	      else{
-		MSUtil::getSpwInFreqRange(spw, start,nchan,
-					  vb->ms(), localBeg, localEnd,
-					  localStep,freqframe, 
-					  fieldID);
-		
-	      }
-              //if(spw.nelements()==0 || start.nelements()
-              for (uInt spwk=0; spwk < spw.nelements() ; ++spwk){
-		    if(spw[spwk]==spwID){
-		      Vector<Double> mschanfreq=(vb->subtableColumns()).spectralWindow().chanFreq()(spw[spwk]);
-		      if(mschanfreq[start[spwk]+nchan[spwk]-1] > mschanfreq[start[spwk]]){
-			localminfreq.push_back(mschanfreq[start[spwk]]);
-			localmaxfreq.push_back(mschanfreq[start[spwk]+nchan[spwk]-1]);
-		      }else{
-			localminfreq.push_back(mschanfreq[start[spwk]+nchan[spwk]-1]);
-			localmaxfreq.push_back(mschanfreq[start[spwk]]);
-
-		      }
-
-		      firstchanfreq.push_back(min(mschanfreq));
-		      //if(mschanfreq[start[spwk]+nchan[spwk]-1] < localminfreq[localminfreq.size()-1])
-		      //localminfreq[localminfreq.size()-1]=mschanfreq[start[spwk]+nchan[spwk]-1];
-		      if(minFreq > localminfreq[localminfreq.size()-1])
-			minFreq=localminfreq[localminfreq.size()-1];
-		      if(maxFreq < localmaxfreq[localmaxfreq.size()-1])
-			maxFreq=localmaxfreq[localmaxfreq.size()-1];
+            //process for required msid
+            if( (msid < 0) || (msid==vb->msId()) )
+              {
+              if( (msID != vb->msId()) || (fieldID != vb->fieldId()(0)) )
+               {
+                msID=vb->msId();
+                fieldID = vb->fieldId()(0);
+                spwID = vb->spectralWindows()(0);
+                Double localBeg, localEnd;
+                Double localNchan=imNChan >1 ? Double(imNChan-1) : 1.0;
+                Double localStep=abs(freqend-freqbeg)/localNchan;
+                if(freqbeg < freqend){
+                  localBeg=freqbeg;
+                  localEnd=freqend;
+                }
+                else{
+                  localBeg=freqend;
+                  localEnd=freqbeg;
+                }
+                Vector<Int> spw, start, nchan;
+                if(ephemtab.size() != 0){
+                  MSUtil::getSpwInSourceFreqRange( spw,start,nchan,vb->ms(), 
+                                                   localBeg,localEnd, localStep,
+                                                   ephemtab,fieldID);
+                }
+                else{
+                  MSUtil::getSpwInFreqRange(spw, start,nchan,
+                                            vb->ms(), localBeg, localEnd,
+                                            localStep,freqframe, 
+                                            fieldID);
+                  
+                }
+                for (uInt spwk=0; spwk < spw.nelements() ; ++spwk){
+                  if(spw[spwk]==spwID){
+                    Vector<Double> mschanfreq=(vb->subtableColumns()).spectralWindow().chanFreq()(spw[spwk]);
+                    if(mschanfreq[start[spwk]+nchan[spwk]-1] > mschanfreq[start[spwk]]){
+                      localminfreq.push_back(mschanfreq[start[spwk]]);
+                      localmaxfreq.push_back(mschanfreq[start[spwk]+nchan[spwk]-1]);
+                    }else{
+                      localminfreq.push_back(mschanfreq[start[spwk]+nchan[spwk]-1]);
+                      localmaxfreq.push_back(mschanfreq[start[spwk]]);
+                      
+                    }
+                    
+                    firstchanfreq.push_back(min(mschanfreq));
+                    //if(mschanfreq[start[spwk]+nchan[spwk]-1] < localminfreq[localminfreq.size()-1])
+                    //localminfreq[localminfreq.size()-1]=mschanfreq[start[spwk]+nchan[spwk]-1];
+                    if(minFreq > localminfreq[localminfreq.size()-1])
+                      minFreq=localminfreq[localminfreq.size()-1];
+                    if(maxFreq < localmaxfreq[localmaxfreq.size()-1])
+                      maxFreq=localmaxfreq[localmaxfreq.size()-1];
+                    
+                  }
 		  
-		    }
-		  
+                }
               }
-            }
 		
-	  }
-	}
-
-        if(firstchanfreq.size()==0){
-          return 16;
+            }//input msid
+          }
         }
-          
+	
 	auto itf=firstchanfreq.begin();
 	auto itmax=localmaxfreq.begin();
 	Double firstchanshift=0.0;
@@ -419,8 +454,9 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	  itf++;
 	  itmax++;
 	}
-	swingpad=2*(Int(std::ceil((swingFreq+firstchanshift)/freqincr))+4);
-	//cerr <<"swingfreq " << (swingFreq/freqincr) << " firstchanshift " << (firstchanshift/freqincr) << " SWINGPAD " << swingpad << endl;
+        Int extrapad=max(min(4, Int(imNChan/10)),1);
+	swingpad=2*(Int(std::ceil((swingFreq+firstchanshift)/freqincr))+extrapad);
+	//cerr <<" swingfreq " << (swingFreq/freqincr) << " firstchanshift " << (firstchanshift/freqincr) << " SWINGPAD " << swingpad << endl;
 	////////////////
 	return swingpad;
 
@@ -430,6 +466,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 
     //String wgtname=File::newUniqueName(".", "IMAGING_WEIGHT").absoluteName();
     String wgtname=Path("IMAGING_WEIGHT_"+filetag).absoluteName();
+    //cerr  << "NAME "  << wgtname  << endl;
     if(Table::isReadable(wgtname)){
       weightTable=new Table(wgtname, Table::Update);
       if(weightTable->nrow() >0)

@@ -62,16 +62,29 @@ namespace casa{
     if (Dir.length() == 0) 
       throw(SynthesisFTMachineError(LogMessage("Got null string for disk cache dir. ",
 					       logOrigin).message()));
-    //
-    // If the directory does not exist, create it
-    //
+					       
+    Bool ReadOnly = SynthesisUtils::getenv("CFCache.READONLY",0);
+  
     if (!dirObj.exists()) dirObj.create();
-    else if ((!dirObj.isWritable()) || (!dirObj.isReadable()))
+    else if ((!dirObj.isReadable()))
       {
 	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
 				      String(" for convolution function cache"
-					     " exists but is unreadable/unwriteable")));
+					     " exists but is unreadable")));
       }
+    else if ((!dirObj.isWritable()) && (!ReadOnly))
+    {
+    	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
+				      String(" for convolution function cache"
+					     " exists but is unwriteable")));
+    }
+    
+    
+    if(ReadOnly)
+    {
+        log_l << "CF Cache in read only mode." << LogIO::POST;
+    }
+    
 
     try
       {
@@ -228,16 +241,28 @@ namespace casa{
     if (Dir.length() == 0) 
       throw(SynthesisFTMachineError(LogMessage("Got null string for disk cache dir. ",
 					       logOrigin).message()));
-    //
-    // If the directory does not exist, create it
-    //
+
+    Bool ReadOnly = SynthesisUtils::getenv("CFCache.READONLY",0);
+  
     if (!dirObj.exists()) dirObj.create();
-    else if ((!dirObj.isWritable()) || (!dirObj.isReadable()))
+    else if ((!dirObj.isReadable()))
       {
 	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
 				      String(" for convolution function cache"
-					     " exists but is unreadable/unwriteable")));
+					     " exists but is unreadable")));
       }
+    else if ((!dirObj.isWritable()) && (!ReadOnly))
+    {
+    	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
+				      String(" for convolution function cache"
+					     " exists but is unwriteable")));
+    }
+    
+    
+    if(ReadOnly)
+    {
+        log_l << "CF Cache in read only mode." << LogIO::POST;
+    }
 
     fillCFSFromDisk(dirObj,"CFS*", memCache2_p, true, selectedPA, dPA, verbose);
     fillCFSFromDisk(dirObj,"WTCFS*", memCacheWt2_p, false, selectedPA, dPA, verbose);

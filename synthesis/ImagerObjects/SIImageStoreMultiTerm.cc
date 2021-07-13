@@ -147,7 +147,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   // Used from SynthesisNormalizer::makeImageStore()
   SIImageStoreMultiTerm::SIImageStoreMultiTerm(const String &imagename, uInt ntaylorterms,
-                                               const Bool ignorefacets)
+                                               const Bool ignorefacets, const Bool ignoresumwt)
   {
     LogIO os( LogOrigin("SIImageStoreMultiTerm","Open existing Images",WHERE) );
 
@@ -262,22 +262,27 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       }
     else
       {
-	//throw( AipsError( "Multi-term SumWt does not exist. Please create PSFs or Residuals." ) );
-	std::shared_ptr<ImageInterface<Float> > imptr;
-	//	imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt.tt0")) );
-	if( doesImageExist(itsImageName+String(".residual.tt0")) )
-	  {buildImage( imptr, (itsImageName+String(".residual.tt0")) );}
-	  else
-	  {buildImage( imptr, (itsImageName+String(".psf.tt0")) );}
+	if(!ignoresumwt)
+	  {throw( AipsError( "Multi-term SumWt does not exist. Please create PSFs or Residuals." ) );}
+	else
+	  {
+	    os << "SumWt.ttx do not exist. Proceeding only with PSFs" << LogIO::POST;
+	    std::shared_ptr<ImageInterface<Float> > imptr;
+	    //	imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt.tt0")) );
+	    if( doesImageExist(itsImageName+String(".residual.tt0")) )
+	      {buildImage( imptr, (itsImageName+String(".residual.tt0")) );}
+	    else
+	      {buildImage( imptr, (itsImageName+String(".psf.tt0")) );}
 	    
-	itsNFacets = 1;
-	itsFacetId = 0;
-	  itsUseWeight = False;
-	itsCoordSys = imptr->coordinates();
-	itsMiscInfo=imptr->miscInfo();
+	    itsNFacets = 1;
+	    itsFacetId = 0;
+	    itsUseWeight = False;
+	    itsCoordSys = imptr->coordinates();
+	    itsMiscInfo=imptr->miscInfo();
+	  }
       }
       }// if psf0 or res0 exist
-
+    
     if( ignorefacets==true ) itsNFacets=1;
 
     init();

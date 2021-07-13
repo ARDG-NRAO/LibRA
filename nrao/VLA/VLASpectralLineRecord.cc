@@ -81,29 +81,30 @@ void VLASpectralLineRecord::data(Array<Complex>& values) const {
   uInt n = 2*trueChan;
   Short *idata = new Short[n];
   itsRecord.read(n, idata);
-#if defined(AIPS_DEBUG)
-  Short max = 0;
-#endif
+  // #if defined(AIPS_DEBUG)
+  // check on max idata value >= 16384 seems to be wrong, data identified with max value of 0 that otherwise fills OK
+  // Short max = 0;
+  // #endif
   while (n > 0) {
     n--;
     curDataPtr--;
-#if defined(AIPS_DEBUG)
-    Short absData = abs(idata[n]);
-    if (absData > max) max = absData;
-#endif
+    // #if defined(AIPS_DEBUG)
+    // Short absData = abs(idata[n]);
+    // if (absData > max) max = absData;
+    // #endif
     Float tmpval = Float(idata[n])/fscale;
     n--;
-#if defined(AIPS_DEBUG)
-    absData = abs(idata[n]);
-    if (absData > max) max = absData;
-#endif
+    // #if defined(AIPS_DEBUG)
+    // absData = abs(idata[n]);
+    // if (absData > max) max = absData;
+    // #endif
     *curDataPtr = Complex (Float(idata[n])/fscale, tmpval);
   }
   DebugAssert(curDataPtr == dataPtr, AipsError);
   values.putStorage(dataPtr, isACopy);
-#if defined(AIPS_DEBUG)
-  AlwaysAssert(max >= 16384, AipsError);
-#endif
+  // #if defined(AIPS_DEBUG)
+  // AlwaysAssert(max >= 16384, AipsError);
+  // #endif
   delete [] idata;
 }
 

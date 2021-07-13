@@ -72,24 +72,25 @@ void VLAContinuumRecord::data(Array<Complex>& values) const {
   Complex* dataPtr = values.getStorage(isACopy);
   Complex* curDataPtr = dataPtr;
   Short idata[2];
-#if defined(AIPS_DEBUG)
-  Short max = 0;
-#endif
+  // #if defined(AIPS_DEBUG)
+  // check on max idata value >= 16384 seems to be wrong, data identified with max value of 0 that otherwise fills OK
+  // Short max = 0;
+  // #endif
   for (uInt i = 0; i < 4; i++, curDataPtr++) {
     itsRecord.read(2, idata);
-#if defined(AIPS_DEBUG)
-    Short absData = abs(idata[0]);
-    if (absData > max) max = absData;
-    absData = abs(idata[1]);
-    if (absData > max) max = absData;
-#endif
+    // #if defined(AIPS_DEBUG)
+    // Short absData = abs(idata[0]);
+    // if (absData > max) max = absData;
+    // absData = abs(idata[1]);
+    // if (absData > max) max = absData;
+    // #endif
     *curDataPtr = Complex (Float(idata[0])/fscale, Float(idata[1])/fscale);
     itsRecord.seek(2, ByteIO::Current); // skip over the variance;
   }
   values.putStorage(dataPtr, isACopy);
-#if defined(AIPS_DEBUG)
-  AlwaysAssert(max >= 16384, AipsError);
-#endif
+  // #if defined(AIPS_DEBUG)
+  // AlwaysAssert(max >= 16384, AipsError);
+  // #endif
 }
 
 Vector<Bool> VLAContinuumRecord::flags() const {

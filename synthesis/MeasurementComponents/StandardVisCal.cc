@@ -1558,6 +1558,46 @@ void JJones::initTrivDJ() {
 }
 
 
+// **********************************************************
+//  JfJones Implementations
+//
+
+JfJones::JfJones(VisSet& vs) :
+  VisCal(vs),             // virtual base
+  VisMueller(vs),         // virtual base
+  JJones(vs)              // immediate parent
+{
+  if (prtlev()>2) cout << "Jf::Jf(vs)" << endl;
+}
+
+JfJones::JfJones(String msname,Int MSnAnt,Int MSnSpw) :
+  VisCal(msname,MSnAnt,MSnSpw),             // virtual base
+  VisMueller(msname,MSnAnt,MSnSpw),         // virtual base
+  JJones(msname,MSnAnt,MSnSpw)              // immediate parent
+{
+  if (prtlev()>2) cout << "Jf::Jf(msname,MSnAnt,MSnSpw)" << endl;
+}
+
+JfJones::JfJones(const MSMetaInfoForCal& msmc) :
+  VisCal(msmc),             // virtual base
+  VisMueller(msmc),         // virtual base
+  JJones(msmc)              // immediate parent
+{
+  if (prtlev()>2) cout << "Jf::Jf(msmc)" << endl;
+}
+
+JfJones::JfJones(const Int& nAnt) :
+  VisCal(nAnt), 
+  VisMueller(nAnt),
+  JJones(nAnt)
+{
+  if (prtlev()>2) cout << "Jf::Jf(nAnt)" << endl;
+}
+
+JfJones::~JfJones() {
+  if (prtlev()>2) cout << "Jf::~Jf()" << endl;
+}
+
 
 /*
 

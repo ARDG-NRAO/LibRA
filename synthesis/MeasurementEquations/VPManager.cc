@@ -51,7 +51,6 @@
 #include <casa/Logging/LogSink.h>
 #include <casa/Logging/LogMessage.h>
 #include <casa/OS/Directory.h>
-#include <casa/OS/Mutex.h>
 #include <images/Images/PagedImage.h>
 #include <unistd.h>
 
@@ -59,7 +58,7 @@ using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
   VPManager* VPManager::instance_p = 0;
-  Mutex VPManager::mutex_p(Mutex::Recursive); // to permit calls in same thread
+  std::recursive_mutex VPManager::mutex_p; // to permit calls in same thread
 
   VPManager::VPManager(Bool verbose):
     vplist_p(),
@@ -71,7 +70,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   VPManager* VPManager::Instance(){
     if(instance_p==0){
-      ScopedMutexLock locker(mutex_p);
+      std::lock_guard<std::recursive_mutex> locker(mutex_p);
       if(instance_p==0){
 	instance_p = new VPManager();
       }
@@ -82,7 +81,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void VPManager::reset(Bool verbose)
   {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     vplist_p = Record();
     vplistdefaults_p.clear();
@@ -159,7 +158,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   Bool VPManager::saveastable(const String& tablename){
     
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     TableDesc td("vptable", "1", TableDesc::Scratch);
     td.addColumn(ScalarColumnDesc<String>("telescope"));
@@ -204,7 +203,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   Bool VPManager::loadfromtable(const String& tablename){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os(LogOrigin("vpmanager", "loadfromtable"));
 
@@ -259,7 +258,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   Bool VPManager::summarizevps(const Bool verbose) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os(LogOrigin("vpmanager", "summarizevps"));
 
@@ -354,7 +353,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			      const Bool usesymmetricbeam,
 			      Record& rec){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec = Record();
     rec.define("name", "COMMONPB");
@@ -396,7 +395,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			    const Bool usesymmetricbeam,
 			    Record& rec){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "AIRY");
@@ -467,7 +466,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			       const Bool usesymmetricbeam,
 			       Record& rec) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "COSPOLY");
@@ -535,7 +534,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			     const Bool usesymmetricbeam,
 			     Record& rec){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "GAUSS");
@@ -610,7 +609,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			       const Bool usesymmetricbeam,
 			       Record& rec) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "IPOLY");
@@ -679,7 +678,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			       const Bool usesymmetricbeam,
 			       Record& rec) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "IPOLY");
@@ -749,7 +748,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			       const Bool usesymmetricbeam,
 			       Record &rec) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "NUMERIC");
@@ -813,7 +812,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			     const Vector<String>& antennaNames,
 			     Record& rec){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "IMAGE");
@@ -849,7 +848,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   Bool VPManager::imagepbinfo(Vector<Vector<String> >& names, Vector<Record>& imagebeams){
     
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
     Int nRec=vplist_p.nfields();
     Bool retval=false;
     names=Vector<Vector<String> >(0);
@@ -885,7 +884,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			    const Bool usesymmetricbeam,
 			    Record &rec) {
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     rec=Record();
     rec.define("name", "POLY");
@@ -944,7 +943,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   Bool VPManager::setpbantresptable(const String& telescope, const String& othertelescope,
 				    const Bool dopb, const String& tablepath){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     Record rec;
     rec.define("name", "REFERENCE");
@@ -975,7 +974,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				 const String& telescope,
 				 const String& antennatype){     
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os;
     os <<  LogOrigin("VPManager", "setuserdefault");
@@ -1023,7 +1022,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				 const String& telescope,
 				 const String& antennatype){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     String antDesc = antennaDescription(telescope, antennatype);
 
@@ -1054,7 +1053,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			      const MDirection& obsdirection // default: Zenith
 			      ){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os;
     os << LogOrigin("VPManager", "getanttypes");
@@ -1154,7 +1153,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			const MDirection& obsdirection // default: Zenith
 			){
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os;
     os << LogOrigin("VPManager", "numvps");
@@ -1176,7 +1175,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			const String& antennatype, // default: "" 
 			const MDirection& obsdirection){ // default is the Zenith
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os;
     os << LogOrigin("VPManager", "getvp");
@@ -1471,7 +1470,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			const String& antennatype // default: "" 
 			){ 
 
-    ScopedMutexLock locker(mutex_p);
+    std::lock_guard<std::recursive_mutex> locker(mutex_p);
 
     LogIO os;
     os << LogOrigin("VPManager", "getvp2");

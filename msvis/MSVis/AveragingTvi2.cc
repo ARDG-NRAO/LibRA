@@ -2386,9 +2386,13 @@ AveragingTvi2::origin ()
 void
 AveragingTvi2::originChunks (Bool forceRewind)
 {
+    // Ensure that the underlying VI is in a state where some metadata
+    // can be retrieved
+    getVii()->originChunks(forceRewind);
+
+    // Initialize the chunk
     vbAvg_p->startChunk (getVii());
 
-    getVii()->originChunks(forceRewind);
     more_p = false;
 
     subchunk_p.resetToOrigin();

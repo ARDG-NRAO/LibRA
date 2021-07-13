@@ -159,6 +159,9 @@ SolvableVisCal* createSolvableVisCal(const String& type, VisSet& vs) {
   else if (uptype=="J" || uptype=="J JONES") 
     return new JJones(vs);
 
+  else if (uptype=="JF" || uptype=="JF JONES")
+    return new JfJones(vs);
+
   else if (uptype == "EP" || uptype == "EP JONES")
     return new EPJones(vs);
 
@@ -309,6 +312,9 @@ SolvableVisCal* createSolvableVisCal(const String& type, String msname, Int MSnA
 
   else if (uptype=="J" || uptype=="J JONES") 
     return new JJones(msname,MSnAnt,MSnSpw);
+
+  else if (uptype=="JF" || uptype=="JF JONES")
+    return new JfJones(msname,MSnAnt,MSnSpw);
 
   else if (uptype == "EP" || uptype == "EP JONES")
     throw(AipsError(uptype+" not yet supported via EPJones(msname,MSnAnt,MSnSpw)"));
@@ -462,6 +468,9 @@ SolvableVisCal* createSolvableVisCal(const String& type, const MSMetaInfoForCal&
 
   else if (uptype=="J" || uptype=="J JONES") 
     return new JJones(msmc);
+
+  else if (uptype=="JF" || uptype=="JF JONES")
+    return new JfJones(msmc);
 
   else if (uptype == "EP" || uptype == "EP JONES")
     throw(AipsError(uptype+" not yet supported via EPJones(msmc)"));

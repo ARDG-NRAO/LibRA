@@ -191,7 +191,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   }
 
   // Used from SynthesisNormalizer::makeImageStore()
-  SIImageStore::SIImageStore(const String &imagename, const Bool ignorefacets)
+  SIImageStore::SIImageStore(const String &imagename, const Bool ignorefacets, const Bool ignoresumwt)
   {
     LogIO os( LogOrigin("SIImageStore","Open existing Images",WHERE) );
       
@@ -286,22 +286,26 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  }
 	else
 	  {
-	    //throw( AipsError( "SumWt information does not exist. Please create either a PSF or Residual" ) );
-	    std::shared_ptr<ImageInterface<Float> > imptr;
-	    //imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt")) );
-	    if( doesImageExist(itsImageName+String(".residual") ) )
-	      { buildImage( imptr, (itsImageName+String(".residual")) ); }
-	      else
-	      { buildImage( imptr, (itsImageName+String(".psf")) ); }
-
-	    itsNFacets=1;
-	    itsFacetId=0;
-	    itsUseWeight=0;
-	    itsPBScaleFactor=1.0;
-	    itsCoordSys = imptr->coordinates();
-	    itsMiscInfo=imptr->miscInfo();
+	    if(!ignoresumwt)
+	      {throw( AipsError( "SumWt information does not exist. Please create either a PSF or Residual" ) );}
+	    else
+	      {
+		os << "SumWt does not exist. Proceeding only with PSF" << LogIO::POST;
+		std::shared_ptr<ImageInterface<Float> > imptr;
+		//imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt")) );
+		if( doesImageExist(itsImageName+String(".residual") ) )
+		  { buildImage( imptr, (itsImageName+String(".residual")) ); }
+		else
+		  { buildImage( imptr, (itsImageName+String(".psf")) ); }
+		
+		itsNFacets=1;
+		itsFacetId=0;
+		itsUseWeight=False;
+		itsPBScaleFactor=1.0;
+		itsCoordSys = imptr->coordinates();
+		itsMiscInfo=imptr->miscInfo();
+	      }
 	  }
-	
       }// if psf or residual exist...
 
     if( ignorefacets==True ) itsNFacets= 1;

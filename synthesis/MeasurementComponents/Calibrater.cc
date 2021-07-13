@@ -3221,7 +3221,8 @@ casacore::Bool Calibrater::genericGatherAndSolve()
   //cout << "svc_p->solint() = " << svc_p->solint() << endl;
   //cout << "svc_p->solTimeInterval() = " << svc_p->solTimeInterval() << endl;
   //cout << "svc_p->preavg() = " << svc_p->preavg() << endl;
-  if (!svc_p->solint().contains("int")) {      // i.e., not "int")
+  if (!svc_p->solint().contains("int") &&      // i.e., not "int")
+      svc_p->preavg() != -DBL_MAX) {
     Float avetime(svc_p->solTimeInterval());   // avetime is solint, nominally
     // Use preavg instead, if...
     if (svc_p->preavg()>FLT_EPSILON &&             // ...set meaningfully

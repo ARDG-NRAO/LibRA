@@ -2086,6 +2086,8 @@ void FringeJones::setSolve(const Record& solve) {
 
     // Call parent to do conventional things
     GJones::setSolve(solve);
+    preavg() = -DBL_MAX;
+
     // refant isn't properly set until selfSolveOne.  We set it to a
     // known value here so that it can be checked in debugging code.
     refant() = -1;

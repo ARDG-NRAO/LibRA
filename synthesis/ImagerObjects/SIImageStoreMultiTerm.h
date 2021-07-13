@@ -54,7 +54,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   SIImageStoreMultiTerm();
   SIImageStoreMultiTerm(const casacore::String &imagename, casacore::uInt ntaylorterms=1,
-                        const casacore::Bool ignorefacets=false);
+                        const casacore::Bool ignorefacets=casacore::False,
+			const casacore::Bool ignoresumwt=casacore::False);
 
   SIImageStoreMultiTerm(const casacore::String &imagename,
                         const casacore::CoordinateSystem &imcoordsys,

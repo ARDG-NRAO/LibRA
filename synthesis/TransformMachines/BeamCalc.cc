@@ -299,7 +299,7 @@ namespace casa{
       bandMaxFreq_p.resize(BeamCalc_NumBandCodes_p);
 
       for(uInt i=0; i<BeamCalc_NumBandCodes_p; i++){
- 	sprintf(BeamCalcGeometries_p[i].name, antParTab.getCell("NAME", i).asString().c_str());
+ 	sprintf(BeamCalcGeometries_p[i].name, "%s", antParTab.getCell("NAME", i).asString().c_str());
 	bandMinFreq_p[i] = antParTab.getCell("MINFREQ", i).asDouble() * 1E9; // expect GHz 
 	bandMaxFreq_p[i] = antParTab.getCell("MAXFREQ", i).asDouble() * 1E9;
 	BeamCalcGeometries_p[i].sub_h = antParTab.getCell("SUB_H", i).asDouble();

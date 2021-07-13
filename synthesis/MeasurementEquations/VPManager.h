@@ -29,6 +29,7 @@
 #define SYNTHESIS_VPMANAGER_H
 
 #include <map>
+#include <mutex>
 #include <synthesis/MeasurementEquations/AntennaResponses.h>
 
 namespace casacore{
@@ -221,7 +222,7 @@ namespace casa {
     private:
       static VPManager* instance_p;
 
-      static casacore::Mutex mutex_p;
+      static std::recursive_mutex mutex_p;
 
       casacore::Record vplist_p; 
       std::map<casacore::String, casacore::Int > vplistdefaults_p; 
