@@ -25,39 +25,56 @@
 #include <spectrallines/Splatalogue/Searcher.h>
 #include <spectrallines/Splatalogue/SQLiteSearch/SearcherSQLite.h>
 #include <casatools/Config/State.h>
-
+#include <casa/Logging/LogIO.h>
 #include <iostream>
 using namespace std;
 
 using namespace casacore;
 namespace casa {
 
-String SearcherFactory::getLocation( bool local ){
+String SearcherFactory::getLocation( bool local ) {
 	String defaultDatabasePath;
 	if ( local ){
 
 		//Note:: When the SQLite code (and database get put into its
 		//own library, finding the location of the database should be
 		//removed from here and put into the DatabaseConnector.
-        const string splatable = "ephemerides/SplatDefault.tbl";
-        Bool foundDatabase = false;
-        string resolvepath;
-        resolvepath = casatools::get_state( ).resolve(splatable);
-        if ( resolvepath != splatable ) {
-            foundDatabase = true;
-            defaultDatabasePath = resolvepath;
-        } else {
-            foundDatabase = Aipsrc::find(defaultDatabasePath, "user.ephemerides.SplatDefault.tbl");
-            if( !foundDatabase ){
-                foundDatabase = Aipsrc::findDir(defaultDatabasePath, "data/" + splatable);
-            }
-        }
+		const string splatdb = "ephemerides/splatalogue.db";
+		Bool foundDatabase = false;
+		string resolvepath;
+		resolvepath = casatools::get_state( ).resolve(splatdb);
+		if ( resolvepath != splatdb ) {
+			foundDatabase = true;
+			defaultDatabasePath = resolvepath;
+		} else {
+			const string splatable = "ephemerides/SplatDefault.tbl";
+			foundDatabase = Aipsrc::find(defaultDatabasePath, "user.ephemerides.SplatDefault.tbl");
+			if( !foundDatabase ){
+				foundDatabase = Aipsrc::findDir(defaultDatabasePath, "data/" + splatable);
+			}
 
-		if ( foundDatabase ) {
-			const String tableName = "SplatDefault.tbl";
-			int index = defaultDatabasePath.find(tableName, 0);
-			int tableNameSize = tableName.length();
-			defaultDatabasePath.replace(index, tableNameSize, "splatalogue.db");
+			if ( foundDatabase ) {
+				const String tableName = "SplatDefault.tbl";
+				int index = defaultDatabasePath.find(tableName, 0);
+				int tableNameSize = tableName.length();
+				defaultDatabasePath.replace(index, tableNameSize, "splatalogue.db");
+			}
+		}
+	}
+
+	static bool logged = false;
+	if ( logged == false ) {
+		logged = true;
+		LogIO os (LogOrigin ("SearcherFactory", "getLocation"));
+		if ( defaultDatabasePath.size( ) == 0 ) {
+			os << LogIO::WARN <<
+			  "could not find splatalog offline database" <<
+			  LogIO::POST;
+		} else {
+			os <<
+			  "found splatalog offline database: " <<
+			  defaultDatabasePath <<
+			  LogIO::POST;
 		}
 	}
 	return defaultDatabasePath;

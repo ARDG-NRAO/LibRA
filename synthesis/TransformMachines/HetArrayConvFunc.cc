@@ -1290,7 +1290,7 @@ typedef unsigned long long ooLong;
 #ifdef _OPENMP
       omp_set_nested(0);
 #endif
-#pragma omp parallel for default(none) private(realval, imagval) firstprivate(intPtr, realptr, imagptr, nx, ny) shared(leReal, leImag)
+#pragma omp parallel for default(none) private(realval, imagval) firstprivate(intPtr, realptr, imagptr, nx, ny, factor) shared(leReal, leImag)
       
       for (Int k =0; k < Int(ny*factor); ++k){
 	Double y =Double(k)/factor;

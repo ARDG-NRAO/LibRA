@@ -490,7 +490,7 @@ String&	CubeMajorCycleAlgorithm::name(){
 				getSubImage(submodel, startmodchan, endmodchan, modelnames[imId], True);
                                 //
                                 if(Table::isReadable(weightNames_p[imId])){
-                                  divideModelByWeight(submodel, startmodchan, endmodchan, weightNames_p[imId]);
+                                  divideModelByWeight(imSel_p[imId].imageName, submodel, startmodchan, endmodchan, weightNames_p[imId]);
                                 }
 				//ImageInterface<Float>* modim=new PagedImage<Float>(modelnames[imId], TableLock::UserNoReadLocking);
 				//submodel.reset(modim);
@@ -510,7 +510,7 @@ String&	CubeMajorCycleAlgorithm::name(){
         //	subsumwt.reset(SpectralImageUtil::getChannel(sumwt, chanBeg, chanEnd, true));
         getSubImage(subsumwt, chanBeg, chanEnd, sumwgtname, True);
 	bool useweightimage=(subweight) ? true : false;
-        shared_ptr<SIImageStore> subimstor(new SimpleSIImageStore(submodel, subresid, subpsf, subweight, nullptr, nullptr, subsumwt, nullptr, subpb, nullptr, nullptr, useweightimage));
+        shared_ptr<SIImageStore> subimstor(new SimpleSIImageStore(imSel_p[imId].imageName, submodel, subresid, subpsf, subweight, nullptr, nullptr, subsumwt, nullptr, subpb, nullptr, nullptr, useweightimage));
 	if(polRep_p[imId]< 0)
 		throw(AipsError("data polarization type is not defined"));
 	StokesImageUtil::PolRep polrep=(StokesImageUtil::PolRep)polRep_p[imId];
@@ -543,7 +543,7 @@ String&	CubeMajorCycleAlgorithm::name(){
 	subimstor->setDataPolFrame(polrep);
 	return subimstor;
 }
-  void CubeMajorCycleAlgorithm::divideModelByWeight(shared_ptr<ImageInterface<Float> >&submodel, const Int startchan, const Int endchan, const String weightname){
+  void CubeMajorCycleAlgorithm::divideModelByWeight(casacore::String imageName, shared_ptr<ImageInterface<Float> >&submodel, const Int startchan, const Int endchan, const String weightname){
     if(controlRecord_p.isDefined("dividebyweight") && controlRecord_p.asBool("dividebyweight")){
       if(controlRecord_p.isDefined("normpars")){
                         Record normpars=controlRecord_p.asRecord("normpars");
@@ -553,7 +553,7 @@ String&	CubeMajorCycleAlgorithm::name(){
                         getSubImage(subweight, startchan, endchan, weightname, True);
 			LatticeLocker lock1(*(subweight), FileLocker::Read);
 			LatticeLocker lock2(*(submodel), FileLocker::Read);
-                        std::shared_ptr<SIImageStore> subimstor(new SimpleSIImageStore(submodel, nullptr, nullptr, subweight, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, True));
+                        std::shared_ptr<SIImageStore> subimstor(new SimpleSIImageStore(imageName, submodel, nullptr, nullptr, subweight, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, True));
                         norm.setImageStore(subimstor);
                         norm.divideModelByWeight();
                         

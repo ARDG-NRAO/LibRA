@@ -1279,7 +1279,7 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
             << "%, memory: " << usr_mem_msg.str()
             << ") => Subcubes: " << nsubcube
             << ". Processes on node: " << nlocal_procs << ".\n";
-        log_l << oss << LogIO::POST;
+        log_l << oss.str() << LogIO::POST;
 
         TcleanProcessingInfo procInfo;
         procInfo.mpiprocs = nlocal_procs;
@@ -1828,13 +1828,17 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
               "the sections: " << retvals;
           throw(AipsError(oss));
         }
-        if(!dopsf){
+        if(!dopsf && normpars_p.isDefined("pblimit") && (normpars_p.asFloat("pblimit") > 0.0) ){
           try{
-            (itsMappers.imageStore(0))->copyMask(itsMappers.imageStore(0)->pb(), itsMappers.imageStore(0)->residual());
+	    SIImageStore::copyMask(itsMappers.imageStore(0)->pb(), itsMappers.imageStore(0)->residual());
           }
           catch(AipsError &x) {
             if(!String(x.getMesg()).contains("T/F"))
               throw(AipsError(x.getMesg()));
+	    else{
+	      logger << "Error : " << x.getMesg() << LogIO::WARN << LogIO::POST;
+	      //cout << "x.getMesg() " << endl;
+	    }
             ///ignore copy mask error and proceed as this happens with interactive
           }
         }
@@ -1858,7 +1862,7 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
     
     Bool savemodelcolumn = !readOnly_p && useScratch_p;
     Bool savevirtualmodel = !readOnly_p && !useScratch_p;
-
+    //os<<"PREDICTMODEL: readOnly_p=="<<readOnly_p<<" useScratch_p=="<<useScratch_p<<LogIO::POST;
     if( savemodelcolumn ) os << "Saving model column" << LogIO::POST;
     if( savevirtualmodel ) os << "Saving virtual model" << LogIO::POST;
 

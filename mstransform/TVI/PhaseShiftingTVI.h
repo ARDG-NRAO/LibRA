@@ -26,6 +26,17 @@
 // Base class
 #include <mstransform/TVI/FreqAxisTVI.h>
 
+// To handle variant parameters
+#include <stdcasa/StdCasa/CasacSupport.h>
+
+// CAS-12706 To access directly the MS columns to get initial
+// time and position for wide-field phase shifting algorithm
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+
+// CAS-12706 UVWMachine for wide-field phase shifting algorithm
+#include <measures/Measures/UVWMachine.h>
+#include <casacore/measures/Measures/MeasFrame.h>
+
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -46,16 +57,35 @@ public:
 	// Report the the ViImplementation type
 	virtual casacore::String ViiType() const { return casacore::String("PhaseShifting( ")+getVii()->ViiType()+" )"; };
 
+	// Navigation methods
+	virtual void origin ();
+	virtual void next ();
+
     virtual void visibilityObserved (casacore::Cube<casacore::Complex> & vis) const;
     virtual void visibilityCorrected (casacore::Cube<casacore::Complex> & vis) const;
     virtual void visibilityModel (casacore::Cube<casacore::Complex> & vis) const;
+    virtual void uvw (casacore::Matrix<double> & uvw) const;
 
 protected:
 
     casacore::Bool parseConfiguration(const casacore::Record &configuration);
     void initialize();
+    void initializeUWVMachine();
+    void shiftUVWPhases();
 
 	casacore::Double dx_p, dy_p;
+
+	// CAS-12706 Members wide-field phase shifting algorithm
+	bool wideFieldMode_p;
+	bool uvwMachineInitialized_p;
+	casacore::String phaseCenterName_p;
+	casacore::MDirection phaseCenter_p;
+	casacore::MSColumns *selectedInputMsCols_p;
+	casacore::MPosition observatoryPosition_p;
+	casacore::MEpoch referenceTime_p;
+	casacore::String referenceTimeUnits_p;
+	casacore::Matrix<casacore::Double> newUVW_p;
+	casacore::Vector<casacore::Double> phaseShift_p;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,6 +159,37 @@ protected:
 	casacore::Matrix<casacore::Double> *uvw_p;
 	casacore::Vector<casacore::Double> *frequencies_p;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// WideFieldPhaseShiftingTransformEngine class
+//////////////////////////////////////////////////////////////////////////
+
+template<class T> class WideFieldPhaseShiftingTransformEngine : public FreqAxisTransformEngine2<T>
+{
+	using FreqAxisTransformEngine2<T>::inputData_p;
+	using FreqAxisTransformEngine2<T>::outputData_p;
+	using FreqAxisTransformEngine2<T>::rowIndex_p;
+	using FreqAxisTransformEngine2<T>::corrIndex_p;
+
+public:
+
+	WideFieldPhaseShiftingTransformEngine(const casacore::Vector<casacore::Double> &phaseShift,
+								casacore::Matrix<casacore::Double> *uvw,
+								casacore::Vector<casacore::Double> *frequencies,
+								DataCubeMap *inputData,
+								DataCubeMap *outputData);
+
+	void transform();
+
+	void transformCore(DataCubeMap *inputData,DataCubeMap *outputData);
+
+protected:
+
+	casacore::Vector<casacore::Double> phaseShift_p;
+	casacore::Matrix<casacore::Double> *uvw_p;
+	casacore::Vector<casacore::Double> *frequencies_p;
+};
+
 
 
 } //# NAMESPACE VI - END

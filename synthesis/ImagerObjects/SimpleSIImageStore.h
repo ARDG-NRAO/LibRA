@@ -38,7 +38,8 @@ class SimpleSIImageStore : public SIImageStore
 {
 public:
 	
-	SimpleSIImageStore(const std::shared_ptr<casacore::ImageInterface<casacore::Float> > &modelim,
+	SimpleSIImageStore(casacore::String &imageName,
+	       const std::shared_ptr<casacore::ImageInterface<casacore::Float> > &modelim,
 	       const std::shared_ptr<casacore::ImageInterface<casacore::Float> > &residim,
 	       const std::shared_ptr<casacore::ImageInterface<casacore::Float> > &psfim,
 	       const std::shared_ptr<casacore::ImageInterface<casacore::Float> > &weightim,

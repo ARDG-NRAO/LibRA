@@ -2696,11 +2696,20 @@ void FringeJones::applyRefAnt() {
 	<< ", Fld=" << ctiter.thisField()
 	<< ")"
 	<< ", refant (id=" << currrefant 
-	<< ") was flagged; flagging all antennas strictly." 
+	<< ") was flagged; flagging all antennas strictly."
 	<< LogIO::POST;
       // Flag all solutions in this interval
       flB.set(True);
       ctiter.setflag(flB);
+      if (ichoice == nchoices){
+          logSink() << LogIO::WARN
+          << "From time: "
+          << MVTime(ctiter.thisTime()/C::day).string(MVTime::YMD,7)
+          << "in Spw: "
+          << ctiter.thisSpw()
+          << " refant list exhausted, flagging all solutions"
+          << LogIO::POST; 
+      }
     }
 
     // advance to the next interval

@@ -62,7 +62,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		void reset();
           void writeBackToFullImage(const casacore::String imagename, const casacore::Int chanBeg, const casacore::Int chanEnd, std::shared_ptr<casacore::ImageInterface<casacore::Float> > subimptr);
           void getSubImage(std::shared_ptr<casacore::ImageInterface<casacore::Float> >& subimptr, const casacore::Int chanBeg, const casacore::Int chanEnd, const casacore::String imagename, const casacore::Bool lock=false);
-          void divideModelByWeight(std::shared_ptr<casacore::ImageInterface<casacore::Float> >&submodel, const casacore::Int startchan, const casacore::Int endchan, const casacore::String weightname);
+          void divideModelByWeight(casacore::String imageName, std::shared_ptr<casacore::ImageInterface<casacore::Float> >&submodel, const casacore::Int startchan, const casacore::Int endchan, const casacore::String weightname);
           std::shared_ptr<SIImageStore> subImageStore(const int whichImageId=0);
           std::shared_ptr<SIImageStore> multiTermImageStore(const casacore::Int imId);
 	  

@@ -29,6 +29,8 @@
 #include <synthesis/MeasurementComponents/SteepestDescentSolver.h>
 #include <synthesis/TransformMachines/Utils.h>
 #include <casa/Arrays/MatrixMath.h>
+#include <limits>
+
 using namespace casacore;
 namespace casa {
 
@@ -383,7 +385,7 @@ namespace casa {
     Cube<Float> bestSolution;
     Vector<Complex> ResidualVj, dAzVj, dElVj;
     Vector<Bool> antFlagged;
-    Double Chisq = MAXFLOAT;
+    Double Chisq = std::numeric_limits<float>::max( );
     Double dChisq, bestChisq, sumWt, /*Time,*/ AzHDiag, ElHDiag,localGain, coVar1, coVar2, 
       stepSize0,stepSize1;
     Int iPol=0, nPol, iter, axis0=0,axis1=0, iCorr;

@@ -2017,23 +2017,25 @@ Bool MSTransformDataHandler::fillSPWTable()
 	Bool haveSpwASI = columnOk(inSpWCols.assocSpwId());
 	Bool haveSpwBN = columnOk(inSpWCols.bbcNo());
 	Bool haveSpwBS = columnOk(inSpWCols.bbcSideband());
-	    Bool haveSpwDI = columnOk(inSpWCols.dopplerId());
-	    Bool haveSpwSWF = mssel_p.spectralWindow().tableDesc().isColumn("SDM_WINDOW_FUNCTION") &&
-                              mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_WINDOW_FUNCTION");
-	    Bool haveSpwSNB = mssel_p.spectralWindow().tableDesc().isColumn("SDM_NUM_BIN") &&
-                              mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_NUM_BIN");
+	Bool haveSpwDI = columnOk(inSpWCols.dopplerId());
+	Bool haveSpwSWF = mssel_p.spectralWindow().tableDesc().isColumn("SDM_WINDOW_FUNCTION") &&
+                          mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_WINDOW_FUNCTION");
+	Bool haveSpwSNB = mssel_p.spectralWindow().tableDesc().isColumn("SDM_NUM_BIN") &&
+                          mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_NUM_BIN");
+	Bool haveSpwCorrBit = mssel_p.spectralWindow().tableDesc().isColumn("SDM_CORR_BIT") &&
+                              mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_CORR_BIT");
 
-		uInt nuniqSpws = spw_uniq_p.size();
+	uInt nuniqSpws = spw_uniq_p.size();
 
-		// This sets the number of input channels for each spw. But
-		// it considers that a SPW ID contains only one set of channels.
-		// I hope this is true!!
-		// Write to SPECTRAL_WINDOW table
-		inNumChan_p.resize(spw_p.nelements());
-		for (uInt k = 0; k < spw_p.nelements(); ++k)
-		{
-			inNumChan_p[k] = inSpWCols.numChan()(spw_p[k]);
-		}
+	// This sets the number of input channels for each spw. But
+	// it considers that a SPW ID contains only one set of channels.
+	// I hope this is true!!
+	// Write to SPECTRAL_WINDOW table
+	inNumChan_p.resize(spw_p.nelements());
+	for (uInt k = 0; k < spw_p.nelements(); ++k)
+	{
+	        inNumChan_p[k] = inSpWCols.numChan()(spw_p[k]);
+	}
 
 	if (reindex_p)
 	{
@@ -2230,6 +2232,12 @@ Bool MSTransformDataHandler::fillSPWTable()
             ScalarColumn<Int> inSnbCol(mssel_p.spectralWindow(), "SDM_NUM_BIN");
             ScalarColumn<Int> outSnbCol(msOut_p.spectralWindow(), "SDM_NUM_BIN");
             outSnbCol.put(outSPWId, inSnbCol(spw_p[k]));
+        }
+        if (haveSpwCorrBit) 
+        {
+            ScalarColumn<String> inCorrBitCol(mssel_p.spectralWindow(), "SDM_CORR_BIT");
+            ScalarColumn<String> outCorrBitCol(msOut_p.spectralWindow(), "SDM_CORR_BIT");
+            outCorrBitCol.put(outSPWId, inCorrBitCol(spw_p[k]));
         }
 
 		if (haveSpwASI)
@@ -3344,6 +3352,13 @@ Bool MSTransformDataHandler::mergeSpwSubTables(Vector<String> filenames)
                             ScalarColumn<Int> snbCol_i(spwTable_i, "SDM_NUM_BIN");
                             ScalarColumn<Int> snbCol_0(spwTable_0, "SDM_NUM_BIN");
                             snbCol_0.put(rowIndex, snbCol_i(subms_row_index));
+                        }
+                        if (spwTable_i.tableDesc().isColumn("SDM_CORR_BIT") &&
+                            spwTable_i.tableDesc().columnDescSet().isDefined("SDM_CORR_BIT"))
+                        {
+                            ScalarColumn<String> corrBitCol_i(spwTable_i, "SDM_CORR_BIT");
+                            ScalarColumn<String> corrBitCol_0(spwTable_0, "SDM_CORR_BIT");
+                            corrBitCol_0.put(rowIndex, corrBitCol_i(subms_row_index));
                         }
 
 						rowIndex += 1;

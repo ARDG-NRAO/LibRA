@@ -655,7 +655,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int cpWConvSize=wConvSize;
    Double cpWscale=wScale;
    //Float max0=1.0;
-#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, cor, inner, maxptr, cpWscale ) 
+#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, cor, inner, maxptr, cpWscale, C::pi )
 
   for (Int iw=0; iw< cpWConvSize;iw++) {
     // First the w term

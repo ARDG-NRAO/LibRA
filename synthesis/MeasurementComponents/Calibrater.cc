@@ -2815,7 +2815,7 @@ Bool Calibrater::reRefant(const casacore::String& infile,
     // Handle no outfile
     if (outfile=="") {
       outfile=infile;
-      logSink() << "Will overwrite input file with smoothing result." 
+      logSink() << "Will overwrite input file with rerefant result."
 		<< LogIO::POST;
     }
 

@@ -34,7 +34,7 @@ using namespace casacore;
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 	
-	SimpleSIImageStore::SimpleSIImageStore  (const shared_ptr<ImageInterface<Float> > &modelim,
+	SimpleSIImageStore::SimpleSIImageStore  (casacore::String &imageName, const shared_ptr<ImageInterface<Float> > &modelim,
 	       const shared_ptr<ImageInterface<Float> > &residim, const shared_ptr<ImageInterface<Float> > &psfim,
 	       const shared_ptr<ImageInterface<Float> > &weightim,const shared_ptr<ImageInterface<Float> > &restoredim,
 	       const shared_ptr<ImageInterface<Float> > &maskim,const shared_ptr<ImageInterface<Float> > &sumwtim,
@@ -55,6 +55,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			}
 			if(useweightimage && !weightim)
 				throw(AipsError("SimpleSIImagestore has to have a valid weightimage for this kind of weighting scheme"));
+			itsImageName = casacore::String(imageName);
 			itsPsf = psfim;
 			itsModel=modelim;
 			itsResidual=residim;
@@ -177,7 +178,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			if((*it))
 				subimPtrs[it-myImages.begin()]=makeSubImage(facet, nfacets, chan, nchanchunks, pol, npolchunks, *(*it));
 		}
-		shared_ptr<SIImageStore> retval(new SimpleSIImageStore(subimPtrs[0], subimPtrs[1], subimPtrs[2], subimPtrs[3], subimPtrs[4], subimPtrs[5], subimPtrs[6], subimPtrs[7], subimPtrs[8], subimPtrs[9], subimPtrs[10], itsUseWeight));
+		shared_ptr<SIImageStore> retval(new SimpleSIImageStore(itsImageName, subimPtrs[0], subimPtrs[1], subimPtrs[2], subimPtrs[3], subimPtrs[4], subimPtrs[5], subimPtrs[6], subimPtrs[7], subimPtrs[8], subimPtrs[9], subimPtrs[10], itsUseWeight));
 		
 		
 		return retval;
