@@ -158,6 +158,7 @@ public:
   void chan(casacore::Vector<casacore::Int>& v) const;
   casacore::Vector<casacore::Double> freq() const;
   void freq(casacore::Vector<casacore::Double>& v) const;
+  int freqFrame(int spwId) const;
 
  protected:
 

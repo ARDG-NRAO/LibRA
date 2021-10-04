@@ -183,6 +183,11 @@ void ROCTIter::freq(Vector<Double>& v) const {
     throw(AipsError("Please sort by spw."));
 }
 
+int ROCTIter::freqFrame(int spwId) const {
+  int frame = calCol_.spectralWindow().measFreqRef()(spwId);
+  return frame;
+}
+
 void ROCTIter::attach() {
   // Attach accessors:
   if (iROCTMainCols_!=NULL) delete iROCTMainCols_;

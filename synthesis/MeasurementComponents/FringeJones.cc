@@ -681,7 +681,6 @@ void DelayRateFFT::removeAntennasCorrelation(Int icor, std::set< Int > s) {
 
 
 // Start of GSL compliant solver
-// This function is supposed to evaluate the vector for xi-squared vector
 
 class AuxParamBundle {
 public:
@@ -778,7 +777,19 @@ public:
         for (Int i = 0; i != sdbs.nSDB(); i++) {
             nTotalRows += sdbs(i).nRows();
         }
-        return 2 * nTotalRows * nCorrelations * sdbs.nChannels();
+        return nTotalRows * sdbs.nChannels();
+    }
+    Int
+    get_actual_num_data_points() {
+        Int nTotalRows = 0;
+        for (Int i = 0; i != sdbs.nSDB(); i++) {
+            SolveDataBuffer& s (sdbs(i));
+            for (Int irow=0; irow!=s.nRows(); irow++) {
+                if (s.flagRow()(irow)) continue;
+                nTotalRows++;
+            }
+        }
+        return nTotalRows * sdbs.nChannels();
     }
     size_t 
     get_data_corr_index(size_t icorr) {
@@ -1660,7 +1671,7 @@ least_squares_driver(SDBList& sdbs, Matrix<Float>& casa_param, Matrix<Bool>& cas
         size_t p = bundle.nParameters() * (bundle.get_num_antennas() - 1);
         // We need to store complex visibilities in a real matrix so we
         // just store real and imaginary components separately.
-        size_t n = 2 * bundle.get_num_data_points();
+        size_t n = 2 * bundle.get_actual_num_data_points();
 
         if (DEVDEBUG) {
             cerr << "bundle.nParameters() " << bundle.nParameters()

@@ -94,6 +94,7 @@ class CTMainRecord
    void defineAntenna2 (const casacore::Int& antenna2);
    void defineInterval (const casacore::Double& interval);
    void defineScanNo (const casacore::Int& scanNo);
+   void defineObsId (const casacore::Int& obsId);
    void defineCParam (const casacore::Array<casacore::Complex>& param);
    void defineFParam (const casacore::Array<casacore::Float>& param);
    void defineParamerr (const casacore::Array<casacore::Float>& paramerr);
