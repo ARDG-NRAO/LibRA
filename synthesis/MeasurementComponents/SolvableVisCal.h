@@ -98,6 +98,54 @@ private:
 
   
 };
+
+
+
+class FreqMetaData {
+
+public:
+
+  FreqMetaData();
+
+  // Calculate appropriately decimated freq meta info from supplied info
+  void calcFreqMeta(const casacore::Vector< casacore::Vector<casacore::Double> >& msfreq,
+		    const casacore::Vector< casacore::Vector<casacore::Double> >& mswidth,
+		    const casacore::Vector<casacore::uInt>& selspw,
+		    casacore::Bool freqdep,casacore::Bool combspw,
+		    const casacore::Vector<casacore::Int>& spwfanin);
+
+  // Public access to freq meta info
+  const casacore::Vector<casacore::Double>& freq(casacore::Int spw) const;
+  const casacore::Vector<casacore::Double>& width(casacore::Int spw) const;
+  const casacore::Vector<casacore::Double>& effBW(casacore::Int spw) const;
+
+  // Public access to spw fan-in
+  casacore::Int fannedInSpw(casacore::Int spw) const;
+
+  // Has freq meta data been calculated?
+  casacore::Bool ok() const;
+
+  // Return list of valid spws
+  const casacore::Vector<casacore::Int>& validSpws() const;
+
+private:
+
+  // true if we have run calcFreqMeta (indicates valid freq info contained herein
+  casacore::Bool ok_;
+
+  // List of valid spws (calc'd in calcFreqMeta)
+  casacore::Vector<casacore::Int> validspws_;
+
+  // The freq meta data arrays  [nSpw][nChan]
+  casacore::Vector< casacore::Vector<casacore::Double> > freq_, width_, effBW_;
+
+  // When combspw=true, store spw fan-in 
+  casacore::Vector<casacore::Int> spwfanin_;
+
+};
+
+
+
  
 class SolvableVisCal : virtual public VisCal {
 public:
@@ -489,6 +537,16 @@ public:
   virtual void setOrVerifyCTFrequencies(int spw);
 
 
+
+  // Discern frequency meta info for solutions (solve context)
+  virtual void discernAndSetSolnFrequencies(const casa::vi::VisibilityIterator2& vi,
+					    const casacore::Vector<casacore::uInt>& selspws);
+
+  // Set frequencies in the Caltable (according to discernAndSetSolnFrequencies)
+  virtual void setCTFrequencies(casacore::Int netspw);
+
+  
+
 protected:
 
   // Set to-be-solved-for flag
@@ -569,7 +627,8 @@ protected:
     //    cout << "simOTF=" << onthefly_ << endl;
     return onthefly_; };
     
-
+  // Frequency meta data for solutions (for CalTable labels...)
+  FreqMetaData freqMetaData_;
 
 
 private:
@@ -661,7 +720,6 @@ private:
   casacore::Double dataInterval_;
   casacore::Double fitWt_;
   casacore::Double fit_;
-
 
   // Current parameters
   casacore::PtrBlock<casacore::Cube<casacore::Complex>*> solveCPar_;  // [nSpw](nPar,1,{1|nElem})

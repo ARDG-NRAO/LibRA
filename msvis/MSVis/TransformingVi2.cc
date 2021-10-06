@@ -303,6 +303,14 @@ TransformingVi2::getFrequencies (Double time, Int frameOfReference,
                                      spectralWindowId, msId);
 }
 
+Vector<Double>
+TransformingVi2::getChanWidths (Double time, Int frameOfReference,
+                                   Int spectralWindowId, Int msId)  const
+{
+    return getVii()->getChanWidths (time, frameOfReference,
+                                       spectralWindowId, msId);
+}
+
 const VisImagingWeight &
 TransformingVi2::getImagingWeightGenerator ()  const
 {

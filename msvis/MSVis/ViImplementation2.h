@@ -531,6 +531,8 @@ public:
                                      casacore::Int msId = -1) const = 0;
     virtual casacore::Vector<casacore::Double> getFrequencies (casacore::Double time, casacore::Int frameOfReference, casacore::Int spectralWndow = -1,
                                            casacore::Int msId = -1) const = 0;
+    virtual casacore::Vector<casacore::Double> getChanWidths (casacore::Double time, casacore::Int frameOfReference, casacore::Int spectralWndow = -1,
+                                           casacore::Int msId = -1) const = 0;
 
 
     //reference to actual ms in interator

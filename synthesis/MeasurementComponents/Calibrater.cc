@@ -42,6 +42,7 @@
 #include <ms/MSSel/MSFieldIndex.h>
 #include <ms/MSSel/MSSelection.h>
 #include <ms/MSSel/MSSelectionTools.h>
+#include <ms/MSOper/MSMetaData.h>
 #include <casa/BasicSL/Constants.h>
 #include <casa/Exceptions/Error.h>
 #include <casa/iostream.h>
@@ -3237,7 +3238,39 @@ casacore::Bool Calibrater::genericGatherAndSolve()
 
   // Form the VI2 to drive data iteration below
   vi::VisibilityIterator2& vi(vi2org.makeFullVI());
-  //cout << "VI Layers: " << vi.ViiType() << endl;
+  //  cout << "VI Layers: " << vi.ViiType() << endl;
+
+  // Establish output freq meta data prior to solving  (CAS-12735 and related)
+
+  // Discern (even implicitly-)selected spw subset
+  set<uInt> selspwset;
+  if (!simdata_p)  {
+
+    // We can't proceed rationally if we have more than one freqSelection (multiple MSs)
+    //  (this is a sort-of out-of-the-blue test here....)
+    AlwaysAssert(frequencySelections_p->size()<2,AipsError);
+
+    // TBD can we use the msmc_p?  (or maybe it is for the whole MS, not just the selected one?)
+    MSMetaData msmdtmp(mssel_p,50.0);
+    selspwset=msmdtmp.getSpwIDs();
+  } 
+
+  // Extract selected spw list as a Vector<uInt>
+  Vector<uInt> selspwlist;
+  if (!simdata_p && selspwset.size()>0) {
+    Vector<uInt> vtmp(selspwset.begin(),selspwset.size(),0);
+    selspwlist.reference(vtmp);
+  } else {
+    // All spws in the MS  (this is a last resort!)
+    // NB: This is used in simdata_p=True context!
+    selspwlist.resize(msmc_p->nSpw());
+    indgen(selspwlist);
+  }
+  //  cout << "selspwlist = " << selspwlist << endl;
+
+  // Delegate freq meta calculation to the SVC (wherein this info is stored)
+  svc_p->discernAndSetSolnFrequencies(vi,selspwlist);
+
 
   // Access to the net VB2 for forming SolveDataBuffers in the SDBList below
   //  NB: this assumes that the internal address of the VI2's VB2 will never change!
@@ -3252,9 +3285,14 @@ casacore::Bool Calibrater::genericGatherAndSolve()
   {
     //cout << "Counting chunks and solutions..." << endl;
     uInt isol(0);
+    //    uInt ichk(0);
     for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
       // NB: this loop NEVER touches the the subChunks, since
       //     this would cause data I/O, cal, averaging, etc.
+
+      //      int frame=vi.getImpl()->getReportingFrameOfReference();
+      //      cout << "ichk=" << ichk << " freqs= " << vi.getImpl()->getFrequencies(-1.0e0,frame,selspwlist(ispw),0);
+
 
       // Enlarge nChPSol Vector, if necessary
       if (isol>nChPSol.nelements()-1) {
@@ -3420,7 +3458,8 @@ casacore::Bool Calibrater::genericGatherAndSolve()
       svc_p->syncSolveMeta(sdbs);
 
       // Set or verify freqs in the caltable                                                                                
-      svc_p->setOrVerifyCTFrequencies(thisSpw);                                                                     
+      //svc_p->setOrVerifyCTFrequencies(thisSpw);                                                                     
+      svc_p->setCTFrequencies(thisSpw);                                                                     
 
       // Size the solvePar arrays inside SVC                                                                                
       //  (smart:  if freqDepPar()=F, uses 1)                                                                               

@@ -931,6 +931,13 @@ protected:
 		casacore::Int spectralWindowId,
 		casacore::Int msId) const override; // helper method
 
+  	casacore::Vector<casacore::Double>
+	getChanWidths(
+		casacore::Double time,
+		casacore::Int frameOfReference,
+		casacore::Int spectralWindowId,
+		casacore::Int msId) const override; // helper method
+
 	casacore::Vector<casacore::Int>
 	getChannels(
 		casacore::Double time,

@@ -1085,6 +1085,11 @@ Vector<Double> SimpleSimVi2::getFrequencies (Double, Int, Int spw, Int) const {
   */
 }
 
+Vector<Double> SimpleSimVi2::getChanWidths (Double, Int, Int spw, Int) const { 
+  Vector<Double> widths(pars_.nChan_(spw),pars_.df_(spw));
+  return widths;
+}
+
   // get back the selected spectral windows and spectral channels for
   // current ms
 

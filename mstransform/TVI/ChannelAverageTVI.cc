@@ -667,21 +667,26 @@ void ChannelAverageTVI::sigmaSpectrum(Cube<Float> &sigmaSp) const
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Vector<Double> ChannelAverageTVI::getFrequencies (	Double time,
-													Int frameOfReference,
-													Int spectralWindowId,
-													Int msId) const
+Vector<Double> ChannelAverageTVI::getFrequencies ( Double time,
+						   Int frameOfReference,
+						   Int spectralWindowId,
+						   Int msId) const
 {
 
-        // Pass-thru for single-channel case or chanbin=1 case
-        if (getVii()->visibilityShape()[1]==1 ||
-	    spwChanbinMap_p[spectralWindowId]==1) {
+        // Pass-thru for chanbin=1 case
+        if (spwChanbinMap_p[spectralWindowId]==1) {
 	  return getVii()->getFrequencies(time,frameOfReference,spectralWindowId,msId);
 	}
 
-	// Get frequencies from input VI
+	// Get frequencies from input VI, which we will process
 	Vector<Double> inputFrequencies = getVii()->getFrequencies(time,frameOfReference,
-																spectralWindowId,msId);
+								   spectralWindowId,msId);
+	     
+	// Pass-thru for single-channel case
+	//  NB: This does NOT depend on current iteration having same spw as specified spectralWindowId
+	//  NB: Nor does it rely on sensing the apparent shape of the visibility data object (so that need not be pre-filled)
+	if (inputFrequencies.nelements()==1)
+	  return inputFrequencies;
 
 	// Produce output (transformed) frequencies
 	Vector<Double> outputFrecuencies(spwOutChanNumMap_p[spectralWindowId],0);
@@ -705,6 +710,55 @@ Vector<Double> ChannelAverageTVI::getFrequencies (	Double time,
 	transformer.transform();
 
 	return outputFrecuencies;
+}
+
+Vector<Double> ChannelAverageTVI::getChanWidths ( Double time,
+						  Int frameOfReference,
+						  Int spectralWindowId,
+						  Int msId) const
+{
+
+        // Pass-thru for chanbin=1 case
+        if (spwChanbinMap_p[spectralWindowId]==1) {
+	  return getVii()->getChanWidths(time,frameOfReference,spectralWindowId,msId);
+	}
+
+	// Get widths from input VI
+	Vector<Double> inputWidths = getVii()->getChanWidths(time,frameOfReference,
+							     spectralWindowId,msId);
+	// Pass-thru for single-channel case
+	//  NB: This does NOT depend on current iteration having same spw as specified spectralWindowId
+	//  NB: Nor does it rely on sensing the apparent shape of the visibility data object (so that need not be pre-filled)
+	if (inputWidths.nelements()==1)
+	  return inputWidths;
+
+	// Produce output (summed) widths
+	Vector<Double> outputWidths(spwOutChanNumMap_p[spectralWindowId],0);
+
+	// Gather input data
+	DataCubeMap inputData;
+	DataCubeHolder<Double> inputWidthsHolder(inputWidths);
+	inputData.add(MS::DATA,inputWidthsHolder);
+	// We need flag vector (all false==unflagged) for ChannelAccumulationKernal (which just adds within bins)
+	Vector<Bool> nonflagged(inputWidths.nelements(),false);
+	DataCubeHolder<Bool> inputFlagHolder(nonflagged);
+	inputData.add(MS::FLAG,inputFlagHolder);
+
+	// Gather output data
+	DataCubeMap outputData;
+	DataCubeHolder<Double> outputWidthsHolder(outputWidths);
+	outputData.add(MS::DATA,outputWidthsHolder);
+
+	// Configure Transformation Engine
+	//PlainChannelAverageKernel<Double> kernel;
+	ChannelAccumulationKernel<Double> kernel;
+	uInt width = spwChanbinMap_p[spectralWindowId];
+	ChannelAverageTransformEngine<Double> transformer(&kernel,&inputData,&outputData,width);
+
+	// Transform data
+	transformer.transform();
+
+	return outputWidths;
 }
 
 // -----------------------------------------------------------------------

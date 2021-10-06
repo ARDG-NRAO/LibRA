@@ -470,6 +470,8 @@ public:
 
     virtual casacore::Vector<double> getFrequencies (double time, casacore::Int frameOfReference,
                                            casacore::Int spectralWindowId, casacore::Int msId) const override;
+    virtual casacore::Vector<double> getChanWidths (double time, casacore::Int frameOfReference,
+                                           casacore::Int spectralWindowId, casacore::Int msId) const override;
     virtual void dataDescriptionIds(casacore::Vector<casacore::Int> &) const override;
 
     //reference to actual ms in interator

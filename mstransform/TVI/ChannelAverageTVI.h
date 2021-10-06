@@ -74,10 +74,12 @@ public:
     casacore::Bool sigmaSpectrumExists () const override {return true;}
     
     casacore::Vector<casacore::Double> getFrequencies (	casacore::Double time, casacore::Int frameOfReference,
-    								casacore::Int spectralWindowId, casacore::Int msId) const;
+    								casacore::Int spectralWindowId, casacore::Int msId) const override;
+    casacore::Vector<casacore::Double> getChanWidths ( casacore::Double time, casacore::Int frameOfReference,
+    								casacore::Int spectralWindowId, casacore::Int msId) const override;
 
 
-    void writeFlag (const casacore::Cube<casacore::Bool> & flag);
+    void writeFlag (const casacore::Cube<casacore::Bool> & flag) override;
 
 protected:
 
