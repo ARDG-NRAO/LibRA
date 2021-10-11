@@ -194,7 +194,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void calcSensitivity();
   virtual casacore::Bool isModelEmpty();
 
-  casacore::Double calcFractionalBandwidth();
+  virtual casacore::Double calcFractionalBandwidth();
 
 protected:
 

@@ -50,6 +50,9 @@ namespace casa {
 	  
         bool IsCycleThresholdAuto;
         bool IsThresholdAuto;
+        // Determines if IsCycleThresholdAuto can ever be true.
+        // Necessary because tclean implicitly updates IsCycleThresholdAuto during certain grpcInteractiveClean functions, but for deconvolve we don't want this value to change.
+        bool IsCycleThresholdMutable;
 
         float CycleFactor;
         float LoopGain;

@@ -60,7 +60,7 @@ class SIImageStore
 
   SIImageStore(const casacore::String &imagename,
                const casacore::Bool ignorefacets=casacore::False,
-	       const casacore::Bool ignoresumwt=casacore::False);
+	       const casacore::Bool noRequireSumwt=casacore::False);
 
   SIImageStore(const casacore::String &imagename,
 	       const casacore::CoordinateSystem &imcoordsys,
@@ -228,6 +228,7 @@ class SIImageStore
   void setDataPolFrame(StokesImageUtil::PolRep datapolrep) {itsDataPolRep = datapolrep;};
   StokesImageUtil::PolRep getDataPolFrame(){ return itsDataPolRep;};
   virtual void calcSensitivity();
+  virtual casacore::Double calcFractionalBandwidth();// Not implemented for SIImageStore. Only for multi-term. 
 
   casacore::CoordinateSystem getCSys(){return itsCoordSys;}
 

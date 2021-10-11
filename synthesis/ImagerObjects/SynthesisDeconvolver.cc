@@ -215,6 +215,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         itsFastNoise = decpars.fastnoise;
 	itsIsInteractive = decpars.interactive;
         itsNsigma = decpars.nsigma;
+        itsNoRequireSumwt = decpars.noRequireSumwt;
       }
     catch(AipsError &x)
       {
@@ -242,7 +243,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     
     if(!itsImages)
-      itsImages=makeImageStore(itsImageName);
+      itsImages=makeImageStore(itsImageName, itsNoRequireSumwt);
     //For cubes as we are not doing a post major cycle residual automasking
     //Force recalculation of robust stats to update nsigmathreshold with
     //most recent residual
@@ -500,7 +501,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	}
       else throw(AipsError("SD::interactiveGui() needs valid niter, cycleniter, threshold to start up."));
       
-      if( ! itsImages ) itsImages = makeImageStore( itsImageName );
+      if( ! itsImages ) itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
       
       //      SDMaskHandler masker;
       String strthresh = String::toString(threshold)+"Jy";
@@ -833,7 +834,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     if( ! itsImages )
       {
-	itsImages = makeImageStore( itsImageName );
+	itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
       }
 
     SynthesisUtilMethods::getResource("Restoration");
@@ -924,7 +925,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     if( ! itsImages )
       {
-	itsImages = makeImageStore( itsImageName );
+	itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
       }
 
     itsDeconvolver->pbcor(itsImages);
@@ -938,13 +939,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   ////    Internal Functions start here.  These are not visible to the tool layer.
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  std::shared_ptr<SIImageStore> SynthesisDeconvolver::makeImageStore( String imagename )
+  std::shared_ptr<SIImageStore> SynthesisDeconvolver::makeImageStore( String imagename, Bool noRequireSumwt )
   {
     std::shared_ptr<SIImageStore> imstore;
     if( itsDeconvolver->getAlgorithmName() == "mtmfs" )
-      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true ) ); }
+      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true, noRequireSumwt ) ); }
     else
-      {  imstore.reset( new SIImageStore( imagename, true ) ); }
+      {  imstore.reset( new SIImageStore( imagename, true, noRequireSumwt ) ); }
 
     return imstore;
 
@@ -1118,7 +1119,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //check for a bad restoring beam
     GaussianBeam beam;
     
-    if( ! itsImages ) itsImages = makeImageStore( itsImageName );
+    if( ! itsImages ) itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
     ImageInfo psfInfo = itsImages->psf()->imageInfo();
     if (psfInfo.hasSingleBeam()) {
       beam = psfInfo.restoringBeam();  
@@ -1214,6 +1215,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	outRec.define(*it, tmp(IPosition(2, 0, chanBeg), IPosition(2, tmp.shape()[0]-1, chanEnd)));     
       }
     }
+
+    // When itsImages->residual() is called, it (sometimes) creates a read-lock. Release that lock.
+    shared_ptr<ImageInterface<Float> > resimg = itsImages->residual();
+    itsImages->releaseImage( resimg );
+
     //cerr <<"chanbeg " << chanBeg << " chanend " << chanEnd << endl;
     //cerr << "GETSUB " << outRec << endl; 
     return outRec;
@@ -1243,6 +1249,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	itsRobustStats.define(*it, outvec);     
       }
     }
+
+    // When itsImages->residual() is called, it (sometimes) creates a read-lock. Release that lock.
+    shared_ptr<ImageInterface<Float> > resimg = itsImages->residual();
+    itsImages->releaseImage( resimg );
 
     //cerr << "SETT " << itsRobustStats << endl;
     //cerr << "SETT::ItsRobustStats " << Vector<Double>(itsRobustStats.asArrayDouble("min")) << endl;
