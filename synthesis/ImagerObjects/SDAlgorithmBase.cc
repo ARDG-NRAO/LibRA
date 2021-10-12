@@ -106,6 +106,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
        << LogIO::POST;
 
     Float itsPBMask = loopcontrols.getPBMask();
+    Int cycleStartIteration = loopcontrols.getIterDone();
 
     Float maxResidualAcrossPlanes=0.0; Int maxResChan=0,maxResPol=0;
     Float totalFluxAcrossPlanes=0.0;
@@ -118,24 +119,27 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    itsImages = imagestore->getSubImageStore( 0, 1, chanid, nSubChans, polid, nSubPols );
 
 	    Int startiteration = loopcontrols.getIterDone(); // TODO : CAS-8767 key off subimage index
-	    Float peakresidual=0.0;
+	    Float peakresidual=0.0, peakresidualnomask=0.0;
 	    Float modelflux=0.0;
 	    Int iterdone=0;
 
 	    ///itsMaskHandler.resetMask( itsImages ); //, (loopcontrols.getCycleThreshold()/peakresidual) );
 	    Int stopCode=0;
 
-	    Float startpeakresidual = 0.0;
+	    Float startpeakresidual = 0.0, startpeakresidualnomask = 0.0;
 	    Float startmodelflux = 0.0;
             Array<Double> robustrms;
 
-	    Bool validMask = ( itsImages->getMaskSum() > 0 );
+	    Float masksum = itsImages->getMaskSum();
+	    Bool validMask = ( masksum > 0 );
 
+	    peakresidualnomask = itsImages->getPeakResidual();
 	    if( validMask ) peakresidual = itsImages->getPeakResidualWithinMask();
-	    else peakresidual = itsImages->getPeakResidual();
+	    else peakresidual = peakresidualnomask;
 	    modelflux = itsImages->getModelFlux();
 
 	    startpeakresidual = peakresidual;
+	    startpeakresidualnomask = peakresidualnomask;
 	    startmodelflux = modelflux;
 
             //Float nsigma = 150.0; // will set by user, fixed for 3sigma for now.
@@ -211,22 +215,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
             }
 	    loopcontrols.setPeakResidual( peakresidual );
 	    loopcontrols.resetMinResidual(); // Set it to current initial peakresidual.
-
             
 	    stopCode = checkStop( loopcontrols,  peakresidual );
 
-
-	    // stopCode=0;
-
 	    if( validMask && stopCode==0 )
 	      {
-                
-		
-		// Record info about the start of the minor cycle iterations
-		loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-					      modelflux, peakresidual );
-		//		loopcontrols.setPeakResidual( peakresidual );
-
 		// Init the deconvolver
                  //where we write in model and residual may be
                 {
@@ -273,9 +266,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		    loopcontrols.incrementMinorCycleCount( iterdone ); // CAS-8767 : add subimageindex and merge with addSummaryMinor call later.
 		    
 		    stopCode = checkStop( loopcontrols,  peakresidual );
-		    
-		    loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-						  modelflux, peakresidual );
 
 		    /// Catch the situation where takeOneStep returns without satisfying any
 		    ///  convergence criterion. For now, takeOneStep is the entire minor cycle.
@@ -297,6 +287,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                   LatticeLocker lock2 (*(itsImages->model()), FileLocker::Write);
                   finalizeDeconvolver();
                 }
+
+                // get the new peakres without a mask for the summary minor
+                peakresidualnomask = itsImages->getPeakResidual();
 
 	      }// if validmask
 	    
@@ -340,6 +333,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	      }
 
 	       os << LogIO::POST;
+	       
+	    loopcontrols.addSummaryMinor( deconvolverid, chanid, polid, cycleStartIteration,
+	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
+	                                  modelflux, peakresidual, peakresidualnomask, masksum, stopCode);
+
 	    
 	    loopcontrols.resetCycleIter(); 
 

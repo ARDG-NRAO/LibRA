@@ -92,22 +92,6 @@ void CubeMinorCycleAlgorithm::put() {
   applicator.put(chanFlagRec_p);
   ///#3 return record of deconvolver
   // cerr << "nfield " << returnRec_p.nfields() << endl;
-  SIMinorCycleController::compressSummaryMinor(returnRec_p);
-  //Matrix<Double> lala(returnRec_p.asArrayDouble("summaryminor"));
-  //cerr << "chanRange " << chanRange_p << " summaryminor " << lala.shape()   << endl;
-  //cerr << "model " << lala.row(2) << endl;
-  //cerr << "thresh " << lala.row(3) << endl;
-  //cerr << "imageid " << lala.row(5) << endl;
-  // applicator.put(lala);
-  //returnRec_p.removeField("summaryminor");
-  ////TESTOO
-  // cerr << "nfield " << returnRec_p.nfields() << endl;
-  //for (uInt k =0; k <  returnRec_p.nfields() ; ++k){
-  //  cerr << " name " << returnRec_p.name(k) << endl;
-
-  //}
-
-  //Record laloo;
   applicator.put(returnRec_p);	
 	
 }

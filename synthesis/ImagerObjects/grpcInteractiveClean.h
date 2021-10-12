@@ -91,9 +91,6 @@ namespace casa {
         //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         float MadRMS;
 
-        //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-        int NSummaryFields;
-
     };
 
     class grpcInteractiveCleanGui {

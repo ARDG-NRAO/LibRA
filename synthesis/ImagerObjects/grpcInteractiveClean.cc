@@ -1,4 +1,5 @@
 #include <synthesis/ImagerObjects/grpcInteractiveClean.h>
+#include <synthesis/ImagerObjects/SIMinorCycleController.h>
 #include <casatools/Config/State.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <images/Images/PagedImage.h>
@@ -155,7 +156,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 #endif
 	}
 
-    grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2,6,0)),
+    grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2,SIMinorCycleController::nSummaryFields,0)),
                                                               SummaryMajor(casacore::IPosition(1,0)) {
 		LogIO os( LogOrigin("grpcInteractiveCleanState",__FUNCTION__,WHERE) );
         reset( );
@@ -194,8 +195,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         MinPeakResidual = 1e+9;
         MaskSum = -1.0;
         MadRMS = 0.0;
-        NSummaryFields = 6;
-        SummaryMinor.reformOrResize(casacore::IPosition(2,6,0));
+        SummaryMinor.reformOrResize(casacore::IPosition(2,SIMinorCycleController::nSummaryFields,0));
         SummaryMajor.reformOrResize(casacore::IPosition(1,0));
         SummaryMinor = 0;
         SummaryMajor = 0;
@@ -804,15 +804,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		IPosition cShp = state.SummaryMinor.shape();
 		IPosition nShp = summary.shape();
 
-		if( cShp.nelements() != 2 || cShp[0] != state.NSummaryFields ||
-			nShp.nelements() != 2 || nShp[0] != state.NSummaryFields )
+		if( cShp.nelements() != 2 || cShp[0] != SIMinorCycleController::nSummaryFields ||
+		    nShp.nelements() != 2 || nShp[0] != SIMinorCycleController::nSummaryFields )
 			throw(AipsError("Internal error in shape of global minor-cycle summary record"));
 
-		state.SummaryMinor.resize( IPosition( 2, state.NSummaryFields, cShp[1]+nShp[1] ) ,true );
+		state.SummaryMinor.resize( IPosition( 2, SIMinorCycleController::nSummaryFields, cShp[1]+nShp[1] ) ,true );
 
 		for (unsigned int row = 0; row < nShp[1]; row++) {
 			// iterations done
-			state.SummaryMinor( IPosition(2,0,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,0,row));
+		   state.SummaryMinor( IPosition(2,0,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,0,row));
+		   //state.SummaryMinor( IPosition(2,0,cShp[1]+row) ) = summary(IPosition(2,0,row));
 			// peak residual
 			state.SummaryMinor( IPosition(2,1,cShp[1]+row) ) = summary(IPosition(2,1,row));
 			// model flux
@@ -821,8 +822,26 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			state.SummaryMinor( IPosition(2,3,cShp[1]+row) ) = summary(IPosition(2,3,row));
 			// mapper id
 			state.SummaryMinor( IPosition(2,4,cShp[1]+row) ) = summary(IPosition(2,4,row));
-			// chunk id (channel/stokes)
+			// channel id
 			state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
+			// polarity id
+			state.SummaryMinor( IPosition(2,6,cShp[1]+row) ) = summary(IPosition(2,6,row));
+			// cycle start iterations done
+			state.SummaryMinor( IPosition(2,7,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,7,row));
+			// starting iterations done
+			state.SummaryMinor( IPosition(2,8,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,8,row));
+			// starting peak residual
+			state.SummaryMinor( IPosition(2,9,cShp[1]+row) ) = summary(IPosition(2,9,row));
+			// starting model flux
+			state.SummaryMinor( IPosition(2,10,cShp[1]+row) ) = summary(IPosition(2,10,row));
+			// starting peak residual, not limited to the user's mask
+			state.SummaryMinor( IPosition(2,11,cShp[1]+row) ) = summary(IPosition(2,11,row));
+			// peak residual, not limited to the user's mask
+			state.SummaryMinor( IPosition(2,12,cShp[1]+row) ) = summary(IPosition(2,12,row));
+			// number of pixels in the mask
+			state.SummaryMinor( IPosition(2,13,cShp[1]+row) ) = summary(IPosition(2,13,row));
+			// stopcode
+			state.SummaryMinor( IPosition(2,14,cShp[1]+row) ) = summary(IPosition(2,14,row));
 		}
 	}
 
