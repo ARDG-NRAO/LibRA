@@ -84,6 +84,7 @@ inline NullLogger &operator<<(NullLogger &logger, T /*value*/) {
 NullLogger nulllogger;
 #endif
 
+// Helper class to format integers with thousand separators
 struct CommaSeparatedThousands : std::numpunct<char> {
     char_type do_thousands_sep() const override { return ','; }
     string_type do_grouping() const override { return "\3"; }
