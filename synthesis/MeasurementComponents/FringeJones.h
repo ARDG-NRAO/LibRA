@@ -136,6 +136,7 @@ private:
     
 public:
     DelayRateFFT(SDBList& sdbs, casacore::Int refant,
+                 casacore::Double reffreq,
                  casacore::Array<casacore::Double>& delayWindow_,
                  casacore::Array<casacore::Double>& rateWindow_
          );
