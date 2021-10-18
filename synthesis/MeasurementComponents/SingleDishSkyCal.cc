@@ -1098,10 +1098,11 @@ void SingleDishSkyCal::selfGatherAndSolve(VisSet& vs, VisEquation& /*ve*/)
         // Log row numbers in a readable way
         std::ostringstream msg;
         auto * us_num_fmt = new CommaSeparatedThousands();
-        // It looks like a locale constructed this way takes ownership
-        // of the std::Facet * pointer it is passed, and *deletes* it when destructed.
-        // So we must NOT delete us_num_fmt.
         std::locale us_like_locale(std::locale::classic(), us_num_fmt);
+        // us_like_locale is responsible for deleting us_num_fmt from its destructor
+        // Ref: https://en.cppreference.com/w/cpp/locale/locale/locale
+        //      Constructor (7) + Notes section
+        // So we must NOT delete us_num_fmt.
         msg.imbue(us_like_locale);
         msg << "Selected: " << std::right << std::setw(10) << reference_data.nrow() << " rows of reference data" << '\n'
             << "out of  : " << std::right << std::setw(10) << user_selection.nrow() << " rows of user-selected data";
