@@ -50,6 +50,7 @@
 #include <imageanalysis/ImageAnalysis/CasaImageBeamSet.h>
 
 #include <casa/sstream.h>
+#include <casacore/casa/OS/EnvVar.h>
 
 #include <casa/Logging/LogMessage.h>
 #include <casa/Logging/LogIO.h>
@@ -334,9 +335,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 	       os << LogIO::POST;
 	       
+	    Int rank(0);
+	    String rankStr = EnvironmentVariable::get("OMPI_COMM_WORLD_RANK");
+	    if (!rankStr.empty()) {
+	      rank = stoi(rankStr);
+	    }
 	    loopcontrols.addSummaryMinor( deconvolverid, chanid, polid, cycleStartIteration,
 	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
-	                                  modelflux, peakresidual, peakresidualnomask, masksum, stopCode);
+	                                  modelflux, peakresidual, peakresidualnomask, masksum, rank, stopCode);
 
 	    
 	    loopcontrols.resetCycleIter(); 

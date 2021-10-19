@@ -45,7 +45,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class SIMinorCycleController
  {
   public:
-    static const casacore::Int nSummaryFields = 15;
+    static const casacore::Int nSummaryFields = 16;
 
     // make noncopyable...
     SIMinorCycleController( const SIMinorCycleController& ) = delete;
@@ -110,7 +110,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
    void addSummaryMinor(casacore::uInt deconvolverid, casacore::uInt channel, casacore::uInt polarity,
                         casacore::Int cycleStartIter, casacore::Int startIterDone, casacore::Float startmodel, casacore::Float startpeakresidual, casacore::Float startpeakresidualnomask,
-                        casacore::Float model, casacore::Float peakresidual, casacore::Float peakresidualnomask, casacore::Float masksum, casacore::Int stopCode);
+                        casacore::Float model, casacore::Float peakresidual, casacore::Float peakresidualnomask, casacore::Float masksum, casacore::Int mpiRank, casacore::Int stopCode);
     
     /* Variables to track status inside each Deconvolver */
     casacore::Float getPeakResidual();

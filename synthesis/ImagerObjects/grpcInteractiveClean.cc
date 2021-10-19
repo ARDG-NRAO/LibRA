@@ -840,8 +840,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			state.SummaryMinor( IPosition(2,12,cShp[1]+row) ) = summary(IPosition(2,12,row));
 			// number of pixels in the mask
 			state.SummaryMinor( IPosition(2,13,cShp[1]+row) ) = summary(IPosition(2,13,row));
-			// stopcode
+			// mpi server
 			state.SummaryMinor( IPosition(2,14,cShp[1]+row) ) = summary(IPosition(2,14,row));
+			// stopcode
+			state.SummaryMinor( IPosition(2,15,cShp[1]+row) ) = summary(IPosition(2,15,row));
 		}
 	}
 

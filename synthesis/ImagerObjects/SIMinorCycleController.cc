@@ -325,7 +325,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   void SIMinorCycleController::addSummaryMinor(uInt deconvolverid, uInt chan, uInt pol,
                                                Int cycleStartIter, Int startIterDone, Float startmodelflux, Float startpeakresidual, Float startpeakresidualnomask,
-                                               Float modelflux, Float peakresidual, Float peakresidualnomask, Float masksum, Int stopCode)
+                                               Float modelflux, Float peakresidual, Float peakresidualnomask, Float masksum, Int mpiRank, Int stopCode)
   {
     LogIO os( LogOrigin("SIMinorCycleController", __FUNCTION__ ,WHERE) );
 
@@ -361,8 +361,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      itsSummaryMinor( IPosition(2, 12, shp[1] ) ) = (Double) peakresidualnomask;
      // number of pixels in the mask
      itsSummaryMinor( IPosition(2, 13, shp[1] ) ) = (Double) masksum;
+     // mpi server
+     itsSummaryMinor( IPosition(2, 14, shp[1] ) ) = mpiRank;
      // stopcode
-     itsSummaryMinor( IPosition(2, 14, shp[1] ) ) = stopCode;
+     itsSummaryMinor( IPosition(2, 15, shp[1] ) ) = stopCode;
   }// end of addSummaryMinor
   
   
