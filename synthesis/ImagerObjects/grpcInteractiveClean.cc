@@ -644,9 +644,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
                            /// This may interfere with some other criterion... check.
                            float tol = 0.01; // threshold test torelance (CAS-11278)
-                           if ( state.MajorDone==0 && state.IterDone==0 ) {
-                               if (state.MaskSum==0.0) { stopCode=7; } // if zero mask is detected it should exit right away
-                               else { stopCode=0; }
+                           if ( state.MajorDone==0 && state.IterDone==0 && state.MaskSum==0.0) {
+                               stopCode=7; // if zero mask is detected it should exit right away
                            } else if ( state.IterDone >= state.Niter ||
                                        state.PeakResidual <= state.Threshold ||
                                        state.PeakResidual <= state.NsigmaThreshold ||
