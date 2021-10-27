@@ -716,7 +716,14 @@ Int MultiTermMatrixCleaner::setupUserMask()
 
  /* Set the edges of the masks according to the scale size */
  // Set the values OUTSIDE the box to zero....
-  for(Int scale=0;scale<nscales_p;scale++)
+  // "The vecScaleMasks_p are used when finding the peakres for each iteration. If we subtract
+  // the (tt/scale convolved) psf from too close to the edge of the image, we could add a hard edge
+  // to the image, which would result in ringing in an fft. Therefore, we use a border to ensure
+  // that we don't pick a peakres position too close to the edge." - approximately what Urvashi said
+  // Start at 1: don't add a 1-pixel border to vecScaleMasks_p[0], because that mask is used to find
+  // the peakres in checkConvergence(), which could result in the minor cycle disagreeing with the
+  // major cycle about what the peakres value is if the peakres is at the edge.
+  for(Int scale=1;scale<nscales_p;scale++)
   {
       Int border = (Int)(scaleSizes_p[scale]*1.5);
       // bottom
