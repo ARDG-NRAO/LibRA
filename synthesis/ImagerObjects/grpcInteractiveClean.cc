@@ -647,10 +647,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            if ( state.MajorDone==0 && state.IterDone==0 && state.MaskSum==0.0) {
                                stopCode=7; // if zero mask is detected it should exit right away
                            } else if ( state.IterDone >= state.Niter ||
-                                       state.PeakResidual <= state.Threshold ||
+                                       usePeakRes <= state.Threshold ||
                                        state.PeakResidual <= state.NsigmaThreshold ||
-                                       abs(state.PeakResidual - state.Threshold)/state.Threshold < tol ||
-                                       abs(state.PeakResidual - state.NsigmaThreshold)/state.NsigmaThreshold < tol ||
+                                       fabs(usePeakRes-state.Threshold)/state.Threshold < tol ||
+                                       fabs(state.PeakResidual - state.NsigmaThreshold)/state.NsigmaThreshold < tol ||
                                        state.StopFlag ) {
                                //		    os << "Reached global stopping criteria : ";
 
