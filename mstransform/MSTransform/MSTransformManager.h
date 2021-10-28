@@ -1394,6 +1394,10 @@ protected:
 	// UVContSub parameters
 	casacore::Bool uvcontsub_p;
 	casacore::Record uvcontsubRec_p;
+        // To produce a MODEL column in output MS, not coming from the input MS MODEL
+        // This is used by uvcontsub which from input DATA (or CORRECTED) can produde both
+        // DATA and MODEL
+        casacore::Bool produceModel_p = false;
 
 	// Spw averaging parameters
 	casacore::Bool spwAverage_p;

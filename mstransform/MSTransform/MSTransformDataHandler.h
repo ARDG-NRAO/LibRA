@@ -75,8 +75,10 @@ public:
 	// verifyColumns() after calling this.  Unlike the other version, it knows
 	// about FLOAT_DATA and LAG_DATA.  It throws an exception if a
 	// _specifically_ requested column is absent.
-	static const casacore::Vector<casacore::MS::PredefinedColumns>& parseColumnNames(	casacore::String colNameList, const casacore::MeasurementSet& ms,
-																	casacore::Bool virtualModelCol=false,casacore::Bool virtualCorrectedCol=false);
+	static const casacore::Vector<casacore::MS::PredefinedColumns>& parseColumnNames(
+                     casacore::String colNameList, casacore::Bool produceModel,
+                     const casacore::MeasurementSet& ms, casacore::Bool virtualModelCol=false,
+                     casacore::Bool virtualCorrectedCol=false);
 
 	// Helper function for parseColumnNames().  Converts col to a list of
 	// casacore::MS::PredefinedColumnss, and returns the # of recognized data columns.
@@ -144,6 +146,7 @@ public:
         // createWeightSpectrumCols: add WEIGHT/SIGMA_SPECTRUM columns
 	casacore::Bool makeMSBasicStructure(casacore::String& msname,
                                             casacore::String& whichDataCol,
+                                            casacore::Bool produceModel,
                                             casacore::Bool createWeightSpectrumCols,
                                             const casacore::Vector<casacore::Int>& tileShape = casacore::Vector<casacore::Int> (1, 0),
                                             const casacore::String& combine = "",

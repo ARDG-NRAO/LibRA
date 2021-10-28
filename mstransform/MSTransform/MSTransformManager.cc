@@ -1261,7 +1261,18 @@ void MSTransformManager::parseUVContSubParams(Record &configuration)
 			logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
 						<< "Continuum subtraction is activated "
 						<< LogIO::POST;
-		}
+
+                        // not nice going into the subRec, perhaps a writemodel var
+                        // could be put in the top level record
+                        int writemodel = uvcontsubRec_p.fieldNumber("writemodel");
+                        if (writemodel >= 0) {
+                            bool dowrite = false;
+                            uvcontsubRec_p.get(writemodel, dowrite);
+                            if (dowrite) {
+                                produceModel_p = true;
+                            }
+                        }
+                }
 	}
 
 	return;
@@ -1497,9 +1508,11 @@ void MSTransformManager::createOutputMSStructure()
                          << "Create output MS structure" << LogIO::POST;
                 option = Table::Scratch;
             }
+
             auto createWeightSpectrum = shouldCreateOutputWtSpectrum(usewtspectrum_p);
             outputMSStructureCreated = dataHandler_p->makeMSBasicStructure(outMsName_p,
                                                                            datacolumn_p,
+                                                                           produceModel_p,
                                                                            createWeightSpectrum,
                                                                            tileShape_p,
                                                                            timespan_p,
@@ -5475,6 +5488,12 @@ void MSTransformManager::checkDataColumnsToFill()
 					<< LogIO::POST;
 	}
 
+        if (produceModel_p) {
+            logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
+                     << "Will produce a MODEL_DATA column in the output MS" << LogIO::POST;
+            dataColMap_p[MS::MODEL_DATA] = mainColumn_p;
+        }
+
 	// Add shortcuts to be used in the context of WeightSpectrum related transformations
 	dataColMap::iterator iter;
 
@@ -6643,6 +6662,13 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 					outputFlagCol = NULL;
 				}
 
+				if (iter->second == MS::DATA && produceModel_p)
+				{
+					setTileShape(rowRef,outputMsCols_p->data());
+					// I suspect this should actually be an 'if' to take from data() or correctedData()?
+					transformCubeOfData(vb,rowRef,vb->visCube(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
+					// the else right below I have no clue what mstransform command is coming from?
+                                } else
 				if (iter->second == MS::DATA)
 				{
 					setTileShape(rowRef,outputMsCols_p->data());

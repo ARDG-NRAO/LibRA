@@ -182,6 +182,7 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(St
 //
 // -----------------------------------------------------------------------
 const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	String col,
+                                                                                Bool produceModel,
 																				const MeasurementSet& msref,
 																				Bool virtualModelCol,
 																				Bool virtualCorrectedCol)
@@ -229,6 +230,14 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 		nPoss = dataColStrToEnums(col, wanted);
 	}
 
+        // Add MODEL_DATA separately from 'datacolumn' selection
+        if (produceModel) {
+            auto nelem = wanted.nelements();
+            wanted.resize(nelem + 1, true);
+            wanted[nelem] = MS::MODEL_DATA;
+            nPoss++;
+        }
+
 	uInt nFound = 0;
 	my_colNameVect.resize(0);
 	for (uInt i = 0; i < nPoss; ++i)
@@ -240,7 +249,8 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 			my_colNameVect[nFound - 1] = wanted[i];
 		}
 		// CAS-5348 (jagonzal): Model parameters check is done at construction time
-		else if (wanted[i] == MS::MODEL_DATA and virtualModelCol)
+                // (produceModel comes from uvcontsub, doesn't require MODEL in input MS)
+		else if ((wanted[i] == MS::MODEL_DATA and virtualModelCol) or produceModel)
 		{
 			++nFound;
 			my_colNameVect.resize(nFound, true);
@@ -781,7 +791,8 @@ void MSTransformDataHandler::selectTime(Double timeBin, String timerng)
 // -----------------------------------------------------------------------
 Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
                                                   String& colname,
-                                                  casacore::Bool createWeightSpectrumCols,
+                                                  Bool produceModel,
+                                                  Bool createWeightSpectrumCols,
                                                   const Vector<Int>& tileShape,
                                                   const String& combine,
                                                   Table::TableOption option)
@@ -798,7 +809,7 @@ Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
 	}
 
 	// Watch out!  This throws an AipsError if ms_p doesn't have the requested columns.
-	const Vector<MS::PredefinedColumns> colNamesTok = parseColumnNames(colname,ms_p,virtualModelCol_p,virtualCorrectedCol_p);
+	const Vector<MS::PredefinedColumns> colNamesTok = parseColumnNames(colname,produceModel, ms_p,virtualModelCol_p,virtualCorrectedCol_p);
 
 	if (!makeSelection())
 	{
