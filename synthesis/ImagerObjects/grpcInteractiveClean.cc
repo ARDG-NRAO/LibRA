@@ -842,8 +842,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			state.SummaryMinor( IPosition(2,13,cShp[1]+row) ) = summary(IPosition(2,13,row));
 			// mpi server
 			state.SummaryMinor( IPosition(2,14,cShp[1]+row) ) = summary(IPosition(2,14,row));
-			// stopcode
+			// peak memory usage
 			state.SummaryMinor( IPosition(2,15,cShp[1]+row) ) = summary(IPosition(2,15,row));
+			// deconvolver runtime
+			state.SummaryMinor( IPosition(2,16,cShp[1]+row) ) = summary(IPosition(2,16,row));
+			// stopcode
+			state.SummaryMinor( IPosition(2,17,cShp[1]+row) ) = summary(IPosition(2,17,row));
 		}
 	}
 

@@ -325,7 +325,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   void SIMinorCycleController::addSummaryMinor(uInt deconvolverid, uInt chan, uInt pol,
                                                Int cycleStartIter, Int startIterDone, Float startmodelflux, Float startpeakresidual, Float startpeakresidualnomask,
-                                               Float modelflux, Float peakresidual, Float peakresidualnomask, Float masksum, Int mpiRank, Int stopCode)
+                                               Float modelflux, Float peakresidual, Float peakresidualnomask, Float masksum, Int mpiRank, Float peakMem, Float runtime, Int stopCode)
   {
     LogIO os( LogOrigin("SIMinorCycleController", __FUNCTION__ ,WHERE) );
 
@@ -363,8 +363,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      itsSummaryMinor( IPosition(2, 13, shp[1] ) ) = (Double) masksum;
      // mpi server
      itsSummaryMinor( IPosition(2, 14, shp[1] ) ) = mpiRank;
+     // peak memory used by the application
+     itsSummaryMinor( IPosition(2, 15, shp[1] ) ) = peakMem;
+     // ellapsed time of the deconvolver
+     itsSummaryMinor( IPosition(2, 16, shp[1] ) ) = runtime;
      // stopcode
-     itsSummaryMinor( IPosition(2, 15, shp[1] ) ) = stopCode;
+     itsSummaryMinor( IPosition(2, 17, shp[1] ) ) = stopCode;
   }// end of addSummaryMinor
   
   
