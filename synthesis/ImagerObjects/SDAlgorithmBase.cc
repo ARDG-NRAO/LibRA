@@ -389,11 +389,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     {
       for (int i = 0; i < 10; i++) // check for stop 10 times a second
       {
-        if (i == 1) { // check for peak memory usage 1 times a second
+      	bool doStop = stop.getVal();
+        if (i == 1 || doStop) { // check for peak memory usage 1 times a second
           uLong currentMem = SynthesisUtilMethods::getAllocatedMemoryInBytes();
           if (currentMem > peakMem) { peakMem = currentMem; }
         }
-        if (stop.getVal()) {
+        if (doStop) {
           return;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
