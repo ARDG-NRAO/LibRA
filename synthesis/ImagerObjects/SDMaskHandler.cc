@@ -85,7 +85,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //itsPBMaskLevel = 0.0;
     //itsTooLongForFname=false;
 #ifdef PATH_MAX
-   itsPATH_MAX = PATH_MAX;
+   itsPATH_MAX = PATH_MAX-1;
 #else
    itsPATH_MAX = 1024;
 #endif
