@@ -188,7 +188,7 @@ SDBListGridManager::swStartIndex(Int spw) {
 }
    
 // DelayRateFFT is modeled on DelayFFT in KJones.{cc|h}
-DelayRateFFT::DelayRateFFT(SDBList& sdbs, Int refant, Array<Double>& delayWindow, Array<Double>& rateWindow) :
+DelayRateFFT::DelayRateFFT(SDBList& sdbs, Int refant, Double reffreq, Array<Double>& delayWindow, Array<Double>& rateWindow) :
     refant_(refant),
     gm_(sdbs),
     nPadFactor_(max(2, 8  / gm_.nSPW())), 
@@ -198,7 +198,7 @@ DelayRateFFT::DelayRateFFT(SDBList& sdbs, Int refant, Array<Double>& delayWindow
     nPadChan_(nPadFactor_*nChan_),
     dt_(gm_.dt),
     //f0_(gm_.fmin / 1.e9),      // GHz
-    f0_(sdbs.centroidFreq() / 1.e9),      // GHz, for delayrate calc
+    f0_(reffreq / 1.e9),      // GHz, for delayrate calc
     df_(gm_.df / 1.e9),
     df_all_(gm_.fmax - gm_.fmin),
     Vpad_(),
@@ -2256,12 +2256,17 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
     // spwCol.refFrequency().getColumn(myRefFreqs, true);
     //Double ref_freq = myRefFreqs(currSpw());
     //Double ref_freq = sdbs.freqs()(0);
-    Double centroidFreq = sdbs.centroidFreq();
+    if (DEVDEBUG) {
+        cerr << "Solving for fringes for spw=" << currSpw() << endl
+             << "Valid spws are " << freqMetaData_.validSpws() << endl;
+    }
+    Int spw = currSpw();
+    Double reffreq = freqMetaData_.freq(spw)(0); 
     Double t0 = sdbs(0).time()(0);
     Double dt0 = refTime() - t0;
     //Double df0 = ref_freq - sdbs.freqs()(0);
     //Double df0 = 0; 
-    Double df0 = centroidFreq - sdbs(0).freqs()(0);  // global center to global edge
+    Double df0 = reffreq - sdbs(0).freqs()(0);  // global center to global edge
 
     logSink() << "Solving for fringes for spw=" << currSpw() << " at t="
               << MVTime(refTime()/C::day).string(MVTime::YMD,7)  << LogIO::POST;
@@ -2273,7 +2278,7 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
         throw(AipsError("No valid reference antenna supplied."));
     else
         logSink() << "Using reference antenna " << refant() << LogIO::POST;
-
+    
     aggregateTimeCentroid(sdbs, refant(), aggregateTime);
 
     if (DEVDEBUG) {
@@ -2282,7 +2287,7 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
             std::cerr << it->first << " => " << it->second - t0 << std::endl;
     }
 
-    DelayRateFFT drf(sdbs, refant(), delayWindow(), rateWindow());
+    DelayRateFFT drf(sdbs, refant(), reffreq, delayWindow(), rateWindow());
     drf.FFT();
     drf.searchPeak();
     Matrix<Float> sRP(solveRPar().nonDegenerate(1));
@@ -2362,9 +2367,9 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
 
     if (DEVDEBUG) {
         cerr << "Ref time " << MVTime(refTime()/C::day).string(MVTime::YMD,7) << endl;
-        cerr << "df0 " << df0 << " dt0 " << dt0 << " centroidFreq*dt0 " << centroidFreq*dt0 << endl;
-        cerr << "centroidFreq " << centroidFreq << endl;
-        cerr << "df0 " << df0 << " dt0 " << dt0 << " centroidFreq*dt0 " << centroidFreq*dt0 << endl;
+        cerr << "df0 " << df0 << " dt0 " << dt0 << " reffreq*dt0 " << reffreq*dt0 << endl;
+        cerr << "reffreq " << reffreq << endl;
+        cerr << "df0 " << df0 << " dt0 " << dt0 << " reffreq*dt0 " << reffreq*dt0 << endl;
         cerr << "sRP " << sRP << endl; 
     }
 
@@ -2379,7 +2384,7 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
             // (which is NOT the one stored in the SPECTRAL_WINDOW
             // table) is the left-hand edge of the frequency grid.
             Double delta1 = df0*delay/1e9;
-            Double delta2 = centroidFreq*dt0*rate;
+            Double delta2 = reffreq*dt0*rate;
             Double delta3 = C::_2pi*(delta1+delta2);
             Double dt;
             auto p = aggregateTime.find(iant);
@@ -2391,7 +2396,7 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
             if (DEVDEBUG) {
                 cerr << "Antenna " << iant << ": phi0 " << phi0 << " delay " << delay << " rate " << rate << " dt " << dt << endl
                      << "k_disp " << k_disp << endl
-                     << "centroidFreq "<< centroidFreq << " Adding corrections for frequency (" << 360*delta1 << ")" 
+                     << "reffreq "<< reffreq << " Adding corrections for frequency (" << 360*delta1 << ")" 
                      << " and time (" << 360*delta2 << ") degrees." << endl;
             }
             sRP(4*icor + 0, iant) += delta3;

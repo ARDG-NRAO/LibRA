@@ -83,6 +83,13 @@ inline NullLogger &operator<<(NullLogger &logger, T /*value*/) {
 #ifndef SDCALSKY_DEBUG
 NullLogger nulllogger;
 #endif
+
+// Helper class to format integers with thousand separators
+struct CommaSeparatedThousands : std::numpunct<char> {
+    char_type do_thousands_sep() const override { return ','; }
+    string_type do_grouping() const override { return "\3"; }
+};
+
 }
 
 #ifdef SDCALSKY_DEBUG
@@ -1087,11 +1094,20 @@ void SingleDishSkyCal::selfGatherAndSolve(VisSet& vs, VisEquation& /*ve*/)
     // Select from user selection reference data associated with science target
     MeasurementSet reference_data = selectReferenceData(user_selection);
     logSink().origin(LogOrigin("SingleDishSkyCal","selfGatherAndSolve"));
-    std::ostringstream msg;
-    msg.imbue(std::locale("en_US")); // Display numbers of rows using commas as thousands separators
-    msg << "Selected: " << std::right << std::setw(10) << reference_data.nrow() << " rows of reference data" << '\n'
-        << "out of  : " << std::right << std::setw(10) << user_selection.nrow() << " rows of user-selected data";
-    logSink() << msg.str() << LogIO::POST;
+    {
+        // Log row numbers in a readable way
+        std::ostringstream msg;
+        auto * us_num_fmt = new CommaSeparatedThousands();
+        std::locale us_like_locale(std::locale::classic(), us_num_fmt);
+        // us_like_locale is responsible for deleting us_num_fmt from its destructor
+        // Ref: https://en.cppreference.com/w/cpp/locale/locale/locale
+        //      Constructor (7) + Notes section
+        // So we must NOT delete us_num_fmt.
+        msg.imbue(us_like_locale);
+        msg << "Selected: " << std::right << std::setw(10) << reference_data.nrow() << " rows of reference data" << '\n'
+            << "out of  : " << std::right << std::setw(10) << user_selection.nrow() << " rows of user-selected data";
+        logSink() << msg.str() << LogIO::POST;
+    }
     logSink().origin(LogOrigin());
     if (reference_data.nrow() == 0)
         throw AipsError("No reference integration found in user-selected data. Please double-check your data selection criteria.");
