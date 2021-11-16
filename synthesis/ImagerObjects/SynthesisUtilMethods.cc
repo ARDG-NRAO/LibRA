@@ -947,7 +947,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
 #if defined(AIPS_DARWIN) || defined(AIPS_CRAY_PGI) || __cplusplus <= 199711L
     // If on mac, or if compiling with < c++11, then use the old function.
-    return (uLong) allocatedMemoryInBytes();
+    return (uLong) Memory::allocatedMemoryInBytes();
 #else
     // NOTE: Don't trust mallinfo if you've ever allocated more than 2GB at once. (see mallinfo bugs section)
     //       Prefer malloc_info() over mallinfo().
