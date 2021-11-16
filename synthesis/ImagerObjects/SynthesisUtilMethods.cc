@@ -73,10 +73,13 @@
 #include <synthesis/ImagerObjects/SIImageStoreMultiTerm.h>
 
 // supporting code for getAllocatedMemoryInBytes()
+#if defined(AIPS_DARWIN) || defined(AIPS_CRAY_PGI) || __cplusplus <= 199711L
+#include <casa/OS/Memory.h>
+#else
 #include <malloc.h>
 #include <string>
 #include <stdio.h>
-#include <casa/OS/Memory.h>
+#endif
 
 using namespace std;
 
