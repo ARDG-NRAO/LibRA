@@ -42,6 +42,7 @@
 #include <measures/Measures/MPosition.h>
 #include <ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/VisBuffer.h>
+#include <msvis/MSVis/VisibilityIterator.h>
 #include <scimath/Mathematics/FFTServer.h>
 #include <synthesis/TransformMachines/FTMachine.h>
 #include <synthesis/TransformMachines/SkyJones.h>
@@ -318,6 +319,8 @@ private:
 
   //for debugging
   //FILE *pfile;
+
+  void dumpConvolutionFunction(const casacore::String &outfile, const casacore::Vector<casacore::Float> &f) const;
 };
 
 } //# NAMESPACE CASA - END
