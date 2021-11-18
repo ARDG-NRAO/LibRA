@@ -277,8 +277,11 @@ public:
 	casacore::String getExpressionFunction(casacore::String expression);
 	bool isExpressionPolarizationAll(casacore::String expression);
 
-	// initialize the agents list
-	bool initAgents();
+        // initialize the agents list
+        void checkAveragingConfig(const std::string &mode, const casacore::Record &agent_rec,
+                                  const std::string &anyNotAvg);
+        std::string searchAnyAgentsNotAvg(const std::vector<casacore::Record> &configs);
+        bool initAgents();
 
 	// Run the tool and write the flags to the MS
 	casacore::Record run(casacore::Bool writeflags, casacore::Bool sequential=true);
@@ -370,14 +373,6 @@ private:
 
 	// Store the temporary maximum value
 	casacore::Double max_p;
-
-	// Helper members
-	casacore::Bool timeset_p;
-	casacore::Bool iterset_p;
-
-	// casacore::Time average parameter in clip mode
-	casacore::Bool timeAvg_p;
-
 };
 
 

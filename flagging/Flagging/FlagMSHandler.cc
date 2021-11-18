@@ -53,11 +53,9 @@ FlagMSHandler::FlagMSHandler(string tablename, uShort iterationApproach, Double 
 {
 	selectedMeasurementSet_p = NULL;
 	originalMeasurementSet_p = NULL;
-	preAveragingVI_p = NULL;
 	visibilityIterator_p = NULL;
 	tableTye_p = MEASUREMENT_SET;
 	processorTableExist_p = false;
-
 }
 
 
@@ -75,9 +73,6 @@ FlagMSHandler::~FlagMSHandler()
 
 	// Delete VisibilityIterator
 	if (visibilityIterator_p) delete visibilityIterator_p;
-	// if (preAveragingVI_p) delete preAveragingVI_p; // No longer needed - Deleted by host TVI
-
-	return;
 }
 
 
