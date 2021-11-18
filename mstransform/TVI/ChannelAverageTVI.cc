@@ -104,6 +104,9 @@ Bool ChannelAverageTVI::parseConfiguration(const Record &configuration)
 				<< LogIO::POST;
 	}
 
+	exists = configuration.fieldNumber ("flagdataFlagPropagation");
+	flagdataFlagPropagation_p = exists >= 0;
+
 	// Check consistency between chanbin vector and selected SPW/Chan map
 	if (chanbin_p.size() !=  spwInpChanIdxMap_p.size())
 	{
@@ -125,6 +128,7 @@ void ChannelAverageTVI::initialize()
 	Int spw;
 	uInt spw_idx = 0;
 	map<Int,vector<Int> >::iterator iter;
+
 	for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
 	{
 		spw = iter->first;
@@ -779,60 +783,100 @@ void ChannelAverageTVI::writeFlag (const Cube<Bool> & flag)
 	return;
 }
 
+/**
+ * Strategy to support different ways of propagating flags from the 'transformed' cube to
+ * the original ('propagated') cube. Iterates through rows, channels, correlations.
+ *
+ * This is meant to be used from propagateChanAvgFlags with at least two alternative
+ * functors. One to propagate flags as required by flagdata (preserve pre-existing flags
+ * in the original data cube), and a second one to propagate flags as required by plotms.
+ * CAS-12737, CAS-9985, CAS-12205.
+ *
+ * @param transformedFlagCube Cube of flags after averaging
+ * @param propagatedFlagClube Original cube of flags
+ * @param inputOutputChan input->output channel mapping
+ * @param propagate functor to implement the (back)propagation of flags (flagdata/plotms).
+ */
+template <typename Functor>
+void cubePropagateFlags(const Cube<Bool> &transformedFlagCube,
+                        Cube<Bool> &propagatedFlagCube,
+                        const Vector<uInt> &inputOutputChan, Functor propagate)
+{
+    // Get propagated (input) shape
+    const auto inputShape = propagatedFlagCube.shape();
+    const uInt nCorr = inputShape(0);
+    const uInt nChan = inputShape(1);
+    const uInt nRows = inputShape(2);
+
+    // Get transformed (output) shape
+    const auto transformedShape = transformedFlagCube.shape();
+    const auto nTransChan = transformedShape(1);
+
+    uInt outChan;
+    for (size_t row_i =0;row_i<nRows;row_i++)
+    {
+        for (size_t chan_i =0;chan_i<nChan;chan_i++)
+        {
+            outChan = inputOutputChan(chan_i);
+            if (outChan < nTransChan)  // outChan >= nChan  may happen when channels are dropped
+            {
+                for (size_t corr_i =0;corr_i<nCorr;corr_i++)
+                    propagate(row_i, chan_i, corr_i, outChan);
+            }
+        }
+    }
+}
+
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
 void ChannelAverageTVI::propagateChanAvgFlags (const Cube<Bool> &transformedFlagCube,
-												Cube<Bool> &propagatedFlagCube)
+                                               Cube<Bool> &propagatedFlagCube)
 {
-	// Get current SPW and chanbin
-	VisBuffer2 *inputVB = getVii()->getVisBuffer();
-	Int inputSPW = inputVB->spectralWindows()(0);
-	uInt width = spwChanbinMap_p[inputSPW];
+    // Get current SPW and chanbin
+    const VisBuffer2 *inputVB = getVii()->getVisBuffer();
+    const Int inputSPW = inputVB->spectralWindows()(0);
+    const uInt width = spwChanbinMap_p[inputSPW];
 
-	// Get propagated (input) shape
-	IPosition inputShape = propagatedFlagCube.shape();
-	size_t nCorr = inputShape(0);
-	size_t nChan = inputShape(1);
-	size_t nRows = inputShape(2);
+    // Map input-output channel
+    const uInt nChan = propagatedFlagCube.shape()(1);
+    uInt binCounts = 0;
+    uInt transformedIndex = 0;
+    Vector<uInt> inputOutputChan(nChan);
+    for (size_t chan_i =0;chan_i<nChan;chan_i++)
+    {
+        binCounts += 1;
 
-	// Get transformed (output) shape
-	IPosition transformedShape = transformedFlagCube.shape();
-	size_t nTransChan = transformedShape(1);
+        if (binCounts > width)
+        {
+            binCounts = 1;
+            transformedIndex += 1;
+        }
 
-	// Map input-output channel
-	uInt binCounts = 0;
-	uInt transformedIndex = 0;
-	Vector<uInt> inputOutputChan(nChan);
-	for (size_t chan_i =0;chan_i<nChan;chan_i++)
-	{
-		binCounts += 1;
+        inputOutputChan(chan_i) = transformedIndex;
+    }
 
-		if (binCounts > width)
-		{
-			binCounts = 1;
-			transformedIndex += 1;
-		}
-
-		inputOutputChan(chan_i) = transformedIndex;
-	}
-
-	// Propagate chan-avg flags
-	uInt outChan;
-	for (size_t row_i =0;row_i<nRows;row_i++)
-	{
-		for (size_t chan_i =0;chan_i<nChan;chan_i++)
-		{
-			outChan = inputOutputChan(chan_i);
-			if (outChan < nTransChan) // outChan >= nChan  may happen when channels are dropped
-			{
-				for (size_t corr_i =0;corr_i<nCorr;corr_i++)
-					propagatedFlagCube(corr_i,chan_i,row_i) = transformedFlagCube(corr_i,outChan,row_i);
-			}
-		}
-	}
-
-	return;
+    // Propagate chan-avg flags
+    // Keeping two separate alternatives for 'flagdataFlagPropagation_p' (CAS-12737,
+    // CAS-9985) until this issue is better settled.
+    if (flagdataFlagPropagation_p)
+    {
+        cubePropagateFlags(transformedFlagCube, propagatedFlagCube, inputOutputChan,
+                           [&transformedFlagCube, &propagatedFlagCube]
+                           (size_t row_i, size_t chan_i, size_t corr_i, uInt outChan) {
+                               if (transformedFlagCube(corr_i, outChan, row_i))
+                                   propagatedFlagCube(corr_i, chan_i, row_i) = true;
+                           });
+    }
+    else
+    {
+        cubePropagateFlags(transformedFlagCube, propagatedFlagCube, inputOutputChan,
+                           [&transformedFlagCube, &propagatedFlagCube]
+                           (size_t row_i, size_t chan_i, size_t corr_i, uInt outChan) {
+                               propagatedFlagCube(corr_i, chan_i, row_i) =
+                                   transformedFlagCube(corr_i, outChan, row_i);
+                           });
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1125,8 +1169,7 @@ template<class T> void LogicalANDKernel<T>::kernel(	DataCubeMap *inputData,
 			outputFlag = false;
 			break;
 		}
-	}
-
+                }
 	outputVector(outputPos) = outputFlag;
 
 	return;

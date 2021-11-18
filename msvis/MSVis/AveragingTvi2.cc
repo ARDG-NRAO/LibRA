@@ -2577,72 +2577,126 @@ AveragingTvi2::average (const Cube<Float> &data, const Cube<Bool> &flags)
     return result;
 }
 
+typedef std::map< Int, std::map <Int, std::map< Int, uInt> >  > SPWAntsIndexMap;
+
+/**
+ * Strategy to support different ways of propagating flags from the 'transformed' cube to
+ * the original ('propagated') cube. Iterates through rows, channels, correlations.
+ *
+ * This is meant to be used from propagateChanAvgFlags with at least two alternative
+ * functors. One to propagate flags as required by flagdata (preserve pre-existing flags
+ * in the original data cube), and a second one to propagate flags as required by plotms.
+ * CAS-12737, CAS-9985, CAS-12205.
+ *
+ * @param flagrow per row FLAG_ROW value
+ * @param flagMapped propagated FLAG_ROW
+ * @param flagCubeMapped Cube of flags in which flags are to be propagated
+ * @param spwAnt1Ant2IndexMap mapping: (spw, ant1, ant2) in averaged cube -> original row
+ * @param orgAnt1 index for the map
+ * @param orgAnt2 index for the map
+ * @param orgSPW index for the map
+ */
+template <typename Functor>
+void cubePropagateFlags(const Vector<Bool> &flagRow,
+                        Vector<Bool> &flagMapped,
+                        Cube<Bool> &flagCubeMapped,
+                        const SPWAntsIndexMap &spwAnt1Ant2IndexMap,
+                        const Vector<Int> &orgAnt1,
+                        const Vector<Int> &orgAnt2,
+                        const Vector<Int> &orgSPW,
+                        Functor propagate)
+{
+    uInt nOriginalRows = flagMapped.shape()[0];
+
+    for (uInt row=0;row<nOriginalRows;row++)
+    {
+        uInt index = spwAnt1Ant2IndexMap.at(orgSPW(row)).at(orgAnt1(row)).at(orgAnt2(row));
+        flagMapped(row) = flagRow(index);
+        for (uInt chan_i=0;chan_i<flagCubeMapped.shape()(1);chan_i++)
+        {
+            for (uInt corr_i=0;corr_i<flagCubeMapped.shape()(0);corr_i++)
+            {
+                propagate(row, chan_i, corr_i, index);
+            }
+        }
+    }
+}
+
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
 void AveragingTvi2::writeFlag (const Cube<Bool> & flag)
 {
-	// Create index map for averaged data
-	VisBuffer2 *avgVB = getVisBuffer();
-	Vector<Int> avgAnt1 = avgVB->antenna1();
-	Vector<Int> avgAnt2 = avgVB->antenna2();
-	Vector<Int> avgSPW = avgVB->spectralWindows();
+    // Create index map for averaged data
+    VisBuffer2 *avgVB = getVisBuffer();
+    Vector<Int> avgAnt1 = avgVB->antenna1();
+    Vector<Int> avgAnt2 = avgVB->antenna2();
+    Vector<Int> avgSPW = avgVB->spectralWindows();
 
-	std::map< Int, std::map <Int, std::map< Int, uInt> >  > spwAnt1Ant2IndexMap;
-	for (uInt avgRow=0;avgRow<avgAnt1.size();avgRow++)
-	{
-		spwAnt1Ant2IndexMap[avgSPW(avgRow)][avgAnt1(avgRow)][avgAnt2(avgRow)] = avgRow;
-	}
+    SPWAntsIndexMap spwAnt1Ant2IndexMap;
+    for (uInt avgRow=0;avgRow<avgAnt1.size();avgRow++)
+    {
+        spwAnt1Ant2IndexMap[avgSPW(avgRow)][avgAnt1(avgRow)][avgAnt2(avgRow)] = avgRow;
+    }
 
-	// Calculate FLAG_ROW from flag
-	Vector<Bool> flagRow;
-	TransformingVi2::calculateFlagRowFromFlagCube(flag,flagRow);
+    // Calculate FLAG_ROW from flag
+    Vector<Bool> flagRow;
+    TransformingVi2::calculateFlagRowFromFlagCube(flag,flagRow);
 
-	// Propagate transformed flags
-	getVii()->origin();
-	Int currentBuffer = 0;
-	while (getVii()->more())
-	{
-		if ((currentBuffer >= startBuffer_p) and (currentBuffer <= endBuffer_p))
-		{
-			// Allocated propagated flag vector/cube
-			uInt nOriginalRows = getVii()->getVisBuffer()->nRows();
-			Vector<Bool> flagMapped(nOriginalRows,false);
-			Cube<Bool> flagCubeMapped;
-			flagCubeMapped = getVii()->getVisBuffer()->flagCube();
+    const auto flagdataFlagPropagation =
+        averagingOptions_p.contains(AveragingOptions::flagdataFlagPropagation);
 
-			// Get original ant1/ant2/spw cols. to determine the mapped index
-			Vector<Int> orgAnt1 = getVii()->getVisBuffer()->antenna1();
-			Vector<Int> orgAnt2 = getVii()->getVisBuffer()->antenna2();
-			Vector<Int> orgSPW = getVii()->getVisBuffer()->spectralWindows();
+    // Propagate transformed flags
+    getVii()->origin();
+    Int currentBuffer = 0;
+    while (getVii()->more())
+    {
+        if ((currentBuffer >= startBuffer_p) and (currentBuffer <= endBuffer_p))
+        {
+            // Allocated propagated flag vector/cube
+            uInt nOriginalRows = getVii()->getVisBuffer()->nRows();
+            Vector<Bool> flagMapped(nOriginalRows,false);
+            Cube<Bool> flagCubeMapped;
+            flagCubeMapped = getVii()->getVisBuffer()->flagCube();
 
-			// Fill propagated flag vector/cube
-			for (uInt row=0;row<nOriginalRows;row++)
-			{
-				uInt index = spwAnt1Ant2IndexMap[orgSPW(row)][orgAnt1(row)][orgAnt2(row)];
-				flagMapped(row) = flagRow(index);
+            // Get original ant1/ant2/spw cols. to determine the mapped index
+            Vector<Int> orgAnt1 = getVii()->getVisBuffer()->antenna1();
+            Vector<Int> orgAnt2 = getVii()->getVisBuffer()->antenna2();
+            Vector<Int> orgSPW = getVii()->getVisBuffer()->spectralWindows();
 
-				for (uInt chan_i=0;chan_i<flagCubeMapped.shape()(1);chan_i++)
-				{
-					for (uInt corr_i=0;corr_i<flagCubeMapped.shape()(0);corr_i++)
-					{
-						flagCubeMapped(corr_i,chan_i,row) = flag(corr_i,chan_i,index);
-					}
-				}
-			}
+            // Keeping two separate blocks for 'flagdataFlagPropagation' (CAS-12737,
+            // CAS-12205, CAS-9985) until this issue is better settled.
+            // Fill propagated flag vector/cube
+            if (flagdataFlagPropagation)
+            {
+                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, spwAnt1Ant2IndexMap,
+                                   orgAnt1, orgAnt2, orgSPW,
+                                   [&flag, &flagCubeMapped]
+                                   (uInt row, uInt chan_i, uInt corr_i, uInt index) {
+                                       if (flag(corr_i,chan_i,index))
+                                           flagCubeMapped(corr_i,chan_i,row) = true;
+                                   });
+            }
+            else
+            {
+                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, spwAnt1Ant2IndexMap,
+                                   orgAnt1, orgAnt2, orgSPW,
+                                   [&flag, &flagCubeMapped]
+                                   (uInt row, uInt chan_i, uInt corr_i, uInt index) {
+                                       flagCubeMapped(corr_i,chan_i,row) =
+                                           flag(corr_i,chan_i,index);
+                                   });
+            }
 
-			// Write propagated flag vector/cube
-			getVii()->writeFlag(flagCubeMapped);
-			getVii()->writeFlagRow(flagMapped);
+            // Write propagated flag vector/cube
+            getVii()->writeFlag(flagCubeMapped);
+            getVii()->writeFlagRow(flagMapped);
+        }
 
-		}
-
-		currentBuffer += 1;
-		getVii()->next();
-		if (currentBuffer > endBuffer_p) break;
-	}
-
-	return;
+        currentBuffer += 1;
+        getVii()->next();
+        if (currentBuffer > endBuffer_p) break;
+    }
 }
 
 // -----------------------------------------------------------------------
