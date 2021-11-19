@@ -228,7 +228,7 @@ BaselineIndex::configure (Int nAntennas, Int nSpw, const VisBuffer2 * vb)
 void
 BaselineIndex::destroy ()
 {
-    // Delete all the dynaically allocated spectral window indices.
+    // Delete all the dynamically allocated spectral window indices.
     // The vector destructor will take care of index_p itself.
 
     for (Index::iterator i = index_p.begin();
@@ -330,6 +330,11 @@ private:
 
 class VbAvg;
 
+/**
+ * Holds multiple rows in a buffer. changeRow() alternates between rows. The details
+ * of how the rows are handled need to be traced to its parent class, Vbi2MsRow, and its
+ * parent MsRow.
+ */
 class MsRowAvg : public ms::Vbi2MsRow {
 
 public:
@@ -343,6 +348,10 @@ public:
     virtual ~MsRowAvg () {}
 
     Bool baselinePresent () const;
+    /// For how many of the rows reachable by changeRow() does baselinePresent(() hold?
+    /// That's equivalent to asking how many baselines are being
+    Int nBaselinesPresent () const;
+
     Vector<Bool> correlationFlagsMutable ();
     const Matrix<Int> & counts () const;
     Int countsBaseline () const;
@@ -363,6 +372,27 @@ public:
     void setNormalizationFactor(Double normalizationFactor);
     void accumulateNormalizationFactor(Double normalizationFactor);
 
+    /**
+     * For bookkeeping. Input row indices that have been added so far in the current row
+     * (set with changeRow). This is a list of input rows attached to this averaged row,
+     * needed to build the map of input->output row indices when this row is transferred to
+     * the output/averaged buffer.
+     */
+    std::vector<Int> inputRowIdxs() { return inputRowIdxs_p[row()]; }
+    /**
+     * Adds into the 'inputRowIdxs' list the index of an input row from the buffer being
+     * averaged.
+     * @param idx the index of the input row in the input buffer
+     */
+    void addInputRowIdx(Int idx) {
+        inputRowIdxs_p[row()].push_back(idx);
+    }
+    /**
+     * Clear the list of input rows attached to this row. This is used once the row is
+     * transferred to the output/averaged buffer (typically after every average interval).
+     */
+    void clearRowIdxs() { inputRowIdxs_p[row()].clear(); }
+
 private:
 
     void configureCountsCache ();
@@ -370,8 +400,26 @@ private:
     mutable CachedPlaneAvg<Int> countsCache_p;
     Vector<Double> normalizationFactor_p;
     VbAvg * vbAvg_p; // [use]
+    // map: input buffer row index -> output buffer row index
+    std::map<Int, std::vector<Int>> inputRowIdxs_p;
 };
 
+/**
+ * It looks like the intended usage of this VbAvg class (from AveragingTvi2::
+ * produceSubchunk()) is as follows:
+ *
+ * // Use a "VbAvg vbAvg":
+ * VisBufferImpl2 * vbToFill = // get/create output (averaged) buffer
+ * vbToFill->setFillable(true);
+ * vbAvg.setBufferToFill(vbToFill);
+ * // we have the input buffer (to be averaged) in "VisibilityIteratorImpl2 vii;
+ * while (vii->more()) {
+ *    ...
+ *    vbAvg.accumulate(vb, subhunk);
+ * }
+ * vbAvg.finalizeAverages();
+ * vbAvg.finalizeBufferFillnig();
+ */
 class VbAvg : public VisBufferImpl2 {
 
 public:
@@ -394,6 +442,8 @@ public:
     void setBufferToFill (VisBufferImpl2 *);
     void startChunk (ViImplementation2 *);
     Int getBaselineIndex (Int antenna1, Int antenna2, Int spw) const;
+    // Vector with row idx in the averaged/ooutput buffers
+    const std::vector<size_t> & row2AvgRow() const { return row2AvgRow_p; };
 
 protected:
 
@@ -635,8 +685,15 @@ protected:
 
 
     void accumulateExposure (const VisBuffer2 *);
+    /*
+     * Called once per row in the input buffer
+     * @param rowInput row from the input buffer being averaged
+     * @param rowAveraged changing "accumulator" row for the output buffer
+     * @param subchunk - hard to understand
+     * @param iidx index of the input row in the input buffer
+     */
     void accumulateOneRow (MsRow * rowInput, MsRowAvg * rowAveraged,
-                           const Subchunk & subchunk);
+                           const Subchunk & subchunk, Int iidx);
     void accumulateRowData (MsRow * rowInput, MsRowAvg * rowAveraged, Double adjustedWeight,
                             Bool rowFlagged);
     void accumulateTimeCentroid (const VisBuffer2 * input);
@@ -664,9 +721,15 @@ protected:
     Int nBaselines () const;
     void prepareIds (const VisBuffer2 * vb);
     void removeMissingBaselines ();
+
+private:
+
     void setupVbAvg (const VisBuffer2 *);
     void setupArrays (Int nCorrelations, Int nChannels, Int nBaselines);
     void setupBaselineIndices (Int nAntennas, const VisBuffer2 * vb);
+
+    /// A baseline being averaged into a MSRowAvg is put into the output/averaged buffer and
+    /// set as not present
     void transferBaseline (MsRowAvg *);
 
     template <typename T>
@@ -684,8 +747,6 @@ protected:
 
         return distanceSquared;
     }
-
-private:
 
     Double averagingInterval_p;
     AveragingOptions averagingOptions_p;
@@ -715,6 +776,8 @@ private:
     Bool usingUvwDistance_p;
     mutable PrefilledMatrix<Int> zeroInt_p;
     mutable PrefilledMatrix<Float> zeroFloat_p;
+
+    std::vector<size_t> row2AvgRow_p;
 
     LogIO logger_p;
 };
@@ -792,6 +855,13 @@ Bool
 MsRowAvg::baselinePresent () const
 {
     return vbAvg_p->baselinePresent_p (row ());
+}
+
+Int
+MsRowAvg::nBaselinesPresent () const
+{
+    return std::count(vbAvg_p->baselinePresent_p.begin(), vbAvg_p->baselinePresent_p.end(),
+                      true);
 }
 
 void
@@ -917,6 +987,45 @@ VbAvg::VbAvg (const AveragingParameters & averagingParameters, ViImplementation2
   usingUvwDistance_p (averagingParameters.getOptions().contains (AveragingOptions::BaselineDependentAveraging))
 {}
 
+/**
+ * Calculates the row index in the output buffer, given an averaged row, a baseline index
+ * corresponding to this averaged row, and the magic "rowIdGenerator" of the VbAvg.
+ *
+ * @param nrows number of rows in the input buffer being averaged
+ * @param baselineIndex index of the baseline being averaged into the rowAveraged
+ * @param rowAveraged "accumulator" row being produced for the output buffer
+ * @param rowIdGen the rowIdGenerator of the VbAvg, which increases (in a not so clean way)
+ *        for every new baseline inside every chunk
+ */
+Int
+calcOutRowIdx(Int nrows, Int baselineIndex, const MsRowAvg* rowAveraged, Int rowIdGen)
+{
+    auto nBasePresent = rowAveraged->nBaselinesPresent();
+    // check whether multiple time steps are being averaged into the output buffer
+    // (row blocking or similar feature is enabled)
+    const bool multitime =  nrows > nBasePresent;
+
+    if (!multitime) {
+        // There is only one time step, so the index must be simply the baseline index.
+        // with row blocking disabled, it doesn't seem to be possible to make sense out of
+        // rowIdgenerator_p for the purpose of this calculation -> skip the more general
+        // calculation from below and just use baseline index.
+        return baselineIndex;
+    }
+
+    // the rowIdgenerator_p that we get in rowIdGen increases +1 for every new baseline.
+    // It is not really a proper (input) row id. After all baselines have been seen for a
+    // time step, the rows of the next time steps will get the same id.
+    // And to turn it into a valid output id we need the following
+    // "divide_with_roundup + multiply + baseline_index"
+    Int rowIdG_div_baselines_roundup = 0;
+    if (nBasePresent > 0)
+        rowIdG_div_baselines_roundup = (rowIdGen + nBasePresent - 1)/ nBasePresent;
+    const Int id = rowIdG_div_baselines_roundup * nBasePresent + baselineIndex;
+
+    return id;
+}
+
 void
 VbAvg::accumulate (const VisBuffer2 * vb, const Subchunk & subchunk)
 {
@@ -934,14 +1043,19 @@ VbAvg::accumulate (const VisBuffer2 * vb, const Subchunk & subchunk)
     MsRowAvg * rowAveraged = getRowMutable (0);
     MsRow * rowInput = vb->getRow (0);
 
-    for (rownr_t row = 0; row < vb->nRows(); row ++){
+    auto nrows = vb->nRows();
+    row2AvgRow_p.resize(nrows);
+    for (rownr_t row = 0; row < nrows; ++row){
 
         rowInput->changeRow (row);
         Int baselineIndex = getBaselineIndex (rowInput);
 
         rowAveraged->changeRow (baselineIndex);
 
-        accumulateOneRow (rowInput, rowAveraged, subchunk);
+        accumulateOneRow (rowInput, rowAveraged, subchunk, row);
+
+        row2AvgRow_p[row] = calcOutRowIdx(nrows, baselineIndex, rowAveraged,
+                                          rowIdGenerator_p);
     }
 
     delete rowAveraged;
@@ -950,7 +1064,8 @@ VbAvg::accumulate (const VisBuffer2 * vb, const Subchunk & subchunk)
 }
 
 void
-VbAvg::accumulateOneRow (MsRow * rowInput, MsRowAvg * rowAveraged, const Subchunk & subchunk)
+VbAvg::accumulateOneRow (MsRow * rowInput, MsRowAvg * rowAveraged, const Subchunk & subchunk,
+                         Int iidx)
 {
     finalizeBaselineIfNeeded (rowInput, rowAveraged, subchunk);
 
@@ -959,6 +1074,9 @@ VbAvg::accumulateOneRow (MsRow * rowInput, MsRowAvg * rowAveraged, const Subchun
 
         initializeBaseline (rowInput, rowAveraged, subchunk);
     }
+
+    // bookkeeping - save for later that this input row is being averaged into the output row
+    rowAveraged->addInputRowIdx(iidx);
 
     // Accumulate data that is matrix-valued (e.g., vis, visModel, etc.).
     // The computation of time centroid requires the use of the weight column
@@ -1145,7 +1263,7 @@ VbAvg::accumulateElementForCubes (AccumulationParameters & accumulationParameter
                                   Bool zeroAccumulation)
 {
 
-	// NOTE: THe channelized flag check comes from the calling ontext (continue statement)
+	// NOTE: The channelized flag check comes from the calling context (continue statement)
 	float weightCorrected = 1.0f;
 	float weightObserved = 1.0f;
 	const float One = 1.0f;
@@ -1414,11 +1532,11 @@ VbAvg::getBaselineIndex (const MsRow * msRow) const
     // This handles the case where the baseline ordering in the input VB might
     // shift from VB to VB.
 
-    Int antenna1 = msRow->antenna1 ();
-    Int antenna2 = msRow->antenna2 ();
-    Int spw = msRow->spectralWindow ();
+    const Int antenna1 = msRow->antenna1 ();
+    const Int antenna2 = msRow->antenna2 ();
+    const Int spw = msRow->spectralWindow ();
 
-    Int index = baselineIndex_p (antenna1, antenna2, spw);
+    const Int index = baselineIndex_p (antenna1, antenna2, spw);
 
     return index;
 }
@@ -1426,7 +1544,7 @@ VbAvg::getBaselineIndex (const MsRow * msRow) const
 Int
 VbAvg::getBaselineIndex (Int antenna1, Int antenna2, Int spw) const
 {
-    Int index = baselineIndex_p (antenna1, antenna2, spw);
+    const Int index = baselineIndex_p (antenna1, antenna2, spw);
 
     return index;
 }
@@ -2005,6 +2123,7 @@ VbAvg::startChunk (ViImplementation2 * vi)
     empty_p = true;
 
     rowIdGenerator_p = 0;
+    row2AvgRow_p.resize(0);
     
     // See if the new MS has corrected and/or model data columns
 
@@ -2059,7 +2178,7 @@ void
 VbAvg::transferBaseline (MsRowAvg * rowAveraged)
 {
     rowAveraged->setRowId (rowIdGenerator_p ++);
-    bufferToFill_p->appendRow (rowAveraged, nBaselines (), optionalComponentsToCopy_p);
+    bufferToFill_p->appendRow (rowAveraged, nBaselines(), optionalComponentsToCopy_p);
 
     rowAveraged->setBaselinePresent(false);
 }
@@ -2341,8 +2460,12 @@ AveragingTvi2::next ()
 {
     subchunkExists_p = false;
 
+    startBuffer_p = endBuffer_p + 1;
+    endBuffer_p = startBuffer_p - 1;
+
     if (getVii()->more()){
         getVii()->next();
+        endBuffer_p++;
     }
 
     produceSubchunk ();
@@ -2375,7 +2498,7 @@ AveragingTvi2::origin ()
 
     getVii()->origin();
 
-    startBuffer_p = -1;
+    startBuffer_p = 0;
     endBuffer_p = -1;
 
     // Get the first subchunk ready.
@@ -2398,6 +2521,67 @@ AveragingTvi2::originChunks (Bool forceRewind)
     subchunk_p.resetToOrigin();
 }
 
+/**
+ * Configure a VisBuffer with given averagingOptions related to phase shifting
+ *
+ * @param vb a VisBuffer to set up in terms of phase shifting
+ * @param averagingOptions averaging options enabled
+ * @param avgPars AveragingParmeters object to set into the buffer
+ */
+void
+setPhaseShiftingOptions(VisBuffer2 * vb, const AveragingOptions &averagingOptions,
+                        const AveragingParameters &avgPars)
+{
+    if (averagingOptions.contains (AveragingOptions::phaseShifting))
+    {
+        if (averagingOptions.contains (AveragingOptions::AverageObserved))
+        {
+            vb->visCube();
+        }
+
+        if (averagingOptions.contains (AveragingOptions::AverageCorrected))
+        {
+            vb->visCubeCorrected();
+        }
+
+        if (averagingOptions.contains (AveragingOptions::AverageModel))
+        {
+            vb->visCubeModel();
+        }
+
+        vb->phaseCenterShift(avgPars.getXpcOffset(),
+                             avgPars.getYpcOffset());
+    }
+}
+
+/**
+ * The iteration of this method is different depending on whether "row blocking" is used or
+ * not. The reason is that the while loop already had enough complexity embedded when fixes
+ * were done to get flagdata+time-average+row-blocking working (CAS-11910). Hopefully in the
+ * near future we can get rid of the hacky "row blocking" feature. For the time being, it is
+ * not clear how it could possibly work together with the "uvwdistance" feature. So better
+ * to keep those features separate.
+ *
+ * So the "if (block > 0)" separates iteration when using row blocking. That implies that
+ * row blocking takes precedence over (and disables) other features like
+ * "isUsingUvwDistance()".
+ * An alternative would be to add comparisons between block and vbToFill->appendSize() in
+ * the ifs below.  Something like:
+ *         if (! vbAvg_p->isUsingUvwDistance()
+ *            && (block == 0 && vbToFill->appendSize() > 0
+ *                || (block > 0 && vbToFill->appendSize() >= block)
+ *                )
+ *            ){
+ *          ...
+ *         else if ((block > 0 && vbToFill->appendSize() < block) ||
+ *                 vbToFill->appendSize() < nBaselines * nWindows){
+ *         ...
+ *         } else {
+ *
+ * But I prefer not adding more complexity to those ifs. The potential combinations would
+ * be too many to handle in a handful of if branches, and they are not well understood let
+ * alone well tested.
+ */
 void
 AveragingTvi2::produceSubchunk ()
 {
@@ -2414,58 +2598,42 @@ AveragingTvi2::produceSubchunk ()
     // jagonzal: Handle nBaselines for SD case
     if (nBaselines == 0) nBaselines = 1;
 
-    if (getVii()->more())
-    {
-        startBuffer_p = endBuffer_p + 1;
-        endBuffer_p = startBuffer_p - 1;
-    }
-
+    auto block = getVii()->getRowBlocking();
     while (getVii()->more()){
 
-        const VisBuffer2 * vb = getVii()->getVisBuffer();
+        VisBuffer2 * vb = getVii()->getVisBuffer();
 
-        if (averagingOptions_p.contains (AveragingOptions::phaseShifting))
-        {
-        	if (averagingOptions_p.contains (AveragingOptions::AverageObserved))
-        	{
-        		vb->visCube();
-        	}
+        setPhaseShiftingOptions(vb, averagingOptions_p, averagingParameters_p);
 
-        	if (averagingOptions_p.contains (AveragingOptions::AverageCorrected))
-        	{
-        		vb->visCubeCorrected();
-        	}
-
-        	if (averagingOptions_p.contains (AveragingOptions::AverageModel))
-        	{
-        		vb->visCubeModel();
-        	}
-
-        	getVii()->getVisBuffer()->phaseCenterShift(averagingParameters_p.getXpcOffset(),averagingParameters_p.getYpcOffset());
-        }
-
-
+        bool rowBlocking = block > 0;
         vbAvg_p->accumulate (vb, subchunk_p);
-        Int nWindows = vbAvg_p->nSpectralWindowsInBuffer ();
 
-        if (! vbAvg_p->isUsingUvwDistance() && vbToFill->appendSize() > 0){
-            // Doing straight average and some data has been produced so
-            // output it to the user
-            break;
+        if (rowBlocking) {
+            auto app = vbToFill->appendSize();
+            if (app <= block) {
+                getVii()->next();
+                endBuffer_p++;
+            } else {
+                break;
+            }
+        } else {
+            Int nWindows = vbAvg_p->nSpectralWindowsInBuffer ();
+            if (! vbAvg_p->isUsingUvwDistance() && vbToFill->appendSize() > 0){
+                // Doing straight average and some data has been produced so
+                // output it to the user
+                break;
+            }
+            else if (vbToFill->appendSize() < nBaselines * nWindows) {
+                getVii()->next();
+                endBuffer_p++;
+            }
+            else {
+                break;
+            }
         }
-        else if (vbToFill->appendSize() < nBaselines * nWindows){
-            getVii()->next();
-
-        }
-        else{
-            break;
-        }
-
-        endBuffer_p += 1;
     };
 
     if (! getVii()->more()){
-    	endBuffer_p += 1;
         vbAvg_p->finalizeAverages ();
     }
 
@@ -2475,28 +2643,28 @@ AveragingTvi2::produceSubchunk ()
              vbToFill->nRows() > 0; // some to process
 }
 
-Bool
-AveragingTvi2::reachedAveragingBoundary()
-{
-    // An average can be terminated for a variety of reasons:
-    // o the time interval has elapsed
-    // o the current MS is completed
-    // o no more input data
-    // o other (e.g, change of scan, etc.)
+// Bool
+// AveragingTvi2::reachedAveragingBoundary()
+// {
+//     // An average can be terminated for a variety of reasons:
+//     // o the time interval has elapsed
+//     // o the current MS is completed
+//     // o no more input data
+//     // o other (e.g, change of scan, etc.)
 
-    Bool reachedIt = false;
-    VisBuffer2 * vb = getVii()->getVisBuffer();
+//     Bool reachedIt = false;
+//     VisBuffer2 * vb = getVii()->getVisBuffer();
 
-    if (! getVii()->more()  && ! getVii ()->moreChunks()){
+//     if (! getVii()->more()  && ! getVii ()->moreChunks()){
 
-        reachedIt = true; // no more input data
-    }
-    else if (vb->isNewMs()){
-        reachedIt = true; // new MS
-    }
+//         reachedIt = true; // no more input data
+//     }
+//     else if (vb->isNewMs()){
+//         reachedIt = true; // new MS
+//     }
 
-    return reachedIt;
-}
+//     return reachedIt;
+// }
 
 //Bool
 //AveragingTvi2::subchunksReady() const
@@ -2577,8 +2745,6 @@ AveragingTvi2::average (const Cube<Float> &data, const Cube<Bool> &flags)
     return result;
 }
 
-typedef std::map< Int, std::map <Int, std::map< Int, uInt> >  > SPWAntsIndexMap;
-
 /**
  * Strategy to support different ways of propagating flags from the 'transformed' cube to
  * the original ('propagated') cube. Iterates through rows, channels, correlations.
@@ -2591,32 +2757,24 @@ typedef std::map< Int, std::map <Int, std::map< Int, uInt> >  > SPWAntsIndexMap;
  * @param flagrow per row FLAG_ROW value
  * @param flagMapped propagated FLAG_ROW
  * @param flagCubeMapped Cube of flags in which flags are to be propagated
- * @param spwAnt1Ant2IndexMap mapping: (spw, ant1, ant2) in averaged cube -> original row
- * @param orgAnt1 index for the map
- * @param orgAnt2 index for the map
- * @param orgSPW index for the map
+ * @param row2AvgRow map of input_buffer_row_index->output_buffer_row_index (this is pre-
+ *        calculated by the "VbAvg" when averaging rows and is needed here).
  */
 template <typename Functor>
 void cubePropagateFlags(const Vector<Bool> &flagRow,
                         Vector<Bool> &flagMapped,
                         Cube<Bool> &flagCubeMapped,
-                        const SPWAntsIndexMap &spwAnt1Ant2IndexMap,
-                        const Vector<Int> &orgAnt1,
-                        const Vector<Int> &orgAnt2,
-                        const Vector<Int> &orgSPW,
+                        std::vector<size_t> row2AvgRow,
                         Functor propagate)
 {
-    uInt nOriginalRows = flagMapped.shape()[0];
+    Int nRowsMapped = flagCubeMapped.shape()[2];
+    for(Int rowMapped=0; rowMapped < nRowsMapped; ++rowMapped) {
+        size_t index = row2AvgRow[rowMapped];
+        flagMapped(rowMapped) = flagRow(index);
 
-    for (uInt row=0;row<nOriginalRows;row++)
-    {
-        uInt index = spwAnt1Ant2IndexMap.at(orgSPW(row)).at(orgAnt1(row)).at(orgAnt2(row));
-        flagMapped(row) = flagRow(index);
-        for (uInt chan_i=0;chan_i<flagCubeMapped.shape()(1);chan_i++)
-        {
-            for (uInt corr_i=0;corr_i<flagCubeMapped.shape()(0);corr_i++)
-            {
-                propagate(row, chan_i, corr_i, index);
+        for (Int chan_i=0; chan_i < flagCubeMapped.shape()[1]; ++chan_i) {
+            for (Int corr_i=0; corr_i<flagCubeMapped.shape()[0]; ++corr_i) {
+                propagate(rowMapped, chan_i, corr_i, index);
             }
         }
     }
@@ -2627,21 +2785,9 @@ void cubePropagateFlags(const Vector<Bool> &flagRow,
 // -----------------------------------------------------------------------
 void AveragingTvi2::writeFlag (const Cube<Bool> & flag)
 {
-    // Create index map for averaged data
-    VisBuffer2 *avgVB = getVisBuffer();
-    Vector<Int> avgAnt1 = avgVB->antenna1();
-    Vector<Int> avgAnt2 = avgVB->antenna2();
-    Vector<Int> avgSPW = avgVB->spectralWindows();
-
-    SPWAntsIndexMap spwAnt1Ant2IndexMap;
-    for (uInt avgRow=0;avgRow<avgAnt1.size();avgRow++)
-    {
-        spwAnt1Ant2IndexMap[avgSPW(avgRow)][avgAnt1(avgRow)][avgAnt2(avgRow)] = avgRow;
-    }
-
     // Calculate FLAG_ROW from flag
     Vector<Bool> flagRow;
-    TransformingVi2::calculateFlagRowFromFlagCube(flag,flagRow);
+    TransformingVi2::calculateFlagRowFromFlagCube(flag, flagRow);
 
     const auto flagdataFlagPropagation =
         averagingOptions_p.contains(AveragingOptions::flagdataFlagPropagation);
@@ -2659,32 +2805,25 @@ void AveragingTvi2::writeFlag (const Cube<Bool> & flag)
             Cube<Bool> flagCubeMapped;
             flagCubeMapped = getVii()->getVisBuffer()->flagCube();
 
-            // Get original ant1/ant2/spw cols. to determine the mapped index
-            Vector<Int> orgAnt1 = getVii()->getVisBuffer()->antenna1();
-            Vector<Int> orgAnt2 = getVii()->getVisBuffer()->antenna2();
-            Vector<Int> orgSPW = getVii()->getVisBuffer()->spectralWindows();
-
             // Keeping two separate blocks for 'flagdataFlagPropagation' (CAS-12737,
             // CAS-12205, CAS-9985) until this issue is better settled.
             // Fill propagated flag vector/cube
             if (flagdataFlagPropagation)
             {
-                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, spwAnt1Ant2IndexMap,
-                                   orgAnt1, orgAnt2, orgSPW,
+                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, vbAvg_p->row2AvgRow(),
                                    [&flag, &flagCubeMapped]
-                                   (uInt row, uInt chan_i, uInt corr_i, uInt index) {
+                                   (uInt rowMapped, uInt chan_i, uInt corr_i, uInt index) {
                                        if (flag(corr_i,chan_i,index))
-                                           flagCubeMapped(corr_i,chan_i,row) = true;
+                                           flagCubeMapped(corr_i,chan_i,rowMapped) = true;
                                    });
             }
             else
             {
-                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, spwAnt1Ant2IndexMap,
-                                   orgAnt1, orgAnt2, orgSPW,
+                cubePropagateFlags(flagRow, flagMapped, flagCubeMapped, vbAvg_p->row2AvgRow(),
                                    [&flag, &flagCubeMapped]
-                                   (uInt row, uInt chan_i, uInt corr_i, uInt index) {
-                                       flagCubeMapped(corr_i,chan_i,row) =
-                                           flag(corr_i,chan_i,index);
+                                   (uInt rowMapped, uInt chan_i, uInt corr_i, uInt index) {
+                                       flagCubeMapped(corr_i, chan_i, rowMapped) =
+                                           flag(corr_i, chan_i, index);
                                    });
             }
 
@@ -2693,7 +2832,7 @@ void AveragingTvi2::writeFlag (const Cube<Bool> & flag)
             getVii()->writeFlagRow(flagMapped);
         }
 
-        currentBuffer += 1;
+        currentBuffer++;
         getVii()->next();
         if (currentBuffer > endBuffer_p) break;
     }
