@@ -23,6 +23,8 @@
 #ifndef UVContSubTVI_H_
 #define UVContSubTVI_H_
 
+#include <unordered_map>
+
 // Base class
 #include <mstransform/TVI/FreqAxisTVI.h>
 
@@ -81,15 +83,21 @@ protected:
 												const Cube<Float> &inputWeight,
 												Cube<T> &outputVis,
 												Int parallelCorrAxis=-1) const;
+
+ private:
+    void parseFitSPW(const Record &configuration);
+    void printFitSPW() const;
+
     mutable uInt fitOrder_p;
     mutable Bool want_cont_p;
-    mutable String fitspw_p;
+    // field -> fitspw spec
+    std::unordered_map<int, std::string> fitspw_p;
     mutable Bool withDenoisingLib_p;
     mutable uInt nThreads_p;
     mutable uInt niter_p;
-    mutable map<Int,Vector<Bool> > lineFreeChannelMaskMap_p;
 
-	mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
+    unordered_map<int, unordered_map<Int, Vector<Bool> > > perFieldLineFreeChannelMaskMap_p;
+    mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -41,7 +41,6 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 {
 	fitOrder_p = 0;
 	want_cont_p = False;
-	fitspw_p = String("");
 	withDenoisingLib_p = True;
 	nThreads_p = 1;
 	niter_p = 1;
@@ -68,6 +67,128 @@ UVContSubTVI::~UVContSubTVI()
 		delete iter->second;
 	}
 	inputFrequencyMap_p.clear();
+}
+
+
+/*
+ * Check if this is a valid field index
+ *
+ * @param str string from a (multi)field spec string
+ *
+ * @return whether this is a valid field index
+ */
+bool isFieldIndex(const std::string &str) {
+    return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
+/*
+ * For a field string (example: '3', '0,1,4' get the integer indices
+ * specified in the string.
+ * Tokenizes the string by ',' separator and trims spaces.
+ *
+ * @param a string with field indices as used in uvcontsub/fitspw parameter
+ *
+ * @return vector of field indices
+ */
+std::vector<int> stringToFieldIdxs(const std::string &str)
+{
+    stringstream stream(str);
+    vector<int> result;
+
+    while(stream.good()) {
+        string token;
+        getline(stream, token, ',' );
+        token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
+        if (!isFieldIndex(token)) {
+            throw AipsError("Invalid field index: " + token);
+
+        }
+        auto idx = std::stoi(token);
+        result.push_back(idx);
+    }
+    return result;
+}
+
+void UVContSubTVI::parseFitSPW(const Record &configuration)
+{
+    int exists = -1;
+
+    exists = -1;
+    exists = configuration.fieldNumber ("fitspw");
+    if (exists >= 0)
+    {
+        try {
+            String fitspw;
+            configuration.get(exists, fitspw);
+            fitspw_p.insert({-1, fitspw});
+        } catch(AipsError &exc) {
+            const auto rawFieldFitspw = configuration.asArrayString("fitspw");
+            if (0 == rawFieldFitspw.size()) {
+                throw AipsError("The list of fitspw specifications is empty!");
+            }
+
+            auto nelem = rawFieldFitspw.size();
+            if (0 != (nelem % 2)) {
+                throw AipsError("fitspw must be a string or a list of pairs of strings: "
+                                "field, field_fitspw. But the list or array passed has " +
+                                std::to_string(nelem) + " items.");
+            }
+            const Matrix<String> fieldFitspw =
+                rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
+            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                     << "  Number of per-field fitspw specifications received: "
+                     << nelem/2 << LogIO::POST;
+
+            // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
+            const auto fieldsTable = getVii()->ms().field();
+            const auto maxField = fieldsTable.nrow() - 1;
+
+            const auto shape = fieldFitspw.shape();
+            // iterate through fields
+            for (int row=0; row<shape[0]; ++row) {
+                //for (int col=0; col<shape[0]; ++col) {
+                const auto &fieldsStr = fieldFitspw(row, 0);
+                const auto &fitSpw = fieldFitspw(row, 1);
+
+                auto fieldIdxs = stringToFieldIdxs(fieldsStr);
+                for (const auto fid: fieldIdxs) {
+                    const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
+                    // check for duplicates in the fields given in the list
+                    if (false == inserted.second) {
+                        throw AipsError("Duplicated field in list of per-field fitspw : " +
+                                        std::to_string(fid));
+                    }
+                    // check that the field is in the MS
+                    if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
+                        throw AipsError("Wrong field ID given: " +
+                                        std::to_string(fid) +
+                                        ". This MeasurementSet has field IDs between"
+                                        " 0 and " + std::to_string(maxField));
+                    }
+                }
+            }
+        }
+    }
+}
+
+void UVContSubTVI::printFitSPW() const
+{
+    if (fitspw_p.size() > 0) {
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Line-free channel selection is: " << LogIO::POST;
+
+        for (auto const &elem: fitspw_p) {
+            std::string fieldName;
+            if (elem.first >= 0) {
+                fieldName = std::to_string(elem.first);
+            } else {
+                fieldName = "all fields";
+            }
+            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                     << "   field: " << fieldName << ": " << elem.second
+                     << LogIO::POST;
+        }
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -105,18 +226,7 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-	exists = -1;
-	exists = configuration.fieldNumber ("fitspw");
-	if (exists >= 0)
-	{
-		configuration.get (exists, fitspw_p);
-
-		if (fitspw_p.size() > 0)
-		{
-			logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Line-free channel selection is " << fitspw_p << LogIO::POST;
-		}
-	}
+        parseFitSPW(configuration);
 
 	exists = -1;
 	exists = configuration.fieldNumber ("denoising_lib");
@@ -198,56 +308,78 @@ void UVContSubTVI::initialize()
 	}
 
 	// Process line-free channel selection
-	if (fitspw_p.size() > 0)
-	{
-		// Parse line-free channel selection
-		MSSelection mssel;
-		mssel.setSpwExpr(fitspw_p);
-		Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
+        for (const auto item: fitspw_p) {
+            unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap_p;
+            // Parse line-free channel selection using MSSelection syntax
+            const auto fieldID = item.first;
+            auto fieldFitspw = item.second;
 
-		// Create line-free channel map
-	    uInt nSelections = spwchan.shape()[0];
-	    map<Int,vector<Int> > lineFreeChannelMap;
-		Int channelStart,channelStop,channelStep;
-		for(uInt selection_i=0;selection_i<nSelections;selection_i++)
-		{
-			spw = spwchan(selection_i,0);
-			channelStart = spwchan(selection_i,1);
-			channelStop = spwchan(selection_i,2);
-			channelStep = spwchan(selection_i,3);
+            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                     << "Parsing fitspw string for field: " << fieldID
+                     << ", fitspw: '" << fieldFitspw << "'" << LogIO::POST;
 
-			if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
-			{
-				lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
-			}
+            if ("NONE" == fieldFitspw) {
+                // Not inserting any entries in perFieldLineFreeChannelMaskMap_p[fieldID]
+                // implies no transformation for that field
+                continue;
+            }
 
-			for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
-			{
-				lineFreeChannelMap[spw].push_back(inpChan);
-			}
-		}
+            if (fieldFitspw.empty()) {
+                // -1 is the "all-fields-included" field pseudo-index
+                // empty selection -> all SPW, channels, leave all SPW masks unset
+                if (-1 == fieldID) {
+                    perFieldLineFreeChannelMaskMap_p.insert(std::make_pair(fieldID, lineFreeChannelMaskMap_p));
+                }
+                continue;
+            }
+
+            // Some selection string
+            MSSelection mssel;
+            mssel.setSpwExpr(fieldFitspw);
+            Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
+
+            // Create line-free channel map
+            uInt nSelections = spwchan.shape()[0];
+            map<Int,vector<Int> > lineFreeChannelMap;
+            Int channelStart,channelStop,channelStep;
+            for(uInt selection_i=0;selection_i<nSelections;selection_i++)
+            {
+		spw = spwchan(selection_i,0);
+		channelStart = spwchan(selection_i,1);
+                channelStop = spwchan(selection_i,2);
+                channelStep = spwchan(selection_i,3);
+
+                if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
+                {
+                    lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
+                }
+
+                for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
+                {
+                    lineFreeChannelMap[spw].push_back(inpChan);
+                }
+            }
+
+            // Create line-free channel mask
+            uInt selChan;
+            for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
+            {
+                spw = iter->first;
+                if (lineFreeChannelMaskMap_p.find(spw) == lineFreeChannelMaskMap_p.end())
+                {
+                    lineFreeChannelMaskMap_p[spw] = Vector<Bool>(spwInpChanIdxMap_p[spw].size(),True);
+                    for (uInt selChanIdx=0;selChanIdx<lineFreeChannelMap[spw].size();selChanIdx++)
+                    {
+                        selChan = lineFreeChannelMap[spw][selChanIdx];
+                        lineFreeChannelMaskMap_p[spw](selChan) = False;
+                    }
+                }
+                spw_idx++;
+            }
 
 
-		// Create line-free channel mask
-		uInt selChan;
-		for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
-		{
-			spw = iter->first;
-			if (lineFreeChannelMaskMap_p.find(spw) == lineFreeChannelMaskMap_p.end())
-			{
-				lineFreeChannelMaskMap_p[spw] = Vector<Bool>(spwInpChanIdxMap_p[spw].size(),True);
-				for (uInt selChanIdx=0;selChanIdx<lineFreeChannelMap[spw].size();selChanIdx++)
-				{
-					selChan = lineFreeChannelMap[spw][selChanIdx];
-					lineFreeChannelMaskMap_p[spw](selChan) = False;
-				}
-			}
-			spw_idx++;
-		}
-
-	}
-
-	return;
+            perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap_p);
+        }
 }
 
 // -----------------------------------------------------------------------
@@ -320,30 +452,44 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 														const Cube<Float> &inputWeight,
 														Cube<T> &outputVis) const
 {
-	// Get input VisBuffer
-	VisBuffer2 *vb = getVii()->getVisBuffer();
+    // Get input VisBuffer
+    VisBuffer2 *vb = getVii()->getVisBuffer();
 
-	// Get polynomial model for this SPW (depends on number of channels and gridding)
-	Int spwId = vb->spectralWindows()(0);
-	if (inputFrequencyMap_p.find(spwId) == inputFrequencyMap_p.end())
-	{
-		const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
-		// STL should trigger move semantics
-		inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
-	}
+    // Get polynomial model for this SPW (depends on number of channels and gridding)
+    Int spwId = vb->spectralWindows()(0);
+    if (inputFrequencyMap_p.find(spwId) == inputFrequencyMap_p.end())
+    {
+        const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
+        // STL should trigger move semantics
+        inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
+    }
 
-	// Get input line-free channel mask
-	Vector<Bool> *lineFreeChannelMask = NULL;
-	if (lineFreeChannelMaskMap_p.find(spwId) != lineFreeChannelMaskMap_p.end())
-	{
-		lineFreeChannelMask = &(lineFreeChannelMaskMap_p[spwId]);
-	}
 
-	// Reshape output data before passing it to the DataCubeHolder
-	outputVis.resize(getVisBuffer()->getShape(),False);
+    auto mapIt = perFieldLineFreeChannelMaskMap_p.find(-1);
+    if (mapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+        auto fieldID = vb->fieldId()[0];
+        mapIt = perFieldLineFreeChannelMaskMap_p.find(fieldID);
+        if (mapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+            // This was a "NONE", no subtraction for this field
+            outputVis = inputVis;
+            return;
+        }
+    }
 
-	// Get input flag Cube
-	const Cube<Bool> &flagCube = vb->flagCube();
+    // Get input line-free channel mask
+    Vector<Bool> *lineFreeChannelMask = NULL;
+    auto spwMap = mapIt->second;
+    auto lookup = spwMap.find(spwId);
+    if (lookup != spwMap.end())
+    {
+            lineFreeChannelMask = &(lookup->second);
+    }
+
+    // Reshape output data before passing it to the DataCubeHolder
+    outputVis.resize(getVisBuffer()->getShape(),False);
+
+    // Get input flag Cube
+    const Cube<Bool> &flagCube = vb->flagCube();
 
 	// Transform data
 	if (nThreads_p > 1)
@@ -655,7 +801,6 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 		}
 	}
 
-	/*
 	if (debug_p)
 	{
 		LogIO logger;
@@ -667,7 +812,6 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 		logger << "inputVector =" << inputVector << LogIO::POST;
 		logger << "outputVector =" << outputVector << LogIO::POST;
 	}
-	*/
 
 	return;
 }
@@ -693,6 +837,17 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &in
 		{
 			outputVector(chan_idx) -= (freqPows_p(order_idx,chan_idx))*coeff(order_idx);
 		}
+	}
+
+	if (true or debug_p)
+	{
+		LogIO logger;
+		logger << "fit order = " << fitOrder_p << LogIO::POST;
+		logger << "coeff =" << coeff << LogIO::POST;
+		logger << "inputFlags =" << inputFlags << LogIO::POST;
+		logger << "inputWeights =" << inputWeights << LogIO::POST;
+		logger << "inputVector =" << inputVector << LogIO::POST;
+		logger << "outputVector =" << outputVector << LogIO::POST;
 	}
 
 	return;
@@ -843,9 +998,7 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T
 																		Vector<Bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
-{
-
-	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
+{	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
 	fitter_p.calcFitCoeff(inputVector);
 
 	Vector<T> model(outputVector.size());
