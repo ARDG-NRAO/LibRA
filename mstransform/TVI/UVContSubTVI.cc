@@ -124,49 +124,54 @@ void UVContSubTVI::parseFitSPW(const Record &configuration)
         configuration.get(exists, fitspw);
         fitspw_p.insert({-1, fitspw});
     } catch(AipsError &exc) {
-        const auto rawFieldFitspw = configuration.asArrayString("fitspw");
-        if (0 == rawFieldFitspw.size()) {
-            throw AipsError("The list of fitspw specifications is empty!");
-        }
+        parseListFitSPW(configuration);
+    }
+}
 
-        auto nelem = rawFieldFitspw.size();
-        if (0 != (nelem % 2)) {
-            throw AipsError("fitspw must be a string or a list of pairs of strings: "
-                            "field, field_fitspw. But the list or array passed has " +
-                            std::to_string(nelem) + " items.");
-        }
-        const Matrix<String> fieldFitspw =
-            rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
-        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                 << "  Number of per-field fitspw specifications received: "
-                 << nelem/2 << LogIO::POST;
+void UVContSubTVI::parseListFitSPW(const Record &configuration)
+{
+    const auto rawFieldFitspw = configuration.asArrayString("fitspw");
+    if (0 == rawFieldFitspw.size()) {
+        throw AipsError("The list of fitspw specifications is empty!");
+    }
 
-        // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
-        const auto fieldsTable = getVii()->ms().field();
-        const auto maxField = fieldsTable.nrow() - 1;
+    auto nelem = rawFieldFitspw.size();
+    if (0 != (nelem % 2)) {
+        throw AipsError("fitspw must be a string or a list of pairs of strings: "
+                        "field, field_fitspw. But the list or array passed has " +
+                        std::to_string(nelem) + " items.");
+    }
+    const Matrix<String> fieldFitspw =
+        rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
+    logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+             << "  Number of per-field fitspw specifications read: "
+             << nelem/2 << LogIO::POST;
 
-        const auto shape = fieldFitspw.shape();
-        // iterate through fields
-        for (int row=0; row<shape[0]; ++row) {
-            //for (int col=0; col<shape[0]; ++col) {
-            const auto &fieldsStr = fieldFitspw(row, 0);
-            const auto &fitSpw = fieldFitspw(row, 1);
+    // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
+    const auto fieldsTable = getVii()->ms().field();
+    const auto maxField = fieldsTable.nrow() - 1;
 
-            auto fieldIdxs = stringToFieldIdxs(fieldsStr);
-            for (const auto fid: fieldIdxs) {
-                const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
-                // check for duplicates in the fields given in the list
-                if (false == inserted.second) {
-                    throw AipsError("Duplicated field in list of per-field fitspw : " +
-                                    std::to_string(fid));
-                }
-                // check that the field is in the MS
-                if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
-                    throw AipsError("Wrong field ID given: " +
-                                    std::to_string(fid) +
-                                    ". This MeasurementSet has field IDs between"
-                                    " 0 and " + std::to_string(maxField));
-                }
+    const auto shape = fieldFitspw.shape();
+    // iterate through fields
+    for (int row=0; row<shape[0]; ++row) {
+        //for (int col=0; col<shape[0]; ++col) {
+        const auto &fieldsStr = fieldFitspw(row, 0);
+        const auto &fitSpw = fieldFitspw(row, 1);
+
+        auto fieldIdxs = stringToFieldIdxs(fieldsStr);
+        for (const auto fid: fieldIdxs) {
+            const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
+            // check for duplicates in the fields given in the list
+            if (false == inserted.second) {
+                throw AipsError("Duplicated field in list of per-field fitspw : " +
+                                std::to_string(fid));
+            }
+            // check that the field is in the MS
+            if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
+                throw AipsError("Wrong field ID given: " +
+                                std::to_string(fid) +
+                                ". This MeasurementSet has field IDs between"
+                                " 0 and " + std::to_string(maxField));
             }
         }
     }
@@ -924,6 +929,7 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &i
 	Vector<Float> realCoeff;
 	Vector<Float> imagCoeff;
 	realCoeff = fitter_p.fit(frequencies_p, real(inputVector), inputWeights, &inputFlags);
+
 	imagCoeff = fitter_p.fit(frequencies_p, imag(inputVector), inputWeights, &inputFlags);
 
 	// Fill output data
