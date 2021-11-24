@@ -245,7 +245,7 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		if (withDenoisingLib_p)
 		{
 			logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Using denoising lib (GSL based)" << LogIO::POST;
+						<< "Using GSL based multiparameter regression with linear least-squares fitting" << LogIO::POST;
 		}
 	}
 
@@ -305,7 +305,7 @@ void UVContSubTVI::initialize()
 {
     // Populate nchan input-output maps
     uInt spw_idx = 0;
-    for(auto spwInp: spwInpChanIdxMap_p)
+    for (auto spwInp: spwInpChanIdxMap_p)
     {
         auto spw = spwInp.first;
         spwOutChanNumMap_p[spw] = spwInp.second.size();
@@ -317,7 +317,7 @@ void UVContSubTVI::initialize()
         unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
         // Parse line-free channel selection using MSSelection syntax
         const auto fieldID = item.first;
-        auto fieldFitspw = item.second;
+        const auto fieldFitspw = item.second;
 
         logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
                  << "Parsing fitspw string for field: " << fieldNameFromId(fieldID)
@@ -333,7 +333,7 @@ void UVContSubTVI::initialize()
             // -1 is the "all-fields-included" field pseudo-index
             // empty selection -> all SPW, channels, leave all SPW masks unset
             if (-1 == fieldID) {
-                perFieldLineFreeChannelMaskMap_p.insert(std::make_pair(fieldID, lineFreeChannelMaskMap));
+                perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
             }
             continue;
         }
@@ -341,41 +341,39 @@ void UVContSubTVI::initialize()
         // Some selection string
         MSSelection mssel;
         mssel.setSpwExpr(fieldFitspw);
-        Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
+        const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
 
-        // Create line-free channel map
-        uInt nSelections = spwchan.shape()[0];
-        map<Int,vector<Int> > lineFreeChannelMap;
-        Int channelStart,channelStop,channelStep;
-        for(uInt selection_i=0; selection_i<nSelections; ++selection_i)
+        // Create line-free channel map based on MSSelection channel ranges
+        const auto nSelections = spwchan.shape()[0];
+        unordered_map<Int,vector<Int> > lineFreeChannelMap;
+        for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
         {
             auto spw = spwchan(selection_i,0);
-            channelStart = spwchan(selection_i,1);
-            channelStop = spwchan(selection_i,2);
-            channelStep = spwchan(selection_i,3);
             if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
             {
                 lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
             }
 
-            for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
+            const auto channelStart = spwchan(selection_i,1);
+            const auto channelStop = spwchan(selection_i,2);
+            const auto channelStep = spwchan(selection_i,3);
+            for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
             {
                 lineFreeChannelMap[spw].push_back(inpChan);
             }
         }
 
         // Create line-free channel mask
-        uInt selChan;
-        for(auto const spwInp: spwInpChanIdxMap_p)
+        for (auto const spwInp: spwInpChanIdxMap_p)
         {
-            auto spw = spwInp.first;
+            const auto spw = spwInp.first;
             if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
             {
                 lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),True);
                 for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
                      ++selChanIdx)
                 {
-                    selChan = lineFreeChannelMap[spw][selChanIdx];
+                    const auto selChan = lineFreeChannelMap[spw][selChanIdx];
                     lineFreeChannelMaskMap[spw](selChan) = False;
                 }
             }
