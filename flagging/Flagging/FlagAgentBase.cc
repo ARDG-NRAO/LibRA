@@ -196,7 +196,7 @@ FlagAgentBase::initialize()
    timeavg_p = false;
    timebin_p = 0.0;
    channelavg_p = false;
-   chanbin_p = Vector<Int>(1,0);
+   chanbin_p = Vector<Int>(1, 1);
 
    //// Initialize configuration ////
 
