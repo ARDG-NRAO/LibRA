@@ -87,6 +87,7 @@ protected:
  private:
     void parseFitSPW(const Record &configuration);
     void printFitSPW() const;
+    void populatePerFieldLineFreeChannelMask(int fieldID, const std::string& fieldFitspw);
 
     mutable uInt fitOrder_p;
     mutable Bool want_cont_p;

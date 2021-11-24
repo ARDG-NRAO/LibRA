@@ -115,56 +115,57 @@ void UVContSubTVI::parseFitSPW(const Record &configuration)
 
     exists = -1;
     exists = configuration.fieldNumber ("fitspw");
-    if (exists >= 0)
-    {
-        try {
-            String fitspw;
-            configuration.get(exists, fitspw);
-            fitspw_p.insert({-1, fitspw});
-        } catch(AipsError &exc) {
-            const auto rawFieldFitspw = configuration.asArrayString("fitspw");
-            if (0 == rawFieldFitspw.size()) {
-                throw AipsError("The list of fitspw specifications is empty!");
-            }
+    if (exists < 0) {
+        return;
+    }
 
-            auto nelem = rawFieldFitspw.size();
-            if (0 != (nelem % 2)) {
-                throw AipsError("fitspw must be a string or a list of pairs of strings: "
-                                "field, field_fitspw. But the list or array passed has " +
-                                std::to_string(nelem) + " items.");
-            }
-            const Matrix<String> fieldFitspw =
-                rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
-            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                     << "  Number of per-field fitspw specifications received: "
-                     << nelem/2 << LogIO::POST;
+    try {
+        String fitspw;
+        configuration.get(exists, fitspw);
+        fitspw_p.insert({-1, fitspw});
+    } catch(AipsError &exc) {
+        const auto rawFieldFitspw = configuration.asArrayString("fitspw");
+        if (0 == rawFieldFitspw.size()) {
+            throw AipsError("The list of fitspw specifications is empty!");
+        }
 
-            // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
-            const auto fieldsTable = getVii()->ms().field();
-            const auto maxField = fieldsTable.nrow() - 1;
+        auto nelem = rawFieldFitspw.size();
+        if (0 != (nelem % 2)) {
+            throw AipsError("fitspw must be a string or a list of pairs of strings: "
+                            "field, field_fitspw. But the list or array passed has " +
+                            std::to_string(nelem) + " items.");
+        }
+        const Matrix<String> fieldFitspw =
+            rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "  Number of per-field fitspw specifications received: "
+                 << nelem/2 << LogIO::POST;
 
-            const auto shape = fieldFitspw.shape();
-            // iterate through fields
-            for (int row=0; row<shape[0]; ++row) {
-                //for (int col=0; col<shape[0]; ++col) {
-                const auto &fieldsStr = fieldFitspw(row, 0);
-                const auto &fitSpw = fieldFitspw(row, 1);
+        // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
+        const auto fieldsTable = getVii()->ms().field();
+        const auto maxField = fieldsTable.nrow() - 1;
 
-                auto fieldIdxs = stringToFieldIdxs(fieldsStr);
-                for (const auto fid: fieldIdxs) {
-                    const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
-                    // check for duplicates in the fields given in the list
-                    if (false == inserted.second) {
-                        throw AipsError("Duplicated field in list of per-field fitspw : " +
-                                        std::to_string(fid));
-                    }
-                    // check that the field is in the MS
-                    if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
-                        throw AipsError("Wrong field ID given: " +
-                                        std::to_string(fid) +
-                                        ". This MeasurementSet has field IDs between"
-                                        " 0 and " + std::to_string(maxField));
-                    }
+        const auto shape = fieldFitspw.shape();
+        // iterate through fields
+        for (int row=0; row<shape[0]; ++row) {
+            //for (int col=0; col<shape[0]; ++col) {
+            const auto &fieldsStr = fieldFitspw(row, 0);
+            const auto &fitSpw = fieldFitspw(row, 1);
+
+            auto fieldIdxs = stringToFieldIdxs(fieldsStr);
+            for (const auto fid: fieldIdxs) {
+                const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
+                // check for duplicates in the fields given in the list
+                if (false == inserted.second) {
+                    throw AipsError("Duplicated field in list of per-field fitspw : " +
+                                    std::to_string(fid));
+                }
+                // check that the field is in the MS
+                if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
+                    throw AipsError("Wrong field ID given: " +
+                                    std::to_string(fid) +
+                                    ". This MeasurementSet has field IDs between"
+                                    " 0 and " + std::to_string(maxField));
                 }
             }
         }
@@ -301,15 +302,65 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
+void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
+                                                       const std::string& fieldFitspw)
+{
+    // Some selection string
+    MSSelection mssel;
+    mssel.setSpwExpr(fieldFitspw);
+    const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
+
+    // Create line-free channel map based on MSSelection channel ranges
+    const auto nSelections = spwchan.shape()[0];
+    unordered_map<Int,vector<Int> > lineFreeChannelMap;
+    for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
+    {
+        auto spw = spwchan(selection_i,0);
+        if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
+        {
+            lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
+        }
+
+        const auto channelStart = spwchan(selection_i,1);
+        const auto channelStop = spwchan(selection_i,2);
+        const auto channelStep = spwchan(selection_i,3);
+        for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
+        {
+            lineFreeChannelMap[spw].push_back(inpChan);
+        }
+    }
+
+    // Create line-free channel mask, spw->channel_mask
+    unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+    for (auto const spwInp: spwInpChanIdxMap_p)
+    {
+        const auto spw = spwInp.first;
+        if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
+        {
+            lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),True);
+            for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
+                 ++selChanIdx)
+            {
+                const auto selChan = lineFreeChannelMap[spw][selChanIdx];
+                lineFreeChannelMaskMap[spw](selChan) = False;
+            }
+        }
+    }
+
+    // Poppulate per field map: field -> spw -> channel_mask
+    perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
+}
+
+// -----------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------
 void UVContSubTVI::initialize()
 {
     // Populate nchan input-output maps
-    uInt spw_idx = 0;
     for (auto spwInp: spwInpChanIdxMap_p)
     {
         auto spw = spwInp.first;
         spwOutChanNumMap_p[spw] = spwInp.second.size();
-        spw_idx++;
     }
 
     // Process line-free channel selection
@@ -338,49 +389,7 @@ void UVContSubTVI::initialize()
             continue;
         }
 
-        // Some selection string
-        MSSelection mssel;
-        mssel.setSpwExpr(fieldFitspw);
-        const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
-
-        // Create line-free channel map based on MSSelection channel ranges
-        const auto nSelections = spwchan.shape()[0];
-        unordered_map<Int,vector<Int> > lineFreeChannelMap;
-        for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
-        {
-            auto spw = spwchan(selection_i,0);
-            if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
-            {
-                lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
-            }
-
-            const auto channelStart = spwchan(selection_i,1);
-            const auto channelStop = spwchan(selection_i,2);
-            const auto channelStep = spwchan(selection_i,3);
-            for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
-            {
-                lineFreeChannelMap[spw].push_back(inpChan);
-            }
-        }
-
-        // Create line-free channel mask
-        for (auto const spwInp: spwInpChanIdxMap_p)
-        {
-            const auto spw = spwInp.first;
-            if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
-            {
-                lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),True);
-                for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
-                     ++selChanIdx)
-                {
-                    const auto selChan = lineFreeChannelMap[spw][selChanIdx];
-                    lineFreeChannelMaskMap[spw](selChan) = False;
-                }
-            }
-            spw_idx++;
-        }
-
-        perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
+        populatePerFieldLineFreeChannelMask(fieldID, fieldFitspw);
     }
 }
 
