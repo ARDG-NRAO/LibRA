@@ -171,6 +171,17 @@ void UVContSubTVI::parseFitSPW(const Record &configuration)
     }
 }
 
+std::string fieldNameFromId(int idx)
+{
+    std::string name;
+    if (idx >= 0) {
+        name = std::to_string(idx);
+    } else {
+        name = "all fields";
+    }
+    return name;
+}
+
 void UVContSubTVI::printFitSPW() const
 {
     if (fitspw_p.size() > 0) {
@@ -178,16 +189,13 @@ void UVContSubTVI::printFitSPW() const
                  << "Line-free channel selection is: " << LogIO::POST;
 
         for (auto const &elem: fitspw_p) {
-            std::string fieldName;
-            if (elem.first >= 0) {
-                fieldName = std::to_string(elem.first);
-            } else {
-                fieldName = "all fields";
-            }
             logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                     << "   field: " << fieldName << ": " << elem.second
-                     << LogIO::POST;
+                     << "   field: " << fieldNameFromId(elem.first)
+                     << ": " << elem.second << LogIO::POST;
         }
+    } else {
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Line-free channel selection: not given" << LogIO::POST;
     }
 }
 
@@ -295,91 +303,87 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 // -----------------------------------------------------------------------
 void UVContSubTVI::initialize()
 {
-	// Populate nchan input-output maps
-	Int spw;
-	uInt spw_idx = 0;
-	map<Int,vector<Int> >::iterator iter;
-	for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
-	{
-		spw = iter->first;
-		spwOutChanNumMap_p[spw] = spwInpChanIdxMap_p[spw].size();
+    // Populate nchan input-output maps
+    uInt spw_idx = 0;
+    for(auto spwInp: spwInpChanIdxMap_p)
+    {
+        auto spw = spwInp.first;
+        spwOutChanNumMap_p[spw] = spwInp.second.size();
+        spw_idx++;
+    }
 
-		spw_idx++;
-	}
+    // Process line-free channel selection
+    for (const auto item: fitspw_p) {
+        unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+        // Parse line-free channel selection using MSSelection syntax
+        const auto fieldID = item.first;
+        auto fieldFitspw = item.second;
 
-	// Process line-free channel selection
-        for (const auto item: fitspw_p) {
-            unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap_p;
-            // Parse line-free channel selection using MSSelection syntax
-            const auto fieldID = item.first;
-            auto fieldFitspw = item.second;
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Parsing fitspw string for field: " << fieldNameFromId(fieldID)
+                 << ", fitspw: '" << fieldFitspw << "'" << LogIO::POST;
 
-            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                     << "Parsing fitspw string for field: " << fieldID
-                     << ", fitspw: '" << fieldFitspw << "'" << LogIO::POST;
-
-            if ("NONE" == fieldFitspw) {
-                // Not inserting any entries in perFieldLineFreeChannelMaskMap_p[fieldID]
-                // implies no transformation for that field
-                continue;
-            }
-
-            if (fieldFitspw.empty()) {
-                // -1 is the "all-fields-included" field pseudo-index
-                // empty selection -> all SPW, channels, leave all SPW masks unset
-                if (-1 == fieldID) {
-                    perFieldLineFreeChannelMaskMap_p.insert(std::make_pair(fieldID, lineFreeChannelMaskMap_p));
-                }
-                continue;
-            }
-
-            // Some selection string
-            MSSelection mssel;
-            mssel.setSpwExpr(fieldFitspw);
-            Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
-
-            // Create line-free channel map
-            uInt nSelections = spwchan.shape()[0];
-            map<Int,vector<Int> > lineFreeChannelMap;
-            Int channelStart,channelStop,channelStep;
-            for(uInt selection_i=0;selection_i<nSelections;selection_i++)
-            {
-		spw = spwchan(selection_i,0);
-		channelStart = spwchan(selection_i,1);
-                channelStop = spwchan(selection_i,2);
-                channelStep = spwchan(selection_i,3);
-
-                if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
-                {
-                    lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
-                }
-
-                for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
-                {
-                    lineFreeChannelMap[spw].push_back(inpChan);
-                }
-            }
-
-            // Create line-free channel mask
-            uInt selChan;
-            for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
-            {
-                spw = iter->first;
-                if (lineFreeChannelMaskMap_p.find(spw) == lineFreeChannelMaskMap_p.end())
-                {
-                    lineFreeChannelMaskMap_p[spw] = Vector<Bool>(spwInpChanIdxMap_p[spw].size(),True);
-                    for (uInt selChanIdx=0;selChanIdx<lineFreeChannelMap[spw].size();selChanIdx++)
-                    {
-                        selChan = lineFreeChannelMap[spw][selChanIdx];
-                        lineFreeChannelMaskMap_p[spw](selChan) = False;
-                    }
-                }
-                spw_idx++;
-            }
-
-
-            perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap_p);
+        if ("NONE" == fieldFitspw) {
+            // Not inserting any entries in perFieldLineFreeChannelMaskMap_p[fieldID]
+            // implies no transformation for that field (inputVis -> outputVis)
+            continue;
         }
+
+        if (fieldFitspw.empty()) {
+            // -1 is the "all-fields-included" field pseudo-index
+            // empty selection -> all SPW, channels, leave all SPW masks unset
+            if (-1 == fieldID) {
+                perFieldLineFreeChannelMaskMap_p.insert(std::make_pair(fieldID, lineFreeChannelMaskMap));
+            }
+            continue;
+        }
+
+        // Some selection string
+        MSSelection mssel;
+        mssel.setSpwExpr(fieldFitspw);
+        Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
+
+        // Create line-free channel map
+        uInt nSelections = spwchan.shape()[0];
+        map<Int,vector<Int> > lineFreeChannelMap;
+        Int channelStart,channelStop,channelStep;
+        for(uInt selection_i=0; selection_i<nSelections; ++selection_i)
+        {
+            auto spw = spwchan(selection_i,0);
+            channelStart = spwchan(selection_i,1);
+            channelStop = spwchan(selection_i,2);
+            channelStep = spwchan(selection_i,3);
+            if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
+            {
+                lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
+            }
+
+            for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
+            {
+                lineFreeChannelMap[spw].push_back(inpChan);
+            }
+        }
+
+        // Create line-free channel mask
+        uInt selChan;
+        for(auto const spwInp: spwInpChanIdxMap_p)
+        {
+            auto spw = spwInp.first;
+            if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
+            {
+                lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),True);
+                for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
+                     ++selChanIdx)
+                {
+                    selChan = lineFreeChannelMap[spw][selChanIdx];
+                    lineFreeChannelMaskMap[spw](selChan) = False;
+                }
+            }
+            spw_idx++;
+        }
+
+        perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
+    }
 }
 
 // -----------------------------------------------------------------------

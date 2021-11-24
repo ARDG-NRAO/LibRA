@@ -96,6 +96,7 @@ protected:
     mutable uInt nThreads_p;
     mutable uInt niter_p;
 
+    // Maps field -> SPW -> channel_mask
     unordered_map<int, unordered_map<Int, Vector<Bool> > > perFieldLineFreeChannelMaskMap_p;
     mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
 };
