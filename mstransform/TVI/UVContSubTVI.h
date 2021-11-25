@@ -98,7 +98,7 @@ protected:
     mutable uInt nThreads_p;
     mutable uInt niter_p;
 
-    // Maps field -> SPW -> channel_mask
+    // Maps field -> SPW -> channel_mask (1s will be combined with flags to exclude chans)
     unordered_map<int, unordered_map<Int, Vector<Bool> > > perFieldLineFreeChannelMaskMap_p;
     mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
 };
@@ -227,7 +227,7 @@ template<class T> class UVContSubtractionKernel : public UVContSubKernel<T>
 public:
 
 	UVContSubtractionKernel(	denoising::GslPolynomialModel<Double>* model,
-								Vector<Bool> *lineFreeChannelMask=NULL);
+								Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
@@ -269,7 +269,7 @@ template<class T> class UVContEstimationKernel : public UVContSubKernel<T>
 public:
 
 	UVContEstimationKernel(	denoising::GslPolynomialModel<Double>* model,
-							Vector<Bool> *lineFreeChannelMask=NULL);
+							Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
@@ -312,7 +312,7 @@ public:
 
 	UVContSubtractionDenoisingKernel(	denoising::GslPolynomialModel<Double>* model,
 										size_t nIter,
-										Vector<Bool> *lineFreeChannelMask=NULL);
+										Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
@@ -347,7 +347,7 @@ public:
 
 	UVContEstimationDenoisingKernel(	denoising::GslPolynomialModel<Double>* model,
 										size_t nIter,
-										Vector<Bool> *lineFreeChannelMask=NULL);
+										Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 

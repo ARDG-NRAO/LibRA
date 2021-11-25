@@ -211,7 +211,7 @@ void UVContSubTVI::printFitSPW() const
 Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 {
 	int exists = -1;
-	Bool ret = True;
+	Bool ret = true;
 
 	exists = -1;
 	exists = configuration.fieldNumber ("fitorder");
@@ -342,7 +342,7 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
         const auto spw = spwInp.first;
         if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
         {
-            lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),True);
+            lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),true);
             for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
                  ++selChanIdx)
             {
@@ -493,7 +493,7 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     }
 
     // Get input line-free channel mask
-    Vector<Bool> *lineFreeChannelMask = NULL;
+    Vector<Bool> *lineFreeChannelMask = nullptr;
     auto spwMap = mapIt->second;
     auto lookup = spwMap.find(spwId);
     if (lookup != spwMap.end())
@@ -687,7 +687,7 @@ template<class T> UVContSubKernel<T>::UVContSubKernel(	denoising::GslPolynomialM
 	freqPows_p.reference(model_p->getModelMatrix());
 	frequencies_p.reference(model_p->getLinearComponentFloat());
 
-	lineFreeChannelMask_p = lineFreeChannelMask != NULL? lineFreeChannelMask : NULL;
+	lineFreeChannelMask_p = lineFreeChannelMask != nullptr? lineFreeChannelMask : nullptr;
 	debug_p = False;
 }
 
@@ -703,7 +703,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 
 	// Apply line-free channel mask
 	Vector<Bool> &inputFlags = inputData->getVector<Bool>(MS::FLAG);
-	if (lineFreeChannelMask_p != NULL) inputFlags |= *lineFreeChannelMask_p;
+	if (lineFreeChannelMask_p != nullptr) inputFlags |= *lineFreeChannelMask_p;
 
 	// Calculate number of valid data points and adapt fit
 	size_t validPoints = nfalse(inputFlags);
@@ -716,7 +716,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 		if (validPoints <= fitOrder_p)
 		{
 			changeFitOrder(validPoints-1);
-			restoreDefaultPoly = True;
+			restoreDefaultPoly = true;
 		}
 
 		// Get weights
@@ -765,7 +765,7 @@ template<class T> void UVContSubtractionKernel<T>::changeFitOrder(size_t order)
 	fitOrder_p = order;
 	Polynomial<AutoDiff<Float> > poly(order);
 	fitter_p.setFunction(poly); // poly It is cloned
-	fitter_p.asWeight(True);
+	fitter_p.asWeight(true);
 
 	return;
 }
@@ -892,7 +892,7 @@ template<class T> void UVContEstimationKernel<T>::changeFitOrder(size_t order)
 	fitOrder_p = order;
 	Polynomial<AutoDiff<Float> > poly(order);
 	fitter_p.setFunction(poly); // poly It is cloned
-	fitter_p.asWeight(True);
+	fitter_p.asWeight(true);
 
 	return;
 }
