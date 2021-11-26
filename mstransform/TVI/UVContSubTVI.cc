@@ -28,6 +28,81 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 namespace vi { //# NAMESPACE VI - BEGIN
 
+void UVContSubResult::addOneFit(int field, int scan, int spw, int pol, Complex chiSquared)
+{
+    auto &polRes = accum[field][scan][spw];
+    auto resIt = polRes.find(pol);
+    if (resIt == polRes.end()) {
+        FitResultAcc fitResult;
+        fitResult.count = 1;
+        fitResult.chiSqAvg = chiSquared;
+        fitResult.chiSqMin = chiSquared;
+        fitResult.chiSqMax = chiSquared;
+        polRes.emplace(pol, fitResult);
+    } else {
+        auto &fitResult = resIt->second;
+        fitResult.count++;
+        fitResult.chiSqAvg += (chiSquared - fitResult.chiSqAvg) /
+            static_cast<float>(fitResult.count);
+        if (chiSquared < fitResult.chiSqMin)
+            fitResult.chiSqMin = chiSquared;
+        if (chiSquared > fitResult.chiSqMax)
+            fitResult.chiSqMax = chiSquared;
+    }
+}
+
+Record UVContSubResult::getAccumulatedResult() const
+{
+    Record fieldRec;
+    for (const auto fieldIt : accum) {
+        Record srec;
+        for (const auto scanIt : fieldIt.second) {
+            Record sprec;
+            for (const auto spwIt : scanIt.second) {
+                Record prec;
+                for (const auto polIt : spwIt.second) {
+                    const auto fitResult = polIt.second;
+                    Record avg;
+                    avg.define("real", fitResult.chiSqAvg.real());
+                    avg.define("imag", fitResult.chiSqAvg.imag());
+                    Record min;
+                    min.define("real", fitResult.chiSqMin.real());
+                    min.define("imag", fitResult.chiSqMin.imag());
+                    Record max;
+                    max.define("real", fitResult.chiSqMax.real());
+                    max.define("imag", fitResult.chiSqMax.imag());
+                    // TODO: max
+                    Record chisq;
+                    chisq.defineRecord("average", avg);
+                    chisq.defineRecord("min", min);
+                    chisq.defineRecord("max", max);
+
+                    Record stats;
+                    stats.defineRecord("chi_squared", chisq);
+                    stats.define("count", (unsigned int)fitResult.count);
+                    prec.defineRecord(std::to_string(polIt.first), stats);
+                }
+                Record polRec;
+                polRec.defineRecord("polarization", prec);
+                sprec.defineRecord(std::to_string(spwIt.first), polRec);
+            }
+            Record spwRec;
+            spwRec.defineRecord("spw", sprec);
+            srec.defineRecord(std::to_string(scanIt.first), spwRec);
+        }
+        Record scanTop;
+        scanTop.defineRecord("scan", srec);
+        fieldRec.defineRecord(std::to_string(fieldIt.first), scanTop);
+    }
+    Record gof;
+    gof.defineRecord("field", fieldRec);
+
+    Record uvcont;
+    uvcont.defineRecord("goodness_of_fit", gof);
+    uvcont.define("comment", "summary of data fitting results in uv-continuum subtraction");
+    return uvcont;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // UVContSubTVI class
 //////////////////////////////////////////////////////////////////////////
@@ -41,7 +116,7 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 {
 	fitOrder_p = 0;
 	want_cont_p = False;
-	withDenoisingLib_p = True;
+	withDenoisingLib_p = true;
 	nThreads_p = 1;
 	niter_p = 1;
 
@@ -317,13 +392,13 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
 
     // Create line-free channel map based on MSSelection channel ranges
     const auto nSelections = spwchan.shape()[0];
-    unordered_map<Int,vector<Int> > lineFreeChannelMap;
+    unordered_map<Int,vector<Int> > lineFreeChannelSelMap;
     for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
     {
         auto spw = spwchan(selection_i,0);
-        if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
+        if (lineFreeChannelSelMap.find(spw) == lineFreeChannelSelMap.end())
         {
-            lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
+            lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it
         }
 
         const auto channelStart = spwchan(selection_i,1);
@@ -331,7 +406,7 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
         const auto channelStep = spwchan(selection_i,3);
         for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
         {
-            lineFreeChannelMap[spw].push_back(inpChan);
+            lineFreeChannelSelMap[spw].push_back(inpChan);
         }
     }
 
@@ -342,12 +417,20 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
         const auto spw = spwInp.first;
         if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
         {
-            lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(),true);
-            for (uInt selChanIdx=0; selChanIdx<lineFreeChannelMap[spw].size();
-                 ++selChanIdx)
-            {
-                const auto selChan = lineFreeChannelMap[spw][selChanIdx];
-                lineFreeChannelMaskMap[spw](selChan) = False;
+            if (lineFreeChannelSelMap.size() > 0 && 0 == lineFreeChannelSelMap[spw].size()) {
+                // Some SPWs have been selected, but this SPW doesn't have any selection
+                //   => a 0-elements mask says there is nothing to mask or fit here, or
+                // otherwise we'd make the effort to prepare and call the fit routine for an
+                // "all masked/True" channel mask which will not even start minimizing
+                lineFreeChannelMaskMap[spw] = Vector<Bool>();
+            } else {
+                lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(), true);
+                for (uInt selChanIdx=0; selChanIdx<lineFreeChannelSelMap[spw].size();
+                     ++selChanIdx)
+                {
+                    const auto selChan = lineFreeChannelSelMap[spw][selChanIdx];
+                    lineFreeChannelMaskMap[spw](selChan) = False;
+                }
             }
         }
     }
@@ -464,6 +547,15 @@ void UVContSubTVI::visibilityModel (Cube<Complex> & vis) const
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
+void UVContSubTVI::result(Record &res) const
+{
+    auto acc = result_p.getAccumulatedResult();
+    res.defineRecord("uvcontsub", acc);
+}
+
+// -----------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------
 template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 														const Cube<Float> &inputWeight,
 														Cube<T> &outputVis) const
@@ -480,13 +572,14 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
         inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
     }
 
-
-    auto mapIt = perFieldLineFreeChannelMaskMap_p.find(-1);
-    if (mapIt == perFieldLineFreeChannelMaskMap_p.end()) {
-        auto fieldID = vb->fieldId()[0];
-        mapIt = perFieldLineFreeChannelMaskMap_p.find(fieldID);
-        if (mapIt == perFieldLineFreeChannelMaskMap_p.end()) {
-            // This was a "NONE", no subtraction for this field
+    auto fieldID = vb->fieldId()[0];
+    // First check the "all fields" (no per-individual field list in fitspw)
+    auto fieldMapIt = perFieldLineFreeChannelMaskMap_p.find(-1);
+    if (fieldMapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+        // otherwise, check for individual fields (coming from a fitspw list)
+        fieldMapIt = perFieldLineFreeChannelMaskMap_p.find(fieldID);
+        if (fieldMapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+            // This was a "NONE" = no-subtraction for this field ==> no-op
             outputVis = inputVis;
             return;
         }
@@ -494,11 +587,17 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 
     // Get input line-free channel mask
     Vector<Bool> *lineFreeChannelMask = nullptr;
-    auto spwMap = mapIt->second;
-    auto lookup = spwMap.find(spwId);
-    if (lookup != spwMap.end())
+    auto spwMap = fieldMapIt->second;
+    auto maskLookup = spwMap.find(spwId);
+    if (maskLookup != spwMap.end())
     {
-            lineFreeChannelMask = &(lookup->second);
+        if (maskLookup->second.nelements() == 0) {
+            // This was a non-selected SPW in a non-empty SPW selection string ==> no-op
+            outputVis = inputVis;
+            return;
+        } else {
+            lineFreeChannelMask = &(maskLookup->second);
+        }
     }
 
     // Reshape output data before passing it to the DataCubeHolder
@@ -534,9 +633,16 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 	}
 	else
 	{
-		transformDataCore(inputFrequencyMap_p[spwId],lineFreeChannelMask,
-				inputVis,flagCube,inputWeight,outputVis);
-	}
+            auto scanID = vb->scan()[0];
+            uInt nCorrs = vb->getShape()(0);
+            for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
+            {
+                Complex chisq =
+                    transformDataCore(inputFrequencyMap_p[spwId], lineFreeChannelMask,
+                                      inputVis, flagCube, inputWeight, outputVis, corrIdx);
+                result_p.addOneFit(fieldID, scanID, spwId, (int)corrIdx, chisq);
+            }
+        }
 
 	return;
 }
@@ -544,13 +650,13 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomialModel<Double>* model,
-														Vector<Bool> *lineFreeChannelMask,
-														const Cube<T> &inputVis,
-														const Cube<Bool> &inputFlags,
-														const Cube<Float> &inputWeight,
-														Cube<T> &outputVis,
-														Int parallelCorrAxis) const
+template<class T> Complex UVContSubTVI::transformDataCore(denoising::GslPolynomialModel<Double>* model,
+                                                          Vector<Bool> *lineFreeChannelMask,
+                                                          const Cube<T> &inputVis,
+                                                          const Cube<Bool> &inputFlags,
+                                                          const Cube<Float> &inputWeight,
+                                                          Cube<T> &outputVis,
+                                                          Int parallelCorrAxis) const
 {
 	// Gather input data
 	DataCubeMap inputData;
@@ -566,6 +672,7 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 	DataCubeHolder<T> outputVisCubeHolder(outputVis);
 	outputData.add(MS::DATA,outputVisCubeHolder);
 
+        Complex chisq;
 	if (want_cont_p)
 	{
 		if (withDenoisingLib_p)
@@ -573,12 +680,14 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 			 UVContEstimationDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
 			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+			 chisq = kernel.getChiSquared();
 		}
 		else
 		{
 			UVContEstimationKernel<T> kernel(model,lineFreeChannelMask);
 			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                        chisq = kernel.getChiSquared();
 		}
 	}
 	else
@@ -588,16 +697,18 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 			 UVContSubtractionDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
 			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                         chisq = kernel.getChiSquared();
 		}
 		else
 		{
 			UVContSubtractionKernel<T> kernel(model,lineFreeChannelMask);
 			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                        chisq = kernel.getChiSquared();
 		}
 	}
 
-	return;
+	return chisq;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -726,7 +837,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 		Vector<Bool> mask = !inputFlags;
 
 		// Calculate and subtract continuum
-		kernelCore(inputVector,mask,inputWeight,outputVector);
+		chisq_p = kernelCore(inputVector,mask,inputWeight,outputVector);
 
 		// Go back to default fit order to match number of valid points
 		if (restoreDefaultPoly)
@@ -738,8 +849,6 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 	{
 		defaultKernel(inputVector,outputVector);
 	}
-
-	return;
 }
 
 
@@ -794,7 +903,7 @@ template<class T> void UVContSubtractionKernel<T>::defaultKernel(	Vector<Float> 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &inputVector,
+template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Complex> &outputVector)
@@ -803,7 +912,9 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 	Vector<Float> realCoeff;
 	Vector<Float> imagCoeff;
 	realCoeff = fitter_p.fit(frequencies_p, real(inputVector), inputWeights, &inputFlags);
+        double realChisq = fitter_p.chiSquare();
 	imagCoeff = fitter_p.fit(frequencies_p, imag(inputVector), inputWeights, &inputFlags);
+        double imagChisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = inputVector;
@@ -829,13 +940,13 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 		logger << "outputVector =" << outputVector << LogIO::POST;
 	}
 
-	return;
+	return Complex(realChisq, imagChisq);
 }
 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &inputVector,
+template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
@@ -843,6 +954,7 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &in
 	// Fit model
 	Vector<Float> coeff;
 	coeff = fitter_p.fit(frequencies_p, inputVector, inputWeights, &inputFlags);
+        const double chisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = inputVector;
@@ -866,7 +978,7 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &in
 		logger << "outputVector =" << outputVector << LogIO::POST;
 	}
 
-	return;
+	return Complex(chisq, chisq);
 }
 
 
@@ -920,7 +1032,7 @@ template<class T> void UVContEstimationKernel<T>::defaultKernel(Vector<Float> &,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &inputVector,
+template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Complex> &outputVector)
@@ -929,8 +1041,10 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &i
 	Vector<Float> realCoeff;
 	Vector<Float> imagCoeff;
 	realCoeff = fitter_p.fit(frequencies_p, real(inputVector), inputWeights, &inputFlags);
+        double realChisq = fitter_p.chiSquare();
 
 	imagCoeff = fitter_p.fit(frequencies_p, imag(inputVector), inputWeights, &inputFlags);
+        double imagChisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = Complex(realCoeff(0),imagCoeff(0));
@@ -943,13 +1057,13 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &i
 		}
 	}
 
-	return;
+	return Complex(realChisq, imagChisq);
 }
 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inputVector,
+template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
@@ -957,6 +1071,7 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inp
 	// Fit model
 	Vector<Float> coeff;
 	coeff = fitter_p.fit(frequencies_p, inputVector, inputWeights, &inputFlags);
+	double chisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = coeff(0);
@@ -968,7 +1083,7 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inp
 		}
 	}
 
-	return;
+	return Complex(chisq, chisq);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1011,12 +1126,14 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::defaultKernel(	Vecto
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
+template<class T> Complex UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
 																		Vector<Bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
 {	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
-	fitter_p.calcFitCoeff(inputVector);
+    vector<T> coeff;
+    Complex chisq;
+    tie(coeff, chisq) = fitter_p.calcFitCoeff(inputVector);
 
 	Vector<T> model(outputVector.size());
 	fitter_p.calcFitModel(model);
@@ -1054,7 +1171,7 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T
 	}
 	*/
 
-	return;
+	return chisq;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1096,13 +1213,15 @@ template<class T> void UVContEstimationDenoisingKernel<T>::defaultKernel(	Vector
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
+template<class T> Complex UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
 																		Vector<Bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
 {
 	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
-	fitter_p.calcFitCoeff(inputVector);
+    Vector<T> coeff;
+    Complex chisq;
+    tie(coeff, chisq) = fitter_p.calcFitCoeff(inputVector);
 	fitter_p.calcFitModel(outputVector);
 
 	/*
@@ -1120,7 +1239,7 @@ template<class T> void UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T>
 	}
 	*/
 
-	return;
+	return chisq;
 }
 
 } //# NAMESPACE VI - END
