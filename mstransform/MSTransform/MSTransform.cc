@@ -224,12 +224,13 @@ MSTransform::run()
 
 		visIter->nextChunk();
 	}
-
+	Record result;
+	visIter->result(result);
 	mdh_p->close();
 	delete mdh_p;
 	mdh_p = nullptr;
 
-	return Record();
+	return result;
 }
 
 /*
