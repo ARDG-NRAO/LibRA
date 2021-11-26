@@ -32,38 +32,13 @@
 #include <scimath/Fitting/LinearFitSVD.h>
 #include <scimath/Functionals/Polynomial.h>
 #include <mstransform/TVI/DenoisingLib.h>
-
-// OpenMP
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include <mstransform/TVI/UVContSubResult.h>
 
 using namespace casacore;
-
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 namespace vi { //# NAMESPACE VI - BEGIN
-
-class UVContSubResult
-{
- public:
-  void addOneFit(int field, int scan, int spw, int pol, Complex chiSquared);
-
-  Record getAccumulatedResult() const;
-
- private:
-  struct FitResultAcc {
-    size_t count;
-    Complex chiSqAvg;
-    Complex chiSqMin;
-    Complex chiSqMax;
-  };
-
-  // chi_square per field, scan, spw, polarization, real/imag
-  unordered_map<int,
-    unordered_map<int, unordered_map<int, unordered_map<int, FitResultAcc>>>> accum;
-};
 
 //////////////////////////////////////////////////////////////////////////
 // UVContSubTVI class

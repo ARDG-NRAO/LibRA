@@ -22,86 +22,16 @@
 
 #include <mstransform/TVI/UVContSubTVI.h>
 
+// OpenMP
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace casacore;
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 namespace vi { //# NAMESPACE VI - BEGIN
-
-void UVContSubResult::addOneFit(int field, int scan, int spw, int pol, Complex chiSquared)
-{
-    auto &polRes = accum[field][scan][spw];
-    auto resIt = polRes.find(pol);
-    if (resIt == polRes.end()) {
-        FitResultAcc fitResult;
-        fitResult.count = 1;
-        fitResult.chiSqAvg = chiSquared;
-        fitResult.chiSqMin = chiSquared;
-        fitResult.chiSqMax = chiSquared;
-        polRes.emplace(pol, fitResult);
-    } else {
-        auto &fitResult = resIt->second;
-        fitResult.count++;
-        fitResult.chiSqAvg += (chiSquared - fitResult.chiSqAvg) /
-            static_cast<float>(fitResult.count);
-        if (chiSquared < fitResult.chiSqMin)
-            fitResult.chiSqMin = chiSquared;
-        if (chiSquared > fitResult.chiSqMax)
-            fitResult.chiSqMax = chiSquared;
-    }
-}
-
-Record UVContSubResult::getAccumulatedResult() const
-{
-    Record fieldRec;
-    for (const auto fieldIt : accum) {
-        Record srec;
-        for (const auto scanIt : fieldIt.second) {
-            Record sprec;
-            for (const auto spwIt : scanIt.second) {
-                Record prec;
-                for (const auto polIt : spwIt.second) {
-                    const auto fitResult = polIt.second;
-                    Record avg;
-                    avg.define("real", fitResult.chiSqAvg.real());
-                    avg.define("imag", fitResult.chiSqAvg.imag());
-                    Record min;
-                    min.define("real", fitResult.chiSqMin.real());
-                    min.define("imag", fitResult.chiSqMin.imag());
-                    Record max;
-                    max.define("real", fitResult.chiSqMax.real());
-                    max.define("imag", fitResult.chiSqMax.imag());
-                    // TODO: max
-                    Record chisq;
-                    chisq.defineRecord("average", avg);
-                    chisq.defineRecord("min", min);
-                    chisq.defineRecord("max", max);
-
-                    Record stats;
-                    stats.defineRecord("chi_squared", chisq);
-                    stats.define("count", (unsigned int)fitResult.count);
-                    prec.defineRecord(std::to_string(polIt.first), stats);
-                }
-                Record polRec;
-                polRec.defineRecord("polarization", prec);
-                sprec.defineRecord(std::to_string(spwIt.first), polRec);
-            }
-            Record spwRec;
-            spwRec.defineRecord("spw", sprec);
-            srec.defineRecord(std::to_string(scanIt.first), spwRec);
-        }
-        Record scanTop;
-        scanTop.defineRecord("scan", srec);
-        fieldRec.defineRecord(std::to_string(fieldIt.first), scanTop);
-    }
-    Record gof;
-    gof.defineRecord("field", fieldRec);
-
-    Record uvcont;
-    uvcont.defineRecord("goodness_of_fit", gof);
-    uvcont.define("comment", "summary of data fitting results in uv-continuum subtraction");
-    return uvcont;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // UVContSubTVI class
