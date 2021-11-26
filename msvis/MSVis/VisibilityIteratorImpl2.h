@@ -216,6 +216,9 @@ public:
 	virtual casacore::Bool
 	moreChunks() const override;
 
+	virtual void
+	result(casacore::Record& res) const override;
+
 	// Check if ms has change since last iteration
 
 	virtual casacore::Bool

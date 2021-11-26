@@ -561,6 +561,8 @@ public:
   void nextChunk();
   casacore::Bool moreChunks() const;
 
+  virtual void result(casacore::Record& res) const;
+
   // Report Name of slowest column that changes at end of current chunk iteration
   virtual casacore::String keyChange() const;
 

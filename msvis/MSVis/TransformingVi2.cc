@@ -445,6 +445,12 @@ TransformingVi2::moreChunks ()  const
     return getVii()->moreChunks ();
 }
 
+void
+TransformingVi2::result(casacore::Record &res) const
+{
+    return getVii()->result(res);
+}
+
 const MeasurementSet &
 TransformingVi2::ms ()  const
 {
