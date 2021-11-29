@@ -34,12 +34,19 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 namespace vi { //# NAMESPACE VI - BEGIN
 
 using std::unordered_map;
-  
+
+/*
+ * To accumulate results from the fits calculated by the
+ * UVContSubTVI. For every row and polarization a fit result should be
+ * added.
+ */
 class UVContSubResult
 {
  public:
+  // add/accumulate one result, for every row-polarization fit
   void addOneFit(int field, int scan, int spw, int pol, casacore::Complex chiSquared);
 
+  // Produces a record with the information accumulated throughout iteration/fits
   casacore::Record getAccumulatedResult() const;
 
  private:

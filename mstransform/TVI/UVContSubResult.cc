@@ -51,6 +51,29 @@ void UVContSubResult::addOneFit(int field, int scan, int spw, int pol, Complex c
     }
 }
 
+/*
+ * Produces a record from information accumulated for every fit that
+ * is calculated by the UVContSub TVI (addOneFit()). This is used at
+ * the moment to hold basic goodness-of-fit information. The record
+ * produced by this function is meant to be returned as result by the
+ * UVContSub TVI and can be returned by the uvcontsub task. The result
+ * record/dictionary would look like:
+ *
+ * {'description': 'summary of data fitting results in uv-continuum subtraction',
+ *    'goodness_of_fit': {'field': {'0': {'scan': {'3': {'spw': {'0':
+ *             {'polarization': {'0': {'chi_squared': {'average': {'imag': 0.0001153,
+ *                                                                'real': 0.0001143},
+ *                                                     'max': {'imag': 0.0001199,
+ *                                                             'real': 0.0001255},
+ *                                                     'min': {'imag': 0.0001117,
+ *                                                             'real': 0.0001069}},
+ *                                     'count': 16},
+ *                               '1': {'chi_squared': {'average': {'imag': 0.0001143,
+ *                                                                 'real': 0.0001150},
+ * ...
+ *
+ * @retunrs record of results accumulated by the UVContSub TVI throughout iterations
+ */
 Record UVContSubResult::getAccumulatedResult() const
 {
     Record fieldRec;
