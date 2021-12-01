@@ -29,7 +29,11 @@
 #define CALIBRATION_CALTABITER_H
 
 #include <casa/aips.h>
+#include <measures/Measures/MBaseline.h>
+#include <measures/Measures/MEpoch.h>
+#include <ms/MSOper/MSDerivedValues.h>
 #include <tables/Tables/TableIter.h>
+
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/CTColumns.h>
@@ -81,10 +85,13 @@ public:
   virtual ~ROCTIter();
   
   // Iteration operators
-  inline void reset() { ti_->reset(); this->attach(); };
+  void reset();
   inline casacore::Bool pastEnd() { return ti_->pastEnd(); };
   void next();
   void next0();
+
+  // When not included in ctor tab
+  void setCTColumns(const NewCalTable& tab);
 
   // Return the current table iteration
   NewCalTable table() const { return NewCalTable(ti_->table()); };
@@ -160,6 +167,11 @@ public:
   void freq(casacore::Vector<casacore::Double>& v) const;
   int freqFrame(int spwId) const;
 
+  casacore::MDirection azel0(casacore::Double time) const;
+  casacore::Double hourang(casacore::Double time) const;
+  casacore::Float parang0(casacore::Double time) const;
+
+  casacore::Matrix<casacore::Double> uvw() const;
  protected:
 
   // Attach accessors
@@ -171,7 +183,13 @@ public:
   ROCTIter (const ROCTIter& other);
   ROCTIter& operator= (const ROCTIter& other);
 
-  // casacore::Data:
+  // Update phase center in MSDerivedValues
+  void updatePhaseCenter();
+
+  // Initialize and calculate uvw for each antenna.
+  // Based on msvis MSUVWGenerator
+  void initUVW();
+  void updateAntennaUVW();
 
   // Remember the sort columns...
   casacore::Vector<casacore::String> sortCols_;
@@ -180,12 +198,8 @@ public:
   //   safe to access channel axis info
   casacore::Bool singleSpw_;
 
-  // The parent NewCalTable (casacore::Table) object 
-  //  (stays in scope for the life of the CTIter)
-  NewCalTable parentNCT_;
-
   // Access to subtables (e.g., for frequencies)
-  ROCTColumns calCol_;
+  ROCTColumns* calCol_;
 
   // The underlying TableIterator
   casacore::TableIterator *ti_;
@@ -196,7 +210,16 @@ public:
   // Per-iteration columns
   ROCTMainColumns *iROCTMainCols_;
 
-
+  // For calculated axes
+  bool init_uvw_;
+  casacore::Int nAnt_, thisfield_, lastfield_;
+  casacore::Double thistime_, lasttime_;
+  casacore::MDirection phaseCenter_;
+  casacore::MEpoch epoch_;
+  casacore::MPosition refAntPos_;
+  casacore::MBaseline::Types baseline_type_;
+  casacore::Vector<casacore::MVBaseline> mvbaselines_;              // ant pos rel to ant0
+  casacore::Vector<casacore::Vector<casacore::Double>> antennaUVW_; // [u,v,w] for each ant
 };
 
 // Writable version (limited to certain 'columns')
