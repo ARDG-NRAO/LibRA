@@ -156,7 +156,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 #endif
 	}
 
-    grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2,SIMinorCycleController::nSummaryFields,0)),
+    grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2, 
+                                                                                                 SIMinorCycleController::useSmallSummaryminor() ? 6 : SIMinorCycleController::nSummaryFields, // temporary CAS-13683 workaround
+                                                                                                 0)),
                                                               SummaryMajor(casacore::IPosition(1,0)) {
 		LogIO os( LogOrigin("grpcInteractiveCleanState",__FUNCTION__,WHERE) );
         reset( );
@@ -195,7 +197,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         MinPeakResidual = 1e+9;
         MaskSum = -1.0;
         MadRMS = 0.0;
-        SummaryMinor.reformOrResize(casacore::IPosition(2,SIMinorCycleController::nSummaryFields,0));
+        int nSummaryFields = SIMinorCycleController::useSmallSummaryminor() ? 6 : SIMinorCycleController::nSummaryFields; // temporary CAS-13683 workaround
+        SummaryMinor.reformOrResize(casacore::IPosition(2, nSummaryFields ,0));
         SummaryMajor.reformOrResize(casacore::IPosition(1,0));
         SummaryMinor = 0;
         SummaryMajor = 0;
@@ -800,15 +803,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 
 	void grpcInteractiveCleanManager::mergeMinorCycleSummary( const Array<Double> &summary, grpcInteractiveCleanState &state ){
-
 		IPosition cShp = state.SummaryMinor.shape();
 		IPosition nShp = summary.shape();
 
-		if( cShp.nelements() != 2 || cShp[0] != SIMinorCycleController::nSummaryFields ||
-		    nShp.nelements() != 2 || nShp[0] != SIMinorCycleController::nSummaryFields )
+        bool uss = SIMinorCycleController::useSmallSummaryminor(); // temporary CAS-13683 workaround
+        int nSummaryFields = uss ? 6 : SIMinorCycleController::nSummaryFields;
+		if( cShp.nelements() != 2 || cShp[0] != nSummaryFields ||
+		    nShp.nelements() != 2 || nShp[0] != nSummaryFields )
 			throw(AipsError("Internal error in shape of global minor-cycle summary record"));
 
-		state.SummaryMinor.resize( IPosition( 2, SIMinorCycleController::nSummaryFields, cShp[1]+nShp[1] ) ,true );
+		state.SummaryMinor.resize( IPosition( 2, nSummaryFields, cShp[1]+nShp[1] ) ,true );
 
 		for (unsigned int row = 0; row < nShp[1]; row++) {
 			// iterations done
@@ -822,32 +826,37 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			state.SummaryMinor( IPosition(2,3,cShp[1]+row) ) = summary(IPosition(2,3,row));
 			// mapper id
 			state.SummaryMinor( IPosition(2,4,cShp[1]+row) ) = summary(IPosition(2,4,row));
-			// channel id
-			state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
-			// polarity id
-			state.SummaryMinor( IPosition(2,6,cShp[1]+row) ) = summary(IPosition(2,6,row));
-			// cycle start iterations done
-			state.SummaryMinor( IPosition(2,7,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,7,row));
-			// starting iterations done
-			state.SummaryMinor( IPosition(2,8,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,8,row));
-			// starting peak residual
-			state.SummaryMinor( IPosition(2,9,cShp[1]+row) ) = summary(IPosition(2,9,row));
-			// starting model flux
-			state.SummaryMinor( IPosition(2,10,cShp[1]+row) ) = summary(IPosition(2,10,row));
-			// starting peak residual, not limited to the user's mask
-			state.SummaryMinor( IPosition(2,11,cShp[1]+row) ) = summary(IPosition(2,11,row));
-			// peak residual, not limited to the user's mask
-			state.SummaryMinor( IPosition(2,12,cShp[1]+row) ) = summary(IPosition(2,12,row));
-			// number of pixels in the mask
-			state.SummaryMinor( IPosition(2,13,cShp[1]+row) ) = summary(IPosition(2,13,row));
-			// mpi server
-			state.SummaryMinor( IPosition(2,14,cShp[1]+row) ) = summary(IPosition(2,14,row));
-			// peak memory usage
-			state.SummaryMinor( IPosition(2,15,cShp[1]+row) ) = summary(IPosition(2,15,row));
-			// deconvolver runtime
-			state.SummaryMinor( IPosition(2,16,cShp[1]+row) ) = summary(IPosition(2,16,row));
-			// stopcode
-			state.SummaryMinor( IPosition(2,17,cShp[1]+row) ) = summary(IPosition(2,17,row));
+			if (uss) { // temporary CAS-13683 workaround
+				// chunk id (channel/stokes)
+				state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
+			} else {
+				// channel id
+				state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
+				// polarity id
+				state.SummaryMinor( IPosition(2,6,cShp[1]+row) ) = summary(IPosition(2,6,row));
+				// cycle start iterations done
+				state.SummaryMinor( IPosition(2,7,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,7,row));
+				// starting iterations done
+				state.SummaryMinor( IPosition(2,8,cShp[1]+row) ) = state.IterDone + summary(IPosition(2,8,row));
+				// starting peak residual
+				state.SummaryMinor( IPosition(2,9,cShp[1]+row) ) = summary(IPosition(2,9,row));
+				// starting model flux
+				state.SummaryMinor( IPosition(2,10,cShp[1]+row) ) = summary(IPosition(2,10,row));
+				// starting peak residual, not limited to the user's mask
+				state.SummaryMinor( IPosition(2,11,cShp[1]+row) ) = summary(IPosition(2,11,row));
+				// peak residual, not limited to the user's mask
+				state.SummaryMinor( IPosition(2,12,cShp[1]+row) ) = summary(IPosition(2,12,row));
+				// number of pixels in the mask
+				state.SummaryMinor( IPosition(2,13,cShp[1]+row) ) = summary(IPosition(2,13,row));
+				// mpi server
+				state.SummaryMinor( IPosition(2,14,cShp[1]+row) ) = summary(IPosition(2,14,row));
+				// peak memory usage
+				state.SummaryMinor( IPosition(2,15,cShp[1]+row) ) = summary(IPosition(2,15,row));
+				// deconvolver runtime
+				state.SummaryMinor( IPosition(2,16,cShp[1]+row) ) = summary(IPosition(2,16,row));
+				// stopcode
+				state.SummaryMinor( IPosition(2,17,cShp[1]+row) ) = summary(IPosition(2,17,row));
+			}
 		}
 	}
 
