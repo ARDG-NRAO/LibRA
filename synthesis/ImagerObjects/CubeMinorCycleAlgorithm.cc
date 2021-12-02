@@ -198,15 +198,15 @@ void CubeMinorCycleAlgorithm::task(){
           }
         }
         catch (AipsError x) {
-          logger << "Exception: " << x.getMesg() << LogIO::SEVERE;
+          logger << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
           returnRec_p=Record();
         }
         catch(std::exception& exc) {
-          logger << "Exception (std): " << exc.what() << LogIO::SEVERE;
+          logger << LogIO::SEVERE << "Exception (std): " << exc.what() << LogIO::POST;
           returnRec_p=Record();
         }
         catch(...){
-          logger << "Unknown exception" << LogIO::SEVERE;
+          logger << LogIO::SEVERE << "Unknown exception" << LogIO::POST;
           returnRec_p=Record();
         }
         

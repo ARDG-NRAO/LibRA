@@ -1388,7 +1388,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
         const int maxargc = 5;
         char *arguments[maxargc];
-        for (int i = 0; i <= maxargc; i++) { arguments[i] = (char*)""; };
+        for (int i = 0; i < maxargc; i++) { arguments[i] = (char*)""; };
 
         arguments[0] = strdup(viewer_path.c_str( ));
         arguments[1] = (char*) malloc(sizeof(char) * (fifo.size( ) + 12));
