@@ -186,7 +186,9 @@ bool _makeImage (
     bool tempAllowed=true
 );
 
-std::shared_ptr<casacore::ImageInterface<casacore::Complex>> _makeImage ( 
+// This version of _makeImage should be preferred since it wraps the output
+// pointer in a smart pointer
+SPIIC _makeImage ( 
     const casacore::String& outfile, const casacore::CoordinateSystem& cSys,
     const casacore::IPosition& shape, bool isMasked=false,
     bool tempAllowed=true
