@@ -1928,6 +1928,12 @@ VisibilityIteratorImpl2::moreChunks() const
 	return msIter_p->more();
 }
 
+void
+VisibilityIteratorImpl2::result(casacore::Record& res) const
+{
+    // For now nothing to add to result record from here
+}
+
 const MSColumns *
 VisibilityIteratorImpl2::msColumnsKluge() const
 {

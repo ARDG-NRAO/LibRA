@@ -22,6 +22,11 @@
 
 #include <mstransform/TVI/UVContSubTVI.h>
 
+// OpenMP
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace casacore;
 
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -41,8 +46,7 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 {
 	fitOrder_p = 0;
 	want_cont_p = False;
-	fitspw_p = String("");
-	withDenoisingLib_p = True;
+	withDenoisingLib_p = true;
 	nThreads_p = 1;
 	niter_p = 1;
 
@@ -70,13 +74,149 @@ UVContSubTVI::~UVContSubTVI()
 	inputFrequencyMap_p.clear();
 }
 
+
+/*
+ * Check if this is a valid field index
+ *
+ * @param str string from a (multi)field spec string
+ *
+ * @return whether this is a valid field index
+ */
+bool isFieldIndex(const std::string &str) {
+    return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
+/*
+ * For a field string (example: '3', '0,1,4' get the integer indices
+ * specified in the string.
+ * Tokenizes the string by ',' separator and trims spaces.
+ *
+ * @param a string with field indices as used in uvcontsub/fitspw parameter
+ *
+ * @return vector of field indices
+ */
+std::vector<int> stringToFieldIdxs(const std::string &str)
+{
+    stringstream stream(str);
+    vector<int> result;
+
+    while(stream.good()) {
+        string token;
+        getline(stream, token, ',' );
+        token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
+        if (!isFieldIndex(token)) {
+            throw AipsError("Invalid field index: " + token);
+
+        }
+        auto idx = std::stoi(token);
+        result.push_back(idx);
+    }
+    return result;
+}
+
+void UVContSubTVI::parseFitSPW(const Record &configuration)
+{
+    int exists = -1;
+
+    exists = -1;
+    exists = configuration.fieldNumber ("fitspw");
+    if (exists < 0) {
+        return;
+    }
+
+    try {
+        String fitspw;
+        configuration.get(exists, fitspw);
+        fitspw_p.insert({-1, fitspw});
+    } catch(AipsError &exc) {
+        parseListFitSPW(configuration);
+    }
+}
+
+void UVContSubTVI::parseListFitSPW(const Record &configuration)
+{
+    const auto rawFieldFitspw = configuration.asArrayString("fitspw");
+    if (0 == rawFieldFitspw.size()) {
+        throw AipsError("The list of fitspw specifications is empty!");
+    }
+
+    auto nelem = rawFieldFitspw.size();
+    if (0 != (nelem % 2)) {
+        throw AipsError("fitspw must be a string or a list of pairs of strings: "
+                        "field, field_fitspw. But the list or array passed has " +
+                        std::to_string(nelem) + " items.");
+    }
+    const Matrix<String> fieldFitspw =
+        rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
+    logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+             << "  Number of per-field fitspw specifications read: "
+             << nelem/2 << LogIO::POST;
+
+    // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
+    const auto fieldsTable = getVii()->ms().field();
+    const auto maxField = fieldsTable.nrow() - 1;
+
+    const auto shape = fieldFitspw.shape();
+    // iterate through fields
+    for (int row=0; row<shape[0]; ++row) {
+        //for (int col=0; col<shape[0]; ++col) {
+        const auto &fieldsStr = fieldFitspw(row, 0);
+        const auto &fitSpw = fieldFitspw(row, 1);
+
+        auto fieldIdxs = stringToFieldIdxs(fieldsStr);
+        for (const auto fid: fieldIdxs) {
+            const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
+            // check for duplicates in the fields given in the list
+            if (false == inserted.second) {
+                throw AipsError("Duplicated field in list of per-field fitspw : " +
+                                std::to_string(fid));
+            }
+            // check that the field is in the MS
+            if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
+                throw AipsError("Wrong field ID given: " +
+                                std::to_string(fid) +
+                                ". This MeasurementSet has field IDs between"
+                                " 0 and " + std::to_string(maxField));
+            }
+        }
+    }
+}
+
+std::string fieldNameFromId(int idx)
+{
+    std::string name;
+    if (idx >= 0) {
+        name = std::to_string(idx);
+    } else {
+        name = "all fields";
+    }
+    return name;
+}
+
+void UVContSubTVI::printFitSPW() const
+{
+    if (fitspw_p.size() > 0) {
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Line-free channel selection is: " << LogIO::POST;
+
+        for (auto const &elem: fitspw_p) {
+            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                     << "   field: " << fieldNameFromId(elem.first)
+                     << ": " << elem.second << LogIO::POST;
+        }
+    } else {
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Line-free channel selection: not given" << LogIO::POST;
+    }
+}
+
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
 Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 {
 	int exists = -1;
-	Bool ret = True;
+	Bool ret = true;
 
 	exists = -1;
 	exists = configuration.fieldNumber ("fitorder");
@@ -105,18 +245,7 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-	exists = -1;
-	exists = configuration.fieldNumber ("fitspw");
-	if (exists >= 0)
-	{
-		configuration.get (exists, fitspw_p);
-
-		if (fitspw_p.size() > 0)
-		{
-			logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Line-free channel selection is " << fitspw_p << LogIO::POST;
-		}
-	}
+        parseFitSPW(configuration);
 
 	exists = -1;
 	exists = configuration.fieldNumber ("denoising_lib");
@@ -127,7 +256,7 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		if (withDenoisingLib_p)
 		{
 			logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Using denoising lib (GSL based)" << LogIO::POST;
+						<< "Using GSL based multiparameter regression with linear least-squares fitting" << LogIO::POST;
 		}
 	}
 
@@ -183,71 +312,103 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
+void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
+                                                       const std::string& fieldFitspw)
+{
+    // Some selection string
+    MSSelection mssel;
+    mssel.setSpwExpr(fieldFitspw);
+    const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
+
+    // Create line-free channel map based on MSSelection channel ranges
+    const auto nSelections = spwchan.shape()[0];
+    unordered_map<Int,vector<Int> > lineFreeChannelSelMap;
+    for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
+    {
+        auto spw = spwchan(selection_i,0);
+        if (lineFreeChannelSelMap.find(spw) == lineFreeChannelSelMap.end())
+        {
+            lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it
+        }
+
+        const auto channelStart = spwchan(selection_i,1);
+        const auto channelStop = spwchan(selection_i,2);
+        const auto channelStep = spwchan(selection_i,3);
+        for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
+        {
+            lineFreeChannelSelMap[spw].push_back(inpChan);
+        }
+    }
+
+    // Create line-free channel mask, spw->channel_mask
+    unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+    for (auto const spwInp: spwInpChanIdxMap_p)
+    {
+        const auto spw = spwInp.first;
+        if (lineFreeChannelMaskMap.find(spw) == lineFreeChannelMaskMap.end())
+        {
+            if (lineFreeChannelSelMap.size() > 0 && 0 == lineFreeChannelSelMap[spw].size()) {
+                // Some SPWs have been selected, but this SPW doesn't have any selection
+                //   => a 0-elements mask says there is nothing to mask or fit here, or
+                // otherwise we'd make the effort to prepare and call the fit routine for an
+                // "all masked/True" channel mask which will not even start minimizing
+                lineFreeChannelMaskMap[spw] = Vector<Bool>();
+            } else {
+                lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(), true);
+                for (uInt selChanIdx=0; selChanIdx<lineFreeChannelSelMap[spw].size();
+                     ++selChanIdx)
+                {
+                    const auto selChan = lineFreeChannelSelMap[spw][selChanIdx];
+                    lineFreeChannelMaskMap[spw](selChan) = False;
+                }
+            }
+        }
+    }
+
+    // Poppulate per field map: field -> spw -> channel_mask
+    perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
+}
+
+// -----------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------
 void UVContSubTVI::initialize()
 {
-	// Populate nchan input-output maps
-	Int spw;
-	uInt spw_idx = 0;
-	map<Int,vector<Int> >::iterator iter;
-	for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
-	{
-		spw = iter->first;
-		spwOutChanNumMap_p[spw] = spwInpChanIdxMap_p[spw].size();
+    // Populate nchan input-output maps
+    for (auto spwInp: spwInpChanIdxMap_p)
+    {
+        auto spw = spwInp.first;
+        spwOutChanNumMap_p[spw] = spwInp.second.size();
+    }
 
-		spw_idx++;
-	}
+    // Process line-free channel selection
+    for (const auto item: fitspw_p) {
+        unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+        // Parse line-free channel selection using MSSelection syntax
+        const auto fieldID = item.first;
+        const auto fieldFitspw = item.second;
 
-	// Process line-free channel selection
-	if (fitspw_p.size() > 0)
-	{
-		// Parse line-free channel selection
-		MSSelection mssel;
-		mssel.setSpwExpr(fitspw_p);
-		Matrix<Int> spwchan = mssel.getChanList(&(inputVii_p->ms()));
+        logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                 << "Parsing fitspw string for field: " << fieldNameFromId(fieldID)
+                 << ", fitspw: '" << fieldFitspw << "'" << LogIO::POST;
 
-		// Create line-free channel map
-	    uInt nSelections = spwchan.shape()[0];
-	    map<Int,vector<Int> > lineFreeChannelMap;
-		Int channelStart,channelStop,channelStep;
-		for(uInt selection_i=0;selection_i<nSelections;selection_i++)
-		{
-			spw = spwchan(selection_i,0);
-			channelStart = spwchan(selection_i,1);
-			channelStop = spwchan(selection_i,2);
-			channelStep = spwchan(selection_i,3);
+        if ("NONE" == fieldFitspw) {
+            // Not inserting any entries in perFieldLineFreeChannelMaskMap_p[fieldID]
+            // implies no transformation for that field (inputVis -> outputVis)
+            continue;
+        }
 
-			if (lineFreeChannelMap.find(spw) == lineFreeChannelMap.end())
-			{
-				lineFreeChannelMap[spw].clear(); // Accessing the vector creates it
-			}
+        if (fieldFitspw.empty()) {
+            // -1 is the "all-fields-included" field pseudo-index
+            // empty selection -> all SPW, channels, leave all SPW masks unset
+            if (-1 == fieldID) {
+                perFieldLineFreeChannelMaskMap_p.emplace(fieldID, lineFreeChannelMaskMap);
+            }
+            continue;
+        }
 
-			for (Int inpChan=channelStart;inpChan<=channelStop;inpChan += channelStep)
-			{
-				lineFreeChannelMap[spw].push_back(inpChan);
-			}
-		}
-
-
-		// Create line-free channel mask
-		uInt selChan;
-		for(iter=spwInpChanIdxMap_p.begin();iter!=spwInpChanIdxMap_p.end();iter++)
-		{
-			spw = iter->first;
-			if (lineFreeChannelMaskMap_p.find(spw) == lineFreeChannelMaskMap_p.end())
-			{
-				lineFreeChannelMaskMap_p[spw] = Vector<Bool>(spwInpChanIdxMap_p[spw].size(),True);
-				for (uInt selChanIdx=0;selChanIdx<lineFreeChannelMap[spw].size();selChanIdx++)
-				{
-					selChan = lineFreeChannelMap[spw][selChanIdx];
-					lineFreeChannelMaskMap_p[spw](selChan) = False;
-				}
-			}
-			spw_idx++;
-		}
-
-	}
-
-	return;
+        populatePerFieldLineFreeChannelMask(fieldID, fieldFitspw);
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -316,34 +477,64 @@ void UVContSubTVI::visibilityModel (Cube<Complex> & vis) const
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
+void UVContSubTVI::result(Record &res) const
+{
+    auto acc = result_p.getAccumulatedResult();
+    res.defineRecord("uvcontsub", acc);
+}
+
+// -----------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------
 template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 														const Cube<Float> &inputWeight,
 														Cube<T> &outputVis) const
 {
-	// Get input VisBuffer
-	VisBuffer2 *vb = getVii()->getVisBuffer();
+    // Get input VisBuffer
+    VisBuffer2 *vb = getVii()->getVisBuffer();
 
-	// Get polynomial model for this SPW (depends on number of channels and gridding)
-	Int spwId = vb->spectralWindows()(0);
-	if (inputFrequencyMap_p.find(spwId) == inputFrequencyMap_p.end())
-	{
-		const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
-		// STL should trigger move semantics
-		inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
-	}
+    // Get polynomial model for this SPW (depends on number of channels and gridding)
+    Int spwId = vb->spectralWindows()(0);
+    if (inputFrequencyMap_p.find(spwId) == inputFrequencyMap_p.end())
+    {
+        const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
+        // STL should trigger move semantics
+        inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
+    }
 
-	// Get input line-free channel mask
-	Vector<Bool> *lineFreeChannelMask = NULL;
-	if (lineFreeChannelMaskMap_p.find(spwId) != lineFreeChannelMaskMap_p.end())
-	{
-		lineFreeChannelMask = &(lineFreeChannelMaskMap_p[spwId]);
-	}
+    auto fieldID = vb->fieldId()[0];
+    // First check the "all fields" (no per-individual field list in fitspw)
+    auto fieldMapIt = perFieldLineFreeChannelMaskMap_p.find(-1);
+    if (fieldMapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+        // otherwise, check for individual fields (coming from a fitspw list)
+        fieldMapIt = perFieldLineFreeChannelMaskMap_p.find(fieldID);
+        if (fieldMapIt == perFieldLineFreeChannelMaskMap_p.end()) {
+            // This was a "NONE" = no-subtraction for this field ==> no-op
+            outputVis = inputVis;
+            return;
+        }
+    }
 
-	// Reshape output data before passing it to the DataCubeHolder
-	outputVis.resize(getVisBuffer()->getShape(),False);
+    // Get input line-free channel mask
+    Vector<Bool> *lineFreeChannelMask = nullptr;
+    auto spwMap = fieldMapIt->second;
+    auto maskLookup = spwMap.find(spwId);
+    if (maskLookup != spwMap.end())
+    {
+        if (maskLookup->second.nelements() == 0) {
+            // This was a non-selected SPW in a non-empty SPW selection string ==> no-op
+            outputVis = inputVis;
+            return;
+        } else {
+            lineFreeChannelMask = &(maskLookup->second);
+        }
+    }
 
-	// Get input flag Cube
-	const Cube<Bool> &flagCube = vb->flagCube();
+    // Reshape output data before passing it to the DataCubeHolder
+    outputVis.resize(getVisBuffer()->getShape(),False);
+
+    // Get input flag Cube
+    const Cube<Bool> &flagCube = vb->flagCube();
 
 	// Transform data
 	if (nThreads_p > 1)
@@ -372,9 +563,16 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 	}
 	else
 	{
-		transformDataCore(inputFrequencyMap_p[spwId],lineFreeChannelMask,
-				inputVis,flagCube,inputWeight,outputVis);
-	}
+            auto scanID = vb->scan()[0];
+            uInt nCorrs = vb->getShape()(0);
+            for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
+            {
+                Complex chisq =
+                    transformDataCore(inputFrequencyMap_p[spwId], lineFreeChannelMask,
+                                      inputVis, flagCube, inputWeight, outputVis, corrIdx);
+                result_p.addOneFit(fieldID, scanID, spwId, (int)corrIdx, chisq);
+            }
+        }
 
 	return;
 }
@@ -382,13 +580,13 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomialModel<Double>* model,
-														Vector<Bool> *lineFreeChannelMask,
-														const Cube<T> &inputVis,
-														const Cube<Bool> &inputFlags,
-														const Cube<Float> &inputWeight,
-														Cube<T> &outputVis,
-														Int parallelCorrAxis) const
+template<class T> Complex UVContSubTVI::transformDataCore(denoising::GslPolynomialModel<Double>* model,
+                                                          Vector<Bool> *lineFreeChannelMask,
+                                                          const Cube<T> &inputVis,
+                                                          const Cube<Bool> &inputFlags,
+                                                          const Cube<Float> &inputWeight,
+                                                          Cube<T> &outputVis,
+                                                          Int parallelCorrAxis) const
 {
 	// Gather input data
 	DataCubeMap inputData;
@@ -404,6 +602,7 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 	DataCubeHolder<T> outputVisCubeHolder(outputVis);
 	outputData.add(MS::DATA,outputVisCubeHolder);
 
+        Complex chisq;
 	if (want_cont_p)
 	{
 		if (withDenoisingLib_p)
@@ -411,12 +610,14 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 			 UVContEstimationDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
 			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+			 chisq = kernel.getChiSquared();
 		}
 		else
 		{
 			UVContEstimationKernel<T> kernel(model,lineFreeChannelMask);
 			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                        chisq = kernel.getChiSquared();
 		}
 	}
 	else
@@ -426,16 +627,18 @@ template<class T> void UVContSubTVI::transformDataCore(	denoising::GslPolynomial
 			 UVContSubtractionDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
 			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                         chisq = kernel.getChiSquared();
 		}
 		else
 		{
 			UVContSubtractionKernel<T> kernel(model,lineFreeChannelMask);
 			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
 			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+                        chisq = kernel.getChiSquared();
 		}
 	}
 
-	return;
+	return chisq;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -525,7 +728,7 @@ template<class T> UVContSubKernel<T>::UVContSubKernel(	denoising::GslPolynomialM
 	freqPows_p.reference(model_p->getModelMatrix());
 	frequencies_p.reference(model_p->getLinearComponentFloat());
 
-	lineFreeChannelMask_p = lineFreeChannelMask != NULL? lineFreeChannelMask : NULL;
+	lineFreeChannelMask_p = lineFreeChannelMask != nullptr? lineFreeChannelMask : nullptr;
 	debug_p = False;
 }
 
@@ -541,7 +744,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 
 	// Apply line-free channel mask
 	Vector<Bool> &inputFlags = inputData->getVector<Bool>(MS::FLAG);
-	if (lineFreeChannelMask_p != NULL) inputFlags |= *lineFreeChannelMask_p;
+	if (lineFreeChannelMask_p != nullptr) inputFlags |= *lineFreeChannelMask_p;
 
 	// Calculate number of valid data points and adapt fit
 	size_t validPoints = nfalse(inputFlags);
@@ -554,7 +757,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 		if (validPoints <= fitOrder_p)
 		{
 			changeFitOrder(validPoints-1);
-			restoreDefaultPoly = True;
+			restoreDefaultPoly = true;
 		}
 
 		// Get weights
@@ -564,7 +767,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 		Vector<Bool> mask = !inputFlags;
 
 		// Calculate and subtract continuum
-		kernelCore(inputVector,mask,inputWeight,outputVector);
+		chisq_p = kernelCore(inputVector,mask,inputWeight,outputVector);
 
 		// Go back to default fit order to match number of valid points
 		if (restoreDefaultPoly)
@@ -576,8 +779,6 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 	{
 		defaultKernel(inputVector,outputVector);
 	}
-
-	return;
 }
 
 
@@ -603,7 +804,7 @@ template<class T> void UVContSubtractionKernel<T>::changeFitOrder(size_t order)
 	fitOrder_p = order;
 	Polynomial<AutoDiff<Float> > poly(order);
 	fitter_p.setFunction(poly); // poly It is cloned
-	fitter_p.asWeight(True);
+	fitter_p.asWeight(true);
 
 	return;
 }
@@ -632,7 +833,7 @@ template<class T> void UVContSubtractionKernel<T>::defaultKernel(	Vector<Float> 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &inputVector,
+template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Complex> &outputVector)
@@ -641,7 +842,9 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 	Vector<Float> realCoeff;
 	Vector<Float> imagCoeff;
 	realCoeff = fitter_p.fit(frequencies_p, real(inputVector), inputWeights, &inputFlags);
+        double realChisq = fitter_p.chiSquare();
 	imagCoeff = fitter_p.fit(frequencies_p, imag(inputVector), inputWeights, &inputFlags);
+        double imagChisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = inputVector;
@@ -655,7 +858,6 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 		}
 	}
 
-	/*
 	if (debug_p)
 	{
 		LogIO logger;
@@ -667,15 +869,14 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &
 		logger << "inputVector =" << inputVector << LogIO::POST;
 		logger << "outputVector =" << outputVector << LogIO::POST;
 	}
-	*/
 
-	return;
+	return Complex(realChisq, imagChisq);
 }
 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &inputVector,
+template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
@@ -683,6 +884,7 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &in
 	// Fit model
 	Vector<Float> coeff;
 	coeff = fitter_p.fit(frequencies_p, inputVector, inputWeights, &inputFlags);
+        const double chisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = inputVector;
@@ -695,7 +897,18 @@ template<class T> void UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &in
 		}
 	}
 
-	return;
+	if (true or debug_p)
+	{
+		LogIO logger;
+		logger << "fit order = " << fitOrder_p << LogIO::POST;
+		logger << "coeff =" << coeff << LogIO::POST;
+		logger << "inputFlags =" << inputFlags << LogIO::POST;
+		logger << "inputWeights =" << inputWeights << LogIO::POST;
+		logger << "inputVector =" << inputVector << LogIO::POST;
+		logger << "outputVector =" << outputVector << LogIO::POST;
+	}
+
+	return Complex(chisq, chisq);
 }
 
 
@@ -721,7 +934,7 @@ template<class T> void UVContEstimationKernel<T>::changeFitOrder(size_t order)
 	fitOrder_p = order;
 	Polynomial<AutoDiff<Float> > poly(order);
 	fitter_p.setFunction(poly); // poly It is cloned
-	fitter_p.asWeight(True);
+	fitter_p.asWeight(true);
 
 	return;
 }
@@ -749,7 +962,7 @@ template<class T> void UVContEstimationKernel<T>::defaultKernel(Vector<Float> &,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &inputVector,
+template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Complex> &outputVector)
@@ -758,7 +971,10 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &i
 	Vector<Float> realCoeff;
 	Vector<Float> imagCoeff;
 	realCoeff = fitter_p.fit(frequencies_p, real(inputVector), inputWeights, &inputFlags);
+        double realChisq = fitter_p.chiSquare();
+
 	imagCoeff = fitter_p.fit(frequencies_p, imag(inputVector), inputWeights, &inputFlags);
+        double imagChisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = Complex(realCoeff(0),imagCoeff(0));
@@ -771,13 +987,13 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &i
 		}
 	}
 
-	return;
+	return Complex(realChisq, imagChisq);
 }
 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inputVector,
+template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inputVector,
 																Vector<Bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
@@ -785,6 +1001,7 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inp
 	// Fit model
 	Vector<Float> coeff;
 	coeff = fitter_p.fit(frequencies_p, inputVector, inputWeights, &inputFlags);
+	double chisq = fitter_p.chiSquare();
 
 	// Fill output data
 	outputVector = coeff(0);
@@ -796,7 +1013,7 @@ template<class T> void UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inp
 		}
 	}
 
-	return;
+	return Complex(chisq, chisq);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -839,14 +1056,14 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::defaultKernel(	Vecto
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
+template<class T> Complex UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
 																		Vector<Bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
-{
-
-	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
-	fitter_p.calcFitCoeff(inputVector);
+{	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
+    vector<T> coeff;
+    Complex chisq;
+    tie(coeff, chisq) = fitter_p.calcFitCoeff(inputVector);
 
 	Vector<T> model(outputVector.size());
 	fitter_p.calcFitModel(model);
@@ -884,7 +1101,7 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T
 	}
 	*/
 
-	return;
+	return chisq;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -926,13 +1143,15 @@ template<class T> void UVContEstimationDenoisingKernel<T>::defaultKernel(	Vector
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
+template<class T> Complex UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
 																		Vector<Bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
 {
 	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
-	fitter_p.calcFitCoeff(inputVector);
+    Vector<T> coeff;
+    Complex chisq;
+    tie(coeff, chisq) = fitter_p.calcFitCoeff(inputVector);
 	fitter_p.calcFitModel(outputVector);
 
 	/*
@@ -950,7 +1169,7 @@ template<class T> void UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T>
 	}
 	*/
 
-	return;
+	return chisq;
 }
 
 } //# NAMESPACE VI - END

@@ -23,6 +23,8 @@
 #ifndef UVContSubTVI_H_
 #define UVContSubTVI_H_
 
+#include <unordered_map>
+
 // Base class
 #include <mstransform/TVI/FreqAxisTVI.h>
 
@@ -30,14 +32,9 @@
 #include <scimath/Fitting/LinearFitSVD.h>
 #include <scimath/Functionals/Polynomial.h>
 #include <mstransform/TVI/DenoisingLib.h>
-
-// OpenMP
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include <mstransform/TVI/UVContSubResult.h>
 
 using namespace casacore;
-
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -64,6 +61,7 @@ public:
     virtual void visibilityObserved (Cube<Complex> & vis) const;
     virtual void visibilityCorrected (Cube<Complex> & vis) const;
     virtual void visibilityModel (Cube<Complex> & vis) const;
+    virtual void result(casacore::Record &res) const;
 
 protected:
 
@@ -74,22 +72,33 @@ protected:
     											const Cube<Float> &inputWeight,
     											Cube<T> &outputVis) const;
 
-    template<class T> void transformDataCore(	denoising::GslPolynomialModel<Double>* model,
-												Vector<Bool> *lineFreeChannelMask,
-												const Cube<T> &inputVis,
-												const Cube<Bool> &inputFlags,
-												const Cube<Float> &inputWeight,
-												Cube<T> &outputVis,
-												Int parallelCorrAxis=-1) const;
+    template<class T> Complex transformDataCore(denoising::GslPolynomialModel<Double>* model,
+                                                Vector<Bool> *lineFreeChannelMask,
+                                                const Cube<T> &inputVis,
+                                                const Cube<Bool> &inputFlags,
+                                                const Cube<Float> &inputWeight,
+                                                Cube<T> &outputVis,
+                                                Int parallelCorrAxis=-1) const;
+
+ private:
+    void parseFitSPW(const Record &configuration);
+    void parseListFitSPW(const Record &configuration);
+    void printFitSPW() const;
+    void populatePerFieldLineFreeChannelMask(int fieldID, const std::string& fieldFitspw);
+
     mutable uInt fitOrder_p;
     mutable Bool want_cont_p;
-    mutable String fitspw_p;
+    // field -> fitspw spec
+    std::unordered_map<int, std::string> fitspw_p;
     mutable Bool withDenoisingLib_p;
     mutable uInt nThreads_p;
     mutable uInt niter_p;
-    mutable map<Int,Vector<Bool> > lineFreeChannelMaskMap_p;
 
-	mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
+    // Maps field -> SPW -> channel_mask (1s will be combined with flags to exclude chans)
+    unordered_map<int, unordered_map<Int, Vector<Bool> > > perFieldLineFreeChannelMaskMap_p;
+    mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
+
+    mutable UVContSubResult result_p;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,15 +188,16 @@ public:
 
 	virtual void changeFitOrder(size_t order) = 0;
 
-	virtual void defaultKernel(	Vector<T> &inputVector,
-								Vector<T> &outputVector) = 0;
+	virtual void defaultKernel(Vector<T> &inputVector,
+                                   Vector<T> &outputVector) = 0;
 
-	virtual void kernelCore(Vector<T> &inputVector,
-							Vector<Bool> &inputFlags,
-							Vector<Float> &inputWeights,
-							Vector<T> &outputVector) = 0;
+	virtual Complex kernelCore(Vector<T> &inputVector,
+                                   Vector<Bool> &inputFlags,
+                                   Vector<Float> &inputWeights,
+                                   Vector<T> &outputVector) = 0;
 
-	void setDebug(Bool debug) { debug_p = debug;}
+        Complex getChiSquared() { return chisq_p; }
+	void setDebug(Bool debug) { debug_p = debug; }
 
 protected:
 
@@ -197,7 +207,9 @@ protected:
 	Matrix<Double> freqPows_p;
 	Vector<Float> frequencies_p;
 	Vector<Bool> *lineFreeChannelMask_p;
-};
+        Complex chisq_p = Complex(std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity());
+ };
 
 //////////////////////////////////////////////////////////////////////////
 // UVContSubtractionKernel class
@@ -216,25 +228,25 @@ template<class T> class UVContSubtractionKernel : public UVContSubKernel<T>
 public:
 
 	UVContSubtractionKernel(	denoising::GslPolynomialModel<Double>* model,
-								Vector<Bool> *lineFreeChannelMask=NULL);
+								Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
-	void defaultKernel(	Vector<Complex> &inputVector,
-						Vector<Complex> &outputVector);
+	void defaultKernel(Vector<Complex> &inputVector,
+                           Vector<Complex> &outputVector);
 
-	void defaultKernel(	Vector<Float> &inputVector,
-						Vector<Float> &outputVector);
+	void defaultKernel(Vector<Float> &inputVector,
+                           Vector<Float> &outputVector);
 
-	void kernelCore(	Vector<Complex> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<Complex> &outputVector);
+	Complex kernelCore(Vector<Complex> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<Complex> &outputVector);
 
-	void kernelCore(	Vector<Float> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<Float> &outputVector);
+	Complex kernelCore(Vector<Float> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<Float> &outputVector);
 
 private:
 
@@ -258,25 +270,25 @@ template<class T> class UVContEstimationKernel : public UVContSubKernel<T>
 public:
 
 	UVContEstimationKernel(	denoising::GslPolynomialModel<Double>* model,
-							Vector<Bool> *lineFreeChannelMask=NULL);
+							Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
-	void defaultKernel(	Vector<Complex> &inputVector,
-						Vector<Complex> &outputVector);
+	void defaultKernel(Vector<Complex> &inputVector,
+                           Vector<Complex> &outputVector);
 
-	void defaultKernel(	Vector<Float> &inputVector,
-						Vector<Float> &outputVector);
+	void defaultKernel(Vector<Float> &inputVector,
+                           Vector<Float> &outputVector);
 
-	void kernelCore(	Vector<Complex> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<Complex> &outputVector);
+	Complex kernelCore(Vector<Complex> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<Complex> &outputVector);
 
-	void kernelCore(	Vector<Float> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<Float> &outputVector);
+	Complex kernelCore(Vector<Float> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<Float> &outputVector);
 
 private:
 
@@ -301,17 +313,17 @@ public:
 
 	UVContSubtractionDenoisingKernel(	denoising::GslPolynomialModel<Double>* model,
 										size_t nIter,
-										Vector<Bool> *lineFreeChannelMask=NULL);
+										Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
-	void defaultKernel(	Vector<T> &inputVector,
-						Vector<T> &outputVector);
+	void defaultKernel(Vector<T> &inputVector,
+                           Vector<T> &outputVector);
 
-	void kernelCore(	Vector<T> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<T> &outputVector);
+	Complex kernelCore(Vector<T> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<T> &outputVector);
 
 private:
 
@@ -336,17 +348,17 @@ public:
 
 	UVContEstimationDenoisingKernel(	denoising::GslPolynomialModel<Double>* model,
 										size_t nIter,
-										Vector<Bool> *lineFreeChannelMask=NULL);
+										Vector<Bool> *lineFreeChannelMask=nullptr);
 
 	void changeFitOrder(size_t order);
 
-	void defaultKernel(	Vector<T> &inputVector,
-						Vector<T> &outputVector);
+	void defaultKernel(Vector<T> &inputVector,
+                           Vector<T> &outputVector);
 
-	void kernelCore(	Vector<T> &inputVector,
-						Vector<Bool> &inputFlags,
-						Vector<Float> &inputWeights,
-						Vector<T> &outputVector);
+	Complex kernelCore(Vector<T> &inputVector,
+                           Vector<Bool> &inputFlags,
+                           Vector<Float> &inputWeights,
+                           Vector<T> &outputVector);
 
 private:
 
