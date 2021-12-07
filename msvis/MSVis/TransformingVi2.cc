@@ -634,6 +634,12 @@ TransformingVi2::setRowBlocking (rownr_t nRows)
      getVii()->setRowBlocking (nRows);
 }
 
+rownr_t
+TransformingVi2::getRowBlocking () const
+{
+     return getVii()->getRowBlocking ();
+}
+
 void
 TransformingVi2::setVisBuffer (VisBuffer2 * vb)
 {
