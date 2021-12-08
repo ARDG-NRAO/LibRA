@@ -336,6 +336,7 @@ Int MultiTermMatrixCleaner::mtclean(Int maxniter, Float stopfraction, Float inpu
   if(inputgain>(Float)0.0) loopgain=inputgain;
   Int criterion=5; // This chooses among a list of 'penalty functions'
   itercount_p=0;
+  Int iterdone = 0;
  
   /* Compute all convolutions and the matrix A */
   /* If matrix is not invertible, return ! */
@@ -417,6 +418,7 @@ Int MultiTermMatrixCleaner::mtclean(Int maxniter, Float stopfraction, Float inpu
       
         /* Increment iteration count */
         totalIters_p++;
+        iterdone++;
   
         /* Check for convergence */
         convergedflag = checkConvergence(criterion,fluxlimit,loopgain);
@@ -471,7 +473,7 @@ Int MultiTermMatrixCleaner::mtclean(Int maxniter, Float stopfraction, Float inpu
   //UUU cout << "major " << totalIters_p << endl;
 
   /* Return the number of minor-cycle iterations completed in this run */
-  return(totalIters_p+1);
+  return iterdone;
 }
 
 /* Indexing Rules... */
