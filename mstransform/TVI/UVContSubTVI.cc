@@ -248,6 +248,19 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
         parseFitSPW(configuration);
 
 	exists = -1;
+	exists = configuration.fieldNumber ("writemodel");
+	if (exists >= 0)
+	{
+            configuration.get(exists, precalcModel_p);
+            if (precalcModel_p)
+            {
+                logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                                << "Producing continuum estimate in the MODEL_DATA column"
+                                << LogIO::POST;
+            }
+	}
+
+	exists = -1;
 	exists = configuration.fieldNumber ("denoising_lib");
 	if (exists >= 0)
 	{
@@ -442,6 +455,14 @@ void UVContSubTVI::visibilityObserved (Cube<Complex> & vis) const
 	// Transform data
 	transformDataCube(vb->visCube(),weightSpFromSigmaSp,vis);
 
+        // save it for visibilityModel
+        if (precalcModel_p) {
+            if (precalcModelVis_p.shape() != vis.shape()) {
+                precalcModelVis_p.resize(vis.shape());
+            }
+            precalcModelVis_p = vb->visCube() - vis;
+        }
+
 	return;
 }
 
@@ -452,7 +473,6 @@ void UVContSubTVI::visibilityCorrected (Cube<Complex> & vis) const
 {
 	// Get input VisBuffer
 	VisBuffer2 *vb = getVii()->getVisBuffer();
-
 
 	// Transform data
 	transformDataCube(vb->visCubeCorrected(),vb->weightSpectrum(),vis);
@@ -467,6 +487,12 @@ void UVContSubTVI::visibilityModel (Cube<Complex> & vis) const
 {
 	// Get input VisBuffer
 	VisBuffer2 *vb = getVii()->getVisBuffer();
+
+        // from visiblityObserved we have calculated the polynomial subtraction
+        if (precalcModel_p && precalcModelVis_p.shape() == vb->visCubeModel().shape()) {
+            vis = precalcModelVis_p;
+            return;
+        }
 
 	// Transform data
 	transformDataCube(vb->visCubeModel(),vb->weightSpectrum(),vis);

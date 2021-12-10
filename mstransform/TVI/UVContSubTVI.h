@@ -99,6 +99,10 @@ protected:
     mutable map<Int, denoising::GslPolynomialModel<Double>* > inputFrequencyMap_p;
 
     mutable UVContSubResult result_p;
+
+    // cache model when writemodel / MODEL_DATA has to be produced
+    mutable Cube<casacore::Complex> precalcModelVis_p;
+    bool precalcModel_p = false;
 };
 
 //////////////////////////////////////////////////////////////////////////
