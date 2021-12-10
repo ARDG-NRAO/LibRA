@@ -236,6 +236,13 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
             wanted.resize(nelem + 1, true);
             wanted[nelem] = MS::MODEL_DATA;
             nPoss++;
+            // When producing output MS with DATA,MODEL from CORRECTED, setupMS will have
+            // to add MS::DATA to the output MS, not MS::CORRECTED_DATA.
+            // An alternative would be to add a special case in setupMS, similar
+            // to mustWriteOnlyToData, when wanted == CORRECTED_DATA, MODEL_DATA.
+            if (MS::CORRECTED_DATA == wanted[0]) {
+                wanted[0] = MS::DATA;
+            }
         }
 
 	uInt nFound = 0;
@@ -274,7 +281,6 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 	if (nFound == 0) throw(AipsError("Did not find and select any data columns."));
 
 	my_colNameStr = col;
-
 	return my_colNameVect;
 }
 
@@ -1236,7 +1242,6 @@ MeasurementSet* MSTransformDataHandler::setupMS(const String& MSFileName, const 
 	// with other shapes to be appended.
 	uInt ncols = colNamesTok.nelements();
 	const Bool mustWriteOnlyToData = mustConvertToData(ncols, colNamesTok);
-
 	if (mustWriteOnlyToData)
 	{
 		MS::addColumnToDesc(td, MS::DATA, 2);

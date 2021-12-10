@@ -457,6 +457,7 @@ void UVContSubTVI::visibilityObserved (Cube<Complex> & vis) const
 
         // save it for visibilityModel
         if (precalcModel_p) {
+            // Or otherwise the next assignment would fail a conform check
             if (precalcModelVis_p.shape() != vis.shape()) {
                 precalcModelVis_p.resize(vis.shape());
             }
@@ -476,6 +477,15 @@ void UVContSubTVI::visibilityCorrected (Cube<Complex> & vis) const
 
 	// Transform data
 	transformDataCube(vb->visCubeCorrected(),vb->weightSpectrum(),vis);
+
+        // save it for visibilityModel   ====> TODO: put into function
+        if (precalcModel_p) {
+            // Or otherwise the next assignment would fail a conform check
+            if (precalcModelVis_p.shape() != vis.shape()) {
+                precalcModelVis_p.resize(vis.shape());
+            }
+            precalcModelVis_p = vb->visCubeCorrected() - vis;
+        }
 
 	return;
 }

@@ -6663,18 +6663,15 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 				}
 				else
 				{
+					outputFlagCol = NULL;
 				}
 
 				if (produceModel_p)
 				{
-                                    if (iter->second == MS::DATA)
-                                    {
-					setTileShape(rowRef,outputMsCols_p->modelData());
-                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
-                                    } else if (iter->second == MS::CORRECTED_DATA) {
-					setTileShape(rowRef,outputMsCols_p->modelData());
-                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
-                                    }
+                                    // irrespective of wheter iter->second == MS::DATA
+                                    // or iter->second == MS::CORRECTED_DATA
+                                    setTileShape(rowRef,outputMsCols_p->modelData());
+                                    transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
                                 } else if (iter->second == MS::DATA) {
                                         setTileShape(rowRef,outputMsCols_p->data());
                                         transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->data(), outputFlagCol,applicableSpectrum);
@@ -6973,6 +6970,7 @@ template <class T> void MSTransformManager::setTileShape(	RefRows &rowRef,
 	ssize_t nRows = 1048576 / (sizeof(T)*nCorr*nChan);
 	IPosition outputPlaneShape(2,nCorr,nChan);
 	IPosition tileShape(3,nCorr,nChan,nRows);
+
 	outputDataCol.setShape(rowRef.firstRow(),outputPlaneShape,tileShape);
 
 	return;
