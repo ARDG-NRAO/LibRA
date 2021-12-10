@@ -90,13 +90,13 @@ public:
   void next();
   void next0();
 
-  // When not included in ctor tab
-  void setCTColumns(const NewCalTable& tab);
-
   // Return the current table iteration
   NewCalTable table() const { return NewCalTable(ti_->table()); };
 
   casacore::Int nrow() const { return ti_->table().nrow(); };
+
+  // When not included in ctor table
+  void setCTColumns(const NewCalTable& tab);
 
   // Column accessors
   // Those methods that return scalars for data coordinates 
@@ -147,7 +147,6 @@ public:
   casacore::Cube<casacore::Float> casfparam(casacore::String what="") const;
   void casfparam(casacore::Cube<casacore::Float>& casf, casacore::String what="") const;
 
-
   casacore::Cube<casacore::Float> paramErr() const;
   void paramErr(casacore::Cube<casacore::Float>& c) const;
 
@@ -167,11 +166,11 @@ public:
   void freq(casacore::Vector<casacore::Double>& v) const;
   int freqFrame(int spwId) const;
 
-  casacore::MDirection azel0(casacore::Double time) const;
-  casacore::Double hourang(casacore::Double time) const;
-  casacore::Float parang0(casacore::Double time) const;
+  casacore::MDirection azel0(casacore::Double time);
+  casacore::Double hourang(casacore::Double time);
+  casacore::Float parang0(casacore::Double time);
 
-  casacore::Matrix<casacore::Double> uvw() const;
+  casacore::Matrix<casacore::Double> uvw();
  protected:
 
   // Attach accessors
@@ -182,6 +181,9 @@ public:
   // Prohibit public use of copy, assignment
   ROCTIter (const ROCTIter& other);
   ROCTIter& operator= (const ROCTIter& other);
+
+  // Set epoch_ from first time measure
+  void initEpoch();
 
   // Update phase center in MSDerivedValues
   void updatePhaseCenter();
@@ -198,8 +200,12 @@ public:
   //   safe to access channel axis info
   casacore::Bool singleSpw_;
 
+  // The parent NewCalTable (casacore::Table) object
+  //   (stays in scope for the life of the CTIter)
+  NewCalTable parentNCT_;
+
   // Access to subtables (e.g., for frequencies)
-  ROCTColumns* calCol_;
+  ROCTColumns* iROCTCols_;
 
   // The underlying TableIterator
   casacore::TableIterator *ti_;
@@ -211,9 +217,8 @@ public:
   ROCTMainColumns *iROCTMainCols_;
 
   // For calculated axes
-  bool init_uvw_;
-  casacore::Int nAnt_, thisfield_, lastfield_;
-  casacore::Double thistime_, lasttime_;
+  bool init_epoch_, init_uvw_;
+  casacore::Int nAnt_;
   casacore::MDirection phaseCenter_;
   casacore::MEpoch epoch_;
   casacore::MPosition refAntPos_;
