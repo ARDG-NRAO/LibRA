@@ -215,7 +215,11 @@ casacore::MDirection ROCTIter::azel0(casacore::Double time) {
     initEpoch();
   }
 
-  updatePhaseCenter();
+  try {
+    updatePhaseCenter();
+  } catch (const casacore::AipsError& err) {
+    throw(casacore::AipsError("azel: " + err.getMesg()));
+  }
 
   casacore::MSDerivedValues msd;
   msd.setAntennas(iROCTCols_->antenna());
@@ -231,7 +235,11 @@ casacore::Double ROCTIter::hourang(casacore::Double time) {
     initEpoch();
   }
 
-  updatePhaseCenter();
+  try {
+    updatePhaseCenter();
+  } catch (const casacore::AipsError& err) {
+    throw(casacore::AipsError("hourang: " + err.getMesg()));
+  }
 
   casacore::MSDerivedValues msd;
   msd.setAntennas(iROCTCols_->antenna());
@@ -245,7 +253,11 @@ casacore::Float ROCTIter::parang0(casacore::Double time) {
     initEpoch();
   }
 
-  updatePhaseCenter();
+  try {
+    updatePhaseCenter();
+  } catch (const casacore::AipsError& err) {
+    throw(casacore::AipsError("parang: " + err.getMesg()));
+  }
 
   casacore::MSDerivedValues msd;
   msd.setAntennas(iROCTCols_->antenna());
@@ -275,6 +287,10 @@ casacore::Matrix<casacore::Double> ROCTIter::uvw() {
 
 void ROCTIter::updatePhaseCenter() {
   // Set MSDerivedValues phase center for field
+  if ((thisTime() == 0) || (thisField() < 0)) {
+    throw(AipsError("cannot calculate this value with no valid timestamp or field ID."));
+  }
+
   phaseCenter_ = iROCTCols_->field().phaseDirMeas(thisField(), thisTime());
 }
 
