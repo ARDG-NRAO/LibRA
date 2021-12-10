@@ -5489,8 +5489,11 @@ void MSTransformManager::checkDataColumnsToFill()
 	}
 
         if (produceModel_p) {
+            const string colname = (MS::DATA == mainColumn_p)? "DATA" : "CORRECTED_DATA";
             logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
-                     << "Will produce a MODEL_DATA column in the output MS" << LogIO::POST;
+                     << "Will produce a MODEL_DATA column in the output MS, "
+                     << "with the fit calculated for input " << colname
+                     << LogIO::POST;
             dataColMap_p[MS::MODEL_DATA] = mainColumn_p;
         }
 
@@ -6578,6 +6581,7 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 				case MS::DATA:
 				{
 					vb->visCube();
+
 				}
 				case MS::CORRECTED_DATA:
 				{
@@ -6659,21 +6663,22 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 				}
 				else
 				{
-					outputFlagCol = NULL;
 				}
 
-				if (iter->second == MS::DATA && produceModel_p)
+				if (produceModel_p)
 				{
-					setTileShape(rowRef,outputMsCols_p->data());
-					// I suspect this should actually be an 'if' to take from data() or correctedData()?
-					transformCubeOfData(vb,rowRef,vb->visCube(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
-					// the else right below I have no clue what mstransform command is coming from?
-                                } else
-				if (iter->second == MS::DATA)
-				{
-					setTileShape(rowRef,outputMsCols_p->data());
-					transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->data(), outputFlagCol,applicableSpectrum);
-				}
+                                    if (iter->second == MS::DATA)
+                                    {
+					setTileShape(rowRef,outputMsCols_p->modelData());
+                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
+                                    } else if (iter->second == MS::CORRECTED_DATA) {
+					setTileShape(rowRef,outputMsCols_p->modelData());
+                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
+                                    }
+                                } else if (iter->second == MS::DATA) {
+                                        setTileShape(rowRef,outputMsCols_p->data());
+                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->data(), outputFlagCol,applicableSpectrum);
+                                }
 				else
 				{
 					setTileShape(rowRef,outputMsCols_p->modelData());
@@ -6962,7 +6967,6 @@ void MSTransformManager::fillWeightCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 template <class T> void MSTransformManager::setTileShape(	RefRows &rowRef,
 															ArrayColumn<T> &outputDataCol)
 {
-
 	IPosition outputCubeShape = getShape();
 	size_t nCorr = outputCubeShape(0);
 	size_t nChan = outputCubeShape(1);
