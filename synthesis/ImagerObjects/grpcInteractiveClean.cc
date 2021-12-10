@@ -802,11 +802,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	}
 
 
-	void grpcInteractiveCleanManager::mergeMinorCycleSummary( const Array<Double> &summary, grpcInteractiveCleanState &state ){
+	void grpcInteractiveCleanManager::mergeMinorCycleSummary( const Array<Double> &summary, grpcInteractiveCleanState &state, Int immod ){
 		IPosition cShp = state.SummaryMinor.shape();
 		IPosition nShp = summary.shape();
 
-        bool uss = SIMinorCycleController::useSmallSummaryminor(); // temporary CAS-13683 workaround
+		bool uss = SIMinorCycleController::useSmallSummaryminor(); // temporary CAS-13683 workaround
         int nSummaryFields = uss ? 6 : SIMinorCycleController::nSummaryFields;
 		if( cShp.nelements() != 2 || cShp[0] != nSummaryFields ||
 		    nShp.nelements() != 2 || nShp[0] != nSummaryFields )
@@ -824,12 +824,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			state.SummaryMinor( IPosition(2,2,cShp[1]+row) ) = summary(IPosition(2,2,row));
 			// cycle threshold
 			state.SummaryMinor( IPosition(2,3,cShp[1]+row) ) = summary(IPosition(2,3,row));
-			// mapper id
-			state.SummaryMinor( IPosition(2,4,cShp[1]+row) ) = summary(IPosition(2,4,row));
 			if (uss) { // temporary CAS-13683 workaround
+				// swap out mapper id with multifield id
+				state.SummaryMinor( IPosition(2,4,cShp[1]+row) ) = immod;
 				// chunk id (channel/stokes)
 				state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
 			} else {
+				// mapper id
+				state.SummaryMinor( IPosition(2,4,cShp[1]+row) ) = summary(IPosition(2,4,row));
 				// channel id
 				state.SummaryMinor( IPosition(2,5,cShp[1]+row) ) = summary(IPosition(2,5,row));
 				// polarity id
@@ -854,19 +856,21 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				state.SummaryMinor( IPosition(2,15,cShp[1]+row) ) = summary(IPosition(2,15,row));
 				// deconvolver runtime
 				state.SummaryMinor( IPosition(2,16,cShp[1]+row) ) = summary(IPosition(2,16,row));
+				// outlier field id
+				state.SummaryMinor( IPosition(2,17,cShp[1]+row) ) = immod;
 				// stopcode
-				state.SummaryMinor( IPosition(2,17,cShp[1]+row) ) = summary(IPosition(2,17,row));
+				state.SummaryMinor( IPosition(2,18,cShp[1]+row) ) = summary(IPosition(2,18,row));
 			}
 		}
 	}
 
-	void grpcInteractiveCleanManager::mergeCycleExecutionRecord( Record& execRecord ){
+	void grpcInteractiveCleanManager::mergeCycleExecutionRecord( Record& execRecord, Int immod ){
         LogIO os( LogOrigin("grpcInteractiveCleanManager",__FUNCTION__,WHERE) );
 
         access( (void*) 0,
                 std::function< void* ( void*, grpcInteractiveCleanState& )>(
                        [&]( void *dummy, grpcInteractiveCleanState &state ) -> void* {
-                           mergeMinorCycleSummary( execRecord.asArrayDouble( RecordFieldId("summaryminor")), state );
+                           mergeMinorCycleSummary( execRecord.asArrayDouble( RecordFieldId("summaryminor")), state, immod );
 
                            state.IterDone += execRecord.asInt(RecordFieldId("iterdone"));
 

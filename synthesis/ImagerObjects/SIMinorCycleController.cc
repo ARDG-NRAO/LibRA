@@ -346,7 +346,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      itsSummaryMinor( IPosition(2, 2, shp[1] ) ) = (Double) modelflux;
      // cycle threshold
      itsSummaryMinor( IPosition(2, 3, shp[1] ) ) = itsCycleThreshold;
-     // mapper id
+     // mapper id (or multifield id temporary CAS-13683 workaround)
      itsSummaryMinor( IPosition(2, 4, shp[1] ) ) = deconvolverid;
      // channel id
      itsSummaryMinor( IPosition(2, 5, shp[1] ) ) = chan;
@@ -373,8 +373,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
          itsSummaryMinor( IPosition(2, 15, shp[1] ) ) = peakMem;
          // ellapsed time of the deconvolver
          itsSummaryMinor( IPosition(2, 16, shp[1] ) ) = runtime;
+         // outlier field id, to be provided in grpcInteractiveCleanManager::mergeMinorCycleSummary
+         itsSummaryMinor( IPosition(2, 17, shp[1] ) ) = 0;
          // stopcode
-         itsSummaryMinor( IPosition(2, 17, shp[1] ) ) = stopCode;
+         itsSummaryMinor( IPosition(2, 18, shp[1] ) ) = stopCode;
      }
   }// end of addSummaryMinor
 

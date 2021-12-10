@@ -356,7 +356,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    Float fpeakMem = (Float) peakMem / 1000000.0; // to MB
 	    int chunkId = chanid; // temporary CAS-13683 workaround
 	    if (SIMinorCycleController::useSmallSummaryminor()) { // temporary CAS-13683 workaround
-	        chunkId = chanid * nSubPols + polid;
+	        chunkId = chanid + nSubChans*polid;
 	    }
 	    loopcontrols.addSummaryMinor( deconvolverid, chunkId, polid, cycleStartIteration,
 	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
