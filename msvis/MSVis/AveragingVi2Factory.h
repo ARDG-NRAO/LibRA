@@ -51,6 +51,7 @@ public:
                   BaselineDependentAveraging = 1 << 18, // Do averaging with lengths dependent on baselines
                                                         // Requires specifying a max uvw distance parameter
                   phaseShifting = 1 << 19,
+                  flagdataFlagPropagation = 1 << 20, // CAS-12737 - preserve existing flags
                   MarksLast
     };
 
