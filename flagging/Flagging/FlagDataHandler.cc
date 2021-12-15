@@ -1706,6 +1706,9 @@ FlagDataHandler::setTimeAverageIter(bool activated)
         timeAvgOptions_p |= vi::AveragingOptions::AverageModel;
         timeAvgOptions_p |= vi::AveragingOptions::ModelFlagWeightAvgFromWEIGHT;
     }
+
+    // ensure preservation of flags (CAS-12737, CAS-12205, CAS-9985)
+    timeAvgOptions_p |= vi::AveragingOptions::flagdataFlagPropagation;
 }
 
 // ----------------------------------------------------------------------------
@@ -1725,6 +1728,9 @@ FlagDataHandler::setChanAverageIter(Vector<Int> chanbin)
     {
     	chanAvgOptions_p.define("chanbin",chanbin);
     }
+
+    // ensure preservation of flags (CAS-12737, CAS-9985)
+    chanAvgOptions_p.define("flagdataFlagPropagation", true);
 
     return;
 }

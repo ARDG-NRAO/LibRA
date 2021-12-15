@@ -196,7 +196,7 @@ FlagAgentBase::initialize()
    timeavg_p = false;
    timebin_p = 0.0;
    channelavg_p = false;
-   chanbin_p = Vector<Int>(1,0);
+   chanbin_p = Vector<Int>(1, 1);
 
    //// Initialize configuration ////
 
@@ -469,14 +469,14 @@ FlagAgentBase::runCore()
 				break;
 			}
 			// Iterate through rows (i.e. baselines)
-			// manual,quack
+			// manual, quack
 			case ROWS:
 			{
 				iterateRows();
 				break;
 			}
 			// Iterate through rows (i.e. baselines) doing a common pre-processing before
-			// elevation, shadow, summary
+			// elevation, shadow, summary, antint
 			case ROWS_PREPROCESS_BUFFER:
 			{
 				preProcessBuffer(*(flagDataHandler_p->visibilityBuffer_p));
@@ -552,6 +552,13 @@ FlagAgentBase::runCore()
 
 		// Update chunk counter
 		chunkFlags_p += visBufferFlags_p;
+                if (logger_p->priority() >= LogMessage::DEBUG2 &&
+                    visBufferFlags_p > 0) {
+                    LogIO os(LogOrigin("FlagAgentBase", __FUNCTION__));
+                    os << LogIO::DEBUG2 << " buffer -> chunk flag counter += "
+                       << visBufferFlags_p << " (chunk flags: " << chunkFlags_p << ")"
+                       << LogIO::POST;
+                }
 	}
 
 	return;
@@ -1955,32 +1962,33 @@ FlagAgentBase::isNaNOrZero(Double number)
 void
 FlagAgentBase::chunkSummary()
 {
-	logger_p->origin(LogOrigin(agentName_p,__FUNCTION__));
+    logger_p->origin(LogOrigin(agentName_p,__FUNCTION__));
 
-	// With this check we skip cases like summary or display
-	if (chunkFlags_p > 0)
-	{
-		tableFlags_p +=  chunkFlags_p;
-		std::string flagStr = "unflagged";
-		if (flag_p) {
-		   flagStr = "flagged";
-		}
-		*logger_p << LogIO::NORMAL << "=> "  << "Data " << flagStr << " so far " <<
-		   100.0*chunkFlags_p/flagDataHandler_p->progressCounts_p<< "%" << LogIO::POST;
+    // With this check we skip cases like summary or display
+    if (chunkFlags_p > 0)
+    {
+        tableFlags_p +=  chunkFlags_p;
+        std::string flagStr = "unflagged";
+        if (flag_p) {
+            flagStr = "flagged";
+        }
+        *logger_p << LogIO::NORMAL << "=> "  << "Data " << flagStr << " so far "
+                  << 100.0*chunkFlags_p/flagDataHandler_p->progressCounts_p<< "%"
+                  << " (" << chunkFlags_p << "/" << flagDataHandler_p->progressCounts_p
+                  << ")" << LogIO::POST;
 	}
 
-	// Only the clipping agent is capable of detecting this, and besides in general
-	// we should not have NaNs, so it is better not to print this log if possible
-	if (chunkNaNs_p > 0)
-	{
-		tableNaNs_p += chunkNaNs_p;
-		*logger_p << LogIO::NORMAL << "=> "  << "Number of NaNs detected so far: " <<  (Double)chunkNaNs_p << LogIO::POST;
-	}
+    // Only the clipping agent is capable of detecting this, and besides in general
+    // we should not have NaNs, so it is better not to print this log if possible
+    if (chunkNaNs_p > 0)
+    {
+        tableNaNs_p += chunkNaNs_p;
+        *logger_p << LogIO::NORMAL << "=> "  << "Number of NaNs detected so far: " <<  (Double)chunkNaNs_p << LogIO::POST;
+    }
 
-	chunkFlags_p = 0;
-	chunkNaNs_p = 0;
-	visBufferFlags_p = 0;
-	return;
+    chunkFlags_p = 0;
+    chunkNaNs_p = 0;
+    visBufferFlags_p = 0;
 }
 
 void
