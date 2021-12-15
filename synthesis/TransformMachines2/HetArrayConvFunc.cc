@@ -297,13 +297,15 @@ void HetArrayConvFunc::findAntennaSizes(const vi::VisBuffer2& vb) {
 
                         }
                         else {
-                          //  antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
-                          if(!Table::isReadable(recs[recordToUse].asString("compleximage")))
-                            throw(AipsError("complex image of VP "+recs[recordToUse].asString("compleximage")+ " is not readable"));
+                           antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			  
+			   //                          if(!Table::isReadable(recs[recordToUse].asString("compleximage")))
+			   //                            throw(AipsError("complex image of VP "+recs[recordToUse].asString("compleximage")+ " is not readable"));
 
-                          PagedImage<Complex> compim(recs[recordToUse].asString("compleximage"));
-                          antMath_p[diamIndex]=new PBMath2DImage(compim);
-                          //antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			   //                          PagedImage<Complex> compim(recs[recordToUse].asString("compleximage"));
+			   //                          antMath_p[diamIndex]=new PBMath2DImage(compim);
+			   //                          //antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			 
                         }
                         ++diamIndex;
                     }
