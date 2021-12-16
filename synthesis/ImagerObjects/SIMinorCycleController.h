@@ -135,6 +135,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
    void resetMinResidual();
 
+    // temporary CAS-13683 workaround
+    static casacore::Bool useSmallSummaryminor();
+
  protected:
     /* Control Variables */
     casacore::Int    itsCycleNiter;
