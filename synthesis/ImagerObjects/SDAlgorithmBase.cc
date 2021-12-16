@@ -354,11 +354,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    std::chrono::steady_clock::time_point profileFinishTime = std::chrono::steady_clock::now();
 	    Float runtime = (  (Float) std::chrono::duration_cast<std::chrono::milliseconds>(profileFinishTime - profileStartTime).count()  )/1000.0;
 	    Float fpeakMem = (Float) peakMem / 1000000.0; // to MB
-	    int chunkId = chanid; // temporary CAS-13683 workaround
-	    if (SIMinorCycleController::useSmallSummaryminor()) { // temporary CAS-13683 workaround
-	        chunkId = chanid + nSubChans*polid;
-	    }
-	    loopcontrols.addSummaryMinor( deconvolverid, chunkId, polid, cycleStartIteration,
+	    loopcontrols.addSummaryMinor( deconvolverid, chanid, polid, cycleStartIteration,
 	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
 	                                  modelflux, peakresidual, peakresidualnomask, masksum, rank, fpeakMem, runtime, stopCode);
 
