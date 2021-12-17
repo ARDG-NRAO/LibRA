@@ -32,7 +32,8 @@
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <casa/OS/Timer.h>
-
+#include <chrono>
+#include <thread>
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 extern Applicator applicator;
@@ -401,7 +402,8 @@ String&	CubeMajorCycleAlgorithm::name(){
 	else
 		workingdir="";
 	///Use user locking to make sure locks are compliant
-	PagedImage<Float> sumwt(sumwgtname, TableLock::UserNoReadLocking);
+	PagedImage<Float> sumwt(sumwgtname, TableLock::UserLocking);
+        sumwt.lock(FileLocker::Write, 200);
 	//PagedImage<Float> sumwt(sumwgtname, TableLock::AutoNoReadLocking);
         if(sumwtNames_p.nelements() <= uInt(imId)){
           sumwtNames_p.resize(imId+1, True);
@@ -427,6 +429,7 @@ String&	CubeMajorCycleAlgorithm::name(){
 		chanBeg=0;
 		chanEnd=sumwt.shape()[3]-1;
 	}
+        sumwt.tempClose();
 	////For some small channel ms's retuning trigger a vi2/vb2 bug in nChannels
 	///avoid retuning for small images
 	////Skipping this here..
@@ -600,22 +603,32 @@ void CubeMajorCycleAlgorithm::reset(){
       uInt exceptCounter=0;
       while(true){
 	try{
-	  im = new PagedImage<Float> (imagename, TableLock::UserNoReadLocking);
+	  im = new PagedImage<Float> (imagename, TableLock::UserLocking);
 	  //PagedImage<Float> im(imagename, TableLock::AutoNoReadLocking);
-	  break;
+          im->lock(FileLocker::Read, 1000);
+          SubImage<Float> *tmpptr=nullptr;
+          tmpptr=SpectralImageUtil::getChannel(*im, chanBeg, chanEnd, false);
+          subimptr.reset(new TempImage<Float>(TiledShape(tmpptr->shape(), tmpptr->niceCursorShape()), tmpptr->coordinates()));
+          
+          if(copy)
+            subimptr->copyData(*tmpptr);
+          //subimptr->flush();
+          im->unlock();
+          delete tmpptr;
+          break; ///get out of while loop
 	}
 	catch(AipsError &x){
-	      
+          im=nullptr;
 	  String mes=x.getMesg();
 	  if(mes.contains("FilebufIO::readBlock") ){
-	    sleep(0.05);
+	    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	    os << LogIO::WARN << "#####CATCHING a sleep because "<< mes<< LogIO::POST;
 	  }
 	  else
-	    throw(AipsError("Error in selectdata: "+mes));
+	    throw(AipsError("Error in readimage "+imagename+" : "+mes));
 	  
 	  if(exceptCounter > 100){
-	    throw(AipsError("Error in selectdata got 100 of this exeception: "+mes));
+	    throw(AipsError("Error in readimage got 100 of this exeception: "+mes));
 	    
 	  }
 	  
@@ -623,16 +636,7 @@ void CubeMajorCycleAlgorithm::reset(){
 	++exceptCounter;
       }
     }	  
-    im->lock(FileLocker::Read, 1000);
-    SubImage<Float> *tmpptr=nullptr;
-    tmpptr=SpectralImageUtil::getChannel(*im, chanBeg, chanEnd, false);
-    subimptr.reset(new TempImage<Float>(TiledShape(tmpptr->shape(), tmpptr->niceCursorShape()), tmpptr->coordinates()));
-    
-    if(copy)
-      subimptr->copyData(*tmpptr);
-    //subimptr->flush();
-    im->unlock();
-    delete tmpptr;
+
   }
 
   void CubeMajorCycleAlgorithm::writeBackToFullImage(const String imagename, const Int chanBeg, const Int chanEnd, std::shared_ptr<ImageInterface<Float> > subimptr){
@@ -643,40 +647,42 @@ void CubeMajorCycleAlgorithm::reset(){
       while(true){
 	try{
 	  im=new PagedImage<Float> (imagename, TableLock::UserLocking);
-	  break;
+	  
+          
+          //PagedImage<Float> im(imagename, TableLock::AutoLocking);
+          SubImage<Float> *tmpptr=nullptr;
+          {
+            tmpptr=SpectralImageUtil::getChannel(*im, chanBeg, chanEnd, true);
+            LatticeLocker lock1 (*(tmpptr), FileLocker::Write);
+            tmpptr->set(0.0);
+            tmpptr->copyData(*(subimptr));
+          }
+          im->flush();
+          im->unlock();
+          delete tmpptr;
+          break; //get out of while loop
 	}
 	catch(AipsError &x){
-	      
+          
 	  String mes=x.getMesg();
 	  if(mes.contains("FilebufIO::readBlock") ){
-	    sleep(0.05);
+	    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	    os << LogIO::WARN << "#####CATCHING a sleep because "<< mes<< LogIO::POST;
 	  }
 	  else
-	    throw(AipsError("Error in selectdata: "+mes));
-	      
+	    throw(AipsError("Error in writing back image "+imagename+" : "+mes));
+          
 	  if(exceptCounter > 100){
-	    throw(AipsError("Error in selectdata got 100 of this exeception: "+mes));
+	    throw(AipsError("Error in writeimage got 100 of this exeception: "+mes));
 	    
 	  }
-	  
-	    }
+          
+        }
 	++exceptCounter;
       }
     }//End of work around for table disappearing bug
-	 
-    //PagedImage<Float> im(imagename, TableLock::AutoLocking);
-    SubImage<Float> *tmpptr=nullptr;
-    {
-      tmpptr=SpectralImageUtil::getChannel(*im, chanBeg, chanEnd, true);
-      LatticeLocker lock1 (*(tmpptr), FileLocker::Write);
-      tmpptr->set(0.0);
-      tmpptr->copyData(*(subimptr));
-    }
-    im->flush();
-    im->unlock();
-    delete tmpptr;
-                 
+
+    
   }
   void CubeMajorCycleAlgorithm::copyBeamSet(ImageInterface<Float>& subpsf, const Int imageid){
     //For now lets do for the main image only
