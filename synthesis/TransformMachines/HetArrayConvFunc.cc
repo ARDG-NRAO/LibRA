@@ -353,7 +353,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     convFuncChanMap.resize(vb.nChannel());
     Vector<Double> beamFreqs;
     findUsefulChannels(convFuncChanMap, beamFreqs, vb, visFreq);
-    //cerr << "SPW " << vb.spectralWindow() << "   beamFreqs "<< beamFreqs <<  " chamMap " << convFuncChanMap << endl;
     Int nBeamChans=beamFreqs.nelements();
     /////For now not doing beam rotation or squints but to be enabled easily 
     convFuncPolMap.resize(vb.nCorr());
@@ -409,6 +408,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //cerr << "ms " << vb.msName() << " spw " <<  vb.spectralWindow() << endl;
       doneMainConv_p[actualConvIndex_p]=false;
       //cerr << "invalidating doneMainConv " << endl; //<<  convFunctions_p[actualConvIndex_p]->shape()[3] << " =? " << nBeamChans << " convsupp " << convSupport_p.nelements() << endl;
+    }
+
+    ////Trap for cases when the selection seem to have changed
+    if(doneMainConv_p[actualConvIndex_p]){
+      if(nBeamChans != (*convFunctions_p[actualConvIndex_p]).shape()[3])
+	doneMainConv_p[actualConvIndex_p]=False;
+
     }
 
     // Get the coordinate system
@@ -748,7 +754,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //cerr << "ms " << vb.msName() << " convFuncRowMap " << convFuncRowMap[0] << endl;
     ndishpair=max(convFuncRowMap)+1;
     
-    convSupportBlock_p.resize(actualConvIndex_p+1);
+    // convSupportBlock_p.resize(actualConvIndex_p+1);
     convSizes_p.resize(actualConvIndex_p+1);
     //convSupportBlock_p[actualConvIndex_p]=new Vector<Int>(ndishpair);
     //(*convSupportBlock_p[actualConvIndex_p])=convSupport_p;
@@ -766,7 +772,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     weightConvFunc_p=(*convWeights_p[actualConvIndex_p]);
 
     //cerr << "convfunc shapes " <<  convFunc_p.shape() <<  "   " << weightConvFunc_p.shape() << "  " << convSize_p << " pol " << nBeamPols << "  chan " << nBeamChans << " ndishpair " << ndishpair << endl;
-
+    /////Due to a bug in buildCoordSysCore...sometimes an image bigger
+    ///than the spw selection chosen  is made
+    if(nBeamChans > convFunc_p.shape()[3])
+      nBeamChans = convFunc_p.shape()[3];
     //convSupport_p.resize();
     //convSupport_p=(*convSupportBlock_p[actualConvIndex_p]);
     Bool delc; Bool delw;

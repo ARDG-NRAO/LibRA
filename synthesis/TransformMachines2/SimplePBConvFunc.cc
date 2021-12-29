@@ -241,8 +241,8 @@ SimplePBConvFunc::SimplePBConvFunc(): nchan_p(-1),
 
 
 
-  Int SimplePBConvFunc::convIndex(const vi::VisBuffer2& vb){
-	  String elkey=String::toString(vb.msId())+String("_")+String::toString(vb.spectralWindows()[0]);
+  Int SimplePBConvFunc::convIndex(const vi::VisBuffer2& vb, const uInt nchan){
+    String elkey=String::toString(vb.msId())+String("_")+String::toString(vb.spectralWindows()[0])+String("_")+String::toString(nchan);
 	  if(vbConvIndex_p.count(elkey) > 0){
 		  return vbConvIndex_p[elkey];
 	  }
@@ -331,7 +331,7 @@ void SimplePBConvFunc::findConvFunction(const ImageInterface<Complex>& iimage,
   CoordinateSystem coords(iimage.coordinates());
   
   
-  actualConvIndex_p=convIndex(vb);
+  actualConvIndex_p=convIndex(vb, visFreq.nelements());
   //cerr << "In findConv " << actualConvIndex_p << endl;
   // Make a two dimensional image to calculate the
   // primary beam. We want this on a fine grid in the
