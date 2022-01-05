@@ -110,11 +110,8 @@ private:
 	casacore::MeasurementSet *selectedMeasurementSet_p;
 	casacore::MeasurementSet *originalMeasurementSet_p;
 
-	// RO Visibility Iterator
-	vi::VisibilityIterator2 *preAveragingVI_p;
 	vi::VisibilityIterator2 *visibilityIterator_p;
 	vi::FrequencySelectionUsingChannels *channelSelector_p;
-
 };
 
 } //# NAMESPACE CASA - END

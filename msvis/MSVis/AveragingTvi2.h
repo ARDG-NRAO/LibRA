@@ -110,7 +110,7 @@ protected:
     casacore::Bool inputExceedsUvwDistance (ms::MsRow * rowInput, avg::MsRowAvg * rowAveraged);
     void produceSubchunk ();
     void processInputSubchunk (const VisBuffer2 *);
-    casacore::Bool reachedAveragingBoundary();
+    // casacore::Bool reachedAveragingBoundary();
     void captureIterationInfo (const VisBuffer2 * vb2);
     bool subchunksReady () const;
     void validateInputVi (ViImplementation2 *);
@@ -127,6 +127,7 @@ private:
     casacore::Bool subchunkExists_p;
     avg::VbAvg * vbAvg_p;
     WeightScaling * weightScaling_p;
+    // Bookkeeping required by writeFlag() and writeFlagRow()
     casacore::Int startBuffer_p;
     casacore::Int endBuffer_p;
 };
