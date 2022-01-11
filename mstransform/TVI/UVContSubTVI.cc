@@ -21,6 +21,7 @@
 //# $Id: $
 
 #include <mstransform/TVI/UVContSubTVI.h>
+#include <casacore/ms/MeasurementSets/MSFieldColumns.h>
 
 // OpenMP
 #ifdef _OPENMP
@@ -153,7 +154,7 @@ void UVContSubTVI::parseListFitSPW(const Record &configuration)
              << nelem/2 << LogIO::POST;
 
     // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
-    const auto fieldsTable = getVii()->ms().field();
+    const auto &fieldsTable = getVii()->fieldSubtablecols();
     const auto maxField = fieldsTable.nrow() - 1;
 
     const auto shape = fieldFitspw.shape();
