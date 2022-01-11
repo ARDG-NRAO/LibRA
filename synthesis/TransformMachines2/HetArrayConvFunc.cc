@@ -280,8 +280,8 @@ void HetArrayConvFunc::findAntennaSizes(const vi::VisBuffer2& vb) {
 			  // PagedImage<Float> imagim(recs[recordToUse].asString("imagim"));
                           //  antMath_p[diamIndex]=new PBMath2DImage(realim, imagim);
 
-                          if(!Table::isReadable(recs[recordToUse].asString("realimage")))
-                            throw(AipsError("real part of VP "+recs[recordToUse].asString("realimage")+ " is not readable"));
+                          //if(!Table::isReadable(recs[recordToUse].asString("realimage")))
+                          //  throw(AipsError("real part of VP "+recs[recordToUse].asString("realimage")+ " is not readable"));
                           PagedImage<Float> realim(recs[recordToUse].asString("realimage"));
                           CountedPtr<ImageInterface<Float> >imagim;
                           if(recs[recordToUse].asString("imagimage").size()==0){
@@ -289,8 +289,8 @@ void HetArrayConvFunc::findAntennaSizes(const vi::VisBuffer2& vb) {
                             imagim->set(0.0);
                           }
                           else{
-                            if(!Table::isReadable(recs[recordToUse].asString("imagimage")))
-                              throw(AipsError("Imaginary part of VP "+recs[recordToUse].asString("imagimage")+ " is not readable"));
+                            //if(!Table::isReadable(recs[recordToUse].asString("imagimage")))
+			    //  throw(AipsError("Imaginary part of VP "+recs[recordToUse].asString("imagimage")+ " is not readable"));
                             imagim= new PagedImage<Float> (recs[recordToUse].asString("imagimage"));
                           }
                             antMath_p[diamIndex]=new PBMath2DImage(realim, *imagim);
@@ -301,7 +301,6 @@ void HetArrayConvFunc::findAntennaSizes(const vi::VisBuffer2& vb) {
 			  
 			   //                          if(!Table::isReadable(recs[recordToUse].asString("compleximage")))
 			   //                            throw(AipsError("complex image of VP "+recs[recordToUse].asString("compleximage")+ " is not readable"));
-
 			   //                          PagedImage<Complex> compim(recs[recordToUse].asString("compleximage"));
 			   //                          antMath_p[diamIndex]=new PBMath2DImage(compim);
 			   //                          //antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
