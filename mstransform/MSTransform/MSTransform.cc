@@ -42,7 +42,7 @@ namespace casa {
 // -----------------------------------------------------------------------
 // Default Constructor
 // -----------------------------------------------------------------------
-MSTransform::MSTransform () : mdh_p(nullptr)
+MSTransform::MSTransform () : mdh_p()
 {
 	done();
 }
@@ -60,8 +60,8 @@ void
 MSTransform::done()
 {
 	if(mdh_p){
-		delete mdh_p;
-		mdh_p = nullptr;
+            auto *mdh = mdh_p.release();
+            delete mdh;
 	}
 
 	// Default values of parameters
@@ -126,10 +126,13 @@ MSTransform::configure(Record config)
 			return false;
 		}
 
-		if(mdh_p) delete mdh_p;
+		if(mdh_p) {
+		   auto *mdh = mdh_p.release();
+		   delete mdh;
+                }
 
 		// Create an object for the MSTransformManager
-		mdh_p = new MSTransformManager();
+		mdh_p = std::unique_ptr<MSTransformManager>(new MSTransformManager());
 	}
 
 	config_p = config;
@@ -227,8 +230,6 @@ MSTransform::run()
 	Record result;
 	visIter->result(result);
 	mdh_p->close();
-	delete mdh_p;
-	mdh_p = nullptr;
 
 	return result;
 }
