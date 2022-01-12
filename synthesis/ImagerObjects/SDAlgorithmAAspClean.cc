@@ -103,7 +103,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       const Float width = itsCleaner.getPsfGaussianWidth(*(itsImages->psf()));
       //if user does not provide the largest scale, we calculate it internally.
       itsCleaner.setUserLargestScale(itsUserLargestScale);
-      itsCleaner.getLargestScaleSize(*(itsImages->psf()));
+      // we do not use the shortest baseline approach below b/c of reasons in CAS-940 dated around Jan 2022
+      // itsCleaner.getLargestScaleSize(*(itsImages->psf()));
 
       if (itsPrevPsfWidth != width)
       {

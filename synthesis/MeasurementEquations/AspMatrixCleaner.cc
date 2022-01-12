@@ -986,8 +986,57 @@ void AspMatrixCleaner::getLargestScaleSize(ImageInterface<Float>& psf)
 
 }
 
-
 void AspMatrixCleaner::setInitScales()
+{
+  LogIO os(LogOrigin("AspMatrixCleaner", "setInitScales()", WHERE));
+
+  // if user does not provide the largest scale, use the default.
+  if (itsUserLargestScale < 0)
+  {
+    itsInitScaleSizes = {0.0f, itsPsfWidth, 2.0f*itsPsfWidth, 4.0f*itsPsfWidth, 8.0f*itsPsfWidth};
+    return;
+  }
+  else
+  {
+    const Int nx = psfShape_p(0);
+    const Int ny = psfShape_p(1);
+    
+    // ensure the largest scale is smaller than imsize/4/sqrt(2pi) = imsize/10 (could try imsize/4 later)
+    if(itsUserLargestScale> min(nx/10, ny/10))
+    {
+       os << LogIO::WARN << "`largestscale " << itsUserLargestScale << " pixels is too big for an image size of " << nx << " x " << ny << " pixels. This scale size will be reset.  " << LogIO::POST;
+       itsUserLargestScale = float(ceil(min(nx/10, ny/10))); // based on the idea of MultiTermMatrixCleaner::verifyScaleSizes()
+    }
+
+    int numscale = floor(itsUserLargestScale / itsPsfWidth);
+    if (numscale == 0)
+    {
+      itsNInitScales = 1;
+      itsInitScaleSizes.resize(itsNInitScales);
+      itsInitScaleSizes[0] = 0.0f;
+      os << LogIO::WARN << "`largestscale` " << itsUserLargestScale << " is smaller than the psf width. Only 0 scale is used" << LogIO::POST;
+    }
+    else 
+    {
+      Int scale = 1;
+      while (((itsPsfWidth * pow(2, scale-1)) < itsUserLargestScale) && (scale < 5))
+      {
+        itsInitScaleSizes.push_back(itsPsfWidth * pow(2, scale-1));
+        scale++;
+      }
+
+      if (scale <= 4) // restricted the # init scales based on `largestscale"
+        itsInitScaleSizes.push_back(itsUserLargestScale);
+
+      itsNInitScales = itsInitScaleSizes.size();      
+    }
+
+  }
+
+}
+
+/* for shortest baseline approach
+void AspMatrixCleaner::setInitScalesOld()
 {
   LogIO os(LogOrigin("AspMatrixCleaner", "setInitScales()", WHERE));
 
@@ -1037,6 +1086,7 @@ void AspMatrixCleaner::setInitScales()
     //os << "scale 2" << " = " << itsInitScaleSizes[2] << " pixels" << LogIO::POST;
   }
 }
+*/
 
 void AspMatrixCleaner::setInitScaleXfrs(const Float width)
 {
@@ -1053,11 +1103,14 @@ void AspMatrixCleaner::setInitScaleXfrs(const Float width)
   {
   	itsNInitScales = 5;
   	itsInitScaleSizes.resize(itsNInitScales, false);
+    // shortest baseline approach below is no longer used (see CAS-940 in Jan 2022). Switched back to the original approach.
     // set initial scale sizes from power-law distribution with min scale=PsfWidth and max scale = c/nu/baseline
     // this step can reset itsNInitScales if the largest scale allowed is small
+    //setInitScalesOld();
+    // old approach may cause Asp to pick unreasonable large scale but this be avoided by setting `largestscalesize`.
+    // try 0, width, 2width, 4width and 8width which is also restricted by `largestscale` if provided
+    //itsInitScaleSizes = {0.0f, width, 2.0f*width, 4.0f*width, 8.0f*width};
     setInitScales();
-    // old approach that may cause Asp to pick unreasonable large scale: try 0, width, 2width, 4width and 8width
-  	//itsInitScaleSizes = {0.0f, width, 2.0f*width, 4.0f*width, 8.0f*width};
   }
 
   itsInitScales.resize(itsNInitScales, false);
