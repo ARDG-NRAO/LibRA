@@ -170,7 +170,7 @@ public:
 
 	void setDebug(Bool debug) {debug_p = debug;};
 
-        std::pair<std::vector<Complex>, Complex> calcFitCoeff(Vector<Complex> &data);
+	std::pair<std::vector<Complex>, Complex> calcFitCoeff(Vector<Complex> &data);
 	template<class T> std::pair<std::vector<T>, double> calcFitCoeff(Vector<T> &data)
 	{
 		// Set data
