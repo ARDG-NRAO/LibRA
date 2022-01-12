@@ -1032,6 +1032,128 @@ Bool Calibrater::setsolve (const String& type,
   return false;
 }
 
+Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const String& selection) {
+  set<Int> selectedset;
+  set<Int> tmpset;
+  Vector<Int> selectedlist;
+  MSMetaData msmdtmp(mssel_p,50.0);
+  
+  for (auto & i : selspwlist){
+    if (selection == "field"){
+      tmpset = msmdtmp.getFieldIDsForSpw(i);
+    }
+    else if (selection == "scan"){
+      //tmpset = msmdtmp.getScansForSpw(i);
+      cout << "scan stuff here" << endl;
+    }
+    else{
+      cout << "Invalid selection" << endl;
+      return selectedlist;
+    }
+    
+    merge(selectedset.begin(), selectedset.end(),
+          tmpset.begin(), tmpset.end(),
+          inserter(selectedset, selectedset.begin()));
+  }
+  // Convert all the fields into a Vector
+  Vector<Int> vtmp(selectedset.begin(),selectedset.size(),0);
+  selectedlist.reference(vtmp);
+  
+  return selectedlist;
+}
+
+ Record Calibrater::returndict()
+{
+  Record rec;
+  MSSelection msselect;
+  set<uInt> selspwset;
+  set<Int> selscanset;
+  set<string> applytableset;
+  set<string> solvetableset;
+  
+  //Vector<Int> antenna1 = msselect.getAntenna1List(ms_p);
+  MSMetaData msmdtmp(mssel_p,50.0);
+  Vector<Int> selspwlist;
+  Vector<uInt> selscanlist;
+  Vector<Int> selfieldlist;
+  Vector<String> toapplylist;
+  Vector<String> tosolvelist;
+
+  // ===== SPW SECTION =====
+  // get the sets of IDs
+  selspwset=msmdtmp.getSpwIDs();
+  // Convert sets to Vectors before adding the returndict
+  Vector<Int> vtmp(selspwset.begin(),selspwset.size(),0);
+  selspwlist.reference(vtmp);
+  
+  // ===== FIELD SECTION =====
+  selfieldlist = selectedForSpw(selspwlist, "field");
+  
+  // ===== APPLY TABLE SECTION =====
+  // get all tables to apply
+  // get the strings for each apply table
+  // split the table from the string
+  Int numtables = vc_p.nelements();
+  string space_delimiter = " ";
+  vector<string> words{};
+  size_t pos = 0;
+  string applyinf;
+  
+  if (numtables > 0){
+    for (Int i=0;i<numtables;i++){
+      applyinf = vc_p[i]->applyinfo();
+      while ((pos=applyinf.find(space_delimiter))!=string::npos) {
+        words.push_back(applyinf.substr(0, pos));
+        applyinf.erase(0, pos+space_delimiter.length());
+      }
+      for (const auto &str : words){
+        if (str.rfind("table=",0) == 0){
+          applytableset.insert(str.substr(6));
+        }
+      }
+    }
+  }
+  Vector<String> vtmpstr(applytableset.begin(),applytableset.size(),0);
+  toapplylist.reference(vtmpstr);
+  
+  // ===== SOLVE TABLE SECTION =====
+  // get the solve table(s)
+  string solveinf;
+  words.clear();
+  if (svc_p){
+    solveinf = svc_p->solveinfo();
+    while ((pos=solveinf.find(space_delimiter)) !=string::npos) {
+      words.push_back(solveinf.substr(0, pos));
+      solveinf.erase(0, pos+space_delimiter.length());
+    }
+    for (const auto &str : words) {
+      if (str.rfind("table=",0) == 0){
+        solvetableset.insert(str.substr(6));
+      }
+    }
+  }
+  Vector<String> vtmpstr2(solvetableset.begin(), solvetableset.size(),0);
+  tosolvelist.reference(vtmpstr2);
+
+  // ===== SCANS =====
+  
+  
+  
+  
+  // ===== CREATE RECORD SECTION =====
+  rec.define("field", selfieldlist);
+  rec.define("spw", selspwlist);
+  rec.define("apply tables", toapplylist);
+  rec.define("solve table", tosolvelist);
+  msselect.setFieldExpr("*");
+  //cout << "mssel_p field: " << msselect.getFieldList(mssel_p) << endl;
+  //cout << "mssel_p component: " << mssel_p[0] << endl;
+  //cout << "corrdepflags: " << corrDepFlags_ << endl;
+  //cout << vb->spectralWindows()() << endl;
+  
+  return rec;
+}
+
 Bool Calibrater::state() {
 
   logSink() << LogOrigin("Calibrater","state") << LogIO::NORMAL3;
