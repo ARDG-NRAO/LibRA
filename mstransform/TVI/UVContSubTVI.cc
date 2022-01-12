@@ -117,10 +117,7 @@ std::vector<int> stringToFieldIdxs(const std::string &str)
 
 void UVContSubTVI::parseFitSPW(const Record &configuration)
 {
-    int exists = -1;
-
-    exists = -1;
-    exists = configuration.fieldNumber ("fitspw");
+    const auto exists = configuration.fieldNumber ("fitspw");
     if (exists < 0) {
         return;
     }
@@ -150,7 +147,7 @@ void UVContSubTVI::parseListFitSPW(const Record &configuration)
     const Matrix<String> fieldFitspw =
         rawFieldFitspw.reform(IPosition(2, rawFieldFitspw.size()/2, 2));
     logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-             << "  Number of per-field fitspw specifications read: "
+             << "Number of per-field fitspw specifications read: "
              << nelem/2 << LogIO::POST;
 
     // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
@@ -168,7 +165,7 @@ void UVContSubTVI::parseListFitSPW(const Record &configuration)
         for (const auto fid: fieldIdxs) {
             const auto inserted = fitspw_p.insert(std::make_pair(fid, fitSpw));
             // check for duplicates in the fields given in the list
-            if (false == inserted.second) {
+            if (!inserted.second) {
                 throw AipsError("Duplicated field in list of per-field fitspw : " +
                                 std::to_string(fid));
             }
@@ -214,13 +211,11 @@ void UVContSubTVI::printFitSPW() const
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool UVContSubTVI::parseConfiguration(const Record &configuration)
+bool UVContSubTVI::parseConfiguration(const Record &configuration)
 {
-	int exists = -1;
-	Bool ret = true;
+	bool ret = true;
 
-	exists = -1;
-	exists = configuration.fieldNumber ("fitorder");
+	auto exists = configuration.fieldNumber ("fitorder");
 	if (exists >= 0)
 	{
 		configuration.get (exists, fitOrder_p);
@@ -232,7 +227,6 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-	exists = -1;
 	exists = configuration.fieldNumber ("want_cont");
 	if (exists >= 0)
 	{
@@ -248,7 +242,6 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 
         parseFitSPW(configuration);
 
-	exists = -1;
 	exists = configuration.fieldNumber ("writemodel");
 	if (exists >= 0)
 	{
@@ -261,7 +254,6 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
             }
 	}
 
-	exists = -1;
 	exists = configuration.fieldNumber ("denoising_lib");
 	if (exists >= 0)
 	{
@@ -269,12 +261,12 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 
 		if (withDenoisingLib_p)
 		{
-			logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Using GSL based multiparameter regression with linear least-squares fitting" << LogIO::POST;
+			logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                                 << "Using GSL based multiparameter regression with linear "
+                                 << "least-squares fitting" << LogIO::POST;
 		}
 	}
 
-	exists = -1;
 	exists = configuration.fieldNumber ("nthreads");
 	if (exists >= 0)
 	{
@@ -285,17 +277,18 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 #ifdef _OPENMP
 			if (omp_get_max_threads() < (int)nThreads_p)
 			{
-				logger_p << LogIO::WARN << LogOrigin("UVContSubTVI", __FUNCTION__)
-						<< "Requested " <<  nThreads_p << " OMP threads but maximum possible is " << omp_get_max_threads()<< endl
-						<< "Setting number of OMP threads to " << omp_get_max_threads() << endl
-						<< "Check OMP_NUM_THREADS environmental variable and number of cores in your system"
-						<< LogIO::POST;
-				nThreads_p = omp_get_max_threads();
+                            logger_p << LogIO::WARN << LogOrigin("UVContSubTVI", __FUNCTION__)
+                                     << "Requested " <<  nThreads_p
+                                     << " OMP threads but maximum possible is " << omp_get_max_threads()<< endl
+                                     << "Setting number of OMP threads to " << omp_get_max_threads() << endl
+                                     << "Check OMP_NUM_THREADS environmental variable and number of cores in your system"
+                                     << LogIO::POST;
+                            nThreads_p = omp_get_max_threads();
 			}
 			else
 			{
-				logger_p 	<< LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-							<< "Numer of OMP threads set to " << nThreads_p << LogIO::POST;
+                            logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
+                                     << "Numer of OMP threads set to " << nThreads_p << LogIO::POST;
 			}
 #else
 			logger_p << LogIO::WARN << LogOrigin("UVContSubTVI", __FUNCTION__)
@@ -306,7 +299,6 @@ Bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-	exists = -1;
 	exists = configuration.fieldNumber ("niter");
 	if (exists >= 0)
 	{
@@ -345,9 +337,9 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
             lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it
         }
 
-        const auto channelStart = spwchan(selection_i,1);
-        const auto channelStop = spwchan(selection_i,2);
-        const auto channelStep = spwchan(selection_i,3);
+        const auto channelStart = spwchan(selection_i, 1);
+        const auto channelStop = spwchan(selection_i, 2);
+        const auto channelStep = spwchan(selection_i, 3);
         for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
         {
             lineFreeChannelSelMap[spw].push_back(inpChan);
@@ -355,7 +347,7 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
     }
 
     // Create line-free channel mask, spw->channel_mask
-    unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+    unordered_map<int, Vector<bool> > lineFreeChannelMaskMap;
     for (auto const spwInp: spwInpChanIdxMap_p)
     {
         const auto spw = spwInp.first;
@@ -366,9 +358,9 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
                 //   => a 0-elements mask says there is nothing to mask or fit here, or
                 // otherwise we'd make the effort to prepare and call the fit routine for an
                 // "all masked/True" channel mask which will not even start minimizing
-                lineFreeChannelMaskMap[spw] = Vector<Bool>();
+                lineFreeChannelMaskMap[spw] = Vector<bool>();
             } else {
-                lineFreeChannelMaskMap[spw] = Vector<Bool>(spwInp.second.size(), true);
+                lineFreeChannelMaskMap[spw] = Vector<bool>(spwInp.second.size(), true);
                 for (uInt selChanIdx=0; selChanIdx<lineFreeChannelSelMap[spw].size();
                      ++selChanIdx)
                 {
@@ -397,7 +389,7 @@ void UVContSubTVI::initialize()
 
     // Process line-free channel selection
     for (const auto item: fitspw_p) {
-        unordered_map<int, Vector<Bool> > lineFreeChannelMaskMap;
+        unordered_map<int, Vector<bool> > lineFreeChannelMaskMap;
         // Parse line-free channel selection using MSSelection syntax
         const auto fieldID = item.first;
         const auto fieldFitspw = item.second;
@@ -444,28 +436,26 @@ void UVContSubTVI::floatData (Cube<Float> & vis) const
 // -----------------------------------------------------------------------
 void UVContSubTVI::visibilityObserved (Cube<Complex> & vis) const
 {
-	// Get input VisBuffer
-	VisBuffer2 *vb = getVii()->getVisBuffer();
+    // Get input VisBuffer
+    VisBuffer2 *vb = getVii()->getVisBuffer();
 
-	// Get weightSpectrum from sigmaSpectrum
-	Cube<Float> weightSpFromSigmaSp;
-	weightSpFromSigmaSp.resize(vb->sigmaSpectrum().shape(),False);
-	weightSpFromSigmaSp = vb->sigmaSpectrum(); // = Operator makes a copy
-	arrayTransformInPlace (weightSpFromSigmaSp,sigmaToWeight);
+    // Get weightSpectrum from sigmaSpectrum
+    Cube<Float> weightSpFromSigmaSp;
+    weightSpFromSigmaSp.resize(vb->sigmaSpectrum().shape(),False);
+    weightSpFromSigmaSp = vb->sigmaSpectrum(); // = Operator makes a copy
+    arrayTransformInPlace (weightSpFromSigmaSp,sigmaToWeight);
 
-	// Transform data
-	transformDataCube(vb->visCube(),weightSpFromSigmaSp,vis);
+    // Transform data
+    transformDataCube(vb->visCube(),weightSpFromSigmaSp,vis);
 
-        // save it for visibilityModel
-        if (precalcModel_p) {
-            // Or otherwise the next assignment would fail a conform check
-            if (precalcModelVis_p.shape() != vis.shape()) {
-                precalcModelVis_p.resize(vis.shape());
-            }
-            precalcModelVis_p = vb->visCube() - vis;
+    // save it for visibilityModel
+    if (precalcModel_p) {
+        // Or otherwise the next assignment would fail a conform check
+        if (precalcModelVis_p.shape() != vis.shape()) {
+            precalcModelVis_p.resize(vis.shape());
         }
-
-	return;
+        precalcModelVis_p = vb->visCube() - vis;
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -473,22 +463,20 @@ void UVContSubTVI::visibilityObserved (Cube<Complex> & vis) const
 // -----------------------------------------------------------------------
 void UVContSubTVI::visibilityCorrected (Cube<Complex> & vis) const
 {
-	// Get input VisBuffer
-	VisBuffer2 *vb = getVii()->getVisBuffer();
+    // Get input VisBuffer
+    VisBuffer2 *vb = getVii()->getVisBuffer();
 
-	// Transform data
-	transformDataCube(vb->visCubeCorrected(),vb->weightSpectrum(),vis);
+    // Transform data
+    transformDataCube(vb->visCubeCorrected(),vb->weightSpectrum(),vis);
 
-        // save it for visibilityModel   ====> TODO: put into function
-        if (precalcModel_p) {
-            // Or otherwise the next assignment would fail a conform check
-            if (precalcModelVis_p.shape() != vis.shape()) {
-                precalcModelVis_p.resize(vis.shape());
-            }
-            precalcModelVis_p = vb->visCubeCorrected() - vis;
+    // save it for visibilityModel   ====> TODO: put into function
+    if (precalcModel_p) {
+        // Or otherwise the next assignment would fail a conform check
+        if (precalcModelVis_p.shape() != vis.shape()) {
+            precalcModelVis_p.resize(vis.shape());
         }
-
-	return;
+        precalcModelVis_p = vb->visCubeCorrected() - vis;
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -536,7 +524,8 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     {
         const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
         // STL should trigger move semantics
-        inputFrequencyMap_p[spwId] = new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
+        inputFrequencyMap_p[spwId] =
+            new denoising::GslPolynomialModel<Double>(inputFrequencies,fitOrder_p);
     }
 
     auto fieldID = vb->fieldId()[0];
@@ -553,7 +542,7 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     }
 
     // Get input line-free channel mask
-    Vector<Bool> *lineFreeChannelMask = nullptr;
+    Vector<bool> *lineFreeChannelMask = nullptr;
     auto spwMap = fieldMapIt->second;
     auto maskLookup = spwMap.find(spwId);
     if (maskLookup != spwMap.end())
@@ -571,7 +560,7 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     outputVis.resize(getVisBuffer()->getShape(),False);
 
     // Get input flag Cube
-    const Cube<Bool> &flagCube = vb->flagCube();
+    const Cube<bool> &flagCube = vb->flagCube();
 
 	// Transform data
 	if (nThreads_p > 1)
@@ -618,64 +607,64 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContSubTVI::transformDataCore(denoising::GslPolynomialModel<Double>* model,
-                                                          Vector<Bool> *lineFreeChannelMask,
+                                                          Vector<bool> *lineFreeChannelMask,
                                                           const Cube<T> &inputVis,
-                                                          const Cube<Bool> &inputFlags,
+                                                          const Cube<bool> &inputFlags,
                                                           const Cube<Float> &inputWeight,
                                                           Cube<T> &outputVis,
                                                           Int parallelCorrAxis) const
 {
-	// Gather input data
-	DataCubeMap inputData;
-	DataCubeHolder<T> inputVisCubeHolder(inputVis);
-	DataCubeHolder<Bool> inputFlagCubeHolder(inputFlags);
-	DataCubeHolder<Float> inputWeightsCubeHolder(inputWeight);
-	inputData.add(MS::DATA,inputVisCubeHolder);
-	inputData.add(MS::FLAG,inputFlagCubeHolder);
-	inputData.add(MS::WEIGHT_SPECTRUM,inputWeightsCubeHolder);
+    // Gather input data
+    DataCubeMap inputData;
+    DataCubeHolder<T> inputVisCubeHolder(inputVis);
+    DataCubeHolder<bool> inputFlagCubeHolder(inputFlags);
+    DataCubeHolder<Float> inputWeightsCubeHolder(inputWeight);
+    inputData.add(MS::DATA,inputVisCubeHolder);
+    inputData.add(MS::FLAG,inputFlagCubeHolder);
+    inputData.add(MS::WEIGHT_SPECTRUM,inputWeightsCubeHolder);
 
-	// Gather output data
-	DataCubeMap outputData;
-	DataCubeHolder<T> outputVisCubeHolder(outputVis);
-	outputData.add(MS::DATA,outputVisCubeHolder);
+    // Gather output data
+    DataCubeMap outputData;
+    DataCubeHolder<T> outputVisCubeHolder(outputVis);
+    outputData.add(MS::DATA,outputVisCubeHolder);
 
-        Complex chisq;
-	if (want_cont_p)
-	{
-		if (withDenoisingLib_p)
-		{
-			 UVContEstimationDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
-			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
-			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
-			 chisq = kernel.getChiSquared();
-		}
-		else
-		{
-			UVContEstimationKernel<T> kernel(model,lineFreeChannelMask);
-			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
-			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
-                        chisq = kernel.getChiSquared();
-		}
-	}
-	else
-	{
-		if (withDenoisingLib_p)
-		{
-			 UVContSubtractionDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
-			 UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
-			 transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
-                         chisq = kernel.getChiSquared();
-		}
-		else
-		{
-			UVContSubtractionKernel<T> kernel(model,lineFreeChannelMask);
-			UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
-			transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
-                        chisq = kernel.getChiSquared();
-		}
-	}
+    Complex chisq;
+    if (want_cont_p)
+    {
+        if (withDenoisingLib_p)
+        {
+            UVContEstimationDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
+            UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
+            transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+            chisq = kernel.getChiSquared();
+        }
+        else
+        {
+            UVContEstimationKernel<T> kernel(model,lineFreeChannelMask);
+            UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
+            transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+            chisq = kernel.getChiSquared();
+        }
+    }
+    else
+    {
+        if (withDenoisingLib_p)
+        {
+            UVContSubtractionDenoisingKernel<T> kernel(model,niter_p,lineFreeChannelMask);
+            UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
+            transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+            chisq = kernel.getChiSquared();
+        }
+        else
+        {
+            UVContSubtractionKernel<T> kernel(model,lineFreeChannelMask);
+            UVContSubTransformEngine<T> transformer(&kernel,&inputData,&outputData);
+            transformFreqAxis2(inputVis.shape(),transformer,parallelCorrAxis);
+            chisq = kernel.getChiSquared();
+        }
+    }
 
-	return chisq;
+    return chisq;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -758,36 +747,37 @@ template<class T> void UVContSubTransformEngine<T>::transform(	)
 //
 // -----------------------------------------------------------------------
 template<class T> UVContSubKernel<T>::UVContSubKernel(	denoising::GslPolynomialModel<Double> *model,
-														Vector<Bool> *lineFreeChannelMask)
+														Vector<bool> *lineFreeChannelMask)
 {
 	model_p = model;
 	fitOrder_p = model_p->ncomponents()-1;
 	freqPows_p.reference(model_p->getModelMatrix());
 	frequencies_p.reference(model_p->getLinearComponentFloat());
 
-	lineFreeChannelMask_p = lineFreeChannelMask != nullptr? lineFreeChannelMask : nullptr;
+	lineFreeChannelMask_p = lineFreeChannelMask ? lineFreeChannelMask : nullptr;
 	debug_p = False;
 }
 
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
-													DataCubeMap *outputData)
+template<class T> void UVContSubKernel<T>::kernel(DataCubeMap *inputData,
+                                                  DataCubeMap *outputData)
 {
 	// Get input/output data
 	Vector<T> &outputVector = outputData->getVector<T>(MS::DATA);
 	Vector<T> &inputVector = inputData->getVector<T>(MS::DATA);
 
 	// Apply line-free channel mask
-	Vector<Bool> &inputFlags = inputData->getVector<Bool>(MS::FLAG);
-	if (lineFreeChannelMask_p != nullptr) inputFlags |= *lineFreeChannelMask_p;
+	Vector<bool> &inputFlags = inputData->getVector<bool>(MS::FLAG);
+	if (lineFreeChannelMask_p != nullptr)
+            inputFlags |= *lineFreeChannelMask_p;
 
 	// Calculate number of valid data points and adapt fit
 	size_t validPoints = nfalse(inputFlags);
 	if (validPoints > 0)
 	{
-		Bool restoreDefaultPoly = False;
+		bool restoreDefaultPoly = False;
 		uInt tmpFitOrder = fitOrder_p;
 
 		// Reduce fit order to match number of valid points
@@ -801,7 +791,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 		Vector<Float> &inputWeight = inputData->getVector<Float>(MS::WEIGHT_SPECTRUM);
 
 		// Convert flags to mask
-		Vector<Bool> mask = !inputFlags;
+		Vector<bool> mask = !inputFlags;
 
 		// Calculate and subtract continuum
 		chisq_p = kernelCore(inputVector,mask,inputWeight,outputVector);
@@ -827,7 +817,7 @@ template<class T> void UVContSubKernel<T>::kernel(	DataCubeMap *inputData,
 //
 // -----------------------------------------------------------------------
 template<class T> UVContSubtractionKernel<T>::UVContSubtractionKernel(	denoising::GslPolynomialModel<Double>* model,
-																		Vector<Bool> *lineFreeChannelMask):
+																		Vector<bool> *lineFreeChannelMask):
 																		UVContSubKernel<T>(model,lineFreeChannelMask)
 {
 	changeFitOrder(fitOrder_p);
@@ -871,7 +861,7 @@ template<class T> void UVContSubtractionKernel<T>::defaultKernel(	Vector<Float> 
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Complex> &inputVector,
-																Vector<Bool> &inputFlags,
+																Vector<bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Complex> &outputVector)
 {
@@ -914,7 +904,7 @@ template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Complex
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Float> &inputVector,
-																Vector<Bool> &inputFlags,
+																Vector<bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
 {
@@ -934,7 +924,7 @@ template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Float> 
 		}
 	}
 
-	if (true or debug_p)
+	if (debug_p)
 	{
 		LogIO logger;
 		logger << "fit order = " << fitOrder_p << LogIO::POST;
@@ -957,7 +947,7 @@ template<class T> Complex UVContSubtractionKernel<T>::kernelCore(	Vector<Float> 
 //
 // -----------------------------------------------------------------------
 template<class T> UVContEstimationKernel<T>::UVContEstimationKernel(	denoising::GslPolynomialModel<Double>* model,
-																		Vector<Bool> *lineFreeChannelMask):
+																		Vector<bool> *lineFreeChannelMask):
 																		UVContSubKernel<T>(model,lineFreeChannelMask)
 {
 	changeFitOrder(fitOrder_p);
@@ -999,10 +989,11 @@ template<class T> void UVContEstimationKernel<T>::defaultKernel(Vector<Float> &,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Complex> &inputVector,
-																Vector<Bool> &inputFlags,
-																Vector<Float> &inputWeights,
-																Vector<Complex> &outputVector)
+template<class T> Complex UVContEstimationKernel<T>::kernelCore(Vector<Complex> &inputVector,
+                                                                Vector<bool> &inputFlags,
+                                                                Vector<Float> &inputWeights,
+                                                                Vector<Complex> &outputVector
+                                                                )
 {
 	// Fit for imaginary and real components separately
 	Vector<Float> realCoeff;
@@ -1031,7 +1022,7 @@ template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Complex>
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Float> &inputVector,
-																Vector<Bool> &inputFlags,
+																Vector<bool> &inputFlags,
 																Vector<Float> &inputWeights,
 																Vector<Float> &outputVector)
 {
@@ -1062,7 +1053,7 @@ template<class T> Complex UVContEstimationKernel<T>::kernelCore(	Vector<Float> &
 // -----------------------------------------------------------------------
 template<class T> UVContSubtractionDenoisingKernel<T>::UVContSubtractionDenoisingKernel(denoising::GslPolynomialModel<Double>* model,
 																						size_t nIter,
-																						Vector<Bool> *lineFreeChannelMask):
+																						Vector<bool> *lineFreeChannelMask):
 																						UVContSubKernel<T>(model,lineFreeChannelMask)
 {
 	fitter_p.resetModel(*model);
@@ -1094,7 +1085,7 @@ template<class T> void UVContSubtractionDenoisingKernel<T>::defaultKernel(	Vecto
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContSubtractionDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
-																		Vector<Bool> &inputFlags,
+																		Vector<bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
 {	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
@@ -1150,7 +1141,7 @@ template<class T> Complex UVContSubtractionDenoisingKernel<T>::kernelCore(	Vecto
 // -----------------------------------------------------------------------
 template<class T> UVContEstimationDenoisingKernel<T>::UVContEstimationDenoisingKernel(	denoising::GslPolynomialModel<Double>* model,
 																						size_t nIter,
-																						Vector<Bool> *lineFreeChannelMask):
+																						Vector<bool> *lineFreeChannelMask):
 																						UVContSubKernel<T>(model,lineFreeChannelMask)
 {
 	fitter_p.resetModel(*model);
@@ -1181,7 +1172,7 @@ template<class T> void UVContEstimationDenoisingKernel<T>::defaultKernel(	Vector
 //
 // -----------------------------------------------------------------------
 template<class T> Complex UVContEstimationDenoisingKernel<T>::kernelCore(	Vector<T> &inputVector,
-																		Vector<Bool> &inputFlags,
+																		Vector<bool> &inputFlags,
 																		Vector<Float> &inputWeights,
 																		Vector<T> &outputVector)
 {
