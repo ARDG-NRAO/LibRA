@@ -1042,10 +1042,6 @@ Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const Stri
     if (selection == "field"){
       tmpset = msmdtmp.getFieldIDsForSpw(i);
     }
-    else if (selection == "scan"){
-      //tmpset = msmdtmp.getScansForSpw(i);
-      cout << "scan stuff here" << endl;
-    }
     else{
       cout << "Invalid selection" << endl;
       return selectedlist;
@@ -1062,43 +1058,35 @@ Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const Stri
   return selectedlist;
 }
 
- Record Calibrater::returndict()
-{
-  Record rec;
-  MSSelection msselect;
-  set<uInt> selspwset;
-  set<Int> selscanset;
-  set<string> applytableset;
-  set<string> solvetableset;
-  
-  //Vector<Int> antenna1 = msselect.getAntenna1List(ms_p);
-  MSMetaData msmdtmp(mssel_p,50.0);
-  Vector<Int> selspwlist;
-  Vector<uInt> selscanlist;
-  Vector<Int> selfieldlist;
-  Vector<String> toapplylist;
-  Vector<String> tosolvelist;
+Vector<Int> Calibrater::convertSetToVector(set<Int> selset){
+  Vector<Int> vtmpint(selset.begin(), selset.size(),0);
+  return vtmpint;
+}
 
-  // ===== SPW SECTION =====
-  // get the sets of IDs
-  selspwset=msmdtmp.getSpwIDs();
-  // Convert sets to Vectors before adding the returndict
-  Vector<Int> vtmp(selspwset.begin(),selspwset.size(),0);
-  selspwlist.reference(vtmp);
-  
-  // ===== FIELD SECTION =====
-  selfieldlist = selectedForSpw(selspwlist, "field");
-  
-  // ===== APPLY TABLE SECTION =====
-  // get all tables to apply
-  // get the strings for each apply table
-  // split the table from the string
+Vector<Int> Calibrater::getSelectedSpws() {
+  MSMetaData msmdtmp(mssel_p, 50.0);
+  set<uInt> selspwset = msmdtmp.getSpwIDs();
+  Vector<Int> res(selspwset.begin(), selspwset.size(),0);
+  return res;
+}
+
+Vector<String> Calibrater::getSelectedIntents() {
+  MSMetaData msmdtmp(mssel_p, 50.0);
+  set<String> selintentset = msmdtmp.getIntents();
+  Vector<String> res(selintentset.begin(), selintentset.size(),0);
+  return res;
+}
+
+Vector<String> Calibrater::getApplyTables() {
+  set<String> applytableset;
   Int numtables = vc_p.nelements();
   string space_delimiter = " ";
   vector<string> words{};
   size_t pos = 0;
   string applyinf;
   
+  // parse through the apply info
+  // Grab all the tables and put them in a vector
   if (numtables > 0){
     for (Int i=0;i<numtables;i++){
       applyinf = vc_p[i]->applyinfo();
@@ -1113,13 +1101,19 @@ Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const Stri
       }
     }
   }
-  Vector<String> vtmpstr(applytableset.begin(),applytableset.size(),0);
-  toapplylist.reference(vtmpstr);
-  
-  // ===== SOLVE TABLE SECTION =====
-  // get the solve table(s)
+  Vector<String> res(applytableset.begin(),applytableset.size(),0);
+  return res;
+}
+
+Vector<String> Calibrater::getSolveTable() {
   string solveinf;
-  words.clear();
+  set<String> solvetableset;
+  string space_delimiter = " ";
+  vector<string> words{};
+  size_t pos = 0;
+  
+  // Parse through the solve info
+  // and extract the applied solve table into a vector
   if (svc_p){
     solveinf = svc_p->solveinfo();
     while ((pos=solveinf.find(space_delimiter)) !=string::npos) {
@@ -1132,24 +1126,67 @@ Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const Stri
       }
     }
   }
-  Vector<String> vtmpstr2(solvetableset.begin(), solvetableset.size(),0);
-  tosolvelist.reference(vtmpstr2);
+  Vector<String> res(solvetableset.begin(), solvetableset.size(),0);
+  return res;
+}
 
-  // ===== SCANS =====
+Bool Calibrater::getIteratorSelection(Vector<Int>* observationlist, Vector<Int>* scanlist, Vector<Int>* fieldlist, Vector<Int>* antennalist) {
+  // get the observation, scan, field, and antenna from the iterator
+  set<Int> selobsset;
+  set<Int> selscanset;
+  set<Int> selfieldset;
+  set<Int> selantset;
+
+  vi::VisibilityIterator2 vi(*mssel_p);
+  vi.originChunks();
+  vi.origin();
+  vi::VisBuffer2 *vb = vi.getVisBuffer();
   
+  for (vi.originChunks(); vi.moreChunks(); vi.nextChunk()){
+    for (vi.origin (); vi.more(); vi.next()){
+        // get obs ids
+        selobsset.insert(vb->observationId()(0));
+        // get scan ids
+        selscanset.insert(vb->scan()(0));
+        // get field ids
+        selfieldset.insert(vb->fieldId()(0));
+      }
+  }
+  for (auto & ant : vb->antenna1()){
+    selantset.insert(ant);
+  }
+  for (auto & ant : vb->antenna2()){
+    selantset.insert(ant);
+  }
   
+  *observationlist = convertSetToVector(selobsset);
+  *scanlist = convertSetToVector(selscanset);
+  *fieldlist = convertSetToVector(selfieldset);
+  *antennalist = convertSetToVector(selantset);
   
+  return true;
+}
+
+ Record Calibrater::returndict()
+{
+  Record rec;
+
+  Vector<Int> selscanlist;
+  Vector<Int> selfieldlist;
+  Vector<Int> selantlist;
+  Vector<Int> selobslist;
+
+  getIteratorSelection(&selobslist, &selscanlist, &selfieldlist, &selantlist);
   
-  // ===== CREATE RECORD SECTION =====
+  // Create a record with current calibrater state information
+  rec.define("antennas", selantlist);
   rec.define("field", selfieldlist);
-  rec.define("spw", selspwlist);
-  rec.define("apply tables", toapplylist);
-  rec.define("solve table", tosolvelist);
-  msselect.setFieldExpr("*");
-  //cout << "mssel_p field: " << msselect.getFieldList(mssel_p) << endl;
-  //cout << "mssel_p component: " << mssel_p[0] << endl;
-  //cout << "corrdepflags: " << corrDepFlags_ << endl;
-  //cout << vb->spectralWindows()() << endl;
+  rec.define("spw", getSelectedSpws());
+  rec.define("scan", selscanlist);
+  rec.define("observation", selobslist);
+  rec.define("intents", getSelectedIntents());
+  rec.define("apply tables", getApplyTables());
+  rec.define("solve table", getSolveTable());
   
   return rec;
 }

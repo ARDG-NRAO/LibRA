@@ -303,8 +303,22 @@ class Calibrater
 
   // Display the state in a dictionary
   casacore::Record returndict();
+  // Get all selected spws
+  casacore::Vector<casacore::Int> getSelectedSpws();
+  // Get all selected intents
+  casacore::Vector<casacore::String> getSelectedIntents();
+  // Get all apply tables
+  casacore::Vector<casacore::String> getApplyTables();
+  // Get solve table
+  casacore::Vector<casacore::String> getSolveTable();
+  // Get parameters from visibility iterator
+  casacore::Bool getIteratorSelection(casacore::Vector<casacore::Int>*,
+    casacore::Vector<casacore::Int>*, casacore::Vector<casacore::Int>*,
+    casacore::Vector<casacore::Int>*);
   // Get all state of calibrater for spws
   casacore::Vector<casacore::Int> selectedForSpw(const casacore::Vector<casacore::Int>&, const casacore::String&);
+  // Convert set to casa vector
+  casacore::Vector<casacore::Int> convertSetToVector(const set<casacore::Int>);
   // Report apply/solve state
   casacore::Bool state();
   casacore::Bool applystate();
