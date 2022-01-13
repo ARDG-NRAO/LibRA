@@ -1032,32 +1032,6 @@ Bool Calibrater::setsolve (const String& type,
   return false;
 }
 
-Vector<Int> Calibrater::selectedForSpw(const Vector<Int>& selspwlist, const String& selection) {
-  set<Int> selectedset;
-  set<Int> tmpset;
-  Vector<Int> selectedlist;
-  MSMetaData msmdtmp(mssel_p,50.0);
-  
-  for (auto & i : selspwlist){
-    if (selection == "field"){
-      tmpset = msmdtmp.getFieldIDsForSpw(i);
-    }
-    else{
-      cout << "Invalid selection" << endl;
-      return selectedlist;
-    }
-    
-    merge(selectedset.begin(), selectedset.end(),
-          tmpset.begin(), tmpset.end(),
-          inserter(selectedset, selectedset.begin()));
-  }
-  // Convert all the fields into a Vector
-  Vector<Int> vtmp(selectedset.begin(),selectedset.size(),0);
-  selectedlist.reference(vtmp);
-  
-  return selectedlist;
-}
-
 Vector<Int> Calibrater::convertSetToVector(set<Int> selset){
   Vector<Int> vtmpint(selset.begin(), selset.size(),0);
   return vtmpint;

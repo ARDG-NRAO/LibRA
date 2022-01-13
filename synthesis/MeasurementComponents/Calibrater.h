@@ -315,8 +315,6 @@ class Calibrater
   casacore::Bool getIteratorSelection(casacore::Vector<casacore::Int>*,
     casacore::Vector<casacore::Int>*, casacore::Vector<casacore::Int>*,
     casacore::Vector<casacore::Int>*);
-  // Get all state of calibrater for spws
-  casacore::Vector<casacore::Int> selectedForSpw(const casacore::Vector<casacore::Int>&, const casacore::String&);
   // Convert set to casa vector
   casacore::Vector<casacore::Int> convertSetToVector(const set<casacore::Int>);
   // Report apply/solve state
