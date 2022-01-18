@@ -65,7 +65,7 @@ FlagMSHandler::FlagMSHandler(string tablename, uShort iterationApproach, Double 
 FlagMSHandler::~FlagMSHandler()
 {
 	logger_p->origin(LogOrigin("FlagDataHandler",__FUNCTION__,WHERE));
-	*logger_p << LogIO::DEBUG1 << "FlagMSHandler::~FlagMSHandler()" << LogIO::POST;
+	*logger_p << LogIO::DEBUG2 << "FlagMSHandler::~FlagMSHandler()" << LogIO::POST;
 
 	// Delete MS objects
 	if (selectedMeasurementSet_p) delete selectedMeasurementSet_p;
@@ -509,7 +509,9 @@ FlagMSHandler::generateIterator()
       uLong maxChunkRows = selectedMeasurementSet_p->nrow();
       visibilityIterator_p->setRowBlocking(maxChunkRows);
 
-      *logger_p << LogIO::NORMAL <<  "Setting row blocking to number of row in selected table: " << maxChunkRows << LogIO::POST;
+      *logger_p << LogIO::NORMAL <<  "Setting row blocking to number of rows in selected table: " << maxChunkRows << LogIO::POST;
+
+
     }
 
     // Get Visibility Buffer reference from VisibilityIterator
@@ -843,19 +845,25 @@ FlagMSHandler::generateScanStartStopMap()
 bool
 FlagMSHandler::flushFlags()
 {
-	if (flushFlags_p)
-	{
-		visibilityIterator_p->writeFlag(modifiedFlagCube_p);
-		flushFlags_p = false;
-	}
+    logger_p->origin(LogOrigin("FlagMSHandler",__FUNCTION__,WHERE));
+    *logger_p << LogIO::DEBUG1
+              << "flushing modified flags cube of shape: " << modifiedFlagCube_p.shape()
+              << LogIO::POST;
 
-	if ((flushFlagRow_p) and (!inrowSelection_p))
-	{
-		visibilityIterator_p->writeFlagRow(modifiedFlagRow_p);
-		flushFlagRow_p = false;
-	}
+    if (flushFlags_p)
+    {
 
-	return true;
+        visibilityIterator_p->writeFlag(modifiedFlagCube_p);
+        flushFlags_p = false;
+    }
+
+    if ((flushFlagRow_p) and (!inrowSelection_p))
+    {
+        visibilityIterator_p->writeFlagRow(modifiedFlagRow_p);
+        flushFlagRow_p = false;
+    }
+
+    return true;
 }
 
 
