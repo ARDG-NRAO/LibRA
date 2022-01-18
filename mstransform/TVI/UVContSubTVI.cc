@@ -324,6 +324,7 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
     // Some selection string
     MSSelection mssel;
     mssel.setSpwExpr(fieldFitspw);
+    // This access the MS directly: far from ideal (CAS-11638) but no easy solution
     const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
 
     // Create line-free channel map based on MSSelection channel ranges
