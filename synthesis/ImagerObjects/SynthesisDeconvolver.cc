@@ -847,8 +847,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void SynthesisDeconvolver::mergeReturnRecord(const Record& inRec, Record& outRec, const Int chan){
 
     ///Something has to be done about what is done in SIIterBot_state::mergeMinorCycleSummary if it is needed
-    int nSummaryFields = SIMinorCycleController::useSmallSummaryminor() ? 6 : SIMinorCycleController::nSummaryFields; // temporary CAS-13683 workaround
-    Matrix<Double> summaryminor(nSummaryFields,0);
+    Matrix<Double> summaryminor(SIMinorCycleController::nSummaryFields,0);
     if(outRec.isDefined("summaryminor"))
       summaryminor=Matrix<Double>(outRec.asArrayDouble("summaryminor"));
     Matrix<Double> subsummaryminor;
@@ -857,7 +856,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if(subsummaryminor.nelements() !=0){
       ///The 6th element is supposed to be the subimage id
       subsummaryminor.row(5)= subsummaryminor.row(5)+(Double(chan));
-      Matrix<Double> newsummary(nSummaryFields, summaryminor.shape()[1]+subsummaryminor.shape()[1]);
+      Matrix<Double> newsummary(SIMinorCycleController::nSummaryFields, summaryminor.shape()[1]+subsummaryminor.shape()[1]);
       Int ocol=0;
       for (Int col=0; col< summaryminor.shape()[1]; ++col, ++ocol)
         newsummary.column(ocol)=summaryminor.column(col);
