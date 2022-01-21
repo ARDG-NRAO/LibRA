@@ -60,19 +60,8 @@ MSTransformBufferImpl::MSTransformBufferImpl(MSTransformManager *manager)
 		manager_p->outputInputSPWIndexMap_p.clear();
 	}
 
-	// Check if phase shifting has to be applied
-	if ( manager_p->phaseShifting_p and not manager_p->timeAverage_p)
-	{
-		applyPhaseShifting_p = true;
-		dx_p = manager_p->dx_p;
-		dy_p = manager_p->dy_p;
-	}
-	else
-	{
-		applyPhaseShifting_p = false;
-		dx_p = 0;
-		dy_p = 0;
-	}
+	dx_p = 0;
+	dy_p = 0;
 
 	// NONE datacol handling
 	if (manager_p->datacolumn_p.contains("NONE"))

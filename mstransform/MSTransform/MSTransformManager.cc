@@ -154,13 +154,11 @@ void MSTransformManager::initialize()
 	nChan_p = -1;									// -1 means use all the input channels
 	velocityType_p = String("radio");				// When mode is velocity options are: optical, radio
 
-	// Phase shifting paramters
-	phaseShifting_p = false;
-	dx_p = 0;
-	dy_p = 0;
-
+    // Phase shifting parameters
 	// CAS-12706 To run phase shift via a TVI which has
 	// support for shifting across large offset/angles
+    dx_p = 0;
+    dy_p = 0;
 	tviphaseshift_p = False;
 	tviphaseshiftConfig_p = Record();
 
@@ -1012,35 +1010,6 @@ void MSTransformManager::parseFreqSpecParams(Record &configuration)
 
 // -----------------------------------------------------------------------
 // Method to parse the phase shifting specification
-// -----------------------------------------------------------------------
-void MSTransformManager::parsePhaseShiftParams(Record &configuration)
-{
-	int exists = -1;
-
-	exists = -1;
-	exists = configuration.fieldNumber ("XpcOffset");
-	if (exists >= 0)
-	{
-		configuration.get (exists, dx_p);
-	}
-
-	exists = -1;
-	exists = configuration.fieldNumber ("YpcOffset");
-	if (exists >= 0)
-	{
-		configuration.get (exists, dy_p);
-	}
-
-	if (abs(dx_p) > 0 or abs(dy_p) > 0)
-	{
-		phaseShifting_p = true;
-		logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
-					<< "Phase shifting is activated: dx="<< dx_p << " dy=" << dy_p << LogIO::POST;
-	}
-
-	return;
-}
-
 // -----------------------------------------------------------------------
 // CAS-12706 To run phase shift via a TVI which has
 // support for shifting across large offset/angles
@@ -5622,10 +5591,6 @@ void MSTransformManager::generateIterator()
 			timeAvgOptions_p |= vi::AveragingOptions::BaselineDependentAveraging;
 		}
 
-		if (phaseShifting_p)
-		{
-			timeAvgOptions_p |= vi::AveragingOptions::phaseShifting;
-		}
 		timeavgParams = std::make_shared<vi::AveragingParameters>
                     (timeBin_p, .0, vi::SortColumns(sortColumns_p, false),
                      timeAvgOptions_p, maxuvwdistance_p, nullptr, isWritable, dx_p, dy_p);
@@ -6570,36 +6535,6 @@ template <class T> void MSTransformManager::mapAndScaleMatrix(	const Matrix<T> &
 // ----------------------------------------------------------------------------------------
 void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 {
-	// If phase Shifting is enabled and time avg. is not involved fill visCubes and then apply phaseShift
-	if (phaseShifting_p and not timeAverage_p)
-	{
-		for (dataColMap::iterator iter = dataColMap_p.begin();iter != dataColMap_p.end();iter++)
-		{
-			switch (iter->first)
-			{
-				case MS::DATA:
-				{
-					vb->visCube();
-				}
-				case MS::CORRECTED_DATA:
-				{
-					vb->visCubeCorrected();
-				}
-				case MS::MODEL_DATA:
-				{
-					vb->visCubeModel();
-				}
-				default:
-				{
-					vb->visCube();
-				}
-			}
-
-		}
-
-		vb->phaseCenterShift(dx_p,dy_p);
-	}
-
 	ArrayColumn<Bool> *outputFlagCol=NULL;
 	for (dataColMap::iterator iter = dataColMap_p.begin();iter != dataColMap_p.end();iter++)
 	{

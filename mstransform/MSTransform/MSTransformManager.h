@@ -1367,11 +1367,9 @@ protected:
 	casacore::String velocityType_p;
 
 	// Phase shifting parameters
-	casacore::Bool phaseShifting_p;
-	casacore::Double dx_p, dy_p;
-
 	// CAS-12706 To run phase shift via a TVI which has
 	// support for shifting across large offset/angles
+	casacore::Double dx_p, dy_p;
 	casacore::Bool tviphaseshift_p;
 	casacore::Record tviphaseshiftConfig_p;
 
