@@ -154,11 +154,11 @@ void MSTransformManager::initialize()
 	nChan_p = -1;									// -1 means use all the input channels
 	velocityType_p = String("radio");				// When mode is velocity options are: optical, radio
 
-    // Phase shifting parameters
+	// Phase shifting parameters
 	// CAS-12706 To run phase shift via a TVI which has
 	// support for shifting across large offset/angles
-    dx_p = 0;
-    dy_p = 0;
+	dx_p = 0;
+	dy_p = 0;
 	tviphaseshift_p = False;
 	tviphaseshiftConfig_p = Record();
 

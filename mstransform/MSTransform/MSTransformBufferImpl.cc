@@ -42,10 +42,10 @@ MSTransformBufferImpl::MSTransformBufferImpl(MSTransformManager *manager)
 	inputOutputSPWIndexMap_p = manager_p->inputOutputSPWIndexMap_p;
 
 	// Store observatory position
-    MSObservation observationTable = manager_p->selectedInputMs_p->observation();
-    MSObservationColumns observationCols(observationTable);
-    String observatoryName = observationCols.telescopeName()(0);
-    MeasTable::Observatory(observatoryPosition_p,observatoryName);
+	MSObservation observationTable = manager_p->selectedInputMs_p->observation();
+	MSObservationColumns observationCols(observationTable);
+	String observatoryName = observationCols.telescopeName()(0);
+	MeasTable::Observatory(observatoryPosition_p,observatoryName);
 
 	if (not manager_p->reindex_p)
 	{

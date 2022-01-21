@@ -1373,7 +1373,7 @@ protected:
 	casacore::Bool tviphaseshift_p;
 	casacore::Record tviphaseshiftConfig_p;
 
-    // For scalar averaging, use "timebin" for iter interval but don't average
+	// For scalar averaging, use "timebin" for iter interval but don't average
 	casacore::Bool scalarAverage_p;
 
 	// casacore::Time transformation parameters
