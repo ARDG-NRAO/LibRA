@@ -463,6 +463,7 @@ protected:
   casacore::Bool matchChannel(const casacore::Int& spw, 
 		    const VisBuffer& vb);
   casacore::Bool matchChannel(const vi::VisBuffer2& vb);
+  casacore::Bool matchPol(const vi::VisBuffer2& vb);
   //redo all spw chan match especially if ms has changed underneath 
   casacore::Bool matchAllSpwChans(const VisBuffer& vb);
   //casacore::Bool matchAllSpwChans(const vi::VisBuffer2& vb);
@@ -498,6 +499,7 @@ protected:
 
   // Private variables needed for spectral frame conversion 
   casacore::SpectralCoordinate spectralCoord_p;
+  casacore::Vector<casacore::Stokes::StokesTypes> visPolMap_p;
   //casacore::Vector<casacore::Bool> doConversion_p;
   casacore::Bool freqFrameValid_p;
   casacore::Vector<casacore::Double> imageFreq_p;

@@ -88,6 +88,8 @@ protected:
     void initialize();
 
 	casacore::Vector<casacore::Int> chanbin_p;
+	// (back)propagate flags as flagdata likes it (CAS-12737): existing ones are always preserved
+	bool flagdataFlagPropagation_p;
 	mutable std::map<casacore::Int,casacore::uInt > spwChanbinMap_p; // Must be accessed from const methods
 
 #ifdef _OPENMP
