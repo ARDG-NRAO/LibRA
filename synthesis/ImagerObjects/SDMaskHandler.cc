@@ -2693,7 +2693,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
             if (iterdone && growIterations>0) { // enter to acutal grow process
               //per-plane timing
-              os << LogIO::NORMAL << "Start grow mask: growing the previous mask " << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start grow mask: growing the previous mask " << LogIO::POST;
               timer.mark();
               //call growMask
               // corresponds to calcThresholdMask with lowNoiseThreshold...
@@ -2705,7 +2705,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
               //makeMaskByPerChanThreshold(res, chanFlag, constraintMaskImage, lowMaskThreshold, dummysizes);
               makeMaskByPerChanThreshold(planeResImage, chanFlag1elem, constraintMaskImage, lowMaskThreshold1elem, dummysizes);
               if(debug2 && ipol==0 && ich==0) {
-                os<< LogIO::NORMAL<<"saving constraint mask " << LogIO::POST;
+                os<< LogIO::NORMAL3<<"saving constraint mask " << LogIO::POST;
                 PagedImage<Float> beforepruneconstIm(planeResImage.shape(), planeResImage.coordinates(),"tmpConstraint-"+String::toString(iterdone)+".im");
                 beforepruneconstIm.copyData(constraintMaskImage);
               }
@@ -2764,14 +2764,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
               }
               timeGrow(0) += timer.real(); timeGrow(1) += timer.user(); timeGrow(2) += timer.system(); 
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End grow mask: time to grow the previous mask: real " 
+                os << LogIO::NORMAL3 << "End grow mask: time to grow the previous mask: real " 
                  << timer.real() <<"s (user "<< timer.user() << "s, system " << timer.system() << "s)" << LogIO::POST;
               }
 
               // **** pruning on grow mask ****
               if (minBeamFrac > 0.0 && doGrowPrune) {
                 //os<<LogIO::NORMAL << "Pruning the growed previous mask "<<LogIO::POST;
-                os << LogIO::NORMAL << "Start pruning: on the grow mask "<< LogIO::POST;
+                os << LogIO::NORMAL3 << "Start pruning: on the grow mask "<< LogIO::POST;
                 timer.mark();
                 Vector<Bool> dummy(0);
                 Vector<uInt> ngrowreg1elem, ngrowpruned1elem;
@@ -2784,7 +2784,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                 subprevmask.copyData( *(tempPrunedMask_ptr.get()) );
                 timePruneGrow(0) += timer.real(); timePruneGrow(1) += timer.user(); timePruneGrow(2) += timer.system();
                 if (perplanetiming) {
-                  os << LogIO::NORMAL << "End pruning: time to prune the grow mask: real " 
+                  os << LogIO::NORMAL3 << "End pruning: time to prune the grow mask: real " 
                     << timer.real() <<"s (user "<< timer.user() << "s, system "<< timer.system() << "s)" << LogIO::POST;
                 }
                 if(debug2) {
@@ -2795,7 +2795,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
               }
 
               // ***** smoothing on grow mask *****
-              os << LogIO::NORMAL << "Start smoothing: the grow mask " << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start smoothing: the grow mask " << LogIO::POST;
               timer.mark();
               ///SPIIF outprevmask = convolveMask( prevmask, modbeam);
               SPIIF outprevmask = convolveMask( subprevmask, modbeam);
