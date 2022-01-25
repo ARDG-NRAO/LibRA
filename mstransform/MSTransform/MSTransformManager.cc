@@ -2218,8 +2218,9 @@ void MSTransformManager::initDataSelectionParams()
             channelStart = spwchan(selection_i,1);
             channelStop = spwchan(selection_i,2);
             channelStep = spwchan(selection_i,3);
-            channelWidth = lround(float(channelStop - channelStart + 1) / float(channelStep)); // number of selected channels
-            channelSelector_p->add (spw, channelStart, channelWidth,channelStep);
+            // number of channels to select, starting with first selected channel:
+            channelWidth = 1 + floor(float(channelStop - channelStart) / float(channelStep));
+            channelSelector_p->add (spw, channelStart, channelWidth, channelStep);
 
             if (numOfSelChanMap_p.find(spw) == numOfSelChanMap_p.end())
             {
