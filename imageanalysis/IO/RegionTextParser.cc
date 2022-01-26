@@ -434,32 +434,15 @@ AnnotationBase::Type RegionTextParser::_getAnnotationType(
         }
         break;
     case AnnotationBase::POLYGON:
+        // Polygon definitions can be very long with many points.
+        // Testing entire polygon string syntax causes regex seg fault.
+        ThrowIf(
+            ! (consumeMe.contains(Regex("^ *\\[ *\\[")) &&
+               consumeMe.contains(Regex("\\] *\\]"))),
+            preamble + "Illegal polygon specification " + consumeMe
+        );
         {
-            ThrowIf(
-                ! (consumeMe.contains("[[") && consumeMe.contains("]]")),
-                preamble + "Illegal polygon specification " + consumeMe
-            );
-
-            Vector<Quantity> qs;
-
-            try {
-                // Polygon definitions can be any length.
-                // Instead of testing entire polygon string syntax,
-                // (1) extract one pair at a time into Vector, then
-                // (2) test param set extraction
-                // and see if AipsError is thrown in either step.
-                qs = _extractNQuantityPairs(consumeMe, preamble);
-
-                Bool spectralParmsUpdated;
-                ParamSet newParams;
-                String paramString(consumeMe);
-                ParamSet currentParamSet = _getCurrentParamSet(
-                    spectralParmsUpdated, newParams, paramString, preamble
-                );
-            } catch (const casacore::AipsError& err) {
-                throw(casacore::AipsError("Illegal polygon specification at: " + consumeMe));
-            }
-
+            Vector<Quantity> qs = _extractNQuantityPairs(consumeMe, preamble);
             qDirs.resize(qs.size());
             qDirs = qs;
         }
@@ -1232,24 +1215,31 @@ Vector<Quantity> RegionTextParser::_extractTwoQuantityPairs(
 Vector<Quantity> RegionTextParser::_extractNQuantityPairs (
         String& consumeMe, const String& preamble
 ) const {
-    Vector<Quantity> qs;
-    Regex oneQuantityPair("^\\[[^\\[,]+,[^\\[,]+\\]");
+    String pairs = consumeMe.through(Regex("\\] *\\]"));
+    String nPairs(pairs);
+    consumeMe.del(0, (Int)pairs.length() + 1);
+    pairs.trim();
+    // remove the left most [
+    pairs.del(0, 1);
+    pairs.trim();
+    Vector<Quantity> qs(0);
 
-    // erase the left '['
-    consumeMe.del(0, 1);
-
-    // Extract each pair until end of list
-    while (!consumeMe.empty() && (consumeMe[0] == '[')) {
-        SubString pairString = consumeMe.through(oneQuantityPair);
-        auto pairQuant = _extractSingleQuantityPair(pairString, preamble);
-        consumeMe.del(0, (Int)pairString.length() + 1);
-        consumeMe.trim();
-
-        qs.resize(qs.size() + 2, true);
-        qs[qs.size() - 2] = pairQuant.first;
-        qs[qs.size() - 1] = pairQuant.second;
+    try {
+        while (pairs.length() > 1) {
+            std::pair<Quantity, Quantity> myqs = _extractSingleQuantityPair(pairs, preamble);
+            qs.resize(qs.size() + 2, true);
+            qs[qs.size() - 2] = myqs.first;
+            qs[qs.size() - 1] = myqs.second;
+            pairs.del(0, (Int)pairs.find(']', 0) + 1);
+            pairs.trim();
+            pairs.ltrim(',');
+            pairs.trim();
+        }
+    } catch (const casacore::AipsError& err) {
+        throw(casacore::AipsError(
+            preamble + "Illegal polygon specification " + nPairs
+        ));
     }
-
     return qs;
 }
 
