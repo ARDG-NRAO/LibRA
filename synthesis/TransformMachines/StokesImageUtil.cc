@@ -1142,7 +1142,7 @@ void StokesImageUtil::To(ImageInterface<Float>& out, ImageInterface<Complex>& in
   AlwaysAssert(StokesMap(map, in.coordinates()), AipsError);
   Vector<Int> outmap;
   AlwaysAssert(StokesMap(outmap, out.coordinates()), AipsError);
-  
+
   Int nx = in.shape()(map(0));
   Int innpol = in.shape()(map(2));
   Int outnpol = out.shape()(outmap(2));
@@ -1159,6 +1159,7 @@ void StokesImageUtil::To(ImageInterface<Float>& out, ImageInterface<Complex>& in
   StokesImageUtil::PolRep polFrame=StokesImageUtil::CIRCULAR;
   Int nStokesIn=CStokesPolMap(inMap, polFrame, in.coordinates());
   Int nStokesOut=StokesPolMap(outMap, out.coordinates());
+  
   if(nStokesOut <=0){
     directCToR(out, in);
     return;
@@ -1419,6 +1420,67 @@ void StokesImageUtil::ToStokesPSF(ImageInterface<Float>& out, ImageInterface<Com
     }
   }
 };
+
+void StokesImageUtil::ToStokesSumWt(Matrix<Float> sumwtStokes, Matrix<Float> sumwtCorr, const CoordinateSystem& outcoord, const CoordinateSystem& incoord)
+{
+
+  AlwaysAssert( sumwtStokes.shape()[1] == sumwtCorr.shape()(1) , AipsError );
+  Vector<Int> inmap;
+  AlwaysAssert(StokesMap(inmap, incoord), AipsError);
+  Vector<Int> outmap;
+  AlwaysAssert(StokesMap(outmap, outcoord), AipsError);
+
+  
+  Int innpol = sumwtCorr.shape()[0];
+  Int outnpol = sumwtStokes.shape()[0];
+  
+  
+  Vector<Int> inMap(innpol), outMap(outnpol);
+  StokesImageUtil::PolRep polFrame=StokesImageUtil::CIRCULAR;
+  Int nStokesIn=CStokesPolMap(inMap, polFrame, incoord);
+  Int nStokesOut=StokesPolMap(outMap, outcoord);
+  if(nStokesOut <=0  || nStokesIn==0)  {
+    if(innpol != outnpol)
+      throw(AipsError("Cannot copy sumwt as input and output have different pol axis length"));
+    convertArray(sumwtStokes, sumwtCorr);
+    return;
+  }
+  if( nStokesOut==1 && nStokesIn==2){
+    
+    for(uInt chan=0;chan<sumwtStokes.shape()[1];chan++)
+      {
+        sumwtStokes(0,chan) = min(sumwtCorr(0,chan),sumwtCorr(1, chan));
+      }     
+  }
+ if( nStokesOut==2 && nStokesIn==2){
+    
+    for(uInt chan=0;chan<sumwtStokes.shape()[1];chan++)
+      {
+        sumwtStokes(0,chan) = min(sumwtCorr(0,chan),sumwtCorr(1, chan));
+        sumwtStokes(1,chan) = min(sumwtCorr(1,chan),sumwtCorr(1, chan));
+      }     
+  } 
+ if( nStokesOut==4 && nStokesIn==4){
+    
+   for(uInt chan=0;chan<sumwtStokes.shape()[1];chan++)
+     {
+       if(polFrame==StokesImageUtil::LINEAR){
+         sumwtStokes(0,chan) = min(sumwtCorr(0,chan),sumwtCorr(3, chan));
+         sumwtStokes(1,chan) = min(sumwtCorr(0,chan),sumwtCorr(3, chan));
+         sumwtStokes(2,chan) = min(sumwtCorr(1,chan),sumwtCorr(2, chan));
+         sumwtStokes(3,chan) = min(sumwtCorr(1,chan),sumwtCorr(2, chan));
+       }
+       else{
+         sumwtStokes(0,chan) = min(sumwtCorr(0,chan),sumwtCorr(3, chan));
+         sumwtStokes(1,chan) = min(sumwtCorr(1,chan),sumwtCorr(2, chan));
+         sumwtStokes(2,chan) = min(sumwtCorr(1,chan),sumwtCorr(2, chan));
+         sumwtStokes(3,chan) = min(sumwtCorr(0,chan),sumwtCorr(3, chan));
+       }
+     } 
+ }
+  
+
+}
 
 void StokesImageUtil::ToStokesSumWt(Matrix<Float> sumwtStokes, Matrix<Float> sumwtCorr)
 {
