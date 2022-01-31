@@ -203,6 +203,9 @@ private:
     // common image copy stuff
     template <class U> void _copyMost(casacore::ImageInterface<U>& out) const;
 
+    // Fix up the brightness unit CAS-13489
+    template <class U> void _fixBUnit(casacore::ImageInterface<U>& out) const;
+
     // U must be a complex type (Complex, DComplex)
     template <class U> static void _fftsky(
         casacore::ImageInterface<U>& out,
