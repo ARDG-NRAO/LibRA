@@ -103,10 +103,6 @@ AgentFlagger::done()
 	observation_p = "";
 
 	max_p = 0.0;
-	timeset_p = false;
-	iterset_p = false;
-
-	timeAvg_p = false;
 
 	dataselection_p = Record();
 
@@ -537,6 +533,117 @@ AgentFlagger::parseAgentParameters(Record agent_params)
 	return true;
 }
 
+/*
+ * Build a string with a list of agents, for logging purposes. Uses the names they have in
+ * the mode parameter, for example display, rflag, summary, etc. rather than the more
+ * internal names of the agent classes. When the list of agents is very long, a short
+ * cut of the list is produced.
+ *
+ * @param agents list of agents (items as casacore records, with a "mode" field)
+ * @return a comma separated list of agents
+ */
+std::string buildListAgentNames(const std::vector<Record> &agents) {
+    const size_t MAX_LIST_PRINT = 10;
+
+    std::string all;
+    if (!agents.empty()) {
+        auto elem = agents.cbegin();
+        String mode;
+        elem->get("mode", mode);
+        all += mode;
+        size_t count = 1;
+
+        while (++elem != agents.cend() && ++count <= MAX_LIST_PRINT) {
+            elem->get("mode", mode);
+            all += ", " + mode;
+        }
+        if (agents.size() > MAX_LIST_PRINT) {
+            all += ", ... (" + std::to_string(agents.size()-MAX_LIST_PRINT) +
+                " more, not shown)";
+        }
+    }
+    return all;
+}
+
+/*
+ * For a mode (agent) configuration check:
+ * if using time or channel averaging in auto-flagging modes (clip, tfcrop, rflag),
+ * the agents can only be used in combination with a subset of other agents. These
+ * 'whitelisted' agents are: + display + extend + antint.
+ * See CAS-12294 for discussions.
+ *
+ * Additionally, check that timeavg and channelavg are never set for
+ * any of the non-autof-lagging methods. This is in principle never
+ * possible via the task interface but the list mode parser is weaks
+ * and accepts such misconfigurations.
+
+ *
+ * @param mode flagging mode, using flagdata naming convention
+ * @param agent_rec record with the agent configuration
+ * @param anyNotAvg non-empty name if any avg-disallowed agent is in the list
+ *
+ * @throws AipsError if there is any configuration error
+ */
+void AgentFlagger::checkAveragingConfig(const std::string &mode, const Record &agent_rec,
+                                        const std::string &anyNotAvg) {
+    Bool tavg = false;
+    int exists = agent_rec.fieldNumber ("timeavg");
+    if (exists >= 0) {
+        agent_rec.get("timeavg", tavg);
+    }
+
+    Bool cavg = false;
+    exists = agent_rec.fieldNumber ("channelavg");
+    if (exists >= 0) {
+        agent_rec.get("channelavg", cavg);
+    }
+
+    if ("clip" == mode or "rflag" == mode or "tfcrop" == mode) {
+        if ((tavg or cavg) and not anyNotAvg.empty()) {
+            ostringstream msg;
+            msg << "Cannot use " << mode << " mode with timeavg=True or channelavg=True "
+                "and additional modes other than extend, display, and antint. timeavg="
+                << tavg << ", channelavg=" << cavg <<  ", and the following mode has been "
+                "set up: " << anyNotAvg + ". Refusing to accept this configuration.";
+            throw AipsError(msg);
+        }
+    } else {
+        if ((tavg or cavg)) {
+            ostringstream msg;
+            msg << "Cannot use timeavg or channelavg in mode " << mode << ". timeavg="
+                << tavg << ", channelavg=" << cavg <<  ". These averaging "
+                "options are only allowed for auto-flagging methods. Refusing this "
+                "configuration.";
+            throw AipsError(msg);
+        }
+    }
+}
+
+/*
+ * Check: the auto-flagging agents (clip, tfcrop, rflag) can only be combined with some
+ * other selected agents: display + extend + antint.
+ * See CAS-12294 for discussions.
+ *
+ * @param configs list of agent configurations
+ *
+ * @throws AipsError if there is any configuration error
+ */
+std::string AgentFlagger::searchAnyAgentsNotAvg(const std::vector<Record> &configs)
+{
+    const std::vector<std::string> whitelist = { "clip", "rflag", "tfcrop", "extend", "display", "antint" };
+
+    for (const auto &agent : configs) {
+        String recname;
+        agent.get("mode", recname);
+        std::string name = recname;
+        const auto &found = std::find(whitelist.cbegin(), whitelist.cend(), name);
+        if (found == whitelist.cend()) {
+            return name;
+        }
+    }
+
+    return "";
+}
 
 // ---------------------------------------------------------------------
 // AgentFlagger::initAgents
@@ -564,15 +671,24 @@ AgentFlagger::initAgents()
 	}
 
 
-	os<< LogIO::DEBUG1<< "There are initially "<< agents_config_list_p.size()<<
-			" agents in the list"<<LogIO::POST;
+	os << LogIO::NORMAL << "There are initially "<< agents_config_list_p.size()<<
+            " agents in the list. Agents: "
+           << buildListAgentNames(agents_config_list_p) << LogIO::POST;
+
+
+        // Check once here, to re-use then with every agent in the list
+        const auto &anyAgentNotAvg = searchAnyAgentsNotAvg(agents_config_list_p);
 
 	size_t list_size = agents_config_list_p.size();
 
 	// Send the logging of the re-applying agents to the debug
 	// as we are only interested in seeing the unapply action (flagcmd)
 	Bool retstate = true;
-
+        // Just to log this info
+        std::vector<Record> agents_config_list_filtered;
+        // To set some parameters only once
+        bool itersetDone = false;
+        bool timesetDone = false;
 	// Loop through the vector of agents
 	for (size_t i=0; i < list_size; i++) {
 
@@ -592,23 +708,11 @@ AgentFlagger::initAgents()
 		agent_rec.get("mode", mode);
 
         /*
-         * Special considerations for some agents
+         * Special constraints for some agents
          */
 
-        // If clip agent is mixed with other agents and time average is true, skip it
-        if ((mode.compare("clip") == 0 and list_size > 1) or
-        		(mode.compare("rflag") == 0 and list_size > 2) or
-        		(mode.compare("tfcrop") == 0 and list_size > 2))
-        {
-            Bool tavg = false;
-        	int exists = agent_rec.fieldNumber ("timeavg");
-        	if (exists >= 0) agent_rec.get("timeavg", tavg);
-
-            if (tavg){
-                os << LogIO::WARN << "Cannot have " << mode <<" mode with timeavg/channelavg=True in list mode" << LogIO::POST;
-                continue;
-            }
-        }
+        // constraints that will produce exceptions if not met
+        checkAveragingConfig(mode, agent_rec, anyAgentNotAvg);
 
         // If quack mode with quackincrement = true, skip it
         if (mode.compare("quack") == 0 and i > 0 and list_size > 1){
@@ -616,28 +720,28 @@ AgentFlagger::initAgents()
         	int exists = agent_rec.fieldNumber ("quackincrement");
         	if (exists >= 0) agent_rec.get("quackincrement", quackincrement);
 
-			if (quackincrement){
-        		os << LogIO::WARN << "Cannot have quackincrement=True in list mode. Agent will be ignored!" << LogIO::POST;
-        		continue;
+                if (quackincrement){
+                    os << LogIO::WARN << "Cannot have quackincrement=True in list mode. Agent quack will be ignored!" << LogIO::POST;
+                    continue;
         	}
         }
 
 		// Set the new time interval only once
-		if (!timeset_p and (mode.compare("tfcrop") == 0 or mode.compare("extend") == 0 or
+		if (!timesetDone and (mode.compare("tfcrop") == 0 or mode.compare("extend") == 0 or
 				mode.compare("rflag") == 0)) {
 			fdh_p->setTimeInterval(max_p);
-			timeset_p = true;
+			timesetDone = true;
 		}
 
 		// Change the new iteration approach only once
-		if (!iterset_p and (mode.compare("tfcrop") == 0 or mode.compare("extend") == 0
+		if (!itersetDone and (mode.compare("tfcrop") == 0 or mode.compare("extend") == 0
 				or mode.compare("rflag") == 0 or mode.compare("display") == 0)) {
 			if (combinescans_p)
 				fdh_p->setIterationApproach(FlagDataHandler::COMBINE_SCANS_MAP_ANTENNA_PAIRS_ONLY);
 			else
 				fdh_p->setIterationApproach(FlagDataHandler::COMPLETE_SCAN_MAP_ANTENNA_PAIRS_ONLY);
 
-			iterset_p = true;
+			itersetDone = true;
 		}
 
 		// Agent's name
@@ -717,11 +821,12 @@ AgentFlagger::initAgents()
 
 		// Add the agent to the FlagAgentList
 		agents_list_p.push_back(fa);
-
-
+                agents_config_list_filtered.push_back(agent_rec);
 	}
-	os << LogIO::NORMAL << "There are "<< agents_list_p.size()<<" valid agents in list"<<
-			LogIO::POST;
+
+	os << LogIO::NORMAL << "There are " << agents_list_p.size()
+	   << " valid agents in the list. Agents: "
+	   << buildListAgentNames(agents_config_list_filtered) << LogIO::POST;
 
 	// Clear the list so that this method cannot be called twice
 	agents_config_list_p.clear();
@@ -769,7 +874,8 @@ AgentFlagger::run(Bool writeflags, Bool sequential)
 	fdh_p->generateIterator();
 
 	agents_list_p.start();
-	os << LogIO::DEBUGGING << "Size of agent's list is " << agents_list_p.size()<< LogIO::POST;
+	os << LogIO::DEBUGGING << "Generated iterators. Start loop over chunks / agents. "
+            "Size of agents list is " << agents_list_p.size() << LogIO::POST;
 
 	// iterate over chunks
 	while (fdh_p->nextChunk())
@@ -784,8 +890,9 @@ AgentFlagger::run(Bool writeflags, Bool sequential)
 			agents_list_p.apply(sequential);
 
 			// Flush flags to MS
-			if (writeflags)
+			if (writeflags) {
 				fdh_p->flushFlags();
+                        }
 		}
 
 		// Print the chunk summary stats
@@ -1496,6 +1603,9 @@ AgentFlagger::parseAntIntParameters(String field, String spw, String /* array */
 // AgentFlagger::parseExtendParameters
 // Parse data selection parameters and specific extend parameters
 //
+// This method is called from parseAgentParameters, and it calls parseAgentParameters
+// again, passing a record set up for a "extend" agent. That way, an extend agent
+// is added after the main (RFlag or TFcrop) agent.
 // ---------------------------------------------------------------------
 bool
 AgentFlagger::parseExtendParameters(String field, String spw, String array, String feed, String scan,
