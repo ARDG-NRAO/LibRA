@@ -437,9 +437,10 @@ AnnotationBase::Type RegionTextParser::_getAnnotationType(
         // Polygon definitions can be very long with many points.
         // Testing entire polygon string syntax causes regex seg fault.
         ThrowIf(
-            ! (consumeMe.contains(Regex("^ *\\[ *\\[")) &&
-               consumeMe.contains(Regex("\\] *\\]"))),
-            preamble + "Illegal polygon specification " + consumeMe
+            ! (
+               consumeMe.contains(Regex("^ *\\[ *\\["))
+               && consumeMe.contains(Regex("\\] *\\]"))
+            ), preamble + "Illegal polygon specification " + consumeMe
         );
         {
             Vector<Quantity> qs = _extractNQuantityPairs(consumeMe, preamble);
@@ -1235,10 +1236,11 @@ Vector<Quantity> RegionTextParser::_extractNQuantityPairs (
             pairs.ltrim(',');
             pairs.trim();
         }
-    } catch (const casacore::AipsError& err) {
-        throw(casacore::AipsError(
+    }
+    catch (const AipsError&) {
+        ThrowCc(
             preamble + "Illegal polygon specification " + nPairs
-        ));
+        );
     }
     return qs;
 }
