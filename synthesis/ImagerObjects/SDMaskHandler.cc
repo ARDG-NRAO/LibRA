@@ -84,15 +84,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsSidelobeLevel = 0.0;
     //itsPBMaskLevel = 0.0;
     //itsTooLongForFname=false;
-#ifdef PATH_MAX
-   itsPATH_MAX = PATH_MAX-1;
+#ifdef NAME_MAX
+   itsNAME_MAX = NAME_MAX;
 #else
-   itsPATH_MAX = 1024;
+   itsNAME_MAX = 255;
 #endif
+
 itsTooLongForFname = false;
 
   }
-  
+
+
   SDMaskHandler::~SDMaskHandler()
   {
 #if ! defined(CASATOOLS)
@@ -138,8 +140,13 @@ itsTooLongForFname = false;
           maskString = maskStrings[imsk];
           bool isTable(false);
           bool isCasaImage(false);
-          if (int(maskString.length()) > itsPATH_MAX) 
-            itsTooLongForFname=true;
+          // test
+          Path testPath(maskString);
+          if (testPath.baseName()==maskString) {
+              if (int(maskString.length()) > itsNAME_MAX) 
+                  // the string is too long if it is file name or could be region text
+                  itsTooLongForFname=true;
+          }
           if (maskString!="") {
             if(!itsTooLongForFname)
               isTable = Table::isReadable(maskString); 
@@ -244,8 +251,11 @@ itsTooLongForFname = false;
       //interpret maskString 
       if (maskString !="") {
         bool isTable(false);
-        if (int(maskString.length()) > itsPATH_MAX) 
-          itsTooLongForFname=true;
+        Path testPath(maskString);
+        if (testPath.baseName() == maskString) { 
+            if (int(maskString.length()) > itsNAME_MAX)  
+                itsTooLongForFname=true;
+        }
         if (!itsTooLongForFname) 
           isTable = Table::isReadable(maskString);
 	//if (!itsTooLongForFname && Table::isReadable(maskString) ) {
@@ -489,18 +499,24 @@ itsTooLongForFname = false;
        IPosition imshape = regionImage.shape();
        CoordinateSystem csys = regionImage.coordinates();
        File fname; 
-       int maxPathlength;
+       int maxFileName;
        bool skipfnamecheck(false);
-       #ifdef PATH_MAX
-         maxPathlength=PATH_MAX;
+       #ifdef NAME_MAX
+         maxFileName=NAME_MAX;
        #else
-         maxPathlength=1024;
+         maxFileName=255;
        #endif
-       if (int(text.length()) > maxPathlength)
-         skipfnamecheck=true;
+
+       Path testPath(text);
+       if (testPath.baseName() == text) {
+           if (int(text.length()) > maxFileName) 
+              // could be direct region text 
+              skipfnamecheck=true;
+       }
        fname=text; 
        Record* imageRegRec=0;
        Record myrec;
+
        //Record imageRegRec;
        if (!skipfnamecheck && fname.exists() && fname.isRegular()) {
          RegionTextList  CRTFList(text, csys, imshape);
