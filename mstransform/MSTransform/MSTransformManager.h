@@ -395,7 +395,6 @@ protected:
 	void parseTimeAvgParams(casacore::Record &configuration);
 	void parseCalParams(casacore::Record &configuration);
 	void parseUVContSubParams(casacore::Record &configuration);
-	void parsePhaseShiftSubParams(casacore::Record &configuration);
 	void setSpwAvg(casacore::Record &configuration);
 	void parsePolAvgParams(casacore::Record &configuration);
 	void parsePointingsInterpolationParams(casacore::Record &configuration);

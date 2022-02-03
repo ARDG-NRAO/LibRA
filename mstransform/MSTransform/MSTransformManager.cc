@@ -317,14 +317,13 @@ void MSTransformManager::configure(Record &configuration)
 	parseFreqTransParams(configuration);
 	parseChanAvgParams(configuration);
 	parseRefFrameTransParams(configuration);
-	parsePhaseShiftParams(configuration);
 	parseTimeAvgParams(configuration);
 	parseCalParams(configuration);
 	parseUVContSubParams(configuration);
 	setSpwAvg(configuration);
 	parsePolAvgParams(configuration);
 	parsePointingsInterpolationParams(configuration);
-	parsePhaseShiftSubParams(configuration);
+	parsePhaseShiftParams(configuration);
 	parseAtmCorrectionParams(configuration);
 
 	return;
@@ -1014,7 +1013,7 @@ void MSTransformManager::parseFreqSpecParams(Record &configuration)
 // CAS-12706 To run phase shift via a TVI which has
 // support for shifting across large offset/angles
 // -----------------------------------------------------------------------
-void MSTransformManager::parsePhaseShiftSubParams(Record &configuration)
+void MSTransformManager::parsePhaseShiftParams(Record &configuration)
 {
 	int exists = -1;
 
@@ -5615,20 +5614,20 @@ void MSTransformManager::generateIterator()
 		TVIFactoryIdx++;
 
 		// Time avg. layer
-		vi::AveragingVi2LayerFactory *timeAverageTVIFactory = NULL;
+		std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
 		if (timeAverage_p)
 		{
-			timeAverageTVIFactory = new vi::AveragingVi2LayerFactory(*timeavgParams);
-			TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory;
+			timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+			TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory.get();
 			TVIFactoryIdx++;
 		}
 
 		// UVContSub layer
-		vi::UVContSubTVILayerFactory *uvContSubTVIFactory = NULL;
+		std::unique_ptr<vi::UVContSubTVILayerFactory> uvContSubTVIFactory;
 		if (uvcontsub_p)
 		{
-			uvContSubTVIFactory = new vi::UVContSubTVILayerFactory (uvcontsubRec_p);
-			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory;
+			uvContSubTVIFactory.reset(new vi::UVContSubTVILayerFactory (uvcontsubRec_p));
+			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory.get();
 			TVIFactoryIdx++;
 		}
 
@@ -5636,9 +5635,6 @@ void MSTransformManager::generateIterator()
 
 		logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
 				<< "TVI chain is " << visibilityIterator_p->ViiType() << LogIO::POST;
-
-		if (timeAverageTVIFactory) delete timeAverageTVIFactory;
-		if (uvContSubTVIFactory) delete uvContSubTVIFactory;
 	}
 	else if (calibrate_p || scalarAverage_p)
 	{
@@ -5701,7 +5697,7 @@ void MSTransformManager::generateIterator()
 			else if (tviphaseshift_p) {
 
 				// First determine number of layers
-				uInt nTVIs = 2;
+				uInt nTVIs = (timeAverage_p ? 3 : 2);
 
 				// Init vector of TVI factories and populate it
 				uInt TVIFactoryIdx = 0;
@@ -5710,27 +5706,21 @@ void MSTransformManager::generateIterator()
 				// Data layer
 				vi::IteratingParameters ipar(timeBin_p,vi::SortColumns(sortColumns_p, false));
 				vi::VisIterImpl2LayerFactory dataLayerTVIFactory(selectedInputMs_p,ipar,isWritable);
-				TVIFactories[TVIFactoryIdx]=&dataLayerTVIFactory;
-				TVIFactoryIdx++;
+				TVIFactories[TVIFactoryIdx++]=&dataLayerTVIFactory;
 
 				// Time avg. layer
-				vi::AveragingVi2LayerFactory *timeAverageTVIFactory = NULL;
+				std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
 				if (timeAverage_p)
 				{
-					timeAverageTVIFactory = new vi::AveragingVi2LayerFactory(*timeavgParams);
-					TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory;
-					TVIFactoryIdx++;
+					timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+					TVIFactories[TVIFactoryIdx++]=timeAverageTVIFactory.get();
 				}
 
 				// Phaseshift layer
-				vi::PhaseShiftingTVILayerFactory *phaseShiftingTVILayerFactory = NULL;
-				phaseShiftingTVILayerFactory = new vi::PhaseShiftingTVILayerFactory (tviphaseshiftConfig_p);
-				TVIFactories[TVIFactoryIdx]=phaseShiftingTVILayerFactory;
-				TVIFactoryIdx++;
+				vi::PhaseShiftingTVILayerFactory phaseShiftingTVILayerFactory(tviphaseshiftConfig_p);
+				TVIFactories[TVIFactoryIdx]=&phaseShiftingTVILayerFactory;
 
 				visibilityIterator_p = new vi::VisibilityIterator2 (TVIFactories);
-
-				if (timeAverageTVIFactory) delete timeAverageTVIFactory;
 			}
 			// Plain VI
 			else
@@ -5776,27 +5766,21 @@ void MSTransformManager::generateIterator()
 		// Data layer
 		vi::IteratingParameters ipar(timeBin_p,vi::SortColumns(sortColumns_p, false));
 		vi::VisIterImpl2LayerFactory dataLayerTVIFactory(selectedInputMs_p,ipar,isWritable);
-		TVIFactories[TVIFactoryIdx]=&dataLayerTVIFactory;
-		TVIFactoryIdx++;
+		TVIFactories[TVIFactoryIdx++]=&dataLayerTVIFactory;
 
 		// Time avg. layer
-		vi::AveragingVi2LayerFactory *timeAverageTVIFactory = NULL;
+		std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
 		if (timeAverage_p)
 		{
-			timeAverageTVIFactory = new vi::AveragingVi2LayerFactory(*timeavgParams);
-			TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory;
-			TVIFactoryIdx++;
+			timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+			TVIFactories[TVIFactoryIdx++]=timeAverageTVIFactory.get();
 		}
 
 		// Phaseshift layer
-		vi::PhaseShiftingTVILayerFactory *phaseShiftingTVILayerFactory = nullptr;
-		phaseShiftingTVILayerFactory = new vi::PhaseShiftingTVILayerFactory (tviphaseshiftConfig_p);
-		TVIFactories[TVIFactoryIdx]=phaseShiftingTVILayerFactory;
-		TVIFactoryIdx++;
+		vi::PhaseShiftingTVILayerFactory phaseShiftingTVILayerFactory(tviphaseshiftConfig_p);
+		TVIFactories[TVIFactoryIdx]=&phaseShiftingTVILayerFactory;
 
 		visibilityIterator_p = new vi::VisibilityIterator2 (TVIFactories);
-
-		if (timeAverageTVIFactory) delete timeAverageTVIFactory;
     }
     // Offline ATM correction
 	else if (doAtmCor_p) {
