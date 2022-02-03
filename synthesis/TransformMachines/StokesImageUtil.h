@@ -173,6 +173,8 @@ public:
   // Convert to casacore::Stokes PSF
   static void ToStokesPSF(casacore::ImageInterface<casacore::Float>& out, casacore::ImageInterface<casacore::Complex>& in);
 
+  static void ToStokesSumWt(casacore::Matrix<casacore::Float> sumwtStokes, casacore::Matrix<casacore::Float> sumwtCorr, const casacore::CoordinateSystem& outcoord, const casacore::CoordinateSystem& incoord);
+  
   static void ToStokesSumWt(casacore::Matrix<casacore::Float> sumwtStokes, casacore::Matrix<casacore::Float> sumwtCorr);
   
   // Find the mapping from pixel on the casacore::Stokes Axis to I,Q,U,V
