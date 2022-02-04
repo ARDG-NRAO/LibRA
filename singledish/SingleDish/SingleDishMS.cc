@@ -1816,10 +1816,12 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
         }
       } // end of chunk row loop
       // write back data cube to VisBuffer
-      if (update_weight) {
-        sdh_->fillCubeToOutputMs(vb, data_chunk, &flag_chunk, &weight_matrix);
-      } else {
-        sdh_->fillCubeToOutputMs(vb, data_chunk, &flag_chunk);
+      if (do_subtract) {
+        if (update_weight) {
+          sdh_->fillCubeToOutputMs(vb, data_chunk, &flag_chunk, &weight_matrix);
+        } else {
+          sdh_->fillCubeToOutputMs(vb, data_chunk, &flag_chunk);
+        }
       }
     } // end of vi loop
   } // end of chunk loop
