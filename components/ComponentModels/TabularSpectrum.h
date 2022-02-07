@@ -186,7 +186,10 @@ public:
   // reference frequency then this function will always return one. At other
   // frequencies it will return a non-negative number.
   virtual casacore::Double sample(const casacore::MFrequency& centerFrequency) const;
-  virtual void  sampleStokes(const casacore::MFrequency& centerFrequency, casacore::Vector<casacore::Double>& iquv) const;
+
+  virtual void  sampleStokes(
+      const casacore::MFrequency& centerFrequency, casacore::Vector<casacore::Double>& iquv
+  ) const;
   // Same as the previous function except that many frequencies can be sampled
   // at once. The reference frame must be the same for all the specified
   // frequencies. Uses a customised implementation for improved speed.
@@ -194,9 +197,11 @@ public:
                       const casacore::Vector<casacore::MFrequency::MVType>& frequencies, 
                       const casacore::MFrequency::Ref& refFrame) const;
 
-  virtual void sampleStokes(casacore::Vector<casacore::Vector<casacore::Double> >& iquv,
-                      const casacore::Vector<casacore::MFrequency::MVType>& frequencies, 
-			    const casacore::MFrequency::Ref& refFrame) const;
+  virtual void sampleStokes(
+      casacore::Matrix<casacore::Double>& iquv,
+      const casacore::Vector<casacore::MFrequency::MVType>& frequencies,
+      const casacore::MFrequency::Ref& refFrame
+  ) const;
 
   // Return a pointer to a copy of this object upcast to a SpectralModel
   // object. The class that uses this function is responsible for deleting the
