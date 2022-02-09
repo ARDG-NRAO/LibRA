@@ -2077,7 +2077,11 @@ bool SynthesisImager::unlockImages()
 	kpb=PBMath::VLA;
       }
       else{
-	os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n Please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.)" << LogIO::POST;
+	//os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n Please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.)" << LogIO::POST;
+	os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n If needed, please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.). \n For now, we will proceed by reading dish diameters from the ANTENNA subtable, and form Airy disk beams." << LogIO::POST;
+	kpb=PBMath::UNKNOWN;
+	rec.define("name","COMMONPB");
+	rec.define("commonpb","NONE");
       }
     }
     

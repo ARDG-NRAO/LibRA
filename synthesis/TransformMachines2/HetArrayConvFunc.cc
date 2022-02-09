@@ -276,12 +276,33 @@ void HetArrayConvFunc::findAntennaSizes(const vi::VisBuffer2& vb) {
                         antIndexToDiamIndex_p(k)=diamIndex;
                         antMath_p.resize(diamIndex+1);
                         if(recs[recordToUse].isDefined("realimage") && recs[recordToUse].isDefined("imagimage")) {
-                            PagedImage<Float> realim(recs[recordToUse].asString("realimage"));
-                            PagedImage<Float> imagim(recs[recordToUse].asString("imagim"));
-                            antMath_p[diamIndex]=new PBMath2DImage(realim, imagim);
+			  //PagedImage<Float> realim(recs[recordToUse].asString("realimage"));
+			  // PagedImage<Float> imagim(recs[recordToUse].asString("imagim"));
+                          //  antMath_p[diamIndex]=new PBMath2DImage(realim, imagim);
+
+                          if(!Table::isReadable(recs[recordToUse].asString("realimage")))
+			    throw(AipsError("real part of VP "+recs[recordToUse].asString("realimage")+ " is not readable"));
+                          PagedImage<Float> realim(recs[recordToUse].asString("realimage"));
+                          CountedPtr<ImageInterface<Float> >imagim;
+                          if(recs[recordToUse].asString("imagimage").size()==0){
+                            imagim=new TempImage<Float>(realim.shape(), realim.coordinates());
+                            imagim->set(0.0);
+                          }
+                          else{
+                            if(!Table::isReadable(recs[recordToUse].asString("imagimage")))
+			      throw(AipsError("Imaginary part of VP "+recs[recordToUse].asString("imagimage")+ " is not readable"));
+                            imagim= new PagedImage<Float> (recs[recordToUse].asString("imagimage"));
+                          }
+                            antMath_p[diamIndex]=new PBMath2DImage(realim, *imagim);
+
                         }
                         else {
-                            antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			  //antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			  
+			   if(!Table::isReadable(recs[recordToUse].asString("compleximage")))
+			     throw(AipsError("complex image of VP "+recs[recordToUse].asString("compleximage")+ " is not readable"));
+			   antMath_p[diamIndex]=new PBMath2DImage(PagedImage<Complex>(recs[recordToUse].asString("compleximage")));
+			 
                         }
                         ++diamIndex;
                     }
