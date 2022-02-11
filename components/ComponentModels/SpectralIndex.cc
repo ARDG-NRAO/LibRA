@@ -135,8 +135,9 @@ Double SpectralIndex::sample(const MFrequency& centerFreq) const {
   return pow(nu/nu0, itsIndex);
 }
 
-void SpectralIndex::sampleStokes(const MFrequency& centerFreq, Vector<Double>& iquv) const {
-    DebugAssert(ok(), AipsError);
+void SpectralIndex::sampleStokes(
+    const MFrequency& centerFreq, Vector<Double>& iquv
+) const {
     Vector<Double> scale(4);
     if(itsStokesIndex.nelements()==1){
       scale.resize(1);
@@ -209,66 +210,53 @@ void SpectralIndex::sample(Vector<Double>& scale,
   }
 }
 
-void SpectralIndex::sampleStokes(Vector<Vector<Double> >& iquv, 
-			   const Vector<MFrequency::MVType>& frequencies, 
-			   const MFrequency::Ref& refFrame) const {
-  DebugAssert(ok(), AipsError);
-  const uInt nSamples = frequencies.nelements();
-  if(iquv.nelements() != nSamples)
-    throw(AipsError("SpectralIndex: number of Stokes does not  match frequency length"));
-  //scale.resize(nSamples);
- 
-  Double nu0=refFreqInFrame(refFrame); 
-  if (nu0 <= 0.0) {
-    throw(AipsError("SpectralIndex::sample(...) - "
-		    "the reference frequency is zero or negative"));
-  }
+void SpectralIndex::sampleStokes(
+    Matrix<Double>& iquv, const Vector<MFrequency::MVType>& frequencies, 
+    const MFrequency::Ref& refFrame
+) const {
+    ThrowIf(
+        iquv.shape() != IPosition(2, frequencies.size(), 4),
+        "Incorrect Matrix shape"
+    );
+    const auto nSamples = frequencies.nelements();
+    const auto nu0 = refFreqInFrame(refFrame); 
+    ThrowIf(nu0 <= 0.0, "the reference frequency is zero or negative");
 
-  Double nu;
-  for (uInt i = 0; i < nSamples; i++) {
-    nu = frequencies(i).getValue();
-    //scale(i).resize(itsStokesIndex.nelements());
-    iquv(i)(0) *= pow(nu/nu0, itsStokesIndex(0));
-  }
-  //fractional linear and circular pol variation
-  //u and v get scaled so that fractional linear pol 
+    Double nu;
+    //fractional linear and circular pol variation
+    //u and v get scaled so that fractional linear pol 
     // is scaled by pow(nu/nu0, alpha[1]);
     // as I is scaled by alpha[0]
     //easily shown then that u and q are scaled by pow(nu/nu0, alpha[0]+alpha[1])
     //similarly for scaling of fractional  circular pol
-  if(itsStokesIndex.nelements()==4 && iquv(0).nelements()==4){
-    for (uInt i = 0; i < nSamples; i++) {
-      nu = frequencies(i).getValue();
-      iquv(i)(3) *= pow(nu/nu0, itsStokesIndex(0)+itsStokesIndex(3));
-      iquv(i)(1)*=pow(nu/nu0, itsStokesIndex[0]+itsStokesIndex[1]);
-      iquv(i)(2)*=pow(nu/nu0, itsStokesIndex[0]+itsStokesIndex[1]);
+    for (uInt i=0; i<nSamples; ++i) {
+        nu = frequencies(i).getValue();
+        iquv(i, 0) *= pow(nu/nu0, itsStokesIndex(0));
+        iquv(i, 3) *= pow(nu/nu0, itsStokesIndex(0) + itsStokesIndex(3));
+        iquv(i, 1) *= pow(nu/nu0, itsStokesIndex[0] + itsStokesIndex[1]);
+        iquv(i, 2) *= pow(nu/nu0, itsStokesIndex[0] + itsStokesIndex[1]);
     }
-  }
-  
-  
-  ///RM type rotation of linear pol. 
-  if(itsStokesIndex[2] != 0.0){
-      //angle= RM x lambda^2 : itsStokesIndex[2]=RM
-      //if
-      // Q'= cos(2*angle)*Q - sin(2*angle)*U
-      // U'= sin(2*angle) *Q + cos(2*angle)*U
-      // Q' and U' preserves fractional linear pol..and rotates it by angle
-    for (uInt i = 0; i < nSamples; i++) {
-      nu = frequencies(i).getValue();
-      Double twoalpha=2*itsStokesIndex[2]*C::c*C::c*(nu0*nu0-nu*nu)/(nu*nu*nu0*nu0);
-      Double cos2alph=cos(twoalpha); 
-      Double sin2alph=sin(twoalpha);
-      //Q'
-      Double tempQ=cos2alph*iquv(i)[1]-sin2alph*iquv(i)[2];
-      //U'
-      iquv(i)[2]=sin2alph*iquv(i)[1]+cos2alph*iquv(i)[2];
-      iquv(i)[1]=tempQ;
+    ///RM type rotation of linear pol. 
+    if(itsStokesIndex[2] != 0.0) {
+        //angle= RM x lambda^2 : itsStokesIndex[2]=RM
+        //if
+        // Q'= cos(2*angle)*Q - sin(2*angle)*U
+        // U'= sin(2*angle) *Q + cos(2*angle)*U
+        // Q' and U' preserves fractional linear pol..and rotates it by angle
+        for (uInt i = 0; i < nSamples; i++) {
+            nu = frequencies(i).getValue();
+            Double twoalpha = 2*itsStokesIndex[2]*C::c*C::c*(nu0*nu0-nu*nu)/(nu*nu*nu0*nu0);
+            Double cos2alph = cos(twoalpha); 
+            Double sin2alph = sin(twoalpha);
+            //Q'
+            Double tempQ = cos2alph*iquv(i, 1) - sin2alph*iquv(i, 2);
+            //U'
+            iquv(i, 2) = sin2alph*iquv(i, 1) + cos2alph*iquv(i, 2);
+            iquv(i, 1) = tempQ;
+        }
     }
-  }
-   
-   
-
 }
+   
 SpectralModel* SpectralIndex::clone() const {
   DebugAssert(ok(), AipsError);
   SpectralModel* tmpPtr = new SpectralIndex(*this);
