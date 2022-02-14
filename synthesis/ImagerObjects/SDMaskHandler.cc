@@ -1251,7 +1251,7 @@ itsTooLongForFname = false;
          os<< LogIO::DEBUG1 << "All NEW MAD's on the input image -- mad.nelements()="<<newmads.nelements()<<" mad="<<newmads<<LogIO::POST;
       }
     }
-    os<<" set the stats to what is calculated here" <<LogIO::POST;
+    os<<LogIO::NORMAL3<<" set the stats to what is calculated here" <<LogIO::POST;
     robuststatsrec=thenewstats;
     } 
     else {
@@ -2533,7 +2533,7 @@ itsTooLongForFname = false;
             if (minBeamFrac > 0.0 ) {
               // do pruning...
               //os<<LogIO::NORMAL<<"Pruning the current mask"<<LogIO::POST;
-              os << LogIO::NORMAL << "Start thresholding: create an initial mask by threshold" << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start thresholding: create an initial mask by threshold" << LogIO::POST;
               timer.mark();
               // make temp mask image consist of the original pix value and below the threshold is set to 0 
               //TempImage<Float> maskedRes(res.shape(), res.coordinates(), memoryToUse());
@@ -2544,7 +2544,7 @@ itsTooLongForFname = false;
               makeMaskByPerChanThreshold(planeResImage, chanFlag1elem, maskedRes, maskThreshold1elem, dummysizes); 
               timeInitThresh(0)+=timer.real(); timeInitThresh(1)+=timer.user(); timeInitThresh(2)+=timer.system();
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End thresholding: time to create the initial threshold mask:  real "<< timer.real() 
+                os << LogIO::NORMAL3 << "End thresholding: time to create the initial threshold mask:  real "<< timer.real() 
                    << "s ( user " << timer.user() <<"s, system "<< timer.system() << "s)" << LogIO::POST;
               }
               //if (res.hasPixelMask()) {
@@ -2568,7 +2568,7 @@ itsTooLongForFname = false;
                 savedPreMask.copyData(maskedRes);
               }
 
-              os << LogIO::NORMAL << "Start pruning: the initial threshold mask" << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start pruning: the initial threshold mask" << LogIO::POST;
               timer.mark();
               //std::shared_ptr<ImageInterface<Float> > tempIm_ptr = pruneRegions2(maskedRes, tempthresh,  -1, pruneSize);
               //temporary storage for single plane results
@@ -2583,7 +2583,7 @@ itsTooLongForFname = false;
               // now this timing for single plane... need to accumlate and report it later????
               timePrune(0)+=timer.real(); timePrune(1)+=timer.user(); timePrune(2)+=timer.system();
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End pruning: time to prune the initial threshold mask: real " 
+                os << LogIO::NORMAL3 << "End pruning: time to prune the initial threshold mask: real " 
                    << timer.real()<< "s (user " << timer.user() <<"s, system "<< timer.system() << "s)" << LogIO::POST;
               }
             
@@ -2601,7 +2601,7 @@ itsTooLongForFname = false;
               //}
             }
             else { // ***** No pruning case ******
-              os << LogIO::NORMAL << "Start thresholding: create an initial threshold mask" << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start thresholding: create an initial threshold mask" << LogIO::POST;
               timer.mark();
               //tempmask.set(0);
               planeTempMask.set(0);
@@ -2616,14 +2616,14 @@ itsTooLongForFname = false;
               //if (!iterdone) noMaskCheck(tempmask, ThresholdType);
               timePrune(0)+=timer.real(); timePrune(1)+=timer.user(); timePrune(2)+=timer.system();
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End trehsholding: time to create the initial threshold mask: real "
+                os << LogIO::NORMAL3 << "End trehsholding: time to create the initial threshold mask: real "
                    << timer.real()<<"s (user " << timer.user() <<"s, system "<< timer.system() << "s)" << LogIO::POST;
               }
               //tempmask.copyData(themask);
             } // DONE PRUNING STAGE 
 
             // ***** SMOOTHING *******
-            os << LogIO::NORMAL << "Start smoothing: the initial threshold mask" << LogIO::POST;
+            os << LogIO::NORMAL3 << "Start smoothing: the initial threshold mask" << LogIO::POST;
             timer.mark();
             SPIIF outmask = convolveMask(planeTempMask, modbeam );
             if (debug2 ) {
@@ -2660,7 +2660,7 @@ itsTooLongForFname = false;
             // Per-plane timing
             timeSmooth(0) += timer.real(); timeSmooth(1) += timer.user(); timeSmooth(2) += timer.system(); 
             if (perplanetiming) {
-            os << LogIO::NORMAL << "End smoothing: time to create the smoothed initial threshold mask: real "<< timer.real()
+            os << LogIO::NORMAL3 << "End smoothing: time to create the smoothed initial threshold mask: real "<< timer.real()
                <<"s (user " << timer.user() <<"s, system "<< timer.system() << "s)" <<  LogIO::POST;
             }
 
@@ -2716,7 +2716,7 @@ itsTooLongForFname = false;
 
             if (iterdone && growIterations>0) { // enter to acutal grow process
               //per-plane timing
-              os << LogIO::NORMAL << "Start grow mask: growing the previous mask " << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start grow mask: growing the previous mask " << LogIO::POST;
               timer.mark();
               //call growMask
               // corresponds to calcThresholdMask with lowNoiseThreshold...
@@ -2728,7 +2728,7 @@ itsTooLongForFname = false;
               //makeMaskByPerChanThreshold(res, chanFlag, constraintMaskImage, lowMaskThreshold, dummysizes);
               makeMaskByPerChanThreshold(planeResImage, chanFlag1elem, constraintMaskImage, lowMaskThreshold1elem, dummysizes);
               if(debug2 && ipol==0 && ich==0) {
-                os<< LogIO::NORMAL<<"saving constraint mask " << LogIO::POST;
+                os<< LogIO::NORMAL3<<"saving constraint mask " << LogIO::POST;
                 PagedImage<Float> beforepruneconstIm(planeResImage.shape(), planeResImage.coordinates(),"tmpConstraint-"+String::toString(iterdone)+".im");
                 beforepruneconstIm.copyData(constraintMaskImage);
               }
@@ -2787,14 +2787,14 @@ itsTooLongForFname = false;
               }
               timeGrow(0) += timer.real(); timeGrow(1) += timer.user(); timeGrow(2) += timer.system(); 
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End grow mask: time to grow the previous mask: real " 
+                os << LogIO::NORMAL3 << "End grow mask: time to grow the previous mask: real " 
                  << timer.real() <<"s (user "<< timer.user() << "s, system " << timer.system() << "s)" << LogIO::POST;
               }
 
               // **** pruning on grow mask ****
               if (minBeamFrac > 0.0 && doGrowPrune) {
                 //os<<LogIO::NORMAL << "Pruning the growed previous mask "<<LogIO::POST;
-                os << LogIO::NORMAL << "Start pruning: on the grow mask "<< LogIO::POST;
+                os << LogIO::NORMAL3 << "Start pruning: on the grow mask "<< LogIO::POST;
                 timer.mark();
                 Vector<Bool> dummy(0);
                 Vector<uInt> ngrowreg1elem, ngrowpruned1elem;
@@ -2807,7 +2807,7 @@ itsTooLongForFname = false;
                 subprevmask.copyData( *(tempPrunedMask_ptr.get()) );
                 timePruneGrow(0) += timer.real(); timePruneGrow(1) += timer.user(); timePruneGrow(2) += timer.system();
                 if (perplanetiming) {
-                  os << LogIO::NORMAL << "End pruning: time to prune the grow mask: real " 
+                  os << LogIO::NORMAL3 << "End pruning: time to prune the grow mask: real " 
                     << timer.real() <<"s (user "<< timer.user() << "s, system "<< timer.system() << "s)" << LogIO::POST;
                 }
                 if(debug2) {
@@ -2818,7 +2818,7 @@ itsTooLongForFname = false;
               }
 
               // ***** smoothing on grow mask *****
-              os << LogIO::NORMAL << "Start smoothing: the grow mask " << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start smoothing: the grow mask " << LogIO::POST;
               timer.mark();
               ///SPIIF outprevmask = convolveMask( prevmask, modbeam);
               SPIIF outprevmask = convolveMask( subprevmask, modbeam);
@@ -2852,7 +2852,7 @@ itsTooLongForFname = false;
               //}
               timeSmoothGrow(0) +=  timer.real(); timeSmoothGrow(1) += timer.user(); timeSmoothGrow(2) += timer.system(); 
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End smoothing: time to create the smoothed grow mask: real " 
+                os << LogIO::NORMAL3 << "End smoothing: time to create the smoothed grow mask: real " 
                   << timer.real() <<"s (user "<< timer.user() << "s, system " << timer.system() << "s)" << LogIO::POST;
               }
             } //end - GROW (iterdone && dogrowiteration)
@@ -2897,7 +2897,7 @@ itsTooLongForFname = false;
             //Vector<Float> negmaskpixs;
             Vector<Float> negmaskpixs1elem;
             if (negativeThresholdFactor > 0) { 
-              os << LogIO::NORMAL << "Start thresholding: create a negative mask" << LogIO::POST;
+              os << LogIO::NORMAL3 << "Start thresholding: create a negative mask" << LogIO::POST;
               timer.mark();
               //os<<LogIO::NORMAL<<"Creating a mask for negative features. "<<LogIO::POST;
               //TempImage<Float> negativeMaskImage(res.shape(), res.coordinates(), memoryToUse()); 
@@ -2937,7 +2937,7 @@ itsTooLongForFname = false;
               //}
               timeNegThresh(0) += timer.real(); timeNegThresh(1) += timer.user(); timeNegThresh(2) += timer.system(); 
               if (perplanetiming) {
-                os << LogIO::NORMAL << "End thresholding: time to create the negative mask: real " 
+                os << LogIO::NORMAL3 << "End thresholding: time to create the negative mask: real " 
                  << timer.real() <<"s (user " << timer.user() << "s, system " << timer.system() << "s)" << LogIO::POST;
               }
             }

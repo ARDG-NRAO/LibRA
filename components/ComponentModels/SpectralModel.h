@@ -218,12 +218,15 @@ public:
                       const casacore::MFrequency::Ref& refFrame) const = 0;
 
 // So as allow for fractional pol change and angle change of linear pol w.r.t frequency
-// casacore::Vector of   four Vectors of original IQUV should be passed in and it will hold the return values
+// Matrix should have shape (frequencies.size(), 4), each row corresponds to the four stokes
+// at one frequency.
 // Uitimately this math should really go in Flux and FluxRep to where a rotation of linear pol is allowed
    
-  virtual void sampleStokes(casacore::Vector<casacore::Vector<casacore::Double> >& stokesval,
-                      const casacore::Vector<casacore::MFrequency::MVType>& frequencies, 
-                      const casacore::MFrequency::Ref& refFrame) const = 0;
+  virtual void sampleStokes(
+      casacore::Matrix<casacore::Double>& stokesval,
+      const casacore::Vector<casacore::MFrequency::MVType>& frequencies, 
+      const casacore::MFrequency::Ref& refFrame
+  ) const = 0;
   // Return a pointer to a copy of the derived object upcast to a SpectralModel
   // object. The class that uses this function is responsible for deleting the
   // pointer. This is used to implement a virtual copy constructor.

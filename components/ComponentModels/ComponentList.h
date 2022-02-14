@@ -257,6 +257,7 @@ public:
 
   // returns how many components are in the list.
   casacore::uInt nelements() const;
+  casacore::uInt size() const;
 
   // deselect the specified component. Throws an exception (casacore::AipsError) if any
   // element in the index is out of range, ie. index >= nelements().
