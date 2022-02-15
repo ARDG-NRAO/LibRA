@@ -426,6 +426,8 @@ private:
   double itsMax;
   float itsSidelobeLevel;
   float itsPBMaskLevel;
+  int itsNAME_MAX;
+  bool itsTooLongForFname;
 };
 
 

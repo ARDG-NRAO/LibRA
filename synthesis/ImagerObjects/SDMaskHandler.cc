@@ -74,7 +74,6 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-
   SDMaskHandler::SDMaskHandler()
   {
 #if ! defined(CASATOOLS)
@@ -84,8 +83,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsRms = DBL_MAX;
     itsSidelobeLevel = 0.0;
     //itsPBMaskLevel = 0.0;
+    //itsTooLongForFname=false;
+#ifdef NAME_MAX
+   itsNAME_MAX = NAME_MAX;
+#else
+   itsNAME_MAX = 255;
+#endif
+
+itsTooLongForFname = false;
+
   }
-  
+
+
   SDMaskHandler::~SDMaskHandler()
   {
 #if ! defined(CASATOOLS)
@@ -129,14 +138,24 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         copyMask(*(imstore->mask()), tempMaskImage);
         for (uInt imsk = 0; imsk < maskStrings.nelements(); imsk++) {
           maskString = maskStrings[imsk];
-          Bool isCasaImage(false);
+          bool isTable(false);
+          bool isCasaImage(false);
+          // test
+          Path testPath(maskString);
+          if (testPath.baseName()==maskString) {
+              if (int(maskString.length()) > itsNAME_MAX) 
+                  // the string is too long if it is file name or could be region text
+                  itsTooLongForFname=true;
+          }
           if (maskString!="") {
-            if (!(Table::isReadable(maskString))) {
+            if(!itsTooLongForFname)
+              isTable = Table::isReadable(maskString); 
+            if (!isTable) {
               try {
                 if (ImageOpener::imageType(maskString)==ImageOpener::IMAGECONCAT) isCasaImage=true;
-                os <<"IT'S A CONCATImage"<<LogIO::POST;
+                //os <<"IT'S A CONCATImage"<<LogIO::POST;
               } 
-              catch (...) {
+              catch (AipsError &x) {
                 os <<"cannot find imageType... "<<LogIO::POST;
               }
             }
@@ -146,81 +165,60 @@ namespace casa { //# NAMESPACE CASA - BEGIN
               if ( colnames[0]=="map" ) isCasaImage=true;
             }  
             if (isCasaImage) {
-                os<<"isCasaImage=true"<<LogIO::POST;
-            //if ( Table::isReadable(maskString) ) {
-            //  Table imtab = Table(maskString, Table::Old);
-            //  Vector<String> colnames = imtab.tableDesc().columnNames();
-            //  if ( colnames[0]=="map" ) {
-                // looks like a CASA image ... probably should check coord exists in the keyword also...
-                //          cout << "copy this input mask...."<<endl;
-                // Include checks if the degenerate axes exit or removed.
-                // expandMask will add a degenerate axis to match the output
-                //PagedImage<Float> inmask(maskString); 
-		std::shared_ptr<ImageInterface<Float> > inmaskptr;
-                LatticeBase* latt =ImageOpener::openImage(maskString);
-                inmaskptr.reset(dynamic_cast<ImageInterface<Float>* >(latt));
-                //IPosition inShape = inmask.shape();
-                IPosition inShape = inmaskptr->shape();
-                IPosition outShape = imstore->mask()->shape();
-                //Int specAxis = CoordinateUtil::findSpectralAxis(inmask.coordinates());
-                Int specAxis = CoordinateUtil::findSpectralAxis(inmaskptr->coordinates());
-                Int inNchan = (specAxis==-1? 1: inShape(specAxis) );
-                Int outSpecAxis = CoordinateUtil::findSpectralAxis(imstore->mask()->coordinates());
-                Vector <Stokes::StokesTypes> inWhichPols, outWhichPols;
-                //Int stokesAxis = CoordinateUtil::findStokesAxis(inWhichPols, inmask.coordinates());
-                Int stokesAxis = CoordinateUtil::findStokesAxis(inWhichPols, inmaskptr->coordinates());
-                Int inNstokes = (stokesAxis==-1? 1: inShape(stokesAxis) );
-                Int outStokesAxis = CoordinateUtil::findStokesAxis(outWhichPols, imstore->mask()->coordinates());
-                //if (inShape(specAxis) == 1 && outShape(outSpecAxis)>1) {
-                if (inNchan == 1 && outShape(outSpecAxis)>1) {
-                  os << "Extending mask image: " << maskString << LogIO::POST;
-                  //expandMask(inmask, tempMaskImage);
-                  expandMask(*inmaskptr, tempMaskImage);
-                }
-                //else if(inShape(stokesAxis) == 1 && outShape(outStokesAxis) > 1 ) {
-                else if(inNstokes == 1 && outShape(outStokesAxis) > 1 ) {
-                  os << "Extending mask image along Stokes axis: " << maskString << LogIO::POST;
-                  //expandMask(inmask, tempMaskImage);
-                  expandMask(*inmaskptr, tempMaskImage);
-                }
-                else {
-                  os << "Copying mask image: " << maskString << LogIO::POST;
-                  //copyMask(inmask, tempMaskImage);
-                  copyMask(*inmaskptr, tempMaskImage);
-                }
-              //}// end of ''map''
-              //else {
-              //  throw(AipsError(maskString+" does not appear to be valid image mask"));
-              //}
+	      std::shared_ptr<ImageInterface<Float> > inmaskptr;
+              LatticeBase* latt =ImageOpener::openImage(maskString);
+              inmaskptr.reset(dynamic_cast<ImageInterface<Float>* >(latt));
+              IPosition inShape = inmaskptr->shape();
+              IPosition outShape = imstore->mask()->shape();
+              Int specAxis = CoordinateUtil::findSpectralAxis(inmaskptr->coordinates());
+              Int inNchan = (specAxis==-1? 1: inShape(specAxis) );
+              Int outSpecAxis = CoordinateUtil::findSpectralAxis(imstore->mask()->coordinates());
+              Vector <Stokes::StokesTypes> inWhichPols, outWhichPols;
+              Int stokesAxis = CoordinateUtil::findStokesAxis(inWhichPols, inmaskptr->coordinates());
+              Int inNstokes = (stokesAxis==-1? 1: inShape(stokesAxis) );
+              Int outStokesAxis = CoordinateUtil::findStokesAxis(outWhichPols, imstore->mask()->coordinates());
+              if (inNchan == 1 && outShape(outSpecAxis)>1) {
+                os << "Extending mask image: " << maskString << LogIO::POST;
+                expandMask(*inmaskptr, tempMaskImage);
+              }
+              else if(inNstokes == 1 && outShape(outStokesAxis) > 1 ) {
+                os << "Extending mask image along Stokes axis: " << maskString << LogIO::POST;
+                expandMask(*inmaskptr, tempMaskImage);
+              }
+              else {
+                os << "Copying mask image: " << maskString << LogIO::POST;
+                copyMask(*inmaskptr, tempMaskImage);
+              }
             }// end of readable table
             else {
               //
               std::unique_ptr<Record> myrec(nullptr);
               try {
-                myrec.reset(RegionManager::readImageFile(maskString,String("temprgrec")));
-                if (myrec!=0) {
-                  Bool ret(false);
-                  Matrix<Quantity> dummyqmat;
-                  Matrix<Float> dummyfmat;
-                  ret=SDMaskHandler::regionToImageMask(tempMaskImage, myrec.get(), dummyqmat, dummyfmat);
-                  if (!ret) cout<<"regionToImageMask failed..."<<endl;
-                    os << "Reading region record mask: " << maskString << LogIO::POST;
-
-                  //debug
-                  //PagedImage<Float> testtempim(tempMaskImage.shape(), tempMaskImage.coordinates(), "_testTempim");
-                  //ret=SDMaskHandler::regionToImageMask(testtempim, myrec, dummyqmat, dummyfmat);
-                  //if (!ret) cout<<"regionToImageMask 2nd failed..."<<endl;
+                if (!itsTooLongForFname) {
+                  myrec.reset(RegionManager::readImageFile(maskString,String("temprgrec")));
+                  if (myrec!=0) {
+                    Bool ret(false);
+                    Matrix<Quantity> dummyqmat;
+                    Matrix<Float> dummyfmat;
+                    ret=SDMaskHandler::regionToImageMask(tempMaskImage, myrec.get(), dummyqmat, dummyfmat);
+                    if (!ret) cout<<"regionToImageMask failed..."<<endl;
+                      os << "Reading region record mask: " << maskString << LogIO::POST;
+                  }
+                }
+                else {
+                    // skip to check the mask as a direct region text input
+                    throw(AipsError("Too long for filename. Try the string as a direct region text"));
                 }
               }
-              catch (...) {
+              catch (AipsError &x) {
                 try {
                   ImageRegion* imageRegion=0;
-                  os << "Reading text mask: " << maskString << LogIO::POST;
+                  os << LogIO::NORMAL3<< "Reading text mask: " << maskString << LogIO::POST;
                   SDMaskHandler::regionTextToImageRegion(maskString, tempMaskImage, imageRegion);
                   if (imageRegion!=0)
-                   SDMaskHandler::regionToMask(tempMaskImage,*imageRegion, Float(1.0));
+                    SDMaskHandler::regionToMask(tempMaskImage,*imageRegion, Float(1.0));
                 }
-                catch (...) {
+                catch (AipsError &x) {
                   os << LogIO::WARN << maskString << "is invalid mask. Skipping this mask..." << LogIO::POST;
                 }
               }
@@ -252,7 +250,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       
       //interpret maskString 
       if (maskString !="") {
-	if ( Table::isReadable(maskString) ) {
+        bool isTable(false);
+        Path testPath(maskString);
+        if (testPath.baseName() == maskString) { 
+            if (int(maskString.length()) > itsNAME_MAX)  
+                itsTooLongForFname=true;
+        }
+        if (!itsTooLongForFname) 
+          isTable = Table::isReadable(maskString);
+	//if (!itsTooLongForFname && Table::isReadable(maskString) ) {
+	if ( isTable ) {
 	  Table imtab = Table(maskString, Table::Old);
 	  Vector<String> colnames = imtab.tableDesc().columnNames();
 	  if ( colnames[0]=="map" ) {
@@ -273,7 +280,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  }// end of ''map''
 	}// end of readable table
 	else {
-	  //cout << maskString << " is not image..."<<endl;
 	  ImageRegion* imageRegion=0;
 	  SDMaskHandler::regionTextToImageRegion(maskString, *(imstore->mask()), imageRegion);
 	  if (imageRegion!=0)
@@ -492,11 +498,27 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      try {
        IPosition imshape = regionImage.shape();
        CoordinateSystem csys = regionImage.coordinates();
-       File fname(text); 
+       File fname; 
+       int maxFileName;
+       bool skipfnamecheck(false);
+       #ifdef NAME_MAX
+         maxFileName=NAME_MAX;
+       #else
+         maxFileName=255;
+       #endif
+
+       Path testPath(text);
+       if (testPath.baseName() == text) {
+           if (int(text.length()) > maxFileName) 
+              // could be direct region text 
+              skipfnamecheck=true;
+       }
+       fname=text; 
        Record* imageRegRec=0;
        Record myrec;
+
        //Record imageRegRec;
-       if (fname.exists() && fname.isRegular()) {
+       if (!skipfnamecheck && fname.exists() && fname.isRegular()) {
          RegionTextList  CRTFList(text, csys, imshape);
          myrec = CRTFList.regionAsRecord();
        }
@@ -578,6 +600,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       SPCIIF templateim(new TempImage<Float>(outshape,outcsys, memoryToUse()));
       Record* dummyrec = 0;
       //ImageRegridder regridder(tempim, outfilename, templateim, axes, dummyrec, "", true, outshape);
+      //TTDEBUG
       ImageRegridder<Float> regridder(tempim, "", templateim, axes, dummyrec, "", true, outshape);
       regridder.setMethod(Interpolate2D::LINEAR);
       SPIIF retim = regridder.regrid();
