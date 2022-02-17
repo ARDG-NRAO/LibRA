@@ -239,11 +239,11 @@ void REFHogbomCleanImageSkyModelmsgput(Int *npol, Int* /*pol*/, Int* iter, Int* 
     Int newNy = shp[1];
     Int npol = 1;
     
-
+    // Fortran indexes at 1
     Int fxbeg=xbeg+1;
-    Int fxend=xend;
+    Int fxend=xend+1;
     Int fybeg=ybeg+1;
-    Int fyend=yend;
+    Int fyend=yend+1;
     
     Int domaskI = 1;
     
