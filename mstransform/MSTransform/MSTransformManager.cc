@@ -22,6 +22,8 @@
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
+#include <tables/Tables/TableUtil.h>
+
 #include <mstransform/TVI/PolAverageTVI.h>
 #include <mstransform/TVI/PointingInterpolationTVI.h>
 #include <mstransform/TVI/SDAtmosphereCorrectionTVI.h>
@@ -91,7 +93,7 @@ MSTransformManager::~MSTransformManager()
 	// This has to be done after deleting the outputMS data handler
 	if (userBufferMode_p)
 	{
-		Table::deleteTable(outMsName_p,true);
+		TableUtil::deleteTable(outMsName_p,true);
 	}
 
 	return;
