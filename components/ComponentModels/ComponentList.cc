@@ -277,6 +277,10 @@ uInt ComponentList::nelements() const {
   return itsNelements;
 }
 
+uInt ComponentList::size() const {
+  return itsNelements;
+}
+
 void ComponentList::deselect(const Vector<Int>& indexes) {
   for (uInt i = 0; i < indexes.nelements(); i++) {
     AlwaysAssert(indexes(i) < Int(nelements()), AipsError);

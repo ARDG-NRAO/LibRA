@@ -244,19 +244,20 @@ void SkyCompRep::sample(Cube<Double>& samples, const Unit& reqUnit,
   itsShapePtr->sample(dirScales, directions, dirRef,
  		      pixelLatSize, pixelLongSize);
 
-  Vector<Vector<Double> > freqIQUV(nFreqSamples);
-  freqIQUV.set(fluxVal);
+  Matrix<Double> freqIQUV(nFreqSamples, 4);
+  for (uInt i=0; i<nFreqSamples; ++i) {
+    freqIQUV.row(i) = fluxVal.copy();
+  }
 
   //itsSpectrumPtr->sample(freqScales, frequencies, freqRef);
   itsSpectrumPtr->sampleStokes(freqIQUV, frequencies, freqRef); 
-  for (uInt d = 0; d < nDirSamples; d++) {
+  for (uInt d=0; d<nDirSamples; ++d) {
 	  const Double thisDirScale = dirScales(d);
 	  if (thisDirScale != 0) {
-		  for (uInt f = 0; f < nFreqSamples; f++) {
-		    //const Double thisScale = thisDirScale* freqScales(f);
-		    for (uInt stok=0; stok <4; ++stok){
-		      samples(stok, d, f) += thisDirScale * freqIQUV(f)(stok);
-		    }
+		  for (uInt f=0; f<nFreqSamples; ++f) {
+		        for (uInt stok=0; stok <4; ++stok){
+		            samples(stok, d, f) += thisDirScale * freqIQUV(f, stok);
+		        }
 		  }
 	  }
   }
@@ -293,10 +294,10 @@ void SkyCompRep::visibility(Cube<DComplex>& visibilities,
   }
     */
 
-  Vector<Vector<Double> >fIQUV(frequencies.nelements());
-  fIQUV.set(iquv);
-  Vector<MVFrequency> mvFreq(frequencies.nelements());
+  Matrix<Double> fIQUV(frequencies.size(), 4);
+  Vector<MVFrequency> mvFreq(frequencies.size());
   for (uInt f = 0; f < nFreq; f++) {
+    fIQUV.row(f) = iquv.copy();
     mvFreq(f)=MVFrequency(frequencies(f));
   }
   
@@ -313,7 +314,7 @@ void SkyCompRep::visibility(Cube<DComplex>& visibilities,
   itsSpectrumPtr->sampleStokes(fIQUV, mvFreq, measRef);
   Vector<Flux<Double> > stokesFlux(nFreq);
   for (uInt f=0; f < nFreq; ++f){
-    stokesFlux(f)=Flux<Double>(fIQUV(f));
+    stokesFlux(f) = Flux<Double>(fIQUV.row(f));
     stokesFlux(f).convertPol(itsFlux.pol());
   }
   Matrix<DComplex> scales(nVis, nFreq);

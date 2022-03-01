@@ -271,49 +271,57 @@ void TabularSpectrum::sample(Vector<Double>& scale,
 
 }
 
-  void TabularSpectrum::sampleStokes(Vector<Vector<Double> >& retvals, 
-			   const Vector<MFrequency::MVType>& frequencies, 
-			   const MFrequency::Ref& refFrame) const {
-  const uInt nSamples = frequencies.nelements();
-  retvals.resize(nSamples);
-
-  for (uInt i = 0; i < nSamples; i++){ 
-    retvals(i).resize(4);
-    retvals(i).set(0.0);
-  }
-  MFrequency::Convert toThisFrame(refFrame, freqRef_p);
-  Vector<Double> nu(frequencies.nelements());
-  //try frame conversion only if it is not something stupid...
-  //if it is then assume the frequencies are fine as is.
-  Bool stupidTransform = (refFrame.getType() == MFrequency::REST) ||  (refFrame.getType() == MFrequency::N_Types) || (freqRef_p.getType() == MFrequency::REST) ||  (freqRef_p.getType() == MFrequency::N_Types);
-  if ((refFrame.getType() != freqRef_p.getType()) && !stupidTransform) {
-    for(uInt k=0; k < nSamples; ++k){
-      nu(k) = toThisFrame(frequencies(k).getValue()).getValue().getValue();
+void TabularSpectrum::sampleStokes(
+    Matrix<Double>& retvals, const Vector<MFrequency::MVType>& frequencies, 
+    const MFrequency::Ref& refFrame
+) const {
+    ThrowIf(
+        retvals.shape() != IPosition(2, frequencies.size(), 4),
+        "Incorrect Matrix shape"
+    );
+    const auto nSamples = frequencies.nelements();
+    retvals.set(0.0);
+    MFrequency::Convert toThisFrame(refFrame, freqRef_p);
+    Vector<Double> nu(frequencies.nelements());
+    //try frame conversion only if it is not something stupid...
+    //if it is then assume the frequencies are fine as is.
+    Bool stupidTransform = (
+        refFrame.getType() == MFrequency::REST)
+        ||  (refFrame.getType() == MFrequency::N_Types)
+        || (freqRef_p.getType() == MFrequency::REST)
+        ||  (freqRef_p.getType() == MFrequency::N_Types
+    );
+    if ((refFrame.getType() != freqRef_p.getType()) && !stupidTransform) {
+        for(uInt k=0; k < nSamples; ++k){
+            nu(k) = toThisFrame(frequencies(k).getValue()).getValue().getValue();
+        }
     }
-  } else {
-    for(uInt k=0; k< nSamples; ++k){
-      nu(k) = frequencies(k).getValue();
+    else {
+        for(uInt k=0; k<nSamples; ++k) {
+            nu(k) = frequencies(k).getValue();
+        }
     }
-  }
-  /*  Vector<Double> xout(1, referenceFreq_p);
-  Vector<Double> refVal(1,0.0);
-  InterpolateArray1D<Double, Double>::interpolate(refVal, xout, tabFreqVal_p, ival_p, InterpolateArray1D<Double, Double>::linear);
-  scale.resize(nSamples);
-  */
-  Vector<Double> scaleone(nSamples);
-  Vector<Vector<Double> > iquv(4);
-  iquv[0].reference(ival_p);
-  iquv[1].reference(qval_p);
-  iquv[2].reference(uval_p);
-  iquv[3].reference(vval_p);
-  for (uInt k=0; k < 4; ++k){
-    InterpolateArray1D<Double, Double>::interpolate(scaleone, nu, tabFreqVal_p, iquv[k], InterpolateArray1D<Double, Double>::linear);
-    for (uInt i = 0; i < nSamples; ++i){
-	 retvals(i)(k) = scaleone(i);  
+    /*  Vector<Double> xout(1, referenceFreq_p);
+    Vector<Double> refVal(1,0.0);
+    InterpolateArray1D<Double, Double>::interpolate(refVal, xout, tabFreqVal_p, ival_p, InterpolateArray1D<Double, Double>::linear);
+    scale.resize(nSamples);
+    */
+    Vector<Double> scaleone(nSamples);
+    Vector<Vector<Double> > iquv(4);
+    iquv[0].reference(ival_p);
+    iquv[1].reference(qval_p);
+    iquv[2].reference(uval_p);
+    iquv[3].reference(vval_p);
+    for (uInt k=0; k<4; ++k){
+        InterpolateArray1D<Double, Double>::interpolate(
+            scaleone, nu, tabFreqVal_p, iquv[k],
+            InterpolateArray1D<Double, Double>::linear
+        );
+        for (uInt i=0; i<nSamples; ++i) {
+	        retvals(i, k) = scaleone[i];  
+        }
     }
-  }
 }
-
 
 SpectralModel* TabularSpectrum::clone() const {
   DebugAssert(ok(), AipsError);
