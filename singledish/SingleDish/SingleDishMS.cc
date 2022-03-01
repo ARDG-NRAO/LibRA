@@ -1598,7 +1598,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             if ((bltype != BaselineType_kSinusoid) || (!applyfft) || wn_ulimit_by_rejwn()) {
               context = bl_contexts[ctx_indices[idx]];
             }
-            func3(context, num_chan, blparam_eff, num_coeff, spec_data, mask_data, &rms);
+            func3(context, num_chan, blparam_eff, num_coeff, spec_data, mask_data, mask2_data, &rms);
           }
           // set back a spectrum to data cube
           if (do_subtract) {
@@ -1940,11 +1940,11 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractPolynomialFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, float *rms){
+                         size_t const /*num_coeff*/, float *spec, bool *mask, bool *mask2, float *rms){
                        status = LIBSAKURA_SYMBOL(LSQFitPolynomialFloat)(
                          context, static_cast<uint16_t>(order_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         order_vect[0] + 1, nullptr, nullptr, spec, mask, rms, &bl_status);
+                         order_vect[0] + 1, nullptr, nullptr, spec, mask2, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitPolynomialFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -2043,11 +2043,11 @@ void SingleDishMS::subtractBaselineCspline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractCubicSplineFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, float *rms) {
+                         size_t const /*num_coeff*/, float *spec, bool *mask, bool *mask2, float *rms) {
                        status = LIBSAKURA_SYMBOL(LSQFitCubicSplineFloat)(
                          context, static_cast<uint16_t>(npiece_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         nullptr, nullptr, spec, mask, rms, boundary_data, &bl_status);
+                         nullptr, nullptr, spec, mask2, rms, boundary_data, &bl_status);
                        check_sakura_status("sakura_LSQFitCubicSplineFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -2171,12 +2171,12 @@ void SingleDishMS::subtractBaselineSinusoid(string const& in_column_name,
                      },
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context0,
                          size_t const num_chan, std::vector<size_t> const &nwave,
-                         size_t const num_coeff, float *spec, bool *mask, float *rms) {
+                         size_t const num_coeff, float *spec, bool *mask, bool *mask2, float *rms) {
                        prepare_context(context0, num_chan, nwave);
                        status = LIBSAKURA_SYMBOL(LSQFitSinusoidFloat)(
                          context, nwave.size(), &nwave[0],
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         num_coeff, nullptr, nullptr, spec, mask, rms, &bl_status);
+                         num_coeff, nullptr, nullptr, spec, mask2, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitSinusoidFloat", status);
                        check_baseline_status(bl_status);
                        clear_context();
@@ -3152,7 +3152,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 num_coeff, nullptr, nullptr, spec_data,
-                mask_data, &rms, &bl_status);
+                mask2_data, &rms, &bl_status);
               subtract_funcname = "sakura_LSQFitPolynomialFloat";
               break;
             case BaselineType_kCubicSpline:
@@ -3161,7 +3161,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 nullptr, nullptr, spec_data,
-                mask_data, &rms, boundary_data, &bl_status);
+                mask2_data, &rms, boundary_data, &bl_status);
               subtract_funcname = "sakura_LSQFitCubicSplineFloat";
               break;
             default:
