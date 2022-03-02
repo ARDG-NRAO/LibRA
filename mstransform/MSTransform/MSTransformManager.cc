@@ -154,13 +154,11 @@ void MSTransformManager::initialize()
 	nChan_p = -1;									// -1 means use all the input channels
 	velocityType_p = String("radio");				// When mode is velocity options are: optical, radio
 
-	// Phase shifting paramters
-	phaseShifting_p = false;
-	dx_p = 0;
-	dy_p = 0;
-
+	// Phase shifting parameters
 	// CAS-12706 To run phase shift via a TVI which has
 	// support for shifting across large offset/angles
+	dx_p = 0;
+	dy_p = 0;
 	tviphaseshift_p = False;
 	tviphaseshiftConfig_p = Record();
 
@@ -319,14 +317,13 @@ void MSTransformManager::configure(Record &configuration)
 	parseFreqTransParams(configuration);
 	parseChanAvgParams(configuration);
 	parseRefFrameTransParams(configuration);
-	parsePhaseShiftParams(configuration);
 	parseTimeAvgParams(configuration);
 	parseCalParams(configuration);
 	parseUVContSubParams(configuration);
 	setSpwAvg(configuration);
 	parsePolAvgParams(configuration);
 	parsePointingsInterpolationParams(configuration);
-	parsePhaseShiftSubParams(configuration);
+	parsePhaseShiftParams(configuration);
 	parseAtmCorrectionParams(configuration);
 
 	return;
@@ -1013,39 +1010,10 @@ void MSTransformManager::parseFreqSpecParams(Record &configuration)
 // -----------------------------------------------------------------------
 // Method to parse the phase shifting specification
 // -----------------------------------------------------------------------
-void MSTransformManager::parsePhaseShiftParams(Record &configuration)
-{
-	int exists = -1;
-
-	exists = -1;
-	exists = configuration.fieldNumber ("XpcOffset");
-	if (exists >= 0)
-	{
-		configuration.get (exists, dx_p);
-	}
-
-	exists = -1;
-	exists = configuration.fieldNumber ("YpcOffset");
-	if (exists >= 0)
-	{
-		configuration.get (exists, dy_p);
-	}
-
-	if (abs(dx_p) > 0 or abs(dy_p) > 0)
-	{
-		phaseShifting_p = true;
-		logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
-					<< "Phase shifting is activated: dx="<< dx_p << " dy=" << dy_p << LogIO::POST;
-	}
-
-	return;
-}
-
-// -----------------------------------------------------------------------
 // CAS-12706 To run phase shift via a TVI which has
 // support for shifting across large offset/angles
 // -----------------------------------------------------------------------
-void MSTransformManager::parsePhaseShiftSubParams(Record &configuration)
+void MSTransformManager::parsePhaseShiftParams(Record &configuration)
 {
 	int exists = -1;
 
@@ -5622,10 +5590,6 @@ void MSTransformManager::generateIterator()
 			timeAvgOptions_p |= vi::AveragingOptions::BaselineDependentAveraging;
 		}
 
-		if (phaseShifting_p)
-		{
-			timeAvgOptions_p |= vi::AveragingOptions::phaseShifting;
-		}
 		timeavgParams = std::make_shared<vi::AveragingParameters>
                     (timeBin_p, .0, vi::SortColumns(sortColumns_p, false),
                      timeAvgOptions_p, maxuvwdistance_p, nullptr, isWritable, dx_p, dy_p);
@@ -5650,20 +5614,20 @@ void MSTransformManager::generateIterator()
 		TVIFactoryIdx++;
 
 		// Time avg. layer
-		vi::AveragingVi2LayerFactory *timeAverageTVIFactory = NULL;
+		std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
 		if (timeAverage_p)
 		{
-			timeAverageTVIFactory = new vi::AveragingVi2LayerFactory(*timeavgParams);
-			TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory;
+			timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+			TVIFactories[TVIFactoryIdx]=timeAverageTVIFactory.get();
 			TVIFactoryIdx++;
 		}
 
 		// UVContSub layer
-		vi::UVContSubTVILayerFactory *uvContSubTVIFactory = NULL;
+		std::unique_ptr<vi::UVContSubTVILayerFactory> uvContSubTVIFactory;
 		if (uvcontsub_p)
 		{
-			uvContSubTVIFactory = new vi::UVContSubTVILayerFactory (uvcontsubRec_p);
-			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory;
+			uvContSubTVIFactory.reset(new vi::UVContSubTVILayerFactory (uvcontsubRec_p));
+			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory.get();
 			TVIFactoryIdx++;
 		}
 
@@ -5671,9 +5635,6 @@ void MSTransformManager::generateIterator()
 
 		logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
 				<< "TVI chain is " << visibilityIterator_p->ViiType() << LogIO::POST;
-
-		if (timeAverageTVIFactory) delete timeAverageTVIFactory;
-		if (uvContSubTVIFactory) delete uvContSubTVIFactory;
 	}
 	else if (calibrate_p || scalarAverage_p)
 	{
@@ -5681,33 +5642,33 @@ void MSTransformManager::generateIterator()
 		{
 			// Isolate iteration parameters
 			vi::IteratingParameters iterpar;
-            if (scalarAverage_p)
-                iterpar = vi::IteratingParameters(timeBin_p,vi::SortColumns(sortColumns_p, false));
-            else
-			    iterpar = vi::IteratingParameters(0,vi::SortColumns(sortColumns_p, false));
+			if (scalarAverage_p)
+				iterpar = vi::IteratingParameters(timeBin_p,vi::SortColumns(sortColumns_p, false));
+			else
+				iterpar = vi::IteratingParameters(0,vi::SortColumns(sortColumns_p, false));
 
 			// By callib String
-	        if (callib_p.length() > 0)
-	        {
-	    		logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
-	    					<< "OTF calibration activated, using calibration file spec to generate iterator"
-	    					<< LogIO::POST;
+			if (callib_p.length() > 0)
+			{
+				logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
+					<< "OTF calibration activated, using calibration file spec to generate iterator"
+					<< LogIO::POST;
 
 				visibilityIterator_p = new vi::VisibilityIterator2(vi::LayeredVi2Factory(selectedInputMs_p, &iterpar,callib_p, timeavgParams.get()));
 			}
-	        // By callib Record
-	        else if (callibRec_p.nfields() > 0)
-	        {
-	    		logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
-	    					<< "OTF calibration activated, using calibration record spec to generate iterator"
-	    					<< LogIO::POST;
+			// By callib Record
+			else if (callibRec_p.nfields() > 0)
+			{
+				logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
+					<< "OTF calibration activated, using calibration record spec to generate iterator"
+					<< LogIO::POST;
 
 				visibilityIterator_p = new vi::VisibilityIterator2(vi::LayeredVi2Factory(selectedInputMs_p, &iterpar,callibRec_p, timeavgParams.get()));
 			}
-            else // scalar
-            {
+			else // scalar
+			{
 				visibilityIterator_p = new vi::VisibilityIterator2(vi::LayeredVi2Factory(selectedInputMs_p, &iterpar));
-            }
+			}
 		}
 		catch (MSSelectionError x)
 		{
@@ -5717,26 +5678,26 @@ void MSTransformManager::generateIterator()
 			checkDataColumnsToFill();
 
 			// Averaging VI
-			if (timeAverage_p)
+			if (timeAverage_p && !tviphaseshift_p)
 			{
 				visibilityIterator_p = new vi::VisibilityIterator2(vi::AveragingVi2Factory(*timeavgParams, selectedInputMs_p));
 			}
 			// Polarization Averaging VI
 			else if (polAverage_p) {
-			  visibilityIterator_p = new vi::VisibilityIterator2(vi::PolAverageVi2Factory(polAverageConfig_p, selectedInputMs_p,
-			      vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
+				visibilityIterator_p = new vi::VisibilityIterator2(vi::PolAverageVi2Factory(polAverageConfig_p, selectedInputMs_p,
+					vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
 			}
 			// Pointings Interpolator VI
 			else if (pointingsInterpolation_p) {
-			  visibilityIterator_p = new vi::VisibilityIterator2(vi::PointingInterpolationVi2Factory(pointingsInterpolationConfig_p, selectedInputMs_p,
-			      vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
+				visibilityIterator_p = new vi::VisibilityIterator2(vi::PointingInterpolationVi2Factory(pointingsInterpolationConfig_p, selectedInputMs_p,
+					vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
 			}
 			// CAS-12706 To run phase shift via a TVI which has
 			// support for shifting across large offset/angles
 			else if (tviphaseshift_p) {
 
 				// First determine number of layers
-				uInt nTVIs = 2;
+				uInt nTVIs = (timeAverage_p ? 3 : 2);
 
 				// Init vector of TVI factories and populate it
 				uInt TVIFactoryIdx = 0;
@@ -5745,14 +5706,19 @@ void MSTransformManager::generateIterator()
 				// Data layer
 				vi::IteratingParameters ipar(timeBin_p,vi::SortColumns(sortColumns_p, false));
 				vi::VisIterImpl2LayerFactory dataLayerTVIFactory(selectedInputMs_p,ipar,isWritable);
-				TVIFactories[TVIFactoryIdx]=&dataLayerTVIFactory;
-				TVIFactoryIdx++;
+				TVIFactories[TVIFactoryIdx++]=&dataLayerTVIFactory;
+
+				// Time avg. layer
+				std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
+				if (timeAverage_p)
+				{
+					timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+					TVIFactories[TVIFactoryIdx++]=timeAverageTVIFactory.get();
+				}
 
 				// Phaseshift layer
-				vi::PhaseShiftingTVILayerFactory *phaseShiftingTVILayerFactory = NULL;
-				phaseShiftingTVILayerFactory = new vi::PhaseShiftingTVILayerFactory (tviphaseshiftConfig_p);
-				TVIFactories[TVIFactoryIdx]=phaseShiftingTVILayerFactory;
-				TVIFactoryIdx++;
+				vi::PhaseShiftingTVILayerFactory phaseShiftingTVILayerFactory(tviphaseshiftConfig_p);
+				TVIFactories[TVIFactoryIdx]=&phaseShiftingTVILayerFactory;
 
 				visibilityIterator_p = new vi::VisibilityIterator2 (TVIFactories);
 			}
@@ -5765,33 +5731,33 @@ void MSTransformManager::generateIterator()
 		}
 		catch (AipsError x)
 		{
-    		logger_p 	<< LogIO::DEBUG1 << LogOrigin("MSTransformManager",__FUNCTION__)
-    					<< "Error initializing calibration VI: " << x.getMesg()
-    					<< LogIO::POST;
-    		throw(x);
+			logger_p << LogIO::DEBUG1 << LogOrigin("MSTransformManager",__FUNCTION__)
+				<< "Error initializing calibration VI: " << x.getMesg()
+				<< LogIO::POST;
+			throw(x);
 		}
 	}
 	// Averaging VI
-	else if (timeAverage_p)
+	else if (timeAverage_p && !tviphaseshift_p)
 	{
 		visibilityIterator_p = new vi::VisibilityIterator2(vi::AveragingVi2Factory(*timeavgParams, selectedInputMs_p));
 	}
 	// Polarization Averaging VI
 	else if (polAverage_p) {
 		visibilityIterator_p = new vi::VisibilityIterator2(vi::PolAverageVi2Factory(polAverageConfig_p, selectedInputMs_p,
-				vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
+			vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
 	}
 	// VI interpolating pointing directions
 	else if (pointingsInterpolation_p) {
 		visibilityIterator_p = new vi::VisibilityIterator2(vi::PointingInterpolationVi2Factory(pointingsInterpolationConfig_p, selectedInputMs_p,
-				vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
+			vi::SortColumns(sortColumns_p, false), timeBin_p, isWritable));
 	}
 	// CAS-12706 To run phase shift via a TVI which has
 	// support for shifting across large offset/angles
 	else if (tviphaseshift_p) {
 
 		// First determine number of layers
-		uInt nTVIs = 2;
+		uInt nTVIs = (timeAverage_p ? 3 : 2);
 
 		// Init vector of TVI factories and populate it
 		uInt TVIFactoryIdx = 0;
@@ -5800,17 +5766,21 @@ void MSTransformManager::generateIterator()
 		// Data layer
 		vi::IteratingParameters ipar(timeBin_p,vi::SortColumns(sortColumns_p, false));
 		vi::VisIterImpl2LayerFactory dataLayerTVIFactory(selectedInputMs_p,ipar,isWritable);
-		TVIFactories[TVIFactoryIdx]=&dataLayerTVIFactory;
-		TVIFactoryIdx++;
+		TVIFactories[TVIFactoryIdx++]=&dataLayerTVIFactory;
+
+		// Time avg. layer
+		std::unique_ptr<vi::AveragingVi2LayerFactory> timeAverageTVIFactory;
+		if (timeAverage_p)
+		{
+			timeAverageTVIFactory.reset(new vi::AveragingVi2LayerFactory(*timeavgParams));
+			TVIFactories[TVIFactoryIdx++]=timeAverageTVIFactory.get();
+		}
 
 		// Phaseshift layer
-		vi::PhaseShiftingTVILayerFactory *phaseShiftingTVILayerFactory = nullptr;
-		phaseShiftingTVILayerFactory = new vi::PhaseShiftingTVILayerFactory (tviphaseshiftConfig_p);
-		TVIFactories[TVIFactoryIdx]=phaseShiftingTVILayerFactory;
-		TVIFactoryIdx++;
+		vi::PhaseShiftingTVILayerFactory phaseShiftingTVILayerFactory(tviphaseshiftConfig_p);
+		TVIFactories[TVIFactoryIdx]=&phaseShiftingTVILayerFactory;
 
 		visibilityIterator_p = new vi::VisibilityIterator2 (TVIFactories);
-	// Offline ATM correction
     }
     // Offline ATM correction
 	else if (doAtmCor_p) {
@@ -6549,36 +6519,6 @@ template <class T> void MSTransformManager::mapAndScaleMatrix(	const Matrix<T> &
 // ----------------------------------------------------------------------------------------
 void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 {
-	// If phase Shifting is enabled and time avg. is not involved fill visCubes and then apply phaseShift
-	if (phaseShifting_p and not timeAverage_p)
-	{
-		for (dataColMap::iterator iter = dataColMap_p.begin();iter != dataColMap_p.end();iter++)
-		{
-			switch (iter->first)
-			{
-				case MS::DATA:
-				{
-					vb->visCube();
-				}
-				case MS::CORRECTED_DATA:
-				{
-					vb->visCubeCorrected();
-				}
-				case MS::MODEL_DATA:
-				{
-					vb->visCubeModel();
-				}
-				default:
-				{
-					vb->visCube();
-				}
-			}
-
-		}
-
-		vb->phaseCenterShift(dx_p,dy_p);
-	}
-
 	ArrayColumn<Bool> *outputFlagCol=NULL;
 	for (dataColMap::iterator iter = dataColMap_p.begin();iter != dataColMap_p.end();iter++)
 	{
