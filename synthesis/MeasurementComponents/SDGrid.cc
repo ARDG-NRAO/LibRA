@@ -1847,7 +1847,7 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
     // 6. Convert world position coordinates to image pixel coordinates
     #if defined(SDGRID_PERFS)
-    cDirectionPixel.start();
+    cComputeDirectionPixel.start();
     #endif
     Bool havePixel = directionCoord.toPixel(xyPos, worldPosMeas);
     #if defined(SDGRID_PERFS)
