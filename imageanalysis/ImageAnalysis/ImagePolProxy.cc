@@ -222,26 +222,27 @@ namespace casa { //# name space casa begins
   }
 
   
-  Bool ImagePol::complexlinpol(const String& outfile){
-    Bool rstat(false);
-    *itsLog << LogOrigin("imagepol", __FUNCTION__);
-    if(itsImPol==0){
-      *itsLog << LogIO::SEVERE <<"No attached image, please use open " 
-	      << LogIO::POST;
-      return rstat;
+Bool ImagePol::complexlinpol(const String& outfile) {
+    *itsLog << LogOrigin("ImagePolProxy", __FUNCTION__);
+    if (! itsImPol) {
+        *itsLog << LogIO::SEVERE <<"No attached image, please use open " 
+	        << LogIO::POST;
+        return false;
     }
 
     if (outfile.size() == 0) {
-      *itsLog << LogIO::WARN << "You must give an outfile" << LogIO::POST;
-      return rstat;
+        *itsLog << LogIO::WARN << "You must give an outfile" << LogIO::POST;
+        return false;
     }
-    ImageInterface<Complex>* pOutComplex = 0;
     CoordinateSystem cSysPol;
-    IPosition shapePol = itsImPol->singleStokesShape(cSysPol, Stokes::Plinear);
-    Bool isMasked=itsImPol->isMasked();
-    makeImage (pOutComplex, outfile, cSysPol, shapePol,
-	       isMasked, false);
-    ImageExpr<Complex> expr = itsImPol->complexLinearPolarization();
+    const auto shapePol = itsImPol->singleStokesShape(
+            cSysPol, Stokes::Plinear
+        );
+    const auto isMasked = itsImPol->isMasked();
+    auto pOutComplex = _makeImage(
+        outfile, cSysPol, shapePol, isMasked, false
+    );
+    auto expr = itsImPol->complexLinearPolarization();
     fiddleStokesCoordinate(*pOutComplex, Stokes::Plinear);
 
     // Copy to output
@@ -250,11 +251,8 @@ namespace casa { //# name space casa begins
     LatticeUtilities::copyDataAndMask(*itsLog, *pOutComplex, expr);
     auto p = itsImPol->imageInterface();
     copyMiscellaneous (*pOutComplex, *p);
-    delete pOutComplex;
-
-    rstat = true;
-    return rstat;
-  }
+    return true;
+}
   
   // Summary
   void ImagePol::summary() const {
@@ -417,7 +415,7 @@ namespace casa { //# name space casa begins
     ImageInterface<Complex>* pOutComplex = 0;
     CoordinateSystem cSysPol;
     IPosition shapePol = itsImPol->singleStokesShape(cSysPol, Stokes::Plinear);
-    makeImage (pOutComplex, outfile, cSysPol, shapePol,
+    _makeImage (pOutComplex, outfile, cSysPol, shapePol,
 	       itsImPol->isMasked(), false);
 
     // Make Expr
@@ -446,7 +444,7 @@ namespace casa { //# name space casa begins
     ImageInterface<Complex>* pOutComplex = 0;
     CoordinateSystem cSysPol;
     IPosition shapePol = itsImPol->singleStokesShape(cSysPol, Stokes::PFlinear);
-    makeImage (pOutComplex, outfile, cSysPol, shapePol,
+    _makeImage (pOutComplex, outfile, cSysPol, shapePol,
 	       itsImPol->isMasked(), false);
 
     std::unique_ptr<ImageInterface<Complex> > x(pOutComplex);
@@ -639,7 +637,7 @@ namespace casa { //# name space casa begins
     ImageInterface<Complex>* pOutComplex = 0;
     CoordinateSystem cSysPol;
     IPosition shapePol = itsImPol->singleStokesShape(cSysPol, Stokes::Plinear);
-    makeImage (pOutComplex, outfile, cSysPol, shapePol,
+    _makeImage (pOutComplex, outfile, cSysPol, shapePol,
 	       itsImPol->isMasked(), true);
 
     // Make output amplitude and position angle images
@@ -810,7 +808,7 @@ void ImagePol::rotationMeasure(
     ImageInterface<Complex>* pOutComplex = 0;
     CoordinateSystem cSysPol;
     IPosition shapePol = itsImPol->singleStokesShape(cSysPol, Stokes::I);
-    makeImage (pOutComplex, outfile, cSysPol, shapePol,
+    _makeImage (pOutComplex, outfile, cSysPol, shapePol,
 	       itsImPol->isMasked(), false);
 
     // Make Expression. Only limited Stokes types that make sense are allowed.
@@ -1029,50 +1027,63 @@ void ImagePol::rotationMeasure(
 
     return true;
   }
-  Bool ImagePol::makeImage(ImageInterface<Complex>*& out, 
-			   const String& outfile, const CoordinateSystem& cSys,
-			   const IPosition& shape, Bool isMasked,
-			   Bool tempAllowed){
 
-    // Verify outfile
-    if (outfile.empty()) {
-      if (!tempAllowed) return false;
-    }
-    //  else {
-    //  NewFile validfile;
-    //  String errmsg;
-    //  if (!validfile.valueOK(outfile, errmsg)) {
-    //	*itsLog << errmsg << LogIO::EXCEPTION;
-    //  }
-    //}
-
-    uInt ndim = shape.nelements();
+Bool ImagePol::_makeImage(
+    ImageInterface<Complex>*& out, const String& outfile,
+    const CoordinateSystem& cSys, const IPosition& shape, Bool isMasked,
+    Bool tempAllowed
+) {
+    const auto ndim = shape.nelements();
     if (ndim != cSys.nPixelAxes()) {
-      *itsLog << "Supplied CoordinateSystem and image shape are inconsistent"
-	      << LogIO::EXCEPTION;
+        *itsLog << "Supplied CoordinateSystem and image shape are inconsistent"
+	        << LogIO::EXCEPTION;
     }
     if (outfile.empty()) {
-       out = new TempImage<Complex>(shape, cSys);
-       if (out == 0) {
-          *itsLog << "Failed to create TempImage" << LogIO::EXCEPTION;
-       }
-       *itsLog << LogIO::NORMAL << "Creating (temp)image of shape "
-	       << out->shape() << LogIO::POST;
-    } else {
-       out = new PagedImage<Complex>(shape, cSys, outfile);
-       if (out == 0) {
-	 *itsLog << "Failed to create PagedImage" << LogIO::EXCEPTION;
-       }
-       *itsLog << LogIO::NORMAL << "Creating image '" << outfile
-	       << "' of shape " << out->shape() << LogIO::POST;
+        if (tempAllowed) {
+            out = new TempImage<Complex>(shape, cSys);
+            if (! out) {
+                *itsLog << "Failed to create TempImage" << LogIO::EXCEPTION;
+            }
+            *itsLog << LogIO::NORMAL << "Creating (temp)image of shape "
+	            << out->shape() << LogIO::POST;
+        }
+        else {
+            return false;
+        }
     }
-    //
+    else {
+        out = new PagedImage<Complex>(shape, cSys, outfile);
+        if (! out) {
+	        *itsLog << "Failed to create PagedImage" << LogIO::EXCEPTION;
+        }
+        *itsLog << LogIO::NORMAL << "Creating image '" << outfile
+	        << "' of shape " << out->shape() << LogIO::POST;
+    }
     if (isMasked) {
-      makeMask(*out, true);
+        makeMask(*out, true);
     }
-
     return true;
-  }
+}
+
+SPIIC ImagePol::_makeImage( 
+    const String& outfile, const CoordinateSystem& cSys,
+    const IPosition& shape, bool isMasked,
+    bool tempAllowed
+) {
+    ImageInterface<Complex>* out = NULL;
+    const auto res = _makeImage(
+        out, outfile, cSys, shape, isMasked, tempAllowed
+    );
+    if (res) {
+        return shared_ptr<ImageInterface<Complex>>(out);
+    }
+    else {
+        if (out) {
+            delete out;
+        }
+        return shared_ptr<ImageInterface<Complex>>();
+    }
+}
 
   void ImagePol::copyMiscellaneous (ImageInterface<Complex>& out,
 				    const ImageInterface<Float>& in)
