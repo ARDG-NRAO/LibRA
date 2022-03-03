@@ -29,6 +29,7 @@
 #include <tables/Tables/TableRecord.h>
 #include <tables/Tables/TableDesc.h>
 #include <tables/Tables/TableLock.h>
+#include <tables/Tables/TableUtil.h>
 #include <tables/TaQL/TableParse.h>
 #include <tables/Tables/ArrColDesc.h>
 #include <tables/DataMan/TiledShapeStMan.h>
@@ -2456,7 +2457,7 @@ Bool Calibrater::solve() {
       // If table exists (readable) and not deletable
       //   we have to abort (append=T requires deletable)
       if ( Table::isReadable(svc_p->calTableName()) &&
-	   !Table::canDeleteTable(svc_p->calTableName()) ) {
+	   !TableUtil::canDeleteTable(svc_p->calTableName()) ) {
 	throw(AipsError("Specified caltable ("+svc_p->calTableName()+") exists and\n cannot be replaced (or appended to) because it appears to be open somewhere (Quit plotcal?)."));
       }
     }
@@ -2604,11 +2605,11 @@ void Calibrater::fluxscale(const String& infile,
   try {
     // If infile is Calibration table
     if (Table::isReadable(infile) && 
-	Table::tableInfo(infile).type()=="Calibration") {
+	TableUtil::tableInfo(infile).type()=="Calibration") {
 
       // get calibration type
       String caltype;
-      caltype = Table::tableInfo(infile).subType();
+      caltype = TableUtil::tableInfo(infile).subType();
       logSink() << "Table " << infile 
 		<< " is of type: "<< caltype 
 		<< LogIO::POST;
@@ -4836,7 +4837,7 @@ Bool OldCalibrater::solve() {
       // If table exists (readable) and not deletable
       //   we have to abort (append=T requires deletable)
       if ( Table::isReadable(svc_p->calTableName()) &&
-	   !Table::canDeleteTable(svc_p->calTableName()) ) {
+	   !TableUtil::canDeleteTable(svc_p->calTableName()) ) {
 	throw(AipsError("Specified caltable ("+svc_p->calTableName()+") exists and\n cannot be replaced (or appended to) because it appears to be open somewhere (Quit plotcal?)."));
       }
     }
@@ -4954,11 +4955,11 @@ void OldCalibrater::fluxscale(const String& infile,
   try {
     // If infile is Calibration table
     if (Table::isReadable(infile) && 
-	Table::tableInfo(infile).type()=="Calibration") {
+	TableUtil::tableInfo(infile).type()=="Calibration") {
 
       // get calibration type
       String caltype;
-      caltype = Table::tableInfo(infile).subType();
+      caltype = TableUtil::tableInfo(infile).subType();
       logSink() << "Table " << infile 
 		<< " is of type: "<< caltype 
 		<< LogIO::POST;
