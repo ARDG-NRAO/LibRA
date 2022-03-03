@@ -41,21 +41,21 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 ROCTIter::ROCTIter(NewCalTable tab, const Block<String>& sortcol) :
   sortCols_(sortcol.begin( ),sortcol.end( )),
   singleSpw_(false),
-  iROCTCols_(nullptr),
-  ti_(nullptr),
-  inct_(nullptr),
-  iROCTMainCols_(nullptr),
+  parentNCT_(tab),
+  calCol_(NULL),
+  ti_(NULL),
+  inct_(NULL),
+  iROCTMainCols_(NULL),
   init_epoch_(false),
   init_uvw_(false)
 {
-  iROCTCols_ = new ROCTColumns(tab);
-
+  calCol_=new ROCTColumns(tab);
   ti_=new TableIterator(tab,sortcol);
   // Attach initial accessors:
   attach();
 
   // If SPW a sort column, then 
-  singleSpw_ = anyEQ(sortCols_,String("SPECTRAL_WINDOW_ID"));
+  singleSpw_=anyEQ(sortCols_,String("SPECTRAL_WINDOW_ID"));
 
   /*
   cout << "singleSpw_ = " << boolalpha << singleSpw_ << endl;
@@ -73,16 +73,11 @@ ROCTIter::ROCTIter(NewCalTable tab, const Block<String>& sortcol) :
 
 ROCTIter::~ROCTIter()
 {
-  if (ti_!=nullptr) delete ti_;
-  if (inct_!=nullptr) delete inct_;
-  if (iROCTMainCols_!=nullptr) delete iROCTMainCols_;
-  if (iROCTCols_!=nullptr) delete iROCTCols_;
+  if (calCol_!=NULL) delete calCol_;
+  if (ti_!=NULL) delete ti_;
+  if (iROCTMainCols_!=NULL) delete iROCTMainCols_;
+  if (inct_!=NULL) delete inct_;
 };
-
-void ROCTIter::reset() {
-  ti_->reset();
-  this->attach();
-}
 
 void ROCTIter::next() { 
   // Advance the TableIterator
@@ -90,7 +85,7 @@ void ROCTIter::next() {
 
   // attach accessors to new iteration
   this->attach();
-}
+};
 
 void ROCTIter::next0() { 
   // Advance the TableIterator
@@ -99,8 +94,8 @@ void ROCTIter::next0() {
 
 void ROCTIter::setCTColumns(const NewCalTable& tab) {
   // Set subtable columns from another table
-  delete iROCTCols_;
-  iROCTCols_ = new ROCTColumns(tab);
+  delete calCol_;
+  calCol_ = new ROCTColumns(tab);
 }
 
 Double ROCTIter::thisTime() const { return iROCTMainCols_->time()(0); };
@@ -161,23 +156,22 @@ Vector<Int> ROCTIter::chan() const {
 }
 
 Int ROCTIter::nchan() const {
-  if (singleSpw_) {
-    return iROCTCols_->spectralWindow().numChan()(this->thisSpw());
-  } else {
+  if (singleSpw_)
+    return calCol_->spectralWindow().numChan()(this->thisSpw());
+  else
     // more than one spw per iteration...
     throw(AipsError("Please sort by spw."));
-  }
 }
 
 void ROCTIter::chan(Vector<Int>& v) const {
   if (singleSpw_) {
-    v.resize(iROCTCols_->spectralWindow().numChan()(this->thisSpw()));
+    v.resize(calCol_->spectralWindow().numChan()(this->thisSpw()));
     // TBD: observe channel selection here:
     indgen(v);
-  } else {
+  }
+  else
     // more than one spw per iteration...
     throw(AipsError("Please sort by spw."));
-  }
 }
 
 Vector<Double> ROCTIter::freq() const {
@@ -189,15 +183,15 @@ Vector<Double> ROCTIter::freq() const {
 void ROCTIter::freq(Vector<Double>& v) const {
   if (singleSpw_) {
     v.resize();
-    iROCTCols_->spectralWindow().chanFreq().get(this->thisSpw(),v);
-  } else {
+    calCol_->spectralWindow().chanFreq().get(this->thisSpw(),v);
+  }
+  else
     // more than one spw per iteration...
     throw(AipsError("Please sort by spw."));
-  }
 }
 
 int ROCTIter::freqFrame(int spwId) const {
-  int frame = iROCTCols_->spectralWindow().measFreqRef()(spwId);
+  int frame = calCol_->spectralWindow().measFreqRef()(spwId);
   return frame;
 }
 
@@ -222,7 +216,7 @@ casacore::MDirection ROCTIter::azel0(casacore::Double time) {
   }
 
   casacore::MSDerivedValues msd;
-  msd.setAntennas(iROCTCols_->antenna());
+  msd.setAntennas(calCol_->antenna());
   msd.setFieldCenter(phaseCenter_);
 
   casacore::MDirection azel;
@@ -242,7 +236,7 @@ casacore::Double ROCTIter::hourang(casacore::Double time) {
   }
 
   casacore::MSDerivedValues msd;
-  msd.setAntennas(iROCTCols_->antenna());
+  msd.setAntennas(calCol_->antenna());
   msd.setFieldCenter(phaseCenter_);
 
   return vi::ViImplementation2::hourangCalculate(time, msd, epoch_);
@@ -260,7 +254,7 @@ casacore::Float ROCTIter::parang0(casacore::Double time) {
   }
 
   casacore::MSDerivedValues msd;
-  msd.setAntennas(iROCTCols_->antenna());
+  msd.setAntennas(calCol_->antenna());
   msd.setFieldCenter(phaseCenter_);
 
   return vi::ViImplementation2::parang0Calculate(time, msd, epoch_);
@@ -291,7 +285,7 @@ void ROCTIter::updatePhaseCenter() {
     throw(AipsError("cannot calculate this value with no valid timestamp or field ID."));
   }
 
-  phaseCenter_ = iROCTCols_->field().phaseDirMeas(thisField(), thisTime());
+  phaseCenter_ = calCol_->field().phaseDirMeas(thisField(), thisTime());
 }
 
 void ROCTIter::initEpoch() {
@@ -301,8 +295,8 @@ void ROCTIter::initEpoch() {
 
 void ROCTIter::initUVW() {
   // Calculate relative positions of antennas
-  nAnt_ = iROCTCols_->antenna().nrow();
-  auto antPosMeas = iROCTCols_->antenna().positionMeas();
+  nAnt_ = calCol_->antenna().nrow();
+  auto antPosMeas = calCol_->antenna().positionMeas();
   refAntPos_ = antPosMeas(0); // use first antenna for reference
   auto refAntPosValue = refAntPos_.getValue();
 
@@ -345,7 +339,7 @@ void ROCTIter::updateAntennaUVW() {
   // WSRT convention: phase opposite to VLA (l increases toward increasing RA)
   Int obsId = thisObs();
   if (obsId < 0) obsId = 0;
-  casacore::String telescope = iROCTCols_->observation().telescopeName()(obsId);
+  casacore::String telescope = calCol_->observation().telescopeName()(obsId);
   bool wsrtConvention = (telescope == "WSRT");
 
   antennaUVW_.resize(nAnt_);

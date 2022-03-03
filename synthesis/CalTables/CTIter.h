@@ -85,7 +85,7 @@ public:
   virtual ~ROCTIter();
   
   // Iteration operators
-  void reset();
+  inline void reset() { ti_->reset(); this->attach(); };
   inline casacore::Bool pastEnd() { return ti_->pastEnd(); };
   void next();
   void next0();
@@ -201,11 +201,11 @@ public:
   casacore::Bool singleSpw_;
 
   // The parent NewCalTable (casacore::Table) object
-  //   (stays in scope for the life of the CTIter)
+  // (stays in scope for the life of the CTIter)
   NewCalTable parentNCT_;
 
   // Access to subtables (e.g., for frequencies)
-  ROCTColumns* iROCTCols_;
+  ROCTColumns* calCol_;
 
   // The underlying TableIterator
   casacore::TableIterator *ti_;
