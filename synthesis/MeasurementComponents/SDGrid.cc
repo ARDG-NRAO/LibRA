@@ -274,6 +274,18 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 void SDGrid::init_perfs() {
 #if defined(SDGRID_PERFS)
   cNextChunk.set_name("iterator.next_chunk");
+  cMatchAllSpwChans.set_name("matchAllSpwChans");
+  cMatchChannel.set_name("matchChannel");
+  cPickWeights.set_name("pickWeights");
+  cInterpolateFrequencyToGrid.set_name("interpolateFrequencyToGrid");
+  cSearchValidPointing.set_name("searchValidPointing");
+  cComputeSplines.set_name("computeSplines");
+  cResetFrame.set_name("resetFrame");
+  cInterpolateDirection.set_name("interpolateDirection");
+  cConvertDirection.set_name("convertDirection");
+  cComputeDirectionPixel.set_name("computeDirectionPixel");
+  cHandleMovingSource.set_name("handleMovingSource");
+  cGridData.set_name("gridData");
 #endif
 }
 
@@ -498,6 +510,18 @@ void SDGrid::init() {
 void SDGrid::collect_perfs(const std::string& path){
   logIO() << LogIO::NORMAL << "Collecting perfs to file: " << LogIO::POST;
   cout << cNextChunk << endl;
+  cout << cMatchAllSpwChans << endl;
+  cout << cMatchChannel << endl;
+  cout << cPickWeights << endl;
+  cout << cInterpolateFrequencyToGrid << endl;
+  cout << cSearchValidPointing << endl;
+  cout << cComputeSplines << endl;
+  cout << cResetFrame << endl;
+  cout << cInterpolateDirection << endl;
+  cout << cConvertDirection << endl;
+  cout << cComputeDirectionPixel << endl;
+  cout << cHandleMovingSource << endl;
+  cout << cGridData << endl;
   
 }
 #endif
@@ -975,6 +999,9 @@ void SDGrid::put(const VisBuffer& vb, Int row, Bool dopsf,
 
     // Check if ms has changed then cache new spw and chan selection
     if (vb.newMS()) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cMatchAllSpwChans);
+        #endif
         matchAllSpwChans(vb);
         lastIndex_p = 0;
         if (lastIndexPerAnt_p.nelements() < (size_t)vb.numberAnt()) {
@@ -986,6 +1013,9 @@ void SDGrid::put(const VisBuffer& vb, Int row, Bool dopsf,
     // Here we redo the match or use previous match
     // Channel matching for the actual spectral window of buffer
     if (doConversion_p[vb.spectralWindow()]) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cMatchChannel);
+        #endif
         matchChannel(vb.spectralWindow(), vb);
     }
     else {
@@ -1008,7 +1038,12 @@ void SDGrid::put(const VisBuffer& vb, Int row, Bool dopsf,
     //Fortran gridder need the flag as ints
     Cube<Int> flags;
     Matrix<Float> elWeight;
-    interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
+    {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cInterpolateFrequencyToGrid);
+        #endif
+        interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
+    }
 
     Bool iswgtCopy;
     const Float *wgtStorage;
@@ -1050,6 +1085,9 @@ void SDGrid::put(const VisBuffer& vb, Int row, Bool dopsf,
             }
         }
         {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cGridData);
+            #endif
             Bool del;
             //      IPosition s(data.shape());
             const IPosition& fs=flags.shape();
@@ -1632,6 +1670,9 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     //       data of specified row was taken using that antenna
     Int pointingIndex = -1;
     if (havePointings) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cSearchValidPointing);
+        #endif
         // if (vb.newMS())  vb.newMS does not work well using msid
         // Note about above comment:
         // - vb.newMS probably works well
@@ -1690,6 +1731,9 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     // 3. Create interpolator if needed
     Bool dointerp = false;
     if (havePointings && needInterpolation) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cComputeSplines);
+        #endif
         dointerp = true;
         // Known points are the directions of the specified
         // POINTING table column, 
@@ -1738,6 +1782,9 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
             logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
         }
     } else {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cResetFrame);
+        #endif
         // Reset the frame
         // Always reset epoch
         mFrame_p.resetEpoch(rowEpoch);
@@ -1771,8 +1818,18 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     //    Then: convert the result to image's reference frame
     if (havePointings) {
         if (dointerp) {
+            #if defined(SDGRID_PERFS)
+            cInterpolateDirection.start();
+            #endif
             MDirection newdir = directionMeas(act_mspc, pointingIndex, rowTime);
+            #if defined(SDGRID_PERFS)
+            cInterpolateDirection.stop();
+            cConvertDirection.start();
+            #endif
             worldPosMeas = (*pointingToImage)(newdir);
+            #if defined(SDGRID_PERFS)
+            cConvertDirection.stop();
+            #endif
 
             // Debug stuff
             //Vector<Double> newdirv = newdir.getAngle("rad").getValue();
@@ -1789,7 +1846,13 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     }
 
     // 6. Convert world position coordinates to image pixel coordinates
+    #if defined(SDGRID_PERFS)
+    cDirectionPixel.start();
+    #endif
     Bool havePixel = directionCoord.toPixel(xyPos, worldPosMeas);
+    #if defined(SDGRID_PERFS)
+    cDirectionPixel.stop();
+    #endif
     if (not havePixel) {
         logIO_p << "Failed to find a pixel for pointing direction of "
             << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME) 
@@ -1806,6 +1869,9 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     }
 
     if (fixMovingSource_p) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cHandleMovingSource);
+        #endif
         if (xyPosMovingOrig_p.nelements() < 2) {
             directionCoord.toPixel(xyPosMovingOrig_p, firstMovingDir_p);
         }
@@ -1964,6 +2030,9 @@ MDirection SDGrid::interpolateDirectionMeas(const MSPointingColumns& mspc,
 }
 
 void SDGrid::pickWeights(const VisBuffer& vb, Matrix<Float>& weight){
+  #if defined(SDGRID_PERFS)
+  StartStop trigger(cPickWeights);
+  #endif
   //break reference
   weight.resize();
 

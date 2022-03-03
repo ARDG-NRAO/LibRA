@@ -383,6 +383,19 @@ private:
   void init_perfs();
 #if defined(SDGRID_PERFS)
   ChronoStat cNextChunk;
+  ChronoStat cMatchAllSpwChans;
+  ChronoStat cMatchChannel;
+  ChronoStat cPickWeights;
+  ChronoStat cInterpolateFrequencyToGrid;
+  ChronoStat cSearchValidPointing;
+  ChronoStat cComputeSplines;
+  ChronoStat cResetFrame;
+  ChronoStat cInterpolateDirection;
+  ChronoStat cConvertDirection;
+  ChronoStat cComputeDirectionPixel;
+  ChronoStat cHandleMovingSource;
+  ChronoStat cGridData;
+
   void collect_perfs(const std::string& path);
 #endif
 };
