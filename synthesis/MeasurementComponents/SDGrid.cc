@@ -1851,7 +1851,7 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     #endif
     Bool havePixel = directionCoord.toPixel(xyPos, worldPosMeas);
     #if defined(SDGRID_PERFS)
-    cDirectionPixel.stop();
+    cComputeDirectionPixel.stop();
     #endif
     if (not havePixel) {
         logIO_p << "Failed to find a pixel for pointing direction of "
