@@ -45,6 +45,7 @@
 #include <synthesis/CalTables/GJonesMBuf.h>
 #include <synthesis/CalTables/GJonesTable.h>
 #include <synthesis/CalTables/CalIter.h>
+#include <tables/Tables/TableUtil.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -1087,8 +1088,8 @@ void GJonesSpline::updateCalTable (const Vector<Int>& fieldIdKeys,
   calBuffer_p->timeMeas().set(MEpoch(MVEpoch(solTimeStamp_p/86400.0)));
 
   // Delete the output calibration table if it already exists
-  if (calTableName()!="" && Table::canDeleteTable(calTableName())) {
-    Table::deleteTable(calTableName());
+  if (calTableName()!="" && TableUtil::canDeleteTable(calTableName())) {
+    TableUtil::deleteTable(calTableName());
   };
 
   os << LogIO::NORMAL

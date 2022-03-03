@@ -49,7 +49,6 @@ class SkyCompRep;
 class ComponentShape;
 class SpectralModel;
 
-
 // <summary>Enumerators common to the ComponentsModels module</summary>
 
 // <use visibility=export>
@@ -133,6 +132,8 @@ public:
     SPECTRAL_INDEX,
     //Tabular values interpolated in between
     TABULAR_SPECTRUM,
+    // Power Logarithmic Polynomial
+    PLP,
     // an unknown spectral type
     UNKNOWN_SPECTRAL_SHAPE,
     // The number of spectral types in this enumerator
