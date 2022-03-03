@@ -1731,14 +1731,14 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     // 3. Create interpolator if needed
     Bool dointerp = false;
     if (havePointings && needInterpolation) {
-        #if defined(SDGRID_PERFS)
-        StartStop trigger(cComputeSplines);
-        #endif
         dointerp = true;
         // Known points are the directions of the specified
         // POINTING table column, 
         // relative to the reference frame of the POINTING table
         if (not isSplineInterpolationReady) {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cComputeSplines);
+            #endif
             interpolator = new SDPosInterpolator(vb, pointingDirCol_p);
             isSplineInterpolationReady = true;
         } else {
