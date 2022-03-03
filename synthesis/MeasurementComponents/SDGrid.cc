@@ -78,8 +78,122 @@
 #include <synthesis/TransformMachines/SkyJones.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 
+#if defined(SDGRID_PERFS)
+#include <iomanip>
+#include <exception>
+#include <sstream>
+#endif
+
 using namespace casacore;
 namespace casa {
+
+#if defined(SDGRID_PERFS)
+ChronoStat::ChronoStat(const string & name)
+    : name_ {name},
+      started_ {false},
+      n_laps_ {0},
+	  laps_sum_ {Duration::zero()},
+	  laps_min_ {Duration::max()},
+	  laps_max_ {Duration::min()},
+	  n_overflows_ {0},
+	  n_underflows_ {0}
+	  {}
+
+const std::string& ChronoStat::name() const {
+	return name_;
+}
+
+void ChronoStat::set_name(const std::string& name) {
+	name_ = name;
+}
+
+void ChronoStat::start() {
+	if (not started_) {
+		started_ = true;
+		++n_laps_;
+		lap_start_time_ = Clock::now();
+	} else {
+		++n_overflows_;
+	}
+}
+void ChronoStat::stop() {
+	if (started_) {
+		auto lap_duration = Clock::now() - lap_start_time_;
+		laps_sum_ += lap_duration;
+		started_ = false;
+		if (lap_duration < laps_min_) laps_min_ = lap_duration;
+		if (lap_duration > laps_max_) laps_max_ = lap_duration;
+	} else {
+		++n_underflows_;
+	}
+}
+
+ChronoStat::Duration ChronoStat::laps_sum() const {
+	return laps_sum_;
+}
+
+ChronoStat::Duration ChronoStat::laps_min() const {
+	return laps_min_;
+}
+
+ChronoStat::Duration ChronoStat::laps_max() const {
+	return laps_max_;
+}
+
+ChronoStat::Duration ChronoStat::laps_mean() const {
+	if (n_laps_ == 0) { 
+		stringstream msg;
+		msg << __FILE__ << ":" << __LINE__ 
+			<< ": instance: '" << name_ 
+			<< "': Cannot average an empty set of laps";
+		throw ChronoStatError(msg.str().c_str());
+	}
+	return laps_sum_ / n_laps_;
+}
+
+unsigned int ChronoStat::laps_count() const {
+	return n_laps_;
+}
+
+bool ChronoStat::is_empty() const {
+	return n_laps_ == 0;
+}
+
+unsigned int ChronoStat::n_overflows() const {
+	return n_overflows_;
+}
+
+unsigned int ChronoStat::n_underflows() const {
+	return n_underflows_;
+}
+
+std::ostream& operator<<(std::ostream &os, const ChronoStat &c) {
+	constexpr auto eol = '\n';
+	if (c.is_empty()) {
+		cerr << "WARN: ChronoStat instance named: '" << c.name() << "' is empty.";
+	} else {
+		os  << "name: " << c.name() << eol
+			<< "sum:        " << std::setw(20) << std::right << c.laps_sum().count() << eol
+			<< "count:      " << std::setw(20) << std::right << c.laps_count() << eol
+			<< "min:        " << std::setw(20) << std::right << c.laps_min().count() << eol
+			<< "mean:       " << std::setw(20) << std::right << c.laps_mean().count() << eol
+			<< "max:        " << std::setw(20) << std::right << c.laps_max().count() << eol
+			<< "overflows:  " << std::setw(20) << std::right << c.n_overflows() << eol
+			<< "underflows: " << std::setw(20) << std::right << c.n_underflows() << eol;
+	}
+	return os;
+}
+
+StartStop::StartStop(ChronoStat &c) 
+	: c_ {c} {
+		c_.start();
+}
+
+StartStop::~StartStop() {
+	c_.stop();
+}
+
+#endif
 
 SDGrid::SDGrid(SkyJones& sj, Int icachesize, Int itilesize,
 	       String iconvType, Int userSupport, Bool useImagingWeight)
@@ -92,6 +206,7 @@ SDGrid::SDGrid(SkyJones& sj, Int icachesize, Int itilesize,
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(false)
 {
   lastIndex_p=0;
+  init_perfs();
 }
 
 SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize,
@@ -106,6 +221,7 @@ SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  init_perfs();
 }
 
 SDGrid::SDGrid(Int icachesize, Int itilesize,
@@ -119,6 +235,7 @@ SDGrid::SDGrid(Int icachesize, Int itilesize,
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(false)
 {
   lastIndex_p=0;
+  init_perfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
@@ -134,6 +251,7 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  init_perfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
@@ -149,6 +267,14 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  init_perfs();
+}
+
+//----------------------------------------------------------------------
+void SDGrid::init_perfs() {
+#if defined(SDGRID_PERFS)
+  cNextChunk.set_name("iterator.next_chunk");
+#endif
 }
 
 
@@ -368,6 +494,14 @@ void SDGrid::init() {
 
 }
 
+#if defined(SDGRID_PERFS)
+void SDGrid::collect_perfs(const std::string& path){
+  logIO() << LogIO::NORMAL << "Collecting perfs to file: " << LogIO::POST;
+  cout << cNextChunk << endl;
+  
+}
+#endif
+
 // This is nasty, we should use CountedPointers here.
 SDGrid::~SDGrid() {
   //fclose(pfile);
@@ -377,6 +511,10 @@ SDGrid::~SDGrid() {
   if (wImageCache) delete wImageCache; wImageCache = 0;
   if (wArrayLattice) delete wArrayLattice; wArrayLattice = 0;
   if (interpolator) delete interpolator; interpolator = 0;
+
+#if defined(SDGRID_PERFS)
+  collect_perfs("perfs.txt");
+#endif
 }
 
 void SDGrid::findPBAsConvFunction(const ImageInterface<Complex>& image,
@@ -1269,7 +1407,15 @@ void SDGrid::makeImage(FTMachine::Type inType,
 
     initializeToSky(theImage,weight,vb);
     // Loop over the visibilities, putting VisBuffers
-    for (vi.originChunks(); vi.moreChunks(); vi.nextChunk()) {
+    for (vi.originChunks(); vi.moreChunks();
+#if defined(SDGRID_PERFS)
+        cNextChunk.start(),
+#endif
+                                              vi.nextChunk()
+#if defined(SDGRID_PERFS)
+        , cNextChunk.stop()
+#endif
+                                                              ) {
         abortOnPolFrameChange(imgPolRep,firstMsName,vi);
         FTMachine::Type actualType;
         Bool doPSF;

@@ -29,6 +29,13 @@
 #ifndef SYNTHESIS_SDGRID_H
 #define SYNTHESIS_SDGRID_H
 
+#define SDGRID_PERFS
+#if defined(SDGRID_PERFS) 
+#include <iostream>
+#include <string>
+#include <chrono>
+#endif
+
 #include <casa/Arrays/Array.h>
 #include <casa/Arrays/Matrix.h>
 #include <casa/Arrays/Vector.h>
@@ -116,6 +123,57 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 // <ul> Deal with large VLA spectral line case 
 // </todo>
 
+#if defined(SDGRID_PERFS)
+class ChronoStat {
+public:
+    using Clock = std::chrono::steady_clock;
+    using Duration = Clock::duration;
+    using TimePoint = Clock::time_point;
+
+    ChronoStat(const std::string & name = "");
+    const std::string& name() const;
+    void set_name(const std::string& name);
+    void start();
+    void stop();
+    bool is_empty() const;
+    Duration laps_sum() const;
+    Duration laps_min() const;
+    Duration laps_max() const;
+    Duration laps_mean() const;
+    unsigned int laps_count() const;
+    unsigned int n_overflows() const;
+    unsigned int n_underflows() const;
+
+private:
+    std::string name_;
+    bool started_;
+    unsigned int n_laps_;
+    unsigned int n_overflows_;
+    unsigned int n_underflows_;
+
+    TimePoint lap_start_time_;
+    Duration laps_sum_;
+    Duration laps_min_;
+    Duration laps_max_;
+    
+};
+
+class ChronoStatError: public std::domain_error {
+public:
+    using std::domain_error::domain_error;
+};
+
+std::ostream& operator<<(std::ostream &os, const ChronoStat &c);
+
+class StartStop {
+public:
+    StartStop(ChronoStat &c);
+    ~StartStop();
+private:
+    ChronoStat& c_;
+};
+
+#endif
 class SDGrid : public FTMachine {
 public:
 
@@ -321,6 +379,12 @@ private:
   //FILE *pfile;
 
   void dumpConvolutionFunction(const casacore::String &outfile, const casacore::Vector<casacore::Float> &f) const;
+
+  void init_perfs();
+#if defined(SDGRID_PERFS)
+  ChronoStat cNextChunk;
+  void collect_perfs(const std::string& path);
+#endif
 };
 
 } //# NAMESPACE CASA - END
