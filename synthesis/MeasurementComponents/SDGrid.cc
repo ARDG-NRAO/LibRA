@@ -177,7 +177,7 @@ std::ostream& operator<<(std::ostream &os, const ChronoStat &c) {
 			<< "sum:        " << std::setw(20) << std::right << c.laps_sum().count() << eol
 			<< "count:      " << std::setw(20) << std::right << c.laps_count() << eol
 			<< "min:        " << std::setw(20) << std::right << c.laps_min().count() << eol
-			<< "mean:       " << ( empty ? 0 : std::setw(20) << std::right << c.laps_mean().count()) << eol
+			<< "mean:       " << std::setw(20) << std::right << ( empty ? 0 : c.laps_mean().count()) << eol
 			<< "max:        " << std::setw(20) << std::right << c.laps_max().count() << eol
 			<< "overflows:  " << std::setw(20) << std::right << c.n_overflows() << eol
 			<< "underflows: " << std::setw(20) << std::right << c.n_underflows() << eol;
