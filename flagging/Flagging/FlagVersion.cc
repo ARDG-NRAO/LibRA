@@ -32,6 +32,7 @@
 #include <casacore/tables/Tables/ScaColDesc.h>
 #include <casacore/tables/Tables/ArrColDesc.h>
 #include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/TableUtil.h>
 #include <casacore/tables/DataMan/TiledShapeStMan.h>
 #include <casacore/tables/DataMan/DataManError.h>
 #include <casacore/casa/IO/ArrayIO.h>
@@ -493,9 +494,8 @@ Bool FlagVersion::deleteFlagVersion( String versionname )
                  fnname, clname, LogMessage::WARN);
 
             String tabvername = flagtablename_p + versionname;
-            Table tb;
-            if(tb.canDeleteTable(tabvername))
-               tb.deleteTable(tabvername);
+            if(TableUtil::canDeleteTable(tabvername))
+               TableUtil::deleteTable(tabvername);
          }
          else listfile << commentlist_p[i] << endl; 
       }

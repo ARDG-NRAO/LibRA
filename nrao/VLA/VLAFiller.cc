@@ -94,6 +94,7 @@
 #include <tables/Tables/TableDesc.h>
 #include <tables/Tables/TableInfo.h>
 #include <tables/Tables/TableRecord.h>
+#include <tables/Tables/TableUtil.h>
 #include <tables/DataMan/TiledDataStMan.h>
 #include <tables/DataMan/TiledShapeStMan.h>
 #include <casa/Utilities/Assert.h>
@@ -1704,7 +1705,7 @@ openMS(const Path& tableName, const Bool readonly) {
  		    msName + "."));
   }
   {
-    const TableInfo info = Table::tableInfo(msName);
+    const TableInfo info = TableUtil::tableInfo(msName);
     if (info.type() != TableInfo::type(TableInfo::MEASUREMENTSET)) {
       throw(AipsError(String("VLAFiller::openMS(...) - the table ") + 
  		      msName + String(" is not a measurement set.")));
