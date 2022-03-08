@@ -1917,7 +1917,7 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         float *spec, bool *mask, size_t const /*num_coeff*/, double *coeff,
+                         float *spec, bool const *mask, size_t const /*num_coeff*/, double *coeff,
                          bool *mask_after_clipping, float *rms){
                        status = LIBSAKURA_SYMBOL(LSQFitPolynomialFloat)(
                          context, static_cast<uint16_t>(order_vect[0]),
@@ -1940,7 +1940,7 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractPolynomialFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, bool *mask_after_clipping, float *rms){
+                         size_t const /*num_coeff*/, float *spec, bool const *mask, bool *mask_after_clipping, float *rms){
                        status = LIBSAKURA_SYMBOL(LSQFitPolynomialFloat)(
                          context, static_cast<uint16_t>(order_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
@@ -2014,7 +2014,7 @@ void SingleDishMS::subtractBaselineCspline(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         float *spec, bool *mask, size_t const /*num_coeff*/, double *coeff,
+                         float *spec, bool const *mask, size_t const /*num_coeff*/, double *coeff,
                          bool *mask_after_clipping, float *rms) {
                        status = LIBSAKURA_SYMBOL(LSQFitCubicSplineFloat)(
                          context, static_cast<uint16_t>(npiece_vect[0]),
@@ -2043,7 +2043,7 @@ void SingleDishMS::subtractBaselineCspline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractCubicSplineFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, bool *mask_after_clipping, float *rms) {
+                         size_t const /*num_coeff*/, float *spec, bool const *mask, bool *mask_after_clipping, float *rms) {
                        status = LIBSAKURA_SYMBOL(LSQFitCubicSplineFloat)(
                          context, static_cast<uint16_t>(npiece_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
@@ -2143,7 +2143,7 @@ void SingleDishMS::subtractBaselineSinusoid(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context0,
                          size_t const num_chan, std::vector<size_t> const &nwave,
-                         float *spec, bool *mask, size_t const num_coeff, double *coeff,
+                         float *spec, bool const *mask, size_t const num_coeff, double *coeff,
                          bool *mask_after_clipping, float *rms) {
                        prepare_context(context0, num_chan, nwave);
                        status = LIBSAKURA_SYMBOL(LSQFitSinusoidFloat)(
@@ -2171,7 +2171,7 @@ void SingleDishMS::subtractBaselineSinusoid(string const& in_column_name,
                      },
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context0,
                          size_t const num_chan, std::vector<size_t> const &nwave,
-                         size_t const num_coeff, float *spec, bool *mask, bool *mask_after_clipping, float *rms) {
+                         size_t const num_coeff, float *spec, bool const *mask, bool *mask_after_clipping, float *rms) {
                        prepare_context(context0, num_chan, nwave);
                        status = LIBSAKURA_SYMBOL(LSQFitSinusoidFloat)(
                          context, nwave.size(), &nwave[0],
