@@ -1606,7 +1606,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           }
 
           if (update_weight) {
-            compute_weight(num_chan, spec_data, mask_data, weight);
+            compute_weight(num_chan, spec_data, mask_after_clipping_data, weight);
             set_weight_to_matrix(weight_matrix, irow, ipol, weight.at(var_index));
           }
 
