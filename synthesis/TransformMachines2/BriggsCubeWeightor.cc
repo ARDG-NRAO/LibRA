@@ -36,6 +36,7 @@
 #include <tables/Tables/ArrColDesc.h>
 #include <tables/Tables/ScalarColumn.h>
 #include <tables/Tables/ArrayColumn.h>
+#include <tables/Tables/TableUtil.h>
 #include <tables/DataMan/StManAipsIO.h>
 #include <tables/DataMan/IncrementalStMan.h>
 #include <tables/DataMan/TiledShapeStMan.h>
@@ -152,7 +153,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	//cerr << "STRING " << oss.str() << endl;;
 	imWgtColName_p=makeScratchImagingWeightTable(wgtTab_p, oss.str());
 	if(wgtTab_p->nrow()==nrows){
-	  //cerr << "REUSING " << endl;
+	  //cerr << "REUSING "<< wgtTab_p << endl;
 	  return imWgtColName_p;
 	}
 	else{
@@ -160,7 +161,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 	  wgtTab_p->removeRow(wgtTab_p->rowNumbers());
 
 	}
-	//cerr << "CREATING " << endl;
+	//cerr << "CREATING "<< wgtTab_p << endl;
 	vbrowms2wgtrow_p.clear();
 	if(fieldsToUse.size()==0)
 		fieldsToUse.push_back(make_pair(Int(-1),Int(-1)));
@@ -242,7 +243,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
       ft_p[0]->modifyConvFunc(convFunc, superUniformBox_p, 1);
       for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
         for (vi.origin(); vi.more(); vi.next()) {
-          //cerr << "key and index "<< key << "   " << index << "   " << multiFieldMap_p[key] << endl; 
+          //cerr << "key and index "<< key << "   " << index << "   " << multiFieldMap_p[key] << endl;
           if((vb->fieldId()[0] == fieldsToUse[k].second &&  vb->msId()== fieldsToUse[k].first) || fieldsToUse[k].first==-1){
             ft_p[0]->put(*vb, -1, true, FTMachine::PSF);
           }
@@ -338,7 +339,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
       }
 		//myfile.close();
 		
-            
+           
     }
   
 	 ////Lets reset vi before returning 
@@ -466,12 +467,12 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
 
     //String wgtname=File::newUniqueName(".", "IMAGING_WEIGHT").absoluteName();
     String wgtname=Path("IMAGING_WEIGHT_"+filetag).absoluteName();
-    //cerr  << "NAME "  << wgtname  << endl;
     if(Table::isReadable(wgtname)){
       weightTable=new Table(wgtname, Table::Update);
       if(weightTable->nrow() >0)
 	return wgtname;
-
+      weightTable=nullptr;
+      TableUtil::deleteTable(wgtname, False);
     }
     
 	TableDesc td;

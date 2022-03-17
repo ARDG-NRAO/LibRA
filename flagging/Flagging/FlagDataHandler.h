@@ -780,7 +780,7 @@ private:
 // // step in order to avoid unnecessary I/O activity when a chunk is not eligible for flagging
 // // or the auto-flagging algorithms don't produce any flags.
 //
-// // If any row was flag, then we have to flush the flagRow
+// // If any row was flagged, then we have to flush the flagRow
 // if (flagRow_p) flagDataHandler_p->flushFlagRow_p = true;
 // // If any flag was raised, then we have to flush the flagCube
 // if (visBufferFlags_p>0) flagDataHandler_p->flushFlags_p = true;
@@ -822,18 +822,18 @@ public:
 	virtual ~FlagDataHandler();
 
 	// Common casacore::MS/CalTables public interface
-	virtual bool open() {return false;}
-	virtual bool close() {return false;}
-	virtual bool selectData() {return false;}
-	virtual bool generateIterator() {return false;}
-	virtual bool nextChunk() {return false;}
-	virtual bool nextBuffer() {return false;}
-	virtual bool flushFlags() {return false;}
-	virtual casacore::String getTableName() {return casacore::String("none");}
-	virtual bool parseExpression(casacore::MSSelection &/*parser*/) {return true;}
-	virtual bool checkIfColumnExists(casacore::String /*column*/) {return true;}
+	virtual bool open() = 0;
+	virtual bool close() = 0;
+	virtual bool selectData() = 0;
+	virtual bool generateIterator() = 0;
+	virtual bool nextChunk() = 0;
+	virtual bool nextBuffer() = 0;
+	virtual bool flushFlags() = 0;
+	virtual casacore::String getTableName() = 0;
+	virtual bool parseExpression(casacore::MSSelection &/*parser*/) = 0;
+	virtual bool checkIfColumnExists(casacore::String /*column*/) = 0;
 	virtual bool checkIfSourceModelColumnExists() {return false;}
-	virtual bool summarySignal() {return true;}
+	virtual bool summarySignal() = 0;
 
 	// Set the iteration approach
 	void setIterationApproach(casacore::uShort iterationApproach);
@@ -910,7 +910,9 @@ public:
 	// FlagDataHanler-FlagAgents interaction
 	bool flushFlags_p;
 	bool flushFlagRow_p;
+        // per-chunk flag count
 	casacore::uInt64 chunkCounts_p;
+        // cummulative counter throughout chunks (flagged so far)
 	casacore::uInt64 progressCounts_p;
 	casacore::uInt64 msCounts_p;
 	bool printChunkSummary_p;

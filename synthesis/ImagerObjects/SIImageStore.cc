@@ -50,6 +50,7 @@
 #include <lattices/LatticeMath/LatticeMathUtil.h>
 #include <ms/MeasurementSets/MSHistoryHandler.h>
 #include <ms/MeasurementSets/MeasurementSet.h>
+#include <tables/Tables/TableUtil.h>
 
 #include <synthesis/ImagerObjects/SIImageStore.h>
 #include <synthesis/ImagerObjects/SDMaskHandler.h>
@@ -3463,7 +3464,7 @@ void SIImageStore::regridToModelImage( ImageInterface<Float> &inputimage, Int te
           compliantImage->copyData(subim);
 			
         }
-        Table::deleteTable(ComplexImageName);
+        TableUtil::deleteTable(ComplexImageName);
         compliantImage->rename(ComplexImageName);
         return True;
 		

@@ -201,6 +201,7 @@ public:
 
   // Set the 'blocking' size for returning data.
   virtual void setRowBlocking (casacore::rownr_t) override { SSVi2NotPossible() };
+  virtual casacore::rownr_t getRowBlocking() const { SSVi2NotPossible() };
   
   virtual casacore::Bool existsColumn (VisBufferComponent2 id) const override;
   

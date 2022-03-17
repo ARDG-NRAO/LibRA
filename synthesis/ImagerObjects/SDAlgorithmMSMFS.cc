@@ -213,7 +213,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
 
     iterdone = itsMTCleaner.mtclean( cycleNiter, 0.0, loopgain, cycleThreshold );
-    if( iterdone>0 ) iterdone--; // To counter the return(iterdone_p+1) in the mtclean func!
 
     if( iterdone==-2 ) throw(AipsError("MT-Cleaner error : Non-invertible Hessian. Please check if the multi-frequency data selection is appropriate for a polynomial fit of the desired order."));
 

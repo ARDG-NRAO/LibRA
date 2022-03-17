@@ -1999,6 +1999,12 @@ VisibilityIteratorImpl2::setRowBlocking(rownr_t nRow)
 	pendingChanges_p->setNRowBlocking(nRow);
 }
 
+rownr_t
+VisibilityIteratorImpl2::getRowBlocking() const
+{
+	return nRowBlocking_p;
+}
+
 const MDirection &
 VisibilityIteratorImpl2::phaseCenter() const
 {
