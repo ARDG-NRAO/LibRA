@@ -663,7 +663,12 @@ void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
 
   for (uInt i = 0; i < num_chan; ++i) {
     if (mask[i]) {
-      if ((i == 0) || (i == num_chan - 1)) {
+      if (i == 0) {
+        mlist.push_back(i);
+      }	else if (i == num_chan - 1) {
+        if ((mask[i]) && (!mask[i - 1])) {
+          mlist.push_back(i);
+        }
         mlist.push_back(i);
       } else {
         if ((mask[i]) && (!mask[i - 1])) {
@@ -673,6 +678,13 @@ void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
           mlist.push_back(i);
         }
       }
+    }
+  }
+
+  bool mask_prev = mask[0];
+  for (uInt i = 0; i < num_chan; ++i) {
+    if (mask[i] != mask_prev) {
+      mask_prev = mask[i];
     }
   }
 
@@ -2313,8 +2325,10 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
           bool apply;
           std::vector<float> bl_coeff;
           std::vector<double> bl_boundary;
+          std::vector<bool> mask_bltable;
           BLParameterSet fit_param;
-          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, bl_coeff, bl_boundary, fit_param);
+          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, bl_coeff, bl_boundary,
+                                      mask_bltable, fit_param);
           if (!apply) {
             flag_spectrum_in_cube(flag_chunk, irow, ipol); //flag
             continue;
@@ -2382,9 +2396,9 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
 
           if (update_weight) {
             // convert flag to mask by taking logical NOT of flag
-            // and then operate logical AND with in_mask
+            // and then operate logical AND with in_mask and with mask from bltable
             for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-              mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+              mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan])) && mask_bltable[ichan];
             }
             compute_weight(num_chan, spec_data, mask_data, weight);
             set_weight_to_matrix(weight_matrix, irow, ipol, weight.at(var_index));

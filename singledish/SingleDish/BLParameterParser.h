@@ -189,6 +189,7 @@ class BLTableParser : public BLParameterParser {
   void GetFitParameterByIdx(size_t const idx, size_t const ipol, 
 			    bool &apply, std::vector<float> &coeff, 
 			    std::vector<double> &boundary, 
+                            std::vector<bool> &masklist,
 			    BLParameterSet &bl_param);
  private:
   void initialize();

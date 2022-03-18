@@ -448,6 +448,7 @@ bool BLTableParser::GetFitParameterIdx(double const time, double const interval,
 void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol, 
 					 bool &apply, std::vector<float> &coeff, 
 					 std::vector<double> &boundary, 
+                                         std::vector<bool> &masklist,
 					 BLParameterSet &bl_param)
 {
   apply = bt_->getApply(idx, ipol);
@@ -481,6 +482,7 @@ void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol,
   default:
     throw(AipsError("Unsupported baseline type."));
   }
+  masklist = bt_->getMask(idx, ipol);
 }
 
 
