@@ -301,6 +301,22 @@ class Calibrater
   // Re-initialize the calibration scratch columns
   virtual casacore::Bool initCalSet(const casacore::Int& /*calSet*/)  { throw(casacore::AipsError("Calibrater::initCalSet not implemented")); };;
 
+  // Display the state in a dictionary
+  casacore::Record returndict();
+  // Get all selected spws
+  casacore::Vector<casacore::Int> getSelectedSpws();
+  // Get all selected intents
+  casacore::Vector<casacore::String> getSelectedIntents();
+  // Get all apply tables
+  casacore::Vector<casacore::String> getApplyTables();
+  // Get solve table
+  casacore::Vector<casacore::String> getSolveTable();
+  // Get parameters from visibility iterator
+  casacore::Bool getIteratorSelection(casacore::Vector<casacore::Int>*,
+    casacore::Vector<casacore::Int>*, casacore::Vector<casacore::Int>*,
+    casacore::Vector<casacore::Int>*);
+  // Convert set to casa vector
+  casacore::Vector<casacore::Int> convertSetToVector(const set<casacore::Int>);
   // Report apply/solve state
   casacore::Bool state();
   casacore::Bool applystate();
