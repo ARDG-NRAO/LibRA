@@ -434,14 +434,16 @@ AnnotationBase::Type RegionTextParser::_getAnnotationType(
         }
         break;
     case AnnotationBase::POLYGON:
+        // Polygon definitions can be very long with many points.
+        // Testing entire polygon string syntax causes regex seg fault.
         ThrowIf(
-            ! consumeMe.contains(startNPair),
-            preamble + "Illegal polygon specification " + consumeMe
+            ! (
+               consumeMe.contains(Regex("^ *\\[ *\\["))
+               && consumeMe.contains(Regex("\\] *\\]"))
+            ), preamble + "Illegal polygon specification " + consumeMe
         );
         {
-            Vector<Quantity> qs = _extractNQuantityPairs(
-                consumeMe, preamble
-            );
+            Vector<Quantity> qs = _extractNQuantityPairs(consumeMe, preamble);
             qDirs.resize(qs.size());
             qDirs = qs;
         }
@@ -1214,22 +1216,31 @@ Vector<Quantity> RegionTextParser::_extractTwoQuantityPairs(
 Vector<Quantity> RegionTextParser::_extractNQuantityPairs (
         String& consumeMe, const String& preamble
 ) const {
-    String pairs = consumeMe.through(startNPair);
+    String pairs = consumeMe.through(Regex("\\] *\\]"));
+    String nPairs(pairs);
     consumeMe.del(0, (Int)pairs.length() + 1);
     pairs.trim();
     // remove the left most [
     pairs.del(0, 1);
     pairs.trim();
     Vector<Quantity> qs(0);
-    while (pairs.length() > 1) {
-        std::pair<Quantity, Quantity> myqs = _extractSingleQuantityPair(pairs, preamble);
-        qs.resize(qs.size() + 2, true);
-        qs[qs.size() - 2] = myqs.first;
-        qs[qs.size() - 1] = myqs.second;
-        pairs.del(0, (Int)pairs.find(']', 0) + 1);
-        pairs.trim();
-        pairs.ltrim(',');
-        pairs.trim();
+
+    try {
+        while (pairs.length() > 1) {
+            std::pair<Quantity, Quantity> myqs = _extractSingleQuantityPair(pairs, preamble);
+            qs.resize(qs.size() + 2, true);
+            qs[qs.size() - 2] = myqs.first;
+            qs[qs.size() - 1] = myqs.second;
+            pairs.del(0, (Int)pairs.find(']', 0) + 1);
+            pairs.trim();
+            pairs.ltrim(',');
+            pairs.trim();
+        }
+    }
+    catch (const AipsError&) {
+        ThrowCc(
+            preamble + "Illegal polygon specification " + nPairs
+        );
     }
     return qs;
 }
