@@ -163,7 +163,7 @@ public:
                       const casacore::MFrequency::Ref& refFrame) const;
  
   //original values are returned
-  virtual void sampleStokes(casacore::Vector<casacore::Vector<casacore::Double> >& scale,
+  virtual void sampleStokes(casacore::Matrix<casacore::Double>& scale,
                       const casacore::Vector<casacore::MFrequency::MVType>& frequencies, 
 			    const casacore::MFrequency::Ref& refFrame) const;
   // Return a pointer to a copy of this object upcast to a SpectralModel

@@ -36,6 +36,7 @@
 #include <tables/Tables/ArrColDesc.h>
 #include <tables/Tables/ScalarColumn.h>
 #include <tables/Tables/ArrayColumn.h>
+#include <tables/Tables/TableUtil.h>
 #include <tables/DataMan/StManAipsIO.h>
 #include <tables/DataMan/IncrementalStMan.h>
 #include <tables/DataMan/TiledShapeStMan.h>
@@ -471,7 +472,7 @@ String BriggsCubeWeightor::initImgWeightCol(vi::VisibilityIterator2& vi,
       if(weightTable->nrow() >0)
 	return wgtname;
       weightTable=nullptr;
-      Table::deleteTable(wgtname, False);
+      TableUtil::deleteTable(wgtname, False);
     }
     
 	TableDesc td;

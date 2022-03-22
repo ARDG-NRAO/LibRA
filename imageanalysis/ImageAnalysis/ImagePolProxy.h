@@ -179,10 +179,21 @@ class ImagePol
   void fiddleStokesCoordinate(casacore::ImageInterface<casacore::Complex>& ie,
 			      casacore::Stokes::StokesTypes type);
   // Make a casacore::PagedImage or casacore::TempImage output
-  casacore::Bool makeImage (casacore::ImageInterface<casacore::Complex>*& out, 
-		  const casacore::String& outfile, const casacore::CoordinateSystem& cSys,
-		  const casacore::IPosition& shape, casacore::Bool isMasked=false,
-		  casacore::Bool tempAllowed=true);
+bool _makeImage (
+    casacore::ImageInterface<casacore::Complex>*& out, 
+    const casacore::String& outfile, const casacore::CoordinateSystem& cSys,
+    const casacore::IPosition& shape, bool isMasked=false,
+    bool tempAllowed=true
+);
+
+// This version of _makeImage should be preferred since it wraps the output
+// pointer in a smart pointer
+SPIIC _makeImage ( 
+    const casacore::String& outfile, const casacore::CoordinateSystem& cSys,
+    const casacore::IPosition& shape, bool isMasked=false,
+    bool tempAllowed=true
+);
+
   casacore::Bool makeImage (casacore::ImageInterface<casacore::Float>*& out, 
 		  const casacore::String& outfile, const casacore::CoordinateSystem& cSys,
 		  const casacore::IPosition& shape, casacore::Bool isMasked=false,

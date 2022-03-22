@@ -83,15 +83,13 @@ void ConstantSpectrum::sample(Vector<Double>& scale,
   scale = 1.0;
 }
 
-  void ConstantSpectrum::sampleStokes(Vector<Vector<Double> >& iquv, 
-			      const Vector<MFrequency::MVType>& freq, 
-			      const MFrequency::Ref&) const {
-  DebugAssert(ok(), AipsError);
-  if(freq.nelements() != iquv.nelements()){
-    throw(AipsError("ConstSpectrum: frequency length does not match stokes val"));
-  }
-  
+void ConstantSpectrum::sampleStokes(
+    Matrix<Double>& iquv, const Vector<MFrequency::MVType>& freq, 
+    const MFrequency::Ref&
+) const {
+    ThrowIf(iquv.shape() != IPosition(2, freq.size(), 4), "Incorrect Matrix shape");
 }
+
 SpectralModel* ConstantSpectrum::clone() const {
   DebugAssert(ok(), AipsError);
   SpectralModel* tmpPtr = new ConstantSpectrum(*this);

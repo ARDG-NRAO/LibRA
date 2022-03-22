@@ -35,6 +35,7 @@
 
 #include <tables/Tables/Table.h>
 #include <tables/Tables/TableIter.h>
+#include <tables/Tables/TableUtil.h>
 #include <tables/TaQL/ExprNode.h>
 
 #include <casa/Arrays/ArrayMath.h>
@@ -136,8 +137,8 @@ void EGainCurve::setApply(const Record& applypar) {
 
     // Delete the temporary gaincurve disk table (in-mem copy still ok)
     if (calTableName()==tempname &&
-	Table::canDeleteTable(calTableName()) ) {
-      Table::deleteTable(calTableName());
+	TableUtil::canDeleteTable(calTableName()) ) {
+      TableUtil::deleteTable(calTableName());
     }
 
     // Revise name that will appear in log messages, etc.

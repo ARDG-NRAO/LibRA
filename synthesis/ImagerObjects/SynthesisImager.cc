@@ -55,6 +55,7 @@
 #include <ms/MeasurementSets/MeasurementSet.h>
 #include <ms/MSSel/MSSelection.h>
 
+#include <tables/Tables/TableUtil.h>
 
 #if ! defined(CASATOOLS)
 #include <synthesis/ImagerObjects/SIIterBot.h>
@@ -1022,7 +1023,7 @@ bool SynthesisImager::unlockImages()
       //cerr <<"Trying to cleanup " << (*it) << endl;
       if(Table::isReadable(*it)){
 	try{
-	  Table::deleteTable(*it);
+	  TableUtil::deleteTable(*it);
 	 }
 	 catch(AipsError &x){
 	   os << LogIO::WARN<< "YOU may have to delete the temporary file " << *it << " because " << x.getMesg()  << LogIO::POST;
@@ -2077,7 +2078,11 @@ bool SynthesisImager::unlockImages()
 	kpb=PBMath::VLA;
       }
       else{
-	os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n Please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.)" << LogIO::POST;
+	//os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n Please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.)" << LogIO::POST;
+	os << LogIO::WARN << "vpmanager does not have a beam for antenna : "+telescop <<".\n If needed, please use the vpanager to define one (and optionally save its state as a table and supply its name via the vptable parameter.). \n For now, we will proceed by reading dish diameters from the ANTENNA subtable, and form Airy disk beams." << LogIO::POST;
+	kpb=PBMath::UNKNOWN;
+	rec.define("name","COMMONPB");
+	rec.define("commonpb","NONE");
       }
     }
     

@@ -32,6 +32,7 @@
 #include <components/ComponentModels/LimbDarkenedDiskShape.h>
 #include <components/ComponentModels/GaussianShape.h>
 #include <components/ComponentModels/PointShape.h>
+#include <components/ComponentModels/PowerLogPoly.h>
 #include <components/ComponentModels/SpectralIndex.h>
 #include <components/ComponentModels/SpectralModel.h>
 #include <components/ComponentModels/TabularSpectrum.h>
@@ -59,17 +60,20 @@ construct(ComponentType::Shape shapeEnum) {
   };
 }
 
-SpectralModel* ComponentType::
-construct(ComponentType::SpectralShape spectralEnum) {
+SpectralModel* ComponentType::construct(
+  ComponentType::SpectralShape spectralEnum
+) {
   switch (spectralEnum) {
-  case ComponentType::CONSTANT_SPECTRUM: 
-    return new ConstantSpectrum;
-  case ComponentType::SPECTRAL_INDEX:
-    return new SpectralIndex;
-  case ComponentType::TABULAR_SPECTRUM:
-    return new TabularSpectrum;
-  default:
-    return reinterpret_cast<SpectralModel*>(0);
+    case ComponentType::CONSTANT_SPECTRUM: 
+      return new ConstantSpectrum;
+    case ComponentType::SPECTRAL_INDEX:
+     return new SpectralIndex;
+    case ComponentType::TABULAR_SPECTRUM:
+      return new TabularSpectrum;
+    case ComponentType::PLP:
+      return new PowerLogPoly;
+    default:
+      return reinterpret_cast<SpectralModel*>(0);
   };
 }
 // Local Variables: 
