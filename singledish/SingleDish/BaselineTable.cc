@@ -298,11 +298,8 @@ std::vector<bool> BaselineTable::getMaskFromMaskList(uInt const nchan, Vector<uI
     throw(AipsError("masklist must have even number of elements."));
   }
 
-  std::vector<bool> res((int)nchan);
+  std::vector<bool> res((int)nchan, false);
 
-  for (int i = 0; i < (int)nchan; ++i) {
-    res[i] = false;
-  }
   for (uInt j = 0; j < masklist.size(); j += 2) {
     for (int i = masklist[j]; i <= min((Int)nchan-1, (Int)masklist[j+1]); ++i) {
       res[i] = true;
