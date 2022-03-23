@@ -658,39 +658,35 @@ void SingleDishMS::get_mask_from_rec(Int spwid,
 void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
                                           bool const *mask,
                                           Vector<uInt> &masklist) {
-  std::vector<int> mlist;
-  mlist.clear();
+  masklist.resize();  // clear
+  uInt num_masklist = 0;
+
+  auto append = [&](uInt i){
+    masklist.resize(num_masklist+1, true);
+    masklist[num_masklist] = i;
+    num_masklist++;
+  };
 
   for (uInt i = 0; i < num_chan; ++i) {
     if (mask[i]) {
       if (i == 0) {
-        mlist.push_back(i);
+        append(i);
       }	else if (i == num_chan - 1) {
         if ((mask[i]) && (!mask[i - 1])) {
-          mlist.push_back(i);
+          append(i);
         }
-        mlist.push_back(i);
+        append(i);
       } else {
-        if ((mask[i]) && (!mask[i - 1])) {
-          mlist.push_back(i);
+        // The following if-statements must be judged independently.
+        // Don't put them together as a single statement by connecting with '||'.
+        if (!mask[i - 1]) {
+          append(i);
         }
-        if ((mask[i]) && (!mask[i + 1])) {
-          mlist.push_back(i);
+        if (!mask[i + 1]) {
+          append(i);
         }
       }
     }
-  }
-
-  bool mask_prev = mask[0];
-  for (uInt i = 0; i < num_chan; ++i) {
-    if (mask[i] != mask_prev) {
-      mask_prev = mask[i];
-    }
-  }
-
-  masklist.resize(mlist.size());
-  for (size_t i = 0; i < masklist.size(); ++i) {
-    masklist[i] = (uInt) mlist[i];
   }
 }
 
