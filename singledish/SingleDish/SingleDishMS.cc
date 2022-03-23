@@ -659,34 +659,34 @@ void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
                                           bool const *mask,
                                           Vector<uInt> &masklist) {
   masklist.resize();  // clear
+  uInt last_idx = num_chan - 1;
   uInt num_masklist = 0;
-
   auto append = [&](uInt i){
     masklist.resize(num_masklist+1, true);
     masklist[num_masklist] = i;
     num_masklist++;
   };
 
-  for (uInt i = 0; i < num_chan; ++i) {
-    if (mask[i]) {
-      if (i == 0) {
-        append(i);
-      }	else if (i == num_chan - 1) {
-        if ((mask[i]) && (!mask[i - 1])) {
-          append(i);
-        }
-        append(i);
-      } else {
-        // The following if-statements must be judged independently.
-        // Don't put them together as a single statement by connecting with '||'.
-        if (!mask[i - 1]) {
-          append(i);
-        }
-        if (!mask[i + 1]) {
-          append(i);
-        }
-      }
+  if (mask[0]) {
+    append(0);
+  }
+  for (uInt i = 1; i < last_idx; ++i) {
+    if (!mask[i]) continue;
+
+    // The following if-statements must be judged independently.
+    // Don't put them together as a single statement by connecting with '||'.
+    if (!mask[i - 1]) {
+      append(i);
     }
+    if (!mask[i + 1]) {
+      append(i);
+    }
+  }
+  if (mask[last_idx]) {
+    if ((1 <= last_idx) && (!mask[last_idx - 1])) {
+      append(last_idx);
+    }
+    append(last_idx);
   }
 }
 
