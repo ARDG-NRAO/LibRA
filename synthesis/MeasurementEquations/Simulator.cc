@@ -26,53 +26,53 @@
 //# $Id: Simulator.cc,v 1.1.2.4 2006/10/06 21:03:19 kgolap Exp $
 
 #include <stdexcept>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
 
-#include <casa/Logging.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/File.h>
-#include <casa/Containers/Record.h>
-#include <casa/Containers/RecordInterface.h>
+#include <casacore/casa/Logging.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Containers/RecordInterface.h>
 
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/TaQL/ExprNode.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/TaQL/ExprNode.h>
 
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/Fallible.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Fallible.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisSetUtil.h>
 #include <synthesis/MeasurementComponents/VisCal.h>
 #include <synthesis/MeasurementComponents/VisCalGlobals.h>
-#include <ms/MSOper/NewMSSimulator.h>
+#include <casacore/ms/MSOper/NewMSSimulator.h>
 
-#include <measures/Measures/Stokes.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/Quanta/MVAngle.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <casa/Quanta/MVEpoch.h>
-#include <measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/casa/Quanta/MVEpoch.h>
+#include <casacore/measures/Measures/MEpoch.h>
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
-#include <ms/MSOper/MSSummary.h>
+#include <casacore/ms/MSOper/MSSummary.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
 #include <synthesis/MeasurementComponents/ImageSkyModel.h>
 #include <synthesis/MeasurementComponents/SimACohCalc.h>
@@ -80,7 +80,7 @@
 //#include <synthesis/MeasurementComponents/SimVisJones.h>
 #include <synthesis/TransformMachines/VPSkyJones.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
-#include <lattices/LEL/LatticeExpr.h> 
+#include <casacore/lattices/LEL/LatticeExpr.h> 
 
 #include <synthesis/MeasurementEquations/Simulator.h>
 #include <synthesis/MeasurementComponents/CleanImageSkyModel.h>
@@ -91,13 +91,13 @@
 #include <synthesis/MeasurementEquations/VPManager.h>
 #include <synthesis/TransformMachines/HetArrayConvFunc.h> //2016
 #include <synthesis/TransformMachines/SimpleComponentFTMachine.h>
-#include <casa/OS/HostInfo.h>
-#include <images/Images/PagedImage.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/sstream.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <sstream>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

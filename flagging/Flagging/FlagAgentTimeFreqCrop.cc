@@ -23,10 +23,10 @@
 #include <flagging/Flagging/FlagAgentTimeFreqCrop.h>
 
 // Polynomial-fitting classes
-#include <scimath/Functionals/Polynomial.h>
-#include <scimath/Fitting.h>
-#include <scimath/Fitting/LinearFit.h>
-#include <scimath/Fitting/GenericL2Fit.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Fitting.h>
+#include <casacore/scimath/Fitting/LinearFit.h>
+#include <casacore/scimath/Fitting/GenericL2Fit.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

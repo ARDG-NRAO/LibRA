@@ -25,7 +25,7 @@
 //#
 //# $Id$
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 #include <synthesis/Parallel/Applicator.h>
 #include <synthesis/Parallel/MPITransport.h>

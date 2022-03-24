@@ -6,8 +6,8 @@
  */
 
 #include <msvis/MSVis/PhaseShiftTvi.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 using namespace casacore;
 namespace casa {

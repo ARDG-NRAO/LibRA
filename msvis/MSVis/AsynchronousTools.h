@@ -8,9 +8,9 @@
 #ifndef ASYNCHRONOUSTOOLS_H_
 #define ASYNCHRONOUSTOOLS_H_
 
-#include <casa/aips.h>
-#include <casa/aipstype.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/BasicSL/String.h>
 #include <mutex>
 #include "UtilJ.h"
 

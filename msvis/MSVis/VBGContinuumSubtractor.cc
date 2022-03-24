@@ -32,9 +32,9 @@
 #include <msvis/MSVis/VisBufferComponents.h>
 #include <msvis/MSVis/VisBuffGroup.h>
 #include <msvis/MSVis/VisBuffGroupAcc.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
-#include <ms/MSSel/MSSelection.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/ms/MSSel/MSSelection.h>
 
 using namespace casacore;
 namespace casa {

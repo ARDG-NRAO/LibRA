@@ -28,7 +28,7 @@
 #ifndef MSVIS_CALVISBUFFER_H
 #define MSVIS_CALVISBUFFER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <msvis/MSVis/VisBuffer.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

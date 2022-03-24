@@ -28,10 +28,10 @@
 #if ! defined (MSVIS_ViFrequencySelection_H_121116_1101)
 #define MSVIS_ViFrequencySelection_H_121116_1101
 
-#include <casa/aips.h>
-#include <casa/BasicSL.h>
-#include <casa/Arrays/Slicer.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL.h>
+#include <casacore/casa/Arrays/Slicer.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
 #include <memory>
 #include <set>

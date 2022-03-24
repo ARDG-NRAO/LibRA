@@ -28,14 +28,14 @@
 #ifndef SYNTHESIS_FJONES_H
 #define SYNTHESIS_FJONES_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/MeasurementComponents/VisCal.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 //#include <synthesis/MeasurementComponents/CalCorruptor.h>
 
-#include <measures/Measures/EarthMagneticMachine.h>
+#include <casacore/measures/Measures/EarthMagneticMachine.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

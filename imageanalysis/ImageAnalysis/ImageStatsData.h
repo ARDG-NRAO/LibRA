@@ -27,7 +27,7 @@
 #ifndef IMAGEANALYSIS_IMAGESTATSDATA_H
 #define IMAGEANALYSIS_IMAGESTATSDATA_H
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

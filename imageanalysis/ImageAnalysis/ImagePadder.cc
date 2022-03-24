@@ -28,8 +28,8 @@
 #include <imageanalysis/ImageAnalysis/ImagePadder.h>
 
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/ImageUtilities.h>
 
 using namespace casacore;
 namespace casa {

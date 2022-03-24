@@ -28,7 +28,7 @@
 
 #include <synthesis/CalTables/FVisJonesDesc.h>
 #include <msvis/MSVis/MSCalEnums.h>
-#include <tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

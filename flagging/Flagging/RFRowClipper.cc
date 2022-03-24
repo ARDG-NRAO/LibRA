@@ -28,12 +28,12 @@
 #include <flagging/Flagging/RFFlagCube.h>
 #include <flagging/Flagging/RFChunkStats.h>
 #include <flagging/Flagging/RFRowClipper.h>
-#include <casa/Arrays/LogiVector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MaskArrMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/Slice.h>
-#include <scimath/Mathematics/MedianSlider.h>
+#include <casacore/casa/Arrays/LogiVector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/scimath/Mathematics/MedianSlider.h>
 #include <casa/stdio.h>
     
 using namespace casacore;

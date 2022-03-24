@@ -34,7 +34,7 @@
 #include <casacore/images/Regions/RegionHandlerTable.h>
 #include <components/ComponentModels/ComponentShape.h>
 #include <components/ComponentModels/SpectralModel.h>
-#include <casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitMap.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

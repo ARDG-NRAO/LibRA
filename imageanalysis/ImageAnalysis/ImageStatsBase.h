@@ -31,8 +31,8 @@
 
 #include <imageanalysis/ImageAnalysis/ImageStatsData.h>
 
-#include <images/Images/ImageStatistics.h>
-#include <casa/namespace.h>
+#include <casacore/images/Images/ImageStatistics.h>
+#include <casacore/casa/namespace.h>
 
 #include <memory>
 

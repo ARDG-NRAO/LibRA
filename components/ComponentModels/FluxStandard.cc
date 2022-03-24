@@ -37,21 +37,21 @@
 #include <components/ComponentModels/TabularSpectrum.h>
 #include <components/ComponentModels/PointShape.h>
 #include <components/ComponentModels/DiskShape.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/String.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/File.h>
-#include <casa/OS/Path.h>
-#include <casa/Utilities/CountedPtr.h>
-#include <casa/sstream.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <sstream>
 #include <casa/iomanip.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MCDirection.h>
-#include <measures/Measures/MeasConvert.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/MFrequency.h>
-#include <measures/Measures/MeasTable.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MCDirection.h>
+#include <casacore/measures/Measures/MeasConvert.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/MeasTable.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

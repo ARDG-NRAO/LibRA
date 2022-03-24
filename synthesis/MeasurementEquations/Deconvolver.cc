@@ -26,70 +26,70 @@
 //#
 //# $Id: DOdeconvolver.cc,v 19.16 2005/12/06 20:18:50 wyoung Exp $
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
-#include <casa/Logging.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/File.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Logging.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Containers/Record.h>
 
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/TaQL/ExprNode.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/TaQL/ExprNode.h>
 
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/Fallible.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Fallible.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
-#include <measures/Measures/Stokes.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/Quanta/MVAngle.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/casa/Quanta/MVAngle.h>
 #include <components/ComponentModels/ComponentList.h>
 #include <components/ComponentModels/GaussianShape.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <casa/Quanta/MVEpoch.h>
-#include <measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/casa/Quanta/MVEpoch.h>
+#include <casacore/measures/Measures/MEpoch.h>
 
 #include <synthesis/TransformMachines/StokesImageUtil.h>
-#include <lattices/LEL/LatticeExpr.h> 
-#include <lattices/LatticeMath/LatticeFFT.h> 
-#include <lattices/LatticeMath/LatticeCleaner.h> 
-#include <lattices/LatticeMath/LatticeCleanProgress.h> 
-#include <lattices/LatticeMath/LatticeConvolver.h> 
-#include <lattices/Lattices/TiledLineStepper.h> 
-#include <lattices/Lattices/LatticeStepper.h> 
-#include <lattices/Lattices/LatticeNavigator.h> 
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/SubLattice.h>
-#include <lattices/LRegions/LCBox.h>
-#include <lattices/LRegions/LCSlicer.h>
+#include <casacore/lattices/LEL/LatticeExpr.h> 
+#include <casacore/lattices/LatticeMath/LatticeFFT.h> 
+#include <casacore/lattices/LatticeMath/LatticeCleaner.h> 
+#include <casacore/lattices/LatticeMath/LatticeCleanProgress.h> 
+#include <casacore/lattices/LatticeMath/LatticeConvolver.h> 
+#include <casacore/lattices/Lattices/TiledLineStepper.h> 
+#include <casacore/lattices/Lattices/LatticeStepper.h> 
+#include <casacore/lattices/Lattices/LatticeNavigator.h> 
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/lattices/LRegions/LCBox.h>
+#include <casacore/lattices/LRegions/LCSlicer.h>
 
 #include <imageanalysis/ImageAnalysis/ComponentImager.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/ImageSummary.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <images/Images/ImageRegrid.h>
-#include <images/Images/ImageInfo.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/ImageSummary.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/images/Images/ImageInfo.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <coordinates/Coordinates/Projection.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/Projection.h>
 
 #include <synthesis/MeasurementComponents/ClarkCleanImageSkyModel.h>
 #include <synthesis/MeasurementEquations/CEMemProgress.h>
@@ -105,9 +105,9 @@
 #include <synthesis/MeasurementEquations/ImageNACleaner.h>
 
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 // Implementation comment:
 // There are two different philosophies active here:
 // ClarkCleanLatModel and CEMemModel are evolutionarily related and

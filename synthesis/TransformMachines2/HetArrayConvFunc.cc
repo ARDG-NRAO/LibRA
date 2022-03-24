@@ -33,34 +33,34 @@
 #include <casacore/casa/Arrays/Slice.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Cube.h>
-#include <scimath/Mathematics/FFTServer.h>
-#include <measures/Measures/MeasTable.h>
-#include <scimath/Mathematics/MathFunc.h>
-#include <scimath/Mathematics/ConvolveGridder.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/CompositeNumber.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <casacore/scimath/Mathematics/MathFunc.h>
+#include <casacore/scimath/Mathematics/ConvolveGridder.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/CompositeNumber.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <lattices/Lattices/ArrayLattice.h>
-#include <lattices/Lattices/SubLattice.h>
-#include <lattices/LRegions/LCBox.h>
-#include <lattices/Lattices/LatticeConcat.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/Lattices/LatticeCache.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/lattices/LRegions/LCBox.h>
+#include <casacore/lattices/Lattices/LatticeConcat.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/Lattices/LatticeCache.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
 
 
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
 #include <msvis/MSVis/VisBuffer2.h>
 
@@ -72,7 +72,7 @@
 #include <synthesis/TransformMachines2/HetArrayConvFunc.h>
 #include <synthesis/MeasurementEquations/VPManager.h>
 
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 
 
 

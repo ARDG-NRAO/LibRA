@@ -29,9 +29,9 @@
 
 #include <synthesis/TransformMachines2/PhaseGrad.h>
 #include <synthesis/TransformMachines/SynthesisMath.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogOrigin.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogOrigin.h>
 
 using namespace casacore;
 namespace casa{

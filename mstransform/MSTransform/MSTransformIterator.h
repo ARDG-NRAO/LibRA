@@ -31,7 +31,7 @@
 
 // VisBuffer class only accessible from this class
 #include <mstransform/MSTransform/MSTransformBufferImpl.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa {
 

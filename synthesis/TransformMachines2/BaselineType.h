@@ -28,12 +28,12 @@
 #ifndef SYNTHESIS_TRANSFORM2_BASELINETYPE_H
 #define SYNTHESIS_TRANSFORM2_BASELINETYPE_H
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/PhaseGrad.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

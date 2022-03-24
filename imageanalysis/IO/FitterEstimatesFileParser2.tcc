@@ -29,16 +29,16 @@
 
 #include <imageanalysis/IO/FitterEstimatesFileParser.h>
 
-#include <casa/aips.h>
-#include <casa/IO/RegularFileIO.h>
-#include <casa/Utilities/Regex.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/RegularFileIO.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/casa/Containers/Record.h>
 #include <components/ComponentModels/ConstantSpectrum.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/GaussianShape.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/ImageStatistics.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/ImageStatistics.h>
 
 
 namespace casa {

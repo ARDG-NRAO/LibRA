@@ -31,12 +31,12 @@
 #include <iostream>
 #include <string>
 
-#include <casa/aipstype.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Containers/Record.h>
 #include <libsakura/sakura.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <scimath/Mathematics/FFTServer.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
 #include <singledish/SingleDish/SDMSManager.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

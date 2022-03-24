@@ -30,38 +30,38 @@
 
 #include <cmath>
 
-#include <casa/Exceptions.h>
+#include <casacore/casa/Exceptions.h>
 
-#include <tables/TaQL/TableParse.h>
-#include <tables/TaQL/TableGram.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/Tables/TableIter.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/TaQL/TableGram.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/Tables/TableIter.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/Arrays/ArrayError.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/ArrayError.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
-#include <tables/TaQL/ExprMathNode.h>
-#include <tables/TaQL/ExprMathNodeArray.h>
-#include <tables/TaQL/ExprDerNode.h>
-#include <tables/TaQL/ExprDerNodeArray.h>
-#include <tables/TaQL/ExprFuncNode.h>
-#include <tables/TaQL/ExprFuncNodeArray.h>
-#include <tables/TaQL/ExprLogicNode.h>
-#include <tables/TaQL/ExprLogicNodeArray.h>
-#include <tables/TaQL/ExprNodeArray.h>
-#include <tables/TaQL/ExprNodeSet.h>
-#include <tables/TaQL/ExprNodeRep.h>
-#include <tables/TaQL/ExprNodeRecord.h>
-#include <tables/TaQL/ExprRange.h>
-#include <tables/TaQL/RecordGram.h>
+#include <casacore/tables/TaQL/ExprMathNode.h>
+#include <casacore/tables/TaQL/ExprMathNodeArray.h>
+#include <casacore/tables/TaQL/ExprDerNode.h>
+#include <casacore/tables/TaQL/ExprDerNodeArray.h>
+#include <casacore/tables/TaQL/ExprFuncNode.h>
+#include <casacore/tables/TaQL/ExprFuncNodeArray.h>
+#include <casacore/tables/TaQL/ExprLogicNode.h>
+#include <casacore/tables/TaQL/ExprLogicNodeArray.h>
+#include <casacore/tables/TaQL/ExprNodeArray.h>
+#include <casacore/tables/TaQL/ExprNodeSet.h>
+#include <casacore/tables/TaQL/ExprNodeRep.h>
+#include <casacore/tables/TaQL/ExprNodeRecord.h>
+#include <casacore/tables/TaQL/ExprRange.h>
+#include <casacore/tables/TaQL/RecordGram.h>
 
-#include <casa/Utilities/DataType.h>
-#include <casa/Utilities/Sort.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/Utilities/DataType.h>
+#include <casacore/casa/Utilities/Sort.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
 #include <flagging/Flagging/ExtendFlagger.h>
 

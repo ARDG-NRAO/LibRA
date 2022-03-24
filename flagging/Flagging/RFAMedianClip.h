@@ -28,7 +28,7 @@
 #define FLAGGING_RFAMEDIANCLIP_H
 
 #include <flagging/Flagging/RFADiffBase.h> 
-#include <scimath/Mathematics/MedianSlider.h> 
+#include <casacore/scimath/Mathematics/MedianSlider.h> 
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

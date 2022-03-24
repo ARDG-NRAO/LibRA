@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <casacore/casa/System/AppState.h>
-#include <casa/OS/Path.h>
+#include <casacore/casa/OS/Path.h>
 
 using namespace std;
 

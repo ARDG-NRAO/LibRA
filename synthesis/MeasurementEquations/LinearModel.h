@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_LINEARMODEL_H
 #define SYNTHESIS_LINEARMODEL_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

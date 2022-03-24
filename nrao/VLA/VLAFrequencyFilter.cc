@@ -27,14 +27,14 @@
 
 #include <nrao/VLA/VLAFrequencyFilter.h>
 #include <nrao/VLA/VLALogicalRecord.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/BasicMath/Math.h>
-#include <measures/Measures/MeasConvert.h>
-#include <casa/Quanta/MVFrequency.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/measures/Measures/MeasConvert.h>
+#include <casacore/casa/Quanta/MVFrequency.h>
 #include <casa/iomanip.h>
 
 VLAFrequencyFilter::VLAFrequencyFilter()

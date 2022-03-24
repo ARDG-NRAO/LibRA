@@ -27,7 +27,7 @@
 #ifndef MSVIS_VISBUFFER2_H
 #define MSVIS_VISBUFFER2_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 //#include <casa/Arrays/Cube.h>
 //#include <casa/Arrays/Vector.h>

@@ -29,15 +29,15 @@
 #ifndef NRAO_VLACONTINUUMRECORD_H
 #define NRAO_VLACONTINUUMRECORD_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLABaselineRecord.h>
-#include <casa/IO/ByteSource.h>
+#include <casacore/casa/IO/ByteSource.h>
 //# The following should be a forward declaration. But our casacore::Complex & DComplex
 //# classes are a typedef hence this does not work. Replace the following with
 //# forward declarations when casacore::Complex and casacore::DComplex are no longer typedefs.
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Complex.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 // <summary></summary>
 

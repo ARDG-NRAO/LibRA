@@ -30,9 +30,9 @@
 #define IMAGES_IMAGEMOMENTSPROGRESS_H
 
 
-#include <casa/aips.h>
-#include <lattices/LatticeMath/LatticeProgress.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/aips.h>
+#include <casacore/lattices/LatticeMath/LatticeProgress.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

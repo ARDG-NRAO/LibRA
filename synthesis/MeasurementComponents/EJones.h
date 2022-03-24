@@ -28,9 +28,9 @@
 #ifndef SYNTHESIS_EJONES_H
 #define SYNTHESIS_EJONES_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -27,7 +27,7 @@
 #include <casacore/lattices/Lattices/LatticeLocker.h>
 #include <synthesis/ImagerObjects/CubeMakeImageAlgorithm.h>
 #include <synthesis/ImagerObjects/SynthesisImagerVi2.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 

@@ -28,8 +28,8 @@
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/casa/Utilities/BinarySearch.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 using namespace casacore;
 using namespace casa::vi;

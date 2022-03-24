@@ -16,10 +16,10 @@
 
 #include <imageanalysis/Annotations/AnnPolygon.h>
 
-#include <casa/Quanta/QMath.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Regions/WCPolygon.h>
-#include <scimath/Mathematics/Geometry.h>
+#include <casacore/casa/Quanta/QMath.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Regions/WCPolygon.h>
+#include <casacore/scimath/Mathematics/Geometry.h>
 
 using namespace casacore;
 namespace casa {
