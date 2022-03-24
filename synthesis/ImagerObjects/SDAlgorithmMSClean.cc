@@ -64,10 +64,10 @@ using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 
-  SDAlgorithmMSClean::SDAlgorithmMSClean( Vector<Float> scalesizes, 
-					  Float smallscalebias, 
-					  // Int stoplargenegatives, 
-					  Int stoppointmode ):
+  SDAlgorithmMSClean::SDAlgorithmMSClean( Vector<Float> scalesizes,
+            Float smallscalebias,
+            // Int stoplargenegatives,
+            Int stoppointmode ):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -75,15 +75,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsSmallScaleBias(smallscalebias),
     //    itsStopLargeNegatives(stoplargenegatives),
     itsStopPointMode(stoppointmode)
- {
-   itsAlgorithmName=String("multiscale");
-   if( itsScaleSizes.nelements()==0 ){ itsScaleSizes.resize(1); itsScaleSizes[0]=0.0; }
- }
+   {
+     itsAlgorithmName=String("multiscale");
+     if( itsScaleSizes.nelements()==0 ){ itsScaleSizes.resize(1); itsScaleSizes[0]=0.0; }
+   }
+
 
   SDAlgorithmMSClean::~SDAlgorithmMSClean()
- {
-   
- }
+  {
+
+  }
 
   Long SDAlgorithmMSClean::estimateRAM(const vector<int>& imsize){
     Long mem=0;
@@ -95,7 +96,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     else
       return 0;
       //throw(AipsError("Deconvolver cannot estimate the memory usage at this point"));
-    
+
     //Number of planes in memory
     //npsf=nscales+1
     //nresidual=4+nscales
@@ -105,10 +106,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       Long nplanes=5*itsScaleSizes.nelements()+7;
     //in kB
       mem=sizeof(Float)*(shp(0))*(shp(1))*nplanes/1024;
-    
+
     return mem;
   }
- 
+
   //  void SDAlgorithmMSClean::initializeDeconvolver( Float &peakresidual, Float &modelflux )
   void SDAlgorithmMSClean::initializeDeconvolver()
   {
@@ -124,37 +125,36 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       (itsImages->model())->get( itsMatModel , true );
       (itsImages->psf())->get( itsMatPsf , true );
       itsImages->mask()->get( itsMatMask, true );
-      
+
     }
     //// Initialize the MatrixCleaner.
     ///  ----------- do once ----------
-      {
-	itsCleaner.defineScales( itsScaleSizes );
-	
-	if(itsSmallScaleBias > 1)
-	{
-	  os << LogIO::WARN << "Acceptable smallscalebias values are [-1,1].Changing smallscalebias from " << itsSmallScaleBias <<" to 1." << LogIO::POST; 
-	  itsSmallScaleBias = 1;
-	}
-	
-	if(itsSmallScaleBias < -1)
-	{
-	  os << LogIO::WARN << "Acceptable smallscalebias values are [-1,1].Changing smallscalebias from " << itsSmallScaleBias <<" to -1." << LogIO::POST; 
-	  itsSmallScaleBias = -1;
-	}
-	
-	
-	itsCleaner.setSmallScaleBias( itsSmallScaleBias );
-	//itsCleaner.stopAtLargeScaleNegative( itsStopLargeNegatives );// In MFMSCleanImageSkyModel.cc, this is only for the first two major cycles...
-	itsCleaner.stopPointMode( itsStopPointMode );
-	itsCleaner.ignoreCenterBox( true ); // Clean full image
+    {
+    	itsCleaner.defineScales( itsScaleSizes );
 
-	Matrix<Float> tempMat;
-	tempMat.reference( itsMatPsf );
-	itsCleaner.setPsf(  tempMat );
-	itsCleaner.makePsfScales();
+    	if(itsSmallScaleBias > 1)
+    	{
+    	  os << LogIO::WARN << "Acceptable smallscalebias values are [-1,1].Changing smallscalebias from " << itsSmallScaleBias <<" to 1." << LogIO::POST;
+    	  itsSmallScaleBias = 1;
+    	}
 
-      }
+    	if(itsSmallScaleBias < -1)
+    	{
+    	  os << LogIO::WARN << "Acceptable smallscalebias values are [-1,1].Changing smallscalebias from " << itsSmallScaleBias <<" to -1." << LogIO::POST;
+    	  itsSmallScaleBias = -1;
+    	}
+
+
+    	itsCleaner.setSmallScaleBias( itsSmallScaleBias );
+    	//itsCleaner.stopAtLargeScaleNegative( itsStopLargeNegatives );// In MFMSCleanImageSkyModel.cc, this is only for the first two major cycles...
+    	itsCleaner.stopPointMode( itsStopPointMode );
+    	itsCleaner.ignoreCenterBox( true ); // Clean full image
+
+    	Matrix<Float> tempMat;
+    	tempMat.reference( itsMatPsf );
+    	itsCleaner.setPsf(  tempMat );
+    	itsCleaner.makePsfScales();
+    }
     /// -----------------------------------------
 
     /*
@@ -167,7 +167,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     */
 
     // Parts to be repeated at each minor cycle start....
-    
+
     itsCleaner.setcontrol(CleanEnums::MULTISCALE,0,0,0);/// Needs to come before makeDirtyScales
 
     Matrix<Float> tempmask(itsMatMask);
@@ -177,7 +177,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     tempMat1.reference( itsMatResidual );
     itsCleaner.setDirty( tempMat1 );
     itsCleaner.makeDirtyScales();
-    
+
   }
 
   void SDAlgorithmMSClean::takeOneStep( Float loopgain, Int cycleNiter, Float cycleThreshold, Float &peakresidual, Float &modelflux, Int &iterdone)
@@ -200,7 +200,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //  1 = converged
     //  0 = not converged but behaving normally
     // -1 = not converged and stopped on cleaning consecutive smallest scale
-    // -2 = not converged and either large scale hit negative or diverging 
+    // -2 = not converged and either large scale hit negative or diverging
     // -3 = clean is diverging rather than converging
     itsCleaner.startingIteration( 0 );
     Int retval = itsCleaner.clean( tempModel );
@@ -221,7 +221,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //peakresidual = max(abs(residual*itsMatMask));
     peakresidual = max(abs(itsMatResidual*itsMatMask));
     modelflux = sum( itsMatModel ); // Performance hog ?
-  }	    
+  }
 
   void SDAlgorithmMSClean::finalizeDeconvolver()
   {

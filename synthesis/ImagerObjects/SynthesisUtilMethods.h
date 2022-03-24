@@ -453,9 +453,11 @@ public:
   casacore::Float nsigma;
   int nMask;
   bool autoAdjust;
+  casacore::Float fusedThreshold;
+  casacore::String specmode;
+  casacore::Int largestscale;
   // task deconvolve needs to tell siimagestore that we don't need to check for the sumwt image
   casacore::Bool noRequireSumwt = casacore::False;
-
 
  
   casacore::Bool interactive;

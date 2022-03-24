@@ -1,4 +1,4 @@
-//# SDAlgorithmMSClean.h: Definition for SDAlgorithmMSClean
+//# SDAlgorithmHogbomClean.h: Definition for SDAlgorithmHogbomClean
 //# Copyright (C) 1996,1997,1998,1999,2000,2002
 //# Associated Universities, Inc. Washington DC, USA.
 //#
@@ -26,11 +26,11 @@
 //#
 //# $Id$
 
-#ifndef SYNTHESIS_SDALGORITHMMSCLEAN_H
-#define SYNTHESIS_SDALGORITHMMSCLEAN_H
+#ifndef SYNTHESIS_SDALGORITHMTEST_H
+#define SYNTHESIS_SDALGORITHMTEST_H
 
 #include <ms/MeasurementSets/MeasurementSet.h>
-//#include <synthesis/MeasurementComponents/SkyModel.h>
+#include <synthesis/MeasurementComponents/SkyModel.h>
 #include <casa/Arrays/Matrix.h>
 #include <images/Images/ImageInterface.h>
 #include <images/Images/PagedImage.h>
@@ -40,7 +40,6 @@
 #include <casa/System/PGPlotter.h>
 
 #include<synthesis/ImagerObjects/SDAlgorithmBase.h>
-#include <synthesis/MeasurementEquations/MatrixCleaner.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -48,39 +47,47 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class SIMinorCycleController;
 
 
-  class SDAlgorithmMSClean : public SDAlgorithmBase 
+  class SDAlgorithmTest : public SDAlgorithmBase 
   {
   public:
     
     // Empty constructor
-    SDAlgorithmMSClean(casacore::Vector<casacore::Float> scalesizes,
-		       casacore::Float smallscalebias=0.6, 
-		       // casacore::Int stoplargenegatives=-2, 
-		       casacore::Int stoppointmode=-1 );
-    virtual  ~SDAlgorithmMSClean();
+    SDAlgorithmTest();
+    virtual  ~SDAlgorithmTest();
     
-    //returns the estimate of memory used in kilobytes (kB);
-    virtual casacore::Long estimateRAM( const std::vector<int>& imsize);
+    
   protected:
     
     // Local functions to be overloaded by various algorithm deconvolvers.
-    void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, 
-		      casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int &iterdone );
-    void initializeDeconvolver();
-    void finalizeDeconvolver();
+    virtual void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int& iterdone );
+    virtual void initializeDeconvolver( casacore::Float &peakresidual, casacore::Float &modelflux );
+    virtual void finalizeDeconvolver();
+    virtual void queryDesiredShape(casacore::Bool &onechan, casacore::Bool &onepol); // , nImageFacets.
+    //virtual void restorePlane();
+    
+    // ....
 
-    casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
-    casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
+    //    casacore::Bool findMaxAbs(const casacore::Matrix<casacore::Float>& lattice,casacore::Float& maxAbs,casacore::IPosition& posMaxAbs);
 
-    MatrixCleaner itsCleaner;
-    casacore::Vector<casacore::Float> itsScaleSizes;
-    casacore::Float itsSmallScaleBias;
-    //casacore::Int itsStopLargeNegatives;
-    casacore::Int itsStopPointMode;
+    void calculatePatchBoundaries();
+    void makeBoxesSameSize(casacore::IPosition& blc1, casacore::IPosition& trc1, casacore::IPosition &blc2, casacore::IPosition& trc2);
 
-  private:
-    //casacore::Bool itsMCsetup; 
 
+    /*
+    void findNextComponent( casacore::Float loopgain );
+    void updateModel();
+    void updateResidual();
+    */
+
+    casacore::Array<casacore::Float> itsMatResidual, itsMatModel, itsMatPsf;
+
+    casacore::IPosition itsMaxPos;
+    casacore::Float itsPeakResidual;
+    casacore::Float itsModelFlux;
+
+    //    IPositions for patch boundaries.
+    casacore::IPosition itsBlc, itsTrc, itsBlcPsf, itsTrcPsf;
+    
   };
 
 } //# NAMESPACE CASA - END
