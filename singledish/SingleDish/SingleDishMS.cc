@@ -1368,9 +1368,11 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
       Cube<Float> data_chunk(num_pol, num_chan, num_row, Array<Float>::uninitialized);
       Vector<float> spec(num_chan, Array<float>::uninitialized);
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row, Array<Bool>::uninitialized);
+      Vector<bool> flag(num_chan, Array<bool>::uninitialized);
       Vector<bool> mask(num_chan, Array<bool>::uninitialized);
       Vector<bool> mask_after_clipping(num_chan, Array<bool>::uninitialized);
       float *spec_data = spec.data();
+      bool *flag_data = flag.data();
       bool *mask_data = mask.data();
       bool *mask_after_clipping_data = mask_after_clipping.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
@@ -1464,9 +1466,9 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             apply_mtx[0][ipol] = false;
             continue;
           }
@@ -1474,7 +1476,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           // convert flag to mask by taking logical NOT of flag
           // and then operate logical AND with in_mask
           for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-            mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+            mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan]));
           }
           // get a spectrum from data cube
           get_spectrum_from_cube(data_chunk, irow, ipol, num_chan, spec_data);
@@ -2272,6 +2274,8 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
       Vector<float> spec(num_chan);
       float *spec_data = spec.data();
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row);
+      Vector<bool> flag(num_chan);
+      bool *flag_data = flag.data();
       Vector<bool> mask(num_chan);
       bool *mask_data = mask.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
@@ -2336,10 +2340,10 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
 
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             continue;
           }
 
@@ -2384,7 +2388,7 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
             // convert flag to mask by taking logical NOT of flag
             // and then operate logical AND with in_mask and with mask from bltable
             for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-              mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan])) && mask_bltable[ichan];
+              mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan])) && mask_bltable[ichan];
             }
             compute_weight(num_chan, spec_data, mask_data, weight);
             set_weight_to_matrix(weight_matrix, irow, ipol, weight.at(var_index));
@@ -2842,11 +2846,13 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
       Cube<Float> data_chunk(num_pol, num_chan, num_row);
       Vector<float> spec(num_chan);
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row);
+      Vector<bool> flag(num_chan);
       Vector<bool> mask(num_chan);
       Vector<bool> mask_after_clipping(num_chan);
       // CAUTION!!!
       // data() method must be used with special care!!!
       float *spec_data = spec.data();
+      bool *flag_data = flag.data();
       bool *mask_data = mask.data();
       bool *mask_after_clipping_data = mask_after_clipping.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
@@ -2910,9 +2916,9 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             os << LogIO::DEBUG1 << "Row " << orig_rows[irow] << ", Pol " << ipol
                << ": All channels flagged. Skipping." << LogIO::POST;
             apply_mtx[0][ipol] = false;
@@ -2922,7 +2928,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           // convert flag to mask by taking logical NOT of flag
           // and then operate logical AND with in_mask
           for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-            mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+            mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan]));
           }
           // get fitting parameter
           BLParameterSet fit_param;
