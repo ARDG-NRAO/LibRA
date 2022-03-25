@@ -35,6 +35,7 @@
 #include <sstream>
 
 #include <casa/aipstype.h>
+#include <casa/Arrays/Vector.h>
 #include <casa/Logging/LogIO.h>
 #include <casa/Logging/LogOrigin.h>
 #include <libsakura/sakura.h>
@@ -187,8 +188,9 @@ class BLTableParser : public BLParameterParser {
                           size_t const scanid, size_t const beamid, 
                           size_t const antid, size_t const spwid, size_t &idx);
   void GetFitParameterByIdx(size_t const idx, size_t const ipol, 
-                            bool &apply, std::vector<float> &coeff, 
-                            std::vector<double> &boundary, 
+                            bool &apply,
+                            casacore::Vector<double> &coeff,
+                            casacore::Vector<size_t> &boundary,
                             std::vector<bool> &masklist,
                             BLParameterSet &bl_param);
  private:

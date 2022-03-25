@@ -446,8 +446,9 @@ bool BLTableParser::GetFitParameterIdx(double const time, double const interval,
 */
 
 void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol, 
-                                         bool &apply, std::vector<float> &coeff, 
-                                         std::vector<double> &boundary, 
+                                         bool &apply,
+                                         Vector<double> &coeff,
+                                         Vector<size_t> &boundary,
                                          std::vector<bool> &masklist,
                                          BLParameterSet &bl_param)
 {
@@ -462,21 +463,18 @@ void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol,
     bl_param.order = fpar[ipol];
     coeff.resize(bl_param.order + 1);
     for (size_t i = 0; i < coeff.size(); ++i) {
-      Vector<Float> res(bt_->getResult(idx)[i]);
-      coeff[i] = res[ipol];
+      coeff[i] = bt_->getResult(idx).row(ipol)[i];
     }
     break;
   case BaselineType_kCubicSpline:
     bl_param.npiece = fpar[ipol];
     boundary.resize(bl_param.npiece + 1);
     for (size_t i = 0; i < boundary.size(); ++i) {
-      Vector<Float> ffpar(bt_->getFuncFParam(idx)[i]);
-      boundary[i] = ffpar[ipol];
+      boundary[i] = bt_->getFuncFParam(idx).row(ipol)[i];
     }
     coeff.resize(bl_param.npiece * 4);
     for (size_t i = 0; i < coeff.size(); ++i) {
-      Vector<Float> res(bt_->getResult(idx)[i]);
-      coeff[i] = res[ipol];
+      coeff[i] = bt_->getResult(idx).row(ipol)[i];
     }
     break;
   default:

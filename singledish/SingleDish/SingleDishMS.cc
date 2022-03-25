@@ -658,11 +658,11 @@ void SingleDishMS::get_mask_from_rec(Int spwid,
 void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
                                           bool const *mask,
                                           Vector<uInt> &masklist) {
-  masklist.resize();  // clear
+  size_t const max_num_masklist = num_chan + 1;
+  masklist.resize(max_num_masklist);  // clear
   uInt last_idx = num_chan - 1;
   uInt num_masklist = 0;
   auto append = [&](uInt i){
-    masklist.resize(num_masklist+1, true);
     masklist[num_masklist] = i;
     num_masklist++;
   };
@@ -688,6 +688,7 @@ void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
     }
     append(last_idx);
   }
+  masklist.resize(num_masklist, true);
 }
 
 void SingleDishMS::get_baseline_context(size_t const bltype,
@@ -2319,11 +2320,11 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
         // loop over polarization
         for (size_t ipol = 0; ipol < num_pol; ++ipol) {
           bool apply;
-          std::vector<float> bl_coeff;
-          std::vector<double> bl_boundary;
+          Vector<double> coeff;
+          Vector<size_t> boundary;
           std::vector<bool> mask_bltable;
           BLParameterSet fit_param;
-          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, bl_coeff, bl_boundary,
+          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, coeff, boundary,
                                       mask_bltable, fit_param);
           if (!apply) {
             flag_spectrum_in_cube(flag_chunk, irow, ipol); //flag
@@ -2354,30 +2355,19 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
               (*iter).second[ctx_indices[idx]];
           //cout << "Got context for type " << (*iter).first << ": idx=" << ctx_indices[idx] << endl;
 
-          size_t num_coeff = bl_coeff.size();
-          Vector<double> coeff(num_coeff);
           double *coeff_data = coeff.data();
-          for (size_t i = 0; i < num_coeff; ++i) {
-            coeff_data[i] = bl_coeff[i];
-          }
-          size_t num_boundary = bl_boundary.size();
-          Vector<size_t> boundary(num_boundary);
           size_t *boundary_data = boundary.data();
-          for (size_t i = 0; i < num_boundary; ++i) {
-            boundary_data[i] = bl_boundary[i];
-          }
-
           string subtract_funcname;
           switch (static_cast<size_t>(fit_param.baseline_type)) {
           case BaselineType_kPolynomial:
           case BaselineType_kChebyshev:
             status = LIBSAKURA_SYMBOL(SubtractPolynomialFloat)(
-              context, num_chan, spec_data, num_coeff, coeff_data, spec_data);
+	      context, num_chan, spec_data, coeff.size(), coeff_data, spec_data);
             subtract_funcname = "sakura_SubtractPolynomialFloat";
             break;
           case BaselineType_kCubicSpline:
             status = LIBSAKURA_SYMBOL(SubtractCubicSplineFloat)(
-              context, num_chan, spec_data, num_boundary-1,
+	      context, num_chan, spec_data, boundary.size()-1,
               reinterpret_cast<double (*)[4]>(coeff_data),
               boundary_data, spec_data);
             subtract_funcname = "sakura_SubtractCubicSplineFloat";
