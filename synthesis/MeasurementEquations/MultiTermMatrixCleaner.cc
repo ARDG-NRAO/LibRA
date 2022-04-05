@@ -23,6 +23,10 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id: MultiTermMatrixCleaner.cc 13656 2010-12-04 02:08:02 UrvashiRV$
+//
+// Implementation of the paper "A multi-scale multi-frequency deconvolution algorithm
+// for synthesis imaging in radio interferometry" by Rau and Cornwell
+// https://www.aanda.org/articles/aa/pdf/2011/08/aa17104-11.pdf
 
 // Same include list as in MatrixCleaner.cc
 #include <casa/Arrays/Matrix.h>
