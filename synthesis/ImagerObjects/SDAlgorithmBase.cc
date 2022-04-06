@@ -215,6 +215,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
             
 	    stopCode = checkStop( loopcontrols,  peakresidual );
 
+	    // Record info about the start of the minor cycle iterations
+	    loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
+					  modelflux, peakresidual );
 
 	    // stopCode=0;
 
@@ -223,8 +226,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                 
 		
 		// Record info about the start of the minor cycle iterations
-		loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-					      modelflux, peakresidual );
+		//loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
+		//			      modelflux, peakresidual );
 		//		loopcontrols.setPeakResidual( peakresidual );
 
 		// Init the deconvolver
@@ -274,8 +277,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		    
 		    stopCode = checkStop( loopcontrols,  peakresidual );
 		    
-		    loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-						  modelflux, peakresidual );
+		    //		    loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
+		    //						  modelflux, peakresidual );
 
 		    /// Catch the situation where takeOneStep returns without satisfying any
 		    ///  convergence criterion. For now, takeOneStep is the entire minor cycle.
@@ -341,6 +344,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 	       os << LogIO::POST;
 	    
+	       loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
+					     modelflux, peakresidual );
+
+
 	    loopcontrols.resetCycleIter(); 
 
 	    if( peakresidual > maxResidualAcrossPlanes && stopCode!=0 )
