@@ -2927,7 +2927,7 @@ VisibilityIteratorImpl2::getObservatoryFrequencyType() const
 {
 	const MFrequency & f0 = msIter_p->frequency0();
 
-	MFrequency::Types t = MFrequency::castType(f0.type());
+	MFrequency::Types t = MFrequency::castType(f0.getRef().getType());
 
 	return t;
 }
