@@ -121,7 +121,7 @@ protected:
   casacore::Float itsPBLimit;
 
   casacore::String itsMapperType;
-  casacore::uInt itsNTaylorTerms, itsNFacets;
+  casacore::uInt itsNTaylorTerms, itsNScales, itsNFacets;
 
   casacore::String itsNormType;
 

@@ -80,7 +80,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     ntaylor_p(0),psfntaylor_p(0),nscales_p(0),nx_p(0),ny_p(0),totalIters_p(0),
     maxscaleindex_p(0), globalmaxpos_p(IPosition(0)),
     /*donePSF_p(false),*/donePSP_p(false),doneCONV_p(false),memoryMB_p(0),
-    adbg(false)
+    adbg(false), matR_useprev(false)
   { }
 
   /*
@@ -258,7 +258,18 @@ Bool MultiTermMatrixCleaner::setresidual(int order, Matrix<Float> & dirty)
 {
 	AlwaysAssert((order>=(int)0 && order<(int)vecDirty_p.nelements()), AipsError);
 	vecDirty_p[order].reference(dirty);
-  return true;
+	return true;
+}
+
+/* Input : Scaled Dirty Images from the previous run */
+Bool MultiTermMatrixCleaner::setscaledresidual(int order, int scaleidx, Matrix<Float> & scaleddirty)
+{
+    AlwaysAssert(order >= (int)0, AipsError);
+    AlwaysAssert(scaleidx >= (int)0, AipsError);
+    AlwaysAssert(IND2(order,scaleidx) < (int)matR_p.nelements(), AipsError);
+    matR_p[IND2(order,scaleidx)].reference(scaleddirty);
+    matR_useprev = true;
+    return true;
 }
 
 /* Input : Model Component Image */
@@ -304,7 +315,16 @@ Bool MultiTermMatrixCleaner::getresidual(int order, Matrix<Float> & residual)
 	residual.assign(vecDirty_p[order]);
 	///residual.assign( matR_p[IND2(order,0)]  ); // This is the one that gets updated during iters.
 
-  return true;
+	return true;
+}
+
+Bool MultiTermMatrixCleaner::getscaledresidual(int order, int scaleidx, Matrix<Float> & scaledresidual)
+{
+    AlwaysAssert(order >= (int)0, AipsError);
+    AlwaysAssert(scaleidx >= (int)0, AipsError);
+    AlwaysAssert(IND2(order,scaleidx) < (int)matR_p.nelements(), AipsError);
+    scaledresidual.assign(matR_p[IND2(order,scaleidx)]);
+    return true;
 }
 
 
@@ -356,8 +376,7 @@ Int MultiTermMatrixCleaner::mtclean(Int maxniter, Float stopfraction, Float inpu
   setupUserMask();
    
   /* Compute the convolutions of the current residual with all PSFs and scales */
-  os << "Calculating convolutions of residual images with scales " << LogIO::POST;
-  computeRHS();
+  if (!matR_useprev) computeRHS();
 
   /* Check if peak RHS is already less than the threshold */
   /* This step computes the flux limit also - when called here... */

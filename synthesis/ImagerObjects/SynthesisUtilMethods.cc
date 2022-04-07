@@ -185,7 +185,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   }
 
 
-  Bool SynthesisUtilMethods::fitPsfBeam(const String& imagename, const Int nterms, const Float psfcutoff)
+  Bool SynthesisUtilMethods::fitPsfBeam(const String& imagename, const Int nterms, const Int nscales, const Float psfcutoff)
   {
     LogIO os(LogOrigin("SynthesisUtilMethods", "fitPsfBeam"));
 
@@ -197,7 +197,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     std::shared_ptr<SIImageStore> imstore;
     if( nterms>1 )
-      { imstore = std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, nterms, true, true ));   }
+      { imstore = std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, nterms, nscales, true, true ));   }
     else
       { imstore = std::shared_ptr<SIImageStore>(new SIImageStore( imagename, true, true ));   }
   
@@ -4127,6 +4127,24 @@ namespace casa { //# NAMESPACE CASA - BEGIN
               err+= "noRequireSumwt must be a bool";
             }
           }
+        if( inrec.isDefined("useprevscaledres") )
+          {
+            if (inrec.dataType("useprevscaledres")==TpBool) {
+              err+= readVal(inrec, String("useprevscaledres"), useprevscaledres);
+            }
+            else {
+              err+= "useprevscaledres must be a bool";
+            }
+          }
+        if( inrec.isDefined("savescaledres") )
+          {
+            if (inrec.dataType("savescaledres")==TpBool) {
+              err+= readVal(inrec, String("savescaledres"), savescaledres);
+            }
+            else {
+              err+= "savescaledres must be a bool";
+            }
+          }
         if( inrec.isDefined("restoringbeam") )     
 	  {
 	    String errinfo("");
@@ -4261,6 +4279,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     fusedThreshold = 0.0;
     specmode="mfs";
     largestscale = -1;
+    noRequireSumwt = False;
+    useprevscaledres = False;
+    savescaledres = False;
   }
 
   Record SynthesisParamsDeconv::toRecord() const
@@ -4312,6 +4333,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("interactive",interactive);
     decpar.define("nsigma",nsigma);
     decpar.define("noRequireSumwt",noRequireSumwt);
+    decpar.define("useprevscaledres",useprevscaledres);
+    decpar.define("savescaledres",savescaledres);
 
     return decpar;
   }

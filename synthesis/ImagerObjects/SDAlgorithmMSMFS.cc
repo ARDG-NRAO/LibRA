@@ -62,13 +62,16 @@ using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 
-  SDAlgorithmMSMFS::SDAlgorithmMSMFS( uInt nTaylorTerms, Vector<Float> scalesizes, Float smallscalebias):
+  SDAlgorithmMSMFS::SDAlgorithmMSMFS( uInt nTaylorTerms, Vector<Float> scalesizes, Float smallscalebias,
+                                      Bool usePrevScaledRes, Bool saveScaledRes):
     SDAlgorithmBase(),
     //    itsImages(),
-    itsMatPsfs(), itsMatResiduals(), itsMatModels(),
+    itsMatPsfs(), itsMatResiduals(), itsMatScaledResiduals(), itsMatModels(),
     itsNTerms(nTaylorTerms),
     itsScaleSizes(scalesizes),
     itsSmallScaleBias(smallscalebias),
+    itsUsePrevScaledRes(usePrevScaledRes),
+    itsSaveScaledRes(saveScaledRes),
     itsMTCleaner(),
     itsMTCsetup(false)
   {
@@ -93,6 +96,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMatPsfs.resize( 2*itsNTerms-1 );
     itsMatResiduals.resize( itsNTerms );
     itsMatModels.resize( itsNTerms );
+    itsMatScaledResiduals.resize( itsNTerms );
+    for(uInt tix=0; tix<itsNTerms; tix++) {
+        itsMatScaledResiduals[tix].resize( itsScaleSizes.nelements() );
+    }
 
     ////  Why is this needed ?  I hope this is by reference.
     for(uInt tix=0; tix<2*itsNTerms-1; tix++)
@@ -101,6 +108,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     	{
     	  (itsImages->residual(tix))->get( itsMatResiduals[tix], true );
     	  (itsImages->model(tix))->get( itsMatModels[tix], true );
+            if (itsUsePrevScaledRes) {
+                for (uInt six=0; six<itsScaleSizes.nelements(); six++) {
+                    (itsImages->scaledresidual(tix, six))->get( itsMatScaledResiduals[tix][six], true );
+                }
+            }
     	}
     	(itsImages->psf(tix))->get( itsMatPsfs[tix], true );
     }
@@ -164,6 +176,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     	tempMat.reference( itsMatResiduals[tix] );
     	itsMTCleaner.setresidual( tix, tempMat );
     	//	itsMTCleaner.setresidual( tix, itsMatResiduals[tix] );
+        if (itsUsePrevScaledRes) {
+            for (uInt six=0; six<itsScaleSizes.nelements(); six++) {
+                Matrix<Float> tempMat3;
+                tempMat3.reference( itsMatScaledResiduals[tix][six] );
+                itsMTCleaner.setscaledresidual( tix, six, tempMat3 );
+            }
+        }
 
     	Matrix<Float> tempMat2;
     	tempMat2.reference( itsMatModels[tix] );
@@ -197,11 +216,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       Long nsupport = Long(Float(100.0/Float(shp(0)))* Float(100.0/Float(shp(1))* Float(n4d + nscales)));
 
       Long nfull = 2 + 2 + 3 * nscales + 3 * itsNTerms + (2 * itsNTerms - 1) + 2 * itsNTerms * nscales;
+      Long nscaledres = (itsUsePrevScaledRes || itsSaveScaledRes) ? (itsNTerms * nscales) : 0;
       Long nfftserver = 1 + 2*2 ; /// 1 float and 2 complex
 
       Long mystery = 1 + 1;  /// TODO
 
-      Long ntotal = nsupport + nfull + nfftserver + mystery;
+      Long ntotal = nsupport + nfull + nscaledres + nfftserver + mystery;
       mem=sizeof(Float)*(shp(0))*(shp(1))*ntotal/1024;
 
     return mem;
@@ -236,6 +256,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       casacore::Matrix<Float> tmp;
       itsMTCleaner.getresidual(tix, tmp); // possible room for optimization here -> get residual without extra tmp copy? maybe change getResidual to accept an array?
       itsMatResiduals[tix] = tmp;
+      if (itsSaveScaledRes) {
+          for (uInt six=0; six<itsScaleSizes.nelements(); six++) {
+              casacore::Matrix<Float> tmp2;
+              itsMTCleaner.getscaledresidual(tix, six, tmp2); // possible room for optimization here -> get residual without extra tmp2 copy? maybe change getResidual to accept an array?
+              itsMatScaledResiduals[tix][six] = tmp2;
+          }
+      }
     }
   }	    
 
@@ -249,6 +276,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     {
     	(itsImages->residual(tix))->put( itsMatResiduals[tix] );
     	(itsImages->model(tix))->put( itsMatModels[tix] );
+        if (itsSaveScaledRes) {
+            for (uInt six=0; six<itsScaleSizes.nelements(); six++) {
+                (itsImages->scaledresidual(tix, six))->put( itsMatScaledResiduals[tix][six] );
+            }
+        }
     }
   }
 

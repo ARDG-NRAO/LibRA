@@ -54,6 +54,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   SIImageStoreMultiTerm();
   SIImageStoreMultiTerm(const casacore::String &imagename, casacore::uInt ntaylorterms=1,
+                        casacore::uInt nscales=1,
                         const casacore::Bool ignorefacets=casacore::False,
 			const casacore::Bool ignoresumwt=casacore::False);
 
@@ -64,7 +65,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			const casacore::Record &miscinfo,
                         const int nfacets,
 			const casacore::Bool overwrite=false,
-                        casacore::uInt ntaylorterms=1,casacore::Bool useweightimage=false);
+                        casacore::uInt ntaylorterms=1,
+                        casacore::uInt nscales=1,
+                        casacore::Bool useweightimage=false);
 
   /*
   SIImageStoreMultiTerm(casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > >modelims, 
@@ -80,6 +83,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
  SIImageStoreMultiTerm(const casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > &modelims,
                        const casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > &residims,
+                       const casacore::Block<casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > > &scaledresidims,
                        const casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > &psfims,
                        const casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > &weightims,
                        const casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > &restoredims,
@@ -109,6 +113,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > psf(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > residual(casacore::uInt term=0);
+  virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > scaledresidual(casacore::uInt term=0, casacore::uInt scaleidx=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > weight(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > model(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > image(casacore::uInt term=0);
@@ -205,10 +210,12 @@ private:
   casacore::uInt itsNTerms;
 
   casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > itsPsfs, itsModels, itsResiduals, itsWeights, itsImages, itsSumWts, itsImagePBcors, itsPBs;
+  casacore::Block<casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > > itsScaledResiduals;
   casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Complex> > > itsForwardGrids, itsBackwardGrids;
   std::shared_ptr<casacore::ImageInterface<casacore::Float> > itsAlpha, itsBeta, itsAlphaError, itsAlphaPBcor, itsBetaPBcor;
 
   casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > itsParentPsfs, itsParentModels, itsParentResiduals, itsParentWeights, itsParentImages, itsParentSumWts, itsParentPBs, itsParentImagePBcors;
+  casacore::Block<casacore::Block<std::shared_ptr<casacore::ImageInterface<casacore::Float> > > > itsParentScaledResiduals;
 
 };
 
