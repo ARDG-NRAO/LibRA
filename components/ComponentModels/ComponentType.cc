@@ -74,8 +74,9 @@ String ComponentType::name(ComponentType::Polarisation fluxEnum) {
   };
 }
 
-ComponentType::Polarisation ComponentType::polarisation(const String & 
-     						        polarisationName) {
+ComponentType::Polarisation ComponentType::polarisation(
+  const String& polarisationName
+) {
   String canonicalCase(polarisationName);
   canonicalCase.capitalize();
   ComponentType::Polarisation s;
@@ -92,14 +93,16 @@ ComponentType::Polarisation ComponentType::polarisation(const String &
 
 String ComponentType::name(ComponentType::SpectralShape spectralEnum) {
   switch (spectralEnum) {
-  case ComponentType::CONSTANT_SPECTRUM:
-    return "Constant";
-  case ComponentType::SPECTRAL_INDEX:
-    return "Spectral Index";
-  case ComponentType::TABULAR_SPECTRUM:
-    return "Tabular Spectrum";
-  default:
-    return "Unknown";
+    case ComponentType::CONSTANT_SPECTRUM:
+      return "Constant";
+    case ComponentType::SPECTRAL_INDEX:
+     return "Spectral Index";
+   case ComponentType::TABULAR_SPECTRUM:
+     return "Tabular Spectrum";
+    case ComponentType::PLP:
+      return "Power Logarithmic Polynomial";
+    default:
+      return "Unknown";
   };
 }
 

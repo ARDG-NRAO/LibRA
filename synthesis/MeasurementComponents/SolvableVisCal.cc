@@ -47,6 +47,7 @@
 #include <casa/Quanta/Quantum.h>
 #include <casa/Quanta/QuantumHolder.h>
 #include <tables/Tables/TableCopy.h>
+#include <tables/Tables/TableUtil.h>
 #include <ms/MeasurementSets/MSAntennaColumns.h>
 #include <ms/MeasurementSets/MSSpWindowColumns.h>
 #include <ms/MeasurementSets/MSFieldColumns.h>
@@ -8730,7 +8731,7 @@ String calTableType(const String& tablename) {
 
   // Table exists...
   
-  TableInfo ti(Table::tableInfo(tablename));
+  TableInfo ti(TableUtil::tableInfo(tablename));
   
   // ...Check if Calibration table....
   if (ti.type()!="Calibration") {
