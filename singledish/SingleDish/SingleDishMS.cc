@@ -658,28 +658,37 @@ void SingleDishMS::get_mask_from_rec(Int spwid,
 void SingleDishMS::get_masklist_from_mask(size_t const num_chan,
                                           bool const *mask,
                                           Vector<uInt> &masklist) {
-  std::vector<int> mlist;
-  mlist.clear();
+  size_t const max_num_masklist = num_chan + 1;
+  masklist.resize(max_num_masklist);  // clear
+  uInt last_idx = num_chan - 1;
+  uInt num_masklist = 0;
+  auto append = [&](uInt i){
+    masklist[num_masklist] = i;
+    num_masklist++;
+  };
 
-  for (uInt i = 0; i < num_chan; ++i) {
-    if (mask[i]) {
-      if ((i == 0) || (i == num_chan - 1)) {
-        mlist.push_back(i);
-      } else {
-        if ((mask[i]) && (!mask[i - 1])) {
-          mlist.push_back(i);
-        }
-        if ((mask[i]) && (!mask[i + 1])) {
-          mlist.push_back(i);
-        }
-      }
+  if (mask[0]) {
+    append(0);
+  }
+  for (uInt i = 1; i < last_idx; ++i) {
+    if (!mask[i]) continue;
+
+    // The following if-statements must be judged independently.
+    // Don't put them together as a single statement by connecting with '||'.
+    if (!mask[i - 1]) {
+      append(i);
+    }
+    if (!mask[i + 1]) {
+      append(i);
     }
   }
-
-  masklist.resize(mlist.size());
-  for (size_t i = 0; i < masklist.size(); ++i) {
-    masklist[i] = (uInt) mlist[i];
+  if (mask[last_idx]) {
+    if ((1 <= last_idx) && (!mask[last_idx - 1])) {
+      append(last_idx);
+    }
+    append(last_idx);
   }
+  masklist.resize(num_masklist, true);
 }
 
 void SingleDishMS::get_baseline_context(size_t const bltype,
@@ -1359,21 +1368,23 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
       Cube<Float> data_chunk(num_pol, num_chan, num_row, Array<Float>::uninitialized);
       Vector<float> spec(num_chan, Array<float>::uninitialized);
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row, Array<Bool>::uninitialized);
+      Vector<bool> flag(num_chan, Array<bool>::uninitialized);
       Vector<bool> mask(num_chan, Array<bool>::uninitialized);
-      Vector<bool> mask2(num_chan, Array<bool>::uninitialized);
+      Vector<bool> mask_after_clipping(num_chan, Array<bool>::uninitialized);
       float *spec_data = spec.data();
+      bool *flag_data = flag.data();
       bool *mask_data = mask.data();
-      bool *mask2_data = mask2.data();
+      bool *mask_after_clipping_data = mask_after_clipping.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
 
       auto get_wavenumber_upperlimit = [&](){ return static_cast<int>(num_chan) / 2 - 1; };
 
       uInt final_mask[num_pol];
-      uInt final_mask2[num_pol];
+      uInt final_mask_after_clipping[num_pol];
       final_mask[0] = 0;
       final_mask[1] = 0;
-      final_mask2[0] = 0;
-      final_mask2[1] = 0;
+      final_mask_after_clipping[0] = 0;
+      final_mask_after_clipping[1] = 0;
 
       bool new_nchan = false;
       get_nchan_and_mask(recspw, data_spw, recchan, num_chan, nchan, in_mask, nchan_set, new_nchan);
@@ -1455,9 +1466,9 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             apply_mtx[0][ipol] = false;
             continue;
           }
@@ -1465,7 +1476,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           // convert flag to mask by taking logical NOT of flag
           // and then operate logical AND with in_mask
           for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-            mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+            mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan]));
           }
           // get a spectrum from data cube
           get_spectrum_from_cube(data_chunk, irow, ipol, num_chan, spec_data);
@@ -1531,19 +1542,19 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             double *coeff_data = coeff.data();
 
             //---GetBestFitBaselineCoefficientsFloat()...
-            //func0(ctx_indices[idx], num_chan, blparam_eff, spec_data, mask_data, num_coeff, coeff_data, mask2_data, &rms);
+            //func0(ctx_indices[idx], num_chan, blparam_eff, spec_data, mask_data, num_coeff, coeff_data, mask_after_clipping_data, &rms);
             LIBSAKURA_SYMBOL(LSQFitContextFloat) *context = nullptr;
             if ((bltype != BaselineType_kSinusoid) || (!applyfft) || wn_ulimit_by_rejwn()) {
               context = bl_contexts[ctx_indices[idx]];
             }
-            func0(context, num_chan, blparam_eff, spec_data, mask_data, num_coeff, coeff_data, mask2_data, &rms);
+            func0(context, num_chan, blparam_eff, spec_data, mask_data, num_coeff, coeff_data, mask_after_clipping_data, &rms);
 
             for (size_t i = 0; i < num_chan; ++i) {
               if (mask_data[i] == false) {
                 final_mask[ipol] += 1;
               }
-              if (mask2_data[i] == false) {
-                final_mask2[ipol] += 1;
+              if (mask_after_clipping_data[i] == false) {
+                final_mask_after_clipping[ipol] += 1;
               }
             }
 
@@ -1568,7 +1579,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             }
 
             Vector<uInt> masklist;
-            get_masklist_from_mask(num_chan, mask2_data, masklist);
+            get_masklist_from_mask(num_chan, mask_after_clipping_data, masklist);
             if (masklist.size() > num_masklist_max) {
               num_masklist_max = masklist.size();
             }
@@ -1598,7 +1609,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             if ((bltype != BaselineType_kSinusoid) || (!applyfft) || wn_ulimit_by_rejwn()) {
               context = bl_contexts[ctx_indices[idx]];
             }
-            func3(context, num_chan, blparam_eff, num_coeff, spec_data, mask_data, &rms);
+            func3(context, num_chan, blparam_eff, num_coeff, spec_data, mask_data, mask_after_clipping_data, &rms);
           }
           // set back a spectrum to data cube
           if (do_subtract) {
@@ -1606,7 +1617,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
           }
 
           if (update_weight) {
-            compute_weight(num_chan, spec_data, mask_data, weight);
+            compute_weight(num_chan, spec_data, mask_after_clipping_data, weight);
             set_weight_to_matrix(weight_matrix, irow, ipol, weight.at(var_index));
           }
 
@@ -1744,7 +1755,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             ofs_txt << setprecision(8) << rms_mtx2(0, 0) << endl;
             ofs_txt << endl;
             ofs_txt << "Number of clipped channels = "
-                    << final_mask2[ipol] - final_mask[ipol] << endl;
+                    << final_mask_after_clipping[ipol] - final_mask[ipol] << endl;
             ofs_txt << endl;
             ofs_txt << "------------------------------------------------------"
                     << endl;
@@ -1810,7 +1821,7 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
 
             Matrix<Float> rms_mtx2 = rms_mtx;
             ofs_csv << setprecision(8) << rms_mtx2(ipol, 0) << ',';
-            ofs_csv << final_mask2[ipol] - final_mask[ipol];
+            ofs_csv << final_mask_after_clipping[ipol] - final_mask[ipol];
             ofs_csv << endl;
           }
         }
@@ -1917,12 +1928,12 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         float *spec, bool *mask, size_t const /*num_coeff*/, double *coeff,
-                         bool *mask2, float *rms){
+                         float *spec, bool const *mask, size_t const /*num_coeff*/, double *coeff,
+                         bool *mask_after_clipping, float *rms){
                        status = LIBSAKURA_SYMBOL(LSQFitPolynomialFloat)(
                          context, static_cast<uint16_t>(order_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         order_vect[0] + 1, coeff, nullptr, nullptr, mask2, rms, &bl_status);
+                         order_vect[0] + 1, coeff, nullptr, nullptr, mask_after_clipping, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitPolynomialFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -1940,11 +1951,11 @@ void SingleDishMS::subtractBaseline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractPolynomialFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, float *rms){
+                         size_t const /*num_coeff*/, float *spec, bool const *mask, bool *mask_after_clipping, float *rms){
                        status = LIBSAKURA_SYMBOL(LSQFitPolynomialFloat)(
                          context, static_cast<uint16_t>(order_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         order_vect[0] + 1, nullptr, nullptr, spec, mask, rms, &bl_status);
+                         order_vect[0] + 1, nullptr, nullptr, spec, mask_after_clipping, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitPolynomialFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -2014,13 +2025,13 @@ void SingleDishMS::subtractBaselineCspline(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         float *spec, bool *mask, size_t const /*num_coeff*/, double *coeff,
-                         bool *mask2, float *rms) {
+                         float *spec, bool const *mask, size_t const /*num_coeff*/, double *coeff,
+                         bool *mask_after_clipping, float *rms) {
                        status = LIBSAKURA_SYMBOL(LSQFitCubicSplineFloat)(
                          context, static_cast<uint16_t>(npiece_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
                          reinterpret_cast<double (*)[4]>(coeff), nullptr, nullptr,
-                         mask2, rms, boundary_data, &bl_status);
+                         mask_after_clipping, rms, boundary_data, &bl_status);
                        check_sakura_status("sakura_LSQFitCubicSplineFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -2043,11 +2054,11 @@ void SingleDishMS::subtractBaselineCspline(string const& in_column_name,
                        check_sakura_status("sakura_SubtractCubicSplineFloat", status);},
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context,
                          size_t const num_chan, std::vector<size_t> const &/*nwave*/,
-                         size_t const /*num_coeff*/, float *spec, bool *mask, float *rms) {
+                         size_t const /*num_coeff*/, float *spec, bool const *mask, bool *mask_after_clipping, float *rms) {
                        status = LIBSAKURA_SYMBOL(LSQFitCubicSplineFloat)(
                          context, static_cast<uint16_t>(npiece_vect[0]),
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         nullptr, nullptr, spec, mask, rms, boundary_data, &bl_status);
+                         nullptr, nullptr, spec, mask_after_clipping, rms, boundary_data, &bl_status);
                        check_sakura_status("sakura_LSQFitCubicSplineFloat", status);
                        if (bl_status != LIBSAKURA_SYMBOL(LSQFitStatus_kOK)) {
                          throw(AipsError("baseline fitting isn't successful."));
@@ -2143,13 +2154,13 @@ void SingleDishMS::subtractBaselineSinusoid(string const& in_column_name,
                      edge,
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context0,
                          size_t const num_chan, std::vector<size_t> const &nwave,
-                         float *spec, bool *mask, size_t const num_coeff, double *coeff,
-                         bool *mask2, float *rms) {
+                         float *spec, bool const *mask, size_t const num_coeff, double *coeff,
+                         bool *mask_after_clipping, float *rms) {
                        prepare_context(context0, num_chan, nwave);
                        status = LIBSAKURA_SYMBOL(LSQFitSinusoidFloat)(
                          context, nwave.size(), &nwave[0],
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         num_coeff, coeff, nullptr, nullptr, mask2, rms, &bl_status);
+                         num_coeff, coeff, nullptr, nullptr, mask_after_clipping, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitSinusoidFloat", status);
                        check_baseline_status(bl_status);
                      },
@@ -2171,12 +2182,12 @@ void SingleDishMS::subtractBaselineSinusoid(string const& in_column_name,
                      },
                      [&](LIBSAKURA_SYMBOL(LSQFitContextFloat) const *context0,
                          size_t const num_chan, std::vector<size_t> const &nwave,
-                         size_t const num_coeff, float *spec, bool *mask, float *rms) {
+                         size_t const num_coeff, float *spec, bool const *mask, bool *mask_after_clipping, float *rms) {
                        prepare_context(context0, num_chan, nwave);
                        status = LIBSAKURA_SYMBOL(LSQFitSinusoidFloat)(
                          context, nwave.size(), &nwave[0],
                          num_chan, spec, mask, clip_threshold_sigma, num_fitting_max,
-                         num_coeff, nullptr, nullptr, spec, mask, rms, &bl_status);
+                         num_coeff, nullptr, nullptr, spec, mask_after_clipping, rms, &bl_status);
                        check_sakura_status("sakura_LSQFitSinusoidFloat", status);
                        check_baseline_status(bl_status);
                        clear_context();
@@ -2263,6 +2274,8 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
       Vector<float> spec(num_chan);
       float *spec_data = spec.data();
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row);
+      Vector<bool> flag(num_chan);
+      bool *flag_data = flag.data();
       Vector<bool> mask(num_chan);
       bool *mask_data = mask.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
@@ -2311,10 +2324,12 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
         // loop over polarization
         for (size_t ipol = 0; ipol < num_pol; ++ipol) {
           bool apply;
-          std::vector<float> bl_coeff;
-          std::vector<double> bl_boundary;
+          Vector<double> coeff;
+          Vector<size_t> boundary;
+          std::vector<bool> mask_bltable;
           BLParameterSet fit_param;
-          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, bl_coeff, bl_boundary, fit_param);
+          parser.GetFitParameterByIdx(idx_fit_param, ipol, apply, coeff, boundary,
+                                      mask_bltable, fit_param);
           if (!apply) {
             flag_spectrum_in_cube(flag_chunk, irow, ipol); //flag
             continue;
@@ -2325,10 +2340,10 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
 
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             continue;
           }
 
@@ -2344,30 +2359,19 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
               (*iter).second[ctx_indices[idx]];
           //cout << "Got context for type " << (*iter).first << ": idx=" << ctx_indices[idx] << endl;
 
-          size_t num_coeff = bl_coeff.size();
-          Vector<double> coeff(num_coeff);
           double *coeff_data = coeff.data();
-          for (size_t i = 0; i < num_coeff; ++i) {
-            coeff_data[i] = bl_coeff[i];
-          }
-          size_t num_boundary = bl_boundary.size();
-          Vector<size_t> boundary(num_boundary);
           size_t *boundary_data = boundary.data();
-          for (size_t i = 0; i < num_boundary; ++i) {
-            boundary_data[i] = bl_boundary[i];
-          }
-
           string subtract_funcname;
           switch (static_cast<size_t>(fit_param.baseline_type)) {
           case BaselineType_kPolynomial:
           case BaselineType_kChebyshev:
             status = LIBSAKURA_SYMBOL(SubtractPolynomialFloat)(
-              context, num_chan, spec_data, num_coeff, coeff_data, spec_data);
+	      context, num_chan, spec_data, coeff.size(), coeff_data, spec_data);
             subtract_funcname = "sakura_SubtractPolynomialFloat";
             break;
           case BaselineType_kCubicSpline:
             status = LIBSAKURA_SYMBOL(SubtractCubicSplineFloat)(
-              context, num_chan, spec_data, num_boundary-1,
+	      context, num_chan, spec_data, boundary.size()-1,
               reinterpret_cast<double (*)[4]>(coeff_data),
               boundary_data, spec_data);
             subtract_funcname = "sakura_SubtractCubicSplineFloat";
@@ -2382,9 +2386,9 @@ void SingleDishMS::applyBaselineTable(string const& in_column_name,
 
           if (update_weight) {
             // convert flag to mask by taking logical NOT of flag
-            // and then operate logical AND with in_mask
+            // and then operate logical AND with in_mask and with mask from bltable
             for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-              mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+              mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan])) && mask_bltable[ichan];
             }
             compute_weight(num_chan, spec_data, mask_data, weight);
             set_weight_to_matrix(weight_matrix, irow, ipol, weight.at(var_index));
@@ -2842,21 +2846,23 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
       Cube<Float> data_chunk(num_pol, num_chan, num_row);
       Vector<float> spec(num_chan);
       Cube<Bool> flag_chunk(num_pol, num_chan, num_row);
+      Vector<bool> flag(num_chan);
       Vector<bool> mask(num_chan);
-      Vector<bool> mask2(num_chan);
+      Vector<bool> mask_after_clipping(num_chan);
       // CAUTION!!!
       // data() method must be used with special care!!!
       float *spec_data = spec.data();
+      bool *flag_data = flag.data();
       bool *mask_data = mask.data();
-      bool *mask2_data = mask2.data();
+      bool *mask_after_clipping_data = mask_after_clipping.data();
       Matrix<Float> weight_matrix(num_pol, num_row, Array<Float>::uninitialized);
 
       uInt final_mask[num_pol];
-      uInt final_mask2[num_pol];
+      uInt final_mask_after_clipping[num_pol];
       final_mask[0] = 0;
       final_mask[1] = 0;
-      final_mask2[0] = 0;
-      final_mask2[1] = 0;
+      final_mask_after_clipping[0] = 0;
+      final_mask_after_clipping[1] = 0;
 
       bool new_nchan = false;
       get_nchan_and_mask(recspw, data_spw, recchan, num_chan, nchan, in_mask, nchan_set, new_nchan);
@@ -2910,9 +2916,9 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           // actually, then it will be converted to real mask when
           // taking AND with user-given mask info. this is just for
           // saving memory usage...)
-          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, mask_data);
+          get_flag_from_cube(flag_chunk, irow, ipol, num_chan, flag_data);
           // skip spectrum if all channels flagged
-          if (allchannels_flagged(num_chan, mask_data)) {
+          if (allchannels_flagged(num_chan, flag_data)) {
             os << LogIO::DEBUG1 << "Row " << orig_rows[irow] << ", Pol " << ipol
                << ": All channels flagged. Skipping." << LogIO::POST;
             apply_mtx[0][ipol] = false;
@@ -2922,7 +2928,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           // convert flag to mask by taking logical NOT of flag
           // and then operate logical AND with in_mask
           for (size_t ichan = 0; ichan < num_chan; ++ichan) {
-            mask_data[ichan] = in_mask[idx][ichan] && (!(mask_data[ichan]));
+            mask_data[ichan] = in_mask[idx][ichan] && (!(flag_data[ichan]));
           }
           // get fitting parameter
           BLParameterSet fit_param;
@@ -3052,14 +3058,14 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 num_coeff, coeff_data, nullptr, nullptr,
-                mask2_data, &rms, &bl_status);
+                mask_after_clipping_data, &rms, &bl_status);
 
               for (size_t i = 0; i < num_chan; ++i) {
                 if (mask_data[i] == false) {
                   final_mask[ipol] += 1;
                 }
-                if (mask2_data[i] == false) {
-                  final_mask2[ipol] += 1;
+                if (mask_after_clipping_data[i] == false) {
+                  final_mask_after_clipping[ipol] += 1;
                 }
               }
 
@@ -3071,14 +3077,14 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 reinterpret_cast<double (*)[4]>(coeff_data), nullptr, nullptr,
-                mask2_data, &rms, boundary_data, &bl_status);
+                mask_after_clipping_data, &rms, boundary_data, &bl_status);
 
               for (size_t i = 0; i < num_chan; ++i) {
                 if (mask_data[i] == false) {
                   final_mask[ipol] += 1;
                 }
-                if (mask2_data[i] == false) {
-                  final_mask2[ipol] += 1;
+                if (mask_after_clipping_data[i] == false) {
+                  final_mask_after_clipping[ipol] += 1;
                 }
               }
 
@@ -3101,7 +3107,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             }
 
             Vector<uInt> masklist;
-            get_masklist_from_mask(num_chan, mask2_data, masklist);
+            get_masklist_from_mask(num_chan, mask_after_clipping_data, masklist);
             if (masklist.size() > num_masklist_max) {
               num_masklist_max = masklist.size();
             }
@@ -3152,7 +3158,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 num_coeff, nullptr, nullptr, spec_data,
-                mask_data, &rms, &bl_status);
+                mask_after_clipping_data, &rms, &bl_status);
               subtract_funcname = "sakura_LSQFitPolynomialFloat";
               break;
             case BaselineType_kCubicSpline:
@@ -3161,7 +3167,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
                 num_chan, spec_data, mask_data,
                 fit_param.clip_threshold_sigma, fit_param.num_fitting_max,
                 nullptr, nullptr, spec_data,
-                mask_data, &rms, boundary_data, &bl_status);
+                mask_after_clipping_data, &rms, boundary_data, &bl_status);
               subtract_funcname = "sakura_LSQFitCubicSplineFloat";
               break;
             default:
@@ -3263,7 +3269,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             ofs_txt << setprecision(8) << rms_mtx2(0, 0) << endl;
             ofs_txt << endl;
             ofs_txt << "Number of clipped channels = "
-                    << final_mask2[ipol] - final_mask[ipol] << endl;
+                    << final_mask_after_clipping[ipol] - final_mask[ipol] << endl;
             ofs_txt << endl;
             ofs_txt << "------------------------------------------------------"
                     << endl;
@@ -3312,7 +3318,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             }
             Matrix<Float> rms_mtx2 = rms_mtx;
             ofs_csv << setprecision(8) << rms_mtx2(ipol, 0) << ',';
-            ofs_csv << final_mask2[ipol] - final_mask[ipol];
+            ofs_csv << final_mask_after_clipping[ipol] - final_mask[ipol];
             ofs_csv << endl;
           }
         }
