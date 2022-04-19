@@ -67,9 +67,6 @@ public:
   
   // casacore::Input : psfs and dirty images
   casacore::Bool setresidual(int order, casacore::Matrix<casacore::Float> & dirty);
-  
-  // casacore::Input : scaled dirty images from previous run
-  casacore::Bool setscaledresidual(int order, int scaleidx, casacore::Matrix<casacore::Float> & scaleddirty);
  
   // casacore::Input : model images
   casacore::Bool setmodel(int order, casacore::Matrix<casacore::Float> & model);
@@ -85,9 +82,6 @@ public:
   
   // Output : psfs and dirty images
   casacore::Bool getresidual(int order, casacore::Matrix<casacore::Float> & residual);
-  
-  // Output : scaled dirty images from current/previous run
-  casacore::Bool getscaledresidual(int order, int scaleidx, casacore::Matrix<casacore::Float> & scaledresidual);
   
   // Compute principal solution - in-place on the residual images in vecDirty. 
   casacore::Bool computeprincipalsolution();
@@ -182,7 +176,6 @@ private:
 
   // R_{sk} = I_D * B_{sk} [nx,ny,ntaylor,nscales]
   casacore::Block<casacore::Matrix<casacore::Float> > matR_p; 
-  casacore::Bool matR_useprev;
   
   // a_{sk} = Solution vectors. [nx,ny,ntaylor,nscales]
   casacore::Block<casacore::Matrix<casacore::Float> > matCoeffs_p; 

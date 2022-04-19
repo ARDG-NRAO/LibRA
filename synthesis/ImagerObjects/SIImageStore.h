@@ -106,7 +106,6 @@ class SIImageStore
 
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > psf(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > residual(casacore::uInt term=0);
-  virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > scaledresidual(casacore::uInt term=0, casacore::uInt scaleidx=0){throw(casacore::AipsError("No Scaled Residual for 1 term"));};
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > weight(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > model(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > image(casacore::uInt term=0);

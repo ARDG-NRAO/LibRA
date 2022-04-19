@@ -66,7 +66,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				       itsPBLimit(0.2),
 				       itsMapperType("default"),
 				       itsNTaylorTerms(1),
-                                       itsNScales(1),
                                        itsNFacets(1)
   {
     itsFacetImageStores.resize(0);
@@ -138,15 +137,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       else
 	{ itsMapperType = "default";}
 
-	  if( normpars.isDefined("nterms") )  // A single int
+      if( normpars.isDefined("nterms") )  // A single int
 	{ itsNTaylorTerms = normpars.asuInt( RecordFieldId("nterms")); }
-	  else
+      else
 	{ itsNTaylorTerms = 1;}
-
-	  if( normpars.isDefined("nscales") )  // A single int
-	{ itsNScales = normpars.asuInt( RecordFieldId("nscales")); }
-	  else
-	{ itsNScales = 1;}
 
       if( normpars.isDefined("facets") )  // A single int
 	{ itsNFacets = normpars.asuInt( RecordFieldId("facets")); }
@@ -616,7 +610,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   std::shared_ptr<SIImageStore> SynthesisNormalizer::makeImageStore(const String &imagename )
   {
     if( itsMapperType == "multiterm" )
-      { return std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, itsNTaylorTerms, itsNScales, true ));   }
+      { return std::shared_ptr<SIImageStore>(new SIImageStoreMultiTerm( imagename, itsNTaylorTerms, true ));   }
     else
       { return std::shared_ptr<SIImageStore>(new SIImageStore( imagename, true ));   }
     itsImages->releaseLocks();
@@ -646,7 +640,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       {
         std::shared_ptr<SIImageStore> multiTermStore =
             std::make_shared<SIImageStoreMultiTerm>(imagename, csys, shape, objectname,
-                                                    miscinfo, itsNFacets, false, itsNTaylorTerms, itsNScales, useweightimage );
+                                                    miscinfo, itsNFacets, false, itsNTaylorTerms, useweightimage );
         return multiTermStore;
       }
     else

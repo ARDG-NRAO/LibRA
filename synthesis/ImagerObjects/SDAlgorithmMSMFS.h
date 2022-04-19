@@ -53,8 +53,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   public:
     
     // Empty constructor
-    SDAlgorithmMSMFS(casacore::uInt nTaylorTerms, casacore::Vector<casacore::Float> scalesizes, casacore::Float smallscalebias,
-                     casacore::Bool usePrevScaledRes, casacore::Bool saveScaledRes);
+    SDAlgorithmMSMFS(casacore::uInt nTaylorTerms, casacore::Vector<casacore::Float> scalesizes, casacore::Float smallscalebias);
     virtual  ~SDAlgorithmMSMFS();
     
     void restore( std::shared_ptr<SIImageStore> imagestore );
@@ -70,7 +69,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    void queryDesiredShape(Bool &onechan, Bool &onepol, IPosition imshape); // , nImageFacets.
 
     casacore::uInt getNTaylorTerms(){ return itsNTerms; };
-    casacore::uInt getNScales() { return itsScaleSizes.nelements(); }
     
     //    void initializeSubImages( std::shared_ptr<SIImageStore> &imagestore, casacore::uInt subim);
 
@@ -79,9 +77,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    std::shared_ptr<SIImageStore> itsImages;
 
     casacore::Vector< casacore::Array<casacore::Float> > itsMatPsfs, itsMatResiduals, itsMatModels;
-    casacore::Vector< casacore::Vector< casacore::Array<casacore::Float> > > itsMatScaledResiduals;
     casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
-    casacore::Bool itsUsePrevScaledRes, itsSaveScaledRes;
 
     /*    
     casacore::IPosition itsMaxPos;

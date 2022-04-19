@@ -118,7 +118,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  }
 	else if(decpars.algorithm==String("mtmfs"))
 	  {
-	    itsDeconvolver.reset(new SDAlgorithmMSMFS( decpars.nTaylorTerms, decpars.scales, decpars.scalebias, decpars.useprevscaledres, decpars.savescaledres ));
+	    itsDeconvolver.reset(new SDAlgorithmMSMFS( decpars.nTaylorTerms, decpars.scales, decpars.scalebias ));
 	  }
 	else if(decpars.algorithm==String("clark_exp"))
 	  {
@@ -949,7 +949,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
     std::shared_ptr<SIImageStore> imstore;
     if( itsDeconvolver->getAlgorithmName() == "mtmfs" )
-      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), itsDeconvolver->getNScales(), true, noRequireSumwt ) ); }
+      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true, noRequireSumwt ) ); }
     else
       {  imstore.reset( new SIImageStore( imagename, true, noRequireSumwt ) ); }
 

@@ -81,7 +81,6 @@ public:
   virtual casacore::String getAlgorithmName(){return itsAlgorithmName;};
 
   virtual casacore::uInt getNTaylorTerms(){return 1;};
-  virtual casacore::uInt getNScales(){return 1;};
   ///returns the estimate of memory used in kilobytes (kB);
   virtual casacore::Long estimateRAM(const std::vector<int>& imsize);
 protected:

@@ -75,7 +75,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsPsfs.resize(0);
     itsModels.resize(0);
     itsResiduals.resize(0);
-    itsScaledResiduals.resize(0);
     itsWeights.resize(0);
     itsImages.resize(0);
     itsSumWts.resize(0);
@@ -102,7 +101,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 					       const Int /*nfacets*/,
 					       const Bool /*overwrite*/,
 					       uInt ntaylorterms,
-					       uInt nscales,
 					       Bool useweightimage)
   {
     LogIO os( LogOrigin("SIImageStoreMultiTerm","Open new Images",WHERE) );
@@ -117,10 +115,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsSumWts.resize(2 * itsNTerms - 1);
     itsPBs.resize(itsNTerms);
     itsImagePBcors.resize(itsNTerms);
-    itsScaledResiduals.resize(itsNTerms);
-    for (uInt tix=0; tix<itsNTerms; tix++) {
-        itsScaledResiduals[tix].resize(nscales);
-    }
 
     itsMask.reset( );
     itsGridWt.reset( );
@@ -152,7 +146,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   }
 
   // Used from SynthesisNormalizer::makeImageStore()
-  SIImageStoreMultiTerm::SIImageStoreMultiTerm(const String &imagename, uInt ntaylorterms, uInt nscales,
+  SIImageStoreMultiTerm::SIImageStoreMultiTerm(const String &imagename, uInt ntaylorterms,
                                                const Bool ignorefacets, const Bool ignoresumwt)
   {
     LogIO os( LogOrigin("SIImageStoreMultiTerm","Open existing Images",WHERE) );
@@ -170,11 +164,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMask.reset( );
     itsGridWt.reset( );
     itsImagePBcors.resize(itsNTerms); fltPtrReset(itsImagePBcors);
-    itsScaledResiduals.resize(itsNTerms);
-    for (uInt tix=0; tix<itsNTerms; tix++) {
-        itsScaledResiduals[tix].resize(nscales);
-        fltPtrReset(itsScaledResiduals[tix]);
-    }
     
     
     
@@ -356,7 +345,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   // initialization of the facet related parameters
   SIImageStoreMultiTerm::SIImageStoreMultiTerm(const Block<std::shared_ptr<ImageInterface<Float> > > &modelims,
 					       const Block<std::shared_ptr<ImageInterface<Float> > > &residims,
-					       const Block<Block<std::shared_ptr<ImageInterface<Float> > > > &scaledresidims,
 					       const Block<std::shared_ptr<ImageInterface<Float> > > &psfims,
 					       const Block<std::shared_ptr<ImageInterface<Float> > > &weightims,
 					       const Block<std::shared_ptr<ImageInterface<Float> > > &restoredims,
@@ -381,7 +369,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsPsfs=psfims;
     itsModels=modelims;
     itsResiduals=residims;
-    itsScaledResiduals=scaledresidims;
     itsWeights=weightims;
     itsImages=restoredims;
     itsSumWts=sumwtims;
@@ -436,9 +423,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsImages=std::shared_ptr<ImageInterface<Float> >();
     itsSumWts=std::shared_ptr<ImageInterface<Float> >();
     itsPBs=std::shared_ptr<ImageInterface<Float> >();
-    for (uInt tix=0; tix<itsNTerms; tix++) {
-        itsScaledResiduals[tix]=std::shared_ptr<ImageInterface<Float> >();
-    }
 
     itsMask.reset( );
 
@@ -542,10 +526,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    if( itsImages[tix] ) releaseImage( itsImages[tix] );
 	    if( itsPBs[tix] ) releaseImage( itsPBs[tix] );
 	    if( itsImagePBcors[tix] ) releaseImage( itsImagePBcors[tix] );
-	    uInt nscales = itsScaledResiduals[tix].nelements();
-	    for (uInt six=0; six<nscales; six++) {
-	        if ( itsScaledResiduals[tix][six] ) releaseImage( itsScaledResiduals[tix][six] );
-	    }
 	  }
       }
     if( itsMask ) releaseImage( itsMask );
@@ -667,13 +647,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    Record mi = itsResiduals[term]->miscInfo(); ostringstream oss;mi.print(oss);cout<<"MiscInfo(res) " << term << " : " << oss.str() << endl;
 
     return itsResiduals[term];
-  }
-  std::shared_ptr<ImageInterface<Float> > SIImageStoreMultiTerm::scaledresidual(uInt term, uInt scaleidx)
-  {
-    accessImage( itsScaledResiduals[term][scaleidx], itsParentScaledResiduals[term][scaleidx], imageExts(RESIDUAL)+".tt"+String::toString(term)+".s"+String::toString(scaleidx) );
-    //    Record mi = itsScaledResiduals[term][scaleidx]->miscInfo(); ostringstream oss;mi.print(oss);cout<<"MiscInfo(res) " << term << " : " << oss.str() << endl;
-
-    return itsScaledResiduals[term][scaleidx];
   }
   std::shared_ptr<ImageInterface<Float> > SIImageStoreMultiTerm::weight(uInt term)
   {
@@ -1384,7 +1357,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 							  const Int pol, const Int npolchunks)
   {
       std::shared_ptr<SIImageStore> multiTermStore =
-          std::make_shared<SIImageStoreMultiTerm>(itsModels, itsResiduals, itsScaledResiduals, itsPsfs, itsWeights, itsImages, itsSumWts, itsPBs, itsImagePBcors, itsMask, itsAlpha, itsBeta, itsAlphaError,itsAlphaPBcor, itsBetaPBcor,  itsCoordSys, itsParentImageShape, itsImageName, itsObjectName, itsMiscInfo, facet, nfacets, chan, nchanchunks, pol, npolchunks);
+          std::make_shared<SIImageStoreMultiTerm>(itsModels, itsResiduals, itsPsfs, itsWeights, itsImages, itsSumWts, itsPBs, itsImagePBcors, itsMask, itsAlpha, itsBeta, itsAlphaError,itsAlphaPBcor, itsBetaPBcor,  itsCoordSys, itsParentImageShape, itsImageName, itsObjectName, itsMiscInfo, facet, nfacets, chan, nchanchunks, pol, npolchunks);
       return multiTermStore;
   }
 
@@ -1421,10 +1394,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsParentSumWts.resize(itsSumWts.nelements());
     itsParentImagePBcors.resize(itsImagePBcors.nelements());
     itsParentPBs.resize(itsPBs.nelements());
-    itsParentScaledResiduals.resize(itsScaledResiduals.nelements());
-    for (uInt tix=0; tix<itsScaledResiduals.nelements(); tix++) {
-        itsParentScaledResiduals[tix].resize(itsScaledResiduals[tix].nelements());
-    }
    
     itsParentPsfs = itsPsfs;
     itsParentModels=itsModels;
@@ -1434,9 +1403,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsParentSumWts=itsSumWts;
     itsParentImagePBcors=itsImagePBcors;
     itsParentPBs=itsPBs;
-    for (uInt tix=0; tix<itsScaledResiduals.nelements(); tix++) {
-        itsParentScaledResiduals[tix] = itsScaledResiduals[tix];
-    }
 
     itsParentMask=itsMask;
 

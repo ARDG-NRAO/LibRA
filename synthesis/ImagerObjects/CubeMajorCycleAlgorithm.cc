@@ -537,15 +537,9 @@ String&	CubeMajorCycleAlgorithm::name(){
 	if(nterms==0){
 		throw(AipsError("outlier "+String::toString(imId)+" field weight image is not defined"));
 	}
-	uInt nscales=0;
-	String scaledresname=imSel_p[imId].imageName+".residual.tt0.s"+String::toString(nscales);
-	while (Table::isReadable(scaledresname)){
-		++nscales;
-		scaledresname=imSel_p[imId].imageName+".residual.tt0.s"+String::toString(nscales);
-	}
 	nterms=(nterms+1)/2;
-	nterms_p[imId]=nterms;
-	shared_ptr<SIImageStore> subimstor(new SIImageStoreMultiTerm(imSel_p[imId].imageName, nterms, nscales, True));
+        nterms_p[imId]=nterms;
+        shared_ptr<SIImageStore> subimstor(new SIImageStoreMultiTerm(imSel_p[imId].imageName, nterms, True));
 	if(polRep_p[imId]< 0)
 		throw(AipsError("data polarization type is not defined"));
 	StokesImageUtil::PolRep polrep=(StokesImageUtil::PolRep)polRep_p[imId];

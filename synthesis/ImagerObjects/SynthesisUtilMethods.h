@@ -133,7 +133,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     static casacore::Int getOptimumSize(const casacore::Int npix);
 
-    static casacore::Bool fitPsfBeam(const casacore::String& imagename="", const casacore::Int nterms=1, const casacore::Int nscales=1, const casacore::Float psfcutoff=0.35);
+    static casacore::Bool fitPsfBeam(const casacore::String& imagename="", const casacore::Int nterms=1, const casacore::Float psfcutoff=0.35);
 
     static void getResource(casacore::String label="", casacore::String fname="");
     
@@ -458,9 +458,6 @@ public:
   casacore::Int largestscale;
   // task deconvolve needs to tell siimagestore that we don't need to check for the sumwt image
   casacore::Bool noRequireSumwt = casacore::False;
-  // task deconvolve needs to restart mtmfs runs with some of the internal images from a previous run
-  casacore::Bool useprevscaledres = casacore::False;
-  casacore::Bool savescaledres = casacore::False;
 
  
   casacore::Bool interactive;
