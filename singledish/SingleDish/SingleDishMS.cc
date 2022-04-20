@@ -2908,6 +2908,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
         size_t num_ffpar_max = 0;
         size_t num_masklist_max = 0;
         size_t num_coeff_max = 0;
+        std::vector<size_t> numcoeff(num_pol);
 
         // loop over polarization
         for (size_t ipol = 0; ipol < num_pol; ++ipol) {
@@ -3002,6 +3003,8 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           default:
             throw(AipsError("Unsupported baseline type."));
           }
+          numcoeff[ipol] = num_coeff;
+
           // Final check of the valid number of channels
           size_t num_min = (bltype == BaselineType_kCubicSpline) ? fit_param.npiece + 3 : num_coeff;
           if (NValidMask(num_chan, mask_data) < num_min) {
@@ -3259,7 +3262,8 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             ofs_txt << "Results of baseline fit" << endl;
             ofs_txt << endl;
             Matrix<Float> coeff_mtx2 = coeff_mtx;
-            for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            //for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_txt << "p" << icoeff << " = "
                       << setprecision(8) << coeff_mtx2(ipol, icoeff) << "  ";
             }
@@ -3313,7 +3317,8 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             Matrix<Float> coeff_mtx2 = coeff_mtx;
             ofs_csv << bltype_name.c_str() << ',' << fpar_mtx2(ipol, 0)
                     << ',';
-            for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            //for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_csv << setprecision(8) << coeff_mtx2(ipol, icoeff) << ',';
             }
             Matrix<Float> rms_mtx2 = rms_mtx;
