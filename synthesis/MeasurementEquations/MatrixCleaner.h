@@ -44,7 +44,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 //# Forward Declarations
 class MatrixNACleaner;
 // <summary>A copy of casacore::LatticeCleaner but just using 2-D matrices</summary>
-// <synopsis> It is a mimic of the casacore::LatticeCleaner class but avoid a lot of 
+// <synopsis> It is a mimic of the casacore::LatticeCleaner class but avoid a lot of
 // of the lattice to array and back copies and uses openmp in the obvious places
 // </synopsis>
 
@@ -73,14 +73,14 @@ class MatrixNACleaner;
 //
 // <example>
 // <srcblock>
-// </srcblock> 
+// </srcblock>
 // </example>
 //
 // <motivation>
 // </motivation>
 //
 // <thrown>
-// <li> casacore::AipsError: if psf has more dimensions than the model. 
+// <li> casacore::AipsError: if psf has more dimensions than the model.
 // </thrown>
 //
 // <todo asof="yyyy/mm/dd">
@@ -100,53 +100,53 @@ public:
   MatrixCleaner(const MatrixCleaner& other);
 
   // The assignment operator also uses reference semantics
-  MatrixCleaner & operator=(const MatrixCleaner & other); 
+  MatrixCleaner & operator=(const MatrixCleaner & other);
 
   // The destructor does nothing special.
   ~MatrixCleaner();
- 
+
   //just define the scales...nothing else is done
   //the user will need to call setPsf+makePsfScales+setDirty+makeDirtyScales
   //to be in a good state to clean.
   void defineScales(const casacore::Vector<casacore::Float>& scales);
-  
+
   //Set the dirty image without calculating convolutions..
-  //can be done by calling  makeDirtyScales or setscales if one want to redo the 
+  //can be done by calling  makeDirtyScales or setscales if one want to redo the
   //psfscales too.
   void setDirty(const casacore::Matrix<casacore::Float>& dirty);
   //Calculate the convolutions for the dirt
-  //Obviously the 
+  //Obviously the
   void makeDirtyScales();
   // Update the dirty image only (equiv of setDirty + makeDirtyScales)
   void update(const casacore::Matrix<casacore::Float> & dirty);
 
   //change the psf
-  //don't forget to redo the setscales or run makePsfScales, 
-  //followed by makeDirtyScales 
+  //don't forget to redo the setscales or run makePsfScales,
+  //followed by makeDirtyScales
   void setPsf(const casacore::Matrix<casacore::Float>& psf);
-  //calculate the convolutions of the psf 
+  //calculate the convolutions of the psf
   void makePsfScales();
-  
+
   // Set a number of scale sizes. The units of the scale are pixels.
   // The 2 functions below assume you have the dirty image and the psf set
-  // the convolutions are calculated automatically and the masks ones too 
+  // the convolutions are calculated automatically and the masks ones too
   // if it is set ....kept so as to be compatible function wise with LatticeCleaner
   casacore::Bool setscales(const casacore::Int nscales, const casacore::Float scaleInc=1.0);
 
   // Set a specific set of scales
   casacore::Bool setscales(const casacore::Vector<casacore::Float> & scales);
 
-  
- 
+
+
   // Set up control parameters
   // cleanType - type of the cleaning algorithm to use (HOGBOM, MULTISCALE)
   // niter - number of iterations
-  // gain - loop gain used in cleaning (a fraction of the maximum 
+  // gain - loop gain used in cleaning (a fraction of the maximum
   //        subtracted at every iteration)
   // aThreshold - absolute threshold to stop iterations
   // fThreshold - fractional threshold (i.e. given w.r.t. maximum residual)
   //              to stop iterations. This parameter is specified as
-  //              casacore::Quantity so it can be given in per cents. 
+  //              casacore::Quantity so it can be given in per cents.
   // choose - unused at the moment, specify false. Original meaning is
   // to allow interactive decision on whether to continue iterations.
   // This method always returns true.
@@ -164,24 +164,24 @@ public:
 
   // what iteration number to start on
   void startingIteration(const casacore::Int starting = 0) {itsStartingIter = starting; }
-  
+
  //Total flux accumulated so far
   casacore::Float totalFlux() const {return itsTotalFlux;}
 
 
-  // Clean an image. 
+  // Clean an image.
   //return value gives you a hint of what's happening
   //  1 = converged
   //  0 = not converged but behaving normally
   // -1 = not converged and stopped on cleaning consecutive smallest scale
-  // -2 = not converged and either large scale hit negative or diverging 
-  // -3 = clean is diverging rather than converging 
+  // -2 = not converged and either large scale hit negative or diverging
+  // -3 = clean is diverging rather than converging
   casacore::Int clean(casacore::Matrix<casacore::Float> & model, casacore::Bool doPlotProgress=false);
 
   // Set the mask
   // mask - input mask lattice
   // maskThreshold - if positive, the value is treated as a threshold value to determine
-  // whether a pixel is good (mask value is greater than the threshold) or has to be 
+  // whether a pixel is good (mask value is greater than the threshold) or has to be
   // masked (mask value is below the threshold). Negative threshold switches mask clipping
   // off. The mask value is used to weight the flux during cleaning. This mode is used
   // to implement cleaning based on the signal-to-noise as opposed to the standard cleaning
@@ -192,8 +192,8 @@ public:
   casacore::Bool makeScaleMasks();
 
   // remove the mask;
-  // useful when keeping object and sending a new dirty image to clean 
-  // one can set another mask then 
+  // useful when keeping object and sending a new dirty image to clean
+  // one can set another mask then
   void unsetMask();
 
   // Tell the algorithm to NOT clean just the inner quarter
@@ -202,7 +202,7 @@ public:
   // if true, the full image deconvolution will be attempted
   void ignoreCenterBox(casacore::Bool huh) { itsIgnoreCenterBox = huh; }
 
-  // Consider the case of a point source: 
+  // Consider the case of a point source:
   // the flux on all scales is the same, and the first scale will be chosen.
   // Now, consider the case of a point source with a *little* bit of extended structure:
   // thats right, the largest scale will be chosen.  In this case, we should provide some
@@ -232,7 +232,7 @@ public:
   // accidentally set too low (ie, lower than can be achieved
   // given errors in the approximate PSF).
   //
-  // threshold(iteration) = threshold(0) 
+  // threshold(iteration) = threshold(0)
   //                        * ( exp( (iteration - startingiteration)/Ndouble )/ 2.718 )
   // If speedup() is NOT invoked, no effect on threshold
   void speedup(const casacore::Float Ndouble);
@@ -260,16 +260,16 @@ protected:
 
   // Make an array of the specified scale
   void makeScale(casacore::Matrix<casacore::Float>& scale, const casacore::Float& scaleSize);
-  
+
   // Make Spheroidal function for scale images
   casacore::Float spheroidal(casacore::Float nu);
-  
+
   // Find the Peak of the matrix
   static casacore::Bool findMaxAbs(const casacore::Matrix<casacore::Float>& lattice,
                          casacore::Float& maxAbs, casacore::IPosition& posMax);
 
   // This is made static since findMaxAbs is static(!).
-  // Why is findMaxAbs static??? 
+  // Why is findMaxAbs static???
   //                       --SB
   static casacore::Bool findPSFMaxAbs(const casacore::Matrix<casacore::Float>& lattice,
 			    casacore::Float& maxAbs, casacore::IPosition& posMax,
@@ -281,9 +281,9 @@ protected:
   casacore::Bool findMaxAbsMask(const casacore::Matrix<casacore::Float>& lattice, const casacore::Matrix<casacore::Float>& mask,
                              casacore::Float& maxAbs, casacore::IPosition& posMax);
 
-  // Helper function to reduce the box sizes until the have the same   
-  // size keeping the centers intact  
-  static void makeBoxesSameSize(casacore::IPosition& blc1, casacore::IPosition& trc1,                               
+  // Helper function to reduce the box sizes until the have the same
+  // size keeping the centers intact
+  static void makeBoxesSameSize(casacore::IPosition& blc1, casacore::IPosition& trc1,
      casacore::IPosition &blc2, casacore::IPosition& trc2);
 
 
@@ -299,7 +299,6 @@ protected:
   casacore::Bool itsScalesValid;
   casacore::Int itsNscales;
   casacore::Float itsMaskThreshold;
-private:
 
   //# The following functions are used in various places in the code and are
   //# documented in the .cc file. Static functions are used when the functions
@@ -329,6 +328,22 @@ private:
   casacore::Vector<casacore::Float> itsTotalFluxScale;
   casacore::Float itsTotalFlux;
 
+  // Calculate index into PsfConvScales
+  casacore::Int index(const casacore::Int scale, const casacore::Int otherscale);
+
+  casacore::Bool destroyScales();
+  casacore::Bool destroyMasks();
+
+  casacore::Bool itsIgnoreCenterBox;
+  casacore::Bool itsStopAtLargeScaleNegative;
+  casacore::Int itsStopPointMode;
+  casacore::Bool itsDidStopPointMode;
+
+  casacore::IPosition psfShape_p;
+  casacore::Bool noClean_p;
+
+private:
+
   // casacore::Memory to be allocated per TempLattice
   casacore::Double itsMemoryMB;
 
@@ -342,26 +357,10 @@ private:
   //# Stop now?
   //#//  casacore::Bool stopnow();   Removed on 8-Apr-2004 by GvD
 
-  // Calculate index into PsfConvScales
-  casacore::Int index(const casacore::Int scale, const casacore::Int otherscale);
-  
-  casacore::Bool destroyScales();
-  casacore::Bool destroyMasks();
-
-
-  
-  casacore::Bool itsIgnoreCenterBox;
-  casacore::Bool itsStopAtLargeScaleNegative;
-  casacore::Int itsStopPointMode;
-  casacore::Bool itsDidStopPointMode;
   casacore::Bool itsJustStarting;
 
   // threshold for masks. If negative, mask values are used as weights and no pixels are
   // discarded (although effectively they would be discarded if the mask value is 0.)
-
-  casacore::IPosition psfShape_p;
-  casacore::Bool noClean_p;
-
 };
 
 } //# NAMESPACE CASA - END

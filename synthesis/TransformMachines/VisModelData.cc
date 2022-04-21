@@ -34,6 +34,7 @@
 #include <casa/Containers/Record.h>
 #include <casa/Logging/LogIO.h>
 #include <tables/Tables/ScaRecordColDesc.h>
+#include <tables/Tables/TableUtil.h>
 #include <components/ComponentModels/ComponentList.h>
 #include <ms/MSSel/MSSelection.h>
 #include <ms/MSSel/MSSelectionTools.h>
@@ -138,8 +139,8 @@ void VisModelData::deleteDiskImage(MeasurementSet& theMS, const String& theKey){
       const Record& ftrec=theRec.asRecord(ftname);
       if(ftrec.asRecord("container").isDefined("diskimage")){
 	String diskim=ftrec.asRecord("container").asString("diskimage");
-	if(Table::canDeleteTable(diskim))
-	  Table::deleteTable(diskim);
+	if(TableUtil::canDeleteTable(diskim))
+	  TableUtil::deleteTable(diskim);
       }
 
     }
@@ -240,8 +241,8 @@ void VisModelData::clearModel(const MeasurementSet& thems){
   
   Vector<String> ftmods=Directory::shellExpand(possibleFT);
   for (uInt kk=0; kk < ftmods.nelements(); ++kk){
-    if(Table::canDeleteTable(ftmods[kk])){
-      Table::deleteTable(ftmods[kk]);
+    if(TableUtil::canDeleteTable(ftmods[kk])){
+      TableUtil::deleteTable(ftmods[kk]);
     }
   }
 
