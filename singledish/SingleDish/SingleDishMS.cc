@@ -3262,7 +3262,6 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             ofs_txt << "Results of baseline fit" << endl;
             ofs_txt << endl;
             Matrix<Float> coeff_mtx2 = coeff_mtx;
-            //for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
             for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_txt << "p" << icoeff << " = "
                       << setprecision(8) << coeff_mtx2(ipol, icoeff) << "  ";
@@ -3317,7 +3316,6 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             Matrix<Float> coeff_mtx2 = coeff_mtx;
             ofs_csv << bltype_name.c_str() << ',' << fpar_mtx2(ipol, 0)
                     << ',';
-            //for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
             for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_csv << setprecision(8) << coeff_mtx2(ipol, icoeff) << ',';
             }
