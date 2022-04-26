@@ -45,6 +45,7 @@
 #include <synthesis/CalTables/BJonesMCol.h>
 #include <synthesis/CalTables/NewCalTable.h>
 #include <ms/MSSel/MSSpWindowIndex.h>
+#include <tables/Tables/TableUtil.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -190,8 +191,8 @@ void BJonesPoly::setSolve(const Record& solvepar)
   // Delete calTableName() if it exists and we are not appending
   //  TBD: move to SVC?
   if (!append()) {
-    if (Table::canDeleteTable(calTableName())) {
-      Table::deleteTable(calTableName());
+    if (TableUtil::canDeleteTable(calTableName())) {
+      TableUtil::deleteTable(calTableName());
     }
     //    else 
     //      throw(AipsError(calTableName()+" exists and can't delete! (plotting or browsing it?)"));
