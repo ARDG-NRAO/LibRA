@@ -3993,6 +3993,29 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                 err+= "autoadjust must be a bool\n";
               }
           }
+        //param for the Asp-Clean to trigger Hogbom Clean
+        if (inrec.isDefined("fusedthreshold"))
+        {
+          if (inrec.dataType("fusedthreshold") == TpFloat || inrec.dataType("fusedthreshold") == TpDouble)
+            err += readVal(inrec, String("fusedthreshold"), fusedThreshold);
+          else 
+            err += "fusedthreshold must be a float or double";
+        }
+         if (inrec.isDefined("specmode"))
+        {
+          if(inrec.dataType("specmode") == TpString)
+            err += readVal(inrec, String("specmode"), specmode);
+          else 
+            err += "specmode must be a string";
+        }
+        //largest scale size for the Asp-Clean to overwrite the default
+        if (inrec.isDefined("largestscale"))
+        {
+          if (inrec.dataType("largestscale") == TpInt)
+            err += readVal(inrec, String("largestscale"), largestscale);
+          else 
+            err += "largestscale must be an integer";
+        }
         //params for the new automasking algorithm
         if( inrec.isDefined("sidelobethreshold"))
           {
@@ -4005,6 +4028,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                 err+= "sidelobethreshold must be a float or double";
               }
           }
+
         if( inrec.isDefined("noisethreshold"))
           {
             if(inrec.dataType("noisethreshold")==TpFloat || inrec.dataType("noisethreshold")==TpDouble )
@@ -4267,6 +4291,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     nMask=0;
     interactive=false;
     autoAdjust=False;
+    fusedThreshold = 0.0;
+    specmode="mfs";
+    largestscale = -1;
   }
 
   Record SynthesisParamsDeconv::toRecord() const
@@ -4281,6 +4308,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("scales",scales);
     decpar.define("scalebias",scalebias);
     decpar.define("usemask",maskType);
+    decpar.define("fusedthreshold", fusedThreshold);
+    decpar.define("specmode", specmode);
+    decpar.define("largestscale", largestscale);
     if( maskList.nelements()==1 && maskList[0]=="") 
       {
         decpar.define("mask",maskString);

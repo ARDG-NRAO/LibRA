@@ -362,7 +362,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
 	                                  modelflux, peakresidual, peakresidualnomask, masksum, rank, fpeakMem, runtime, stopCode);
 
-	    
 	    loopcontrols.resetCycleIter(); 
 
 	    if( peakresidual > maxResidualAcrossPlanes && stopCode!=0 )
