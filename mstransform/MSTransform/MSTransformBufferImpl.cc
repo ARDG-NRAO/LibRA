@@ -1323,7 +1323,7 @@ const MFrequency::Types & MSTransformBufferImpl::freqRefFrameType () const
 		}
 
 		MFrequency refFrame = Vector<MFrequency>(spwRefRame_p(inputSPWIndex))(0);
-		freqRefFrameType_p = MFrequency::castType (refFrame.type());
+		freqRefFrameType_p = MFrequency::castType (refFrame.getRef().getType());
 	}
 
 	return freqRefFrameType_p;

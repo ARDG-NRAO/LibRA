@@ -55,6 +55,7 @@
 #include <ms/MeasurementSets/MeasurementSet.h>
 #include <ms/MSSel/MSSelection.h>
 
+#include <tables/Tables/TableUtil.h>
 
 #if ! defined(CASATOOLS)
 #include <synthesis/ImagerObjects/SIIterBot.h>
@@ -1022,7 +1023,7 @@ bool SynthesisImager::unlockImages()
       //cerr <<"Trying to cleanup " << (*it) << endl;
       if(Table::isReadable(*it)){
 	try{
-	  Table::deleteTable(*it);
+	  TableUtil::deleteTable(*it);
 	 }
 	 catch(AipsError &x){
 	   os << LogIO::WARN<< "YOU may have to delete the temporary file " << *it << " because " << x.getMesg()  << LogIO::POST;

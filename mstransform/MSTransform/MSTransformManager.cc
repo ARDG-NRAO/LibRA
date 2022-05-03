@@ -22,6 +22,8 @@
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
+#include <tables/Tables/TableUtil.h>
+
 #include <mstransform/TVI/PolAverageTVI.h>
 #include <mstransform/TVI/PointingInterpolationTVI.h>
 #include <mstransform/TVI/SDAtmosphereCorrectionTVI.h>
@@ -91,7 +93,7 @@ MSTransformManager::~MSTransformManager()
 	// This has to be done after deleting the outputMS data handler
 	if (userBufferMode_p)
 	{
-		Table::deleteTable(outMsName_p,true);
+		TableUtil::deleteTable(outMsName_p,true);
 	}
 
 	return;
@@ -2186,8 +2188,9 @@ void MSTransformManager::initDataSelectionParams()
             channelStart = spwchan(selection_i,1);
             channelStop = spwchan(selection_i,2);
             channelStep = spwchan(selection_i,3);
-            channelWidth = channelStop-channelStart+1;
-            channelSelector_p->add (spw, channelStart, channelWidth,channelStep);
+            // number of channels to select, starting with first selected channel:
+            channelWidth = 1 + floor(float(channelStop - channelStart) / float(channelStep));
+            channelSelector_p->add (spw, channelStart, channelWidth, channelStep);
 
             if (numOfSelChanMap_p.find(spw) == numOfSelChanMap_p.end())
             {

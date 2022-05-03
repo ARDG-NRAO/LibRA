@@ -328,7 +328,7 @@ void CTSummary::listAntenna (LogIO& os, Bool verbose) const
 
             // Position and diameter values for each antenna
             casacore::ROScalarMeasColumn<casacore::MPosition> antPos = ctAC.positionMeas();
-            Bool posIsITRF = (antPos(0).type() == MPosition::ITRF);
+            Bool posIsITRF = (antPos(0).getRef().getType() == MPosition::ITRF);
             casacore::ROScalarQuantColumn<casacore::Double> diameters = ctAC.dishDiameterQuant();
             // Get observatory position info for antenna offsets 
             // *not read from antenna table OFFSET column!*
@@ -487,7 +487,7 @@ bool CTSummary::getObservatoryPosition(casacore::MPosition& obspos,
     const ROCTObservationColumns& ctOC(ctc.observation());
     name = ctOC.telescopeName().getColumn()(0);
     obsposOk = MeasTable::Observatory(obspos, name);
-    if (obsposOk && (obspos.type() != MPosition::ITRF)) {
+    if (obsposOk && (obspos.getRef().getType() != MPosition::ITRF)) {
         MeasConvert<MPosition> toItrf(obspos, MPosition::ITRF);
         obspos = toItrf(obspos);
     }

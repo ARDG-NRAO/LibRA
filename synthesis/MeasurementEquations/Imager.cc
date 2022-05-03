@@ -48,6 +48,7 @@
 #include <casacore/casa/OS/HostInfo.h>
 #include <casacore/tables/Tables/RefRows.h>
 #include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableUtil.h>
 #include <casacore/tables/Tables/SetupNewTab.h>
 #include <casacore/tables/TaQL/TableParse.h>
 #include <casacore/tables/Tables/TableRecord.h>
@@ -2359,8 +2360,8 @@ Bool Imager::feather(const String& image, const String& highRes,
     }
   
     if(noStokes){
-      Table::deleteTable(outHighRes);
-      Table::deleteTable(outLowRes);
+      TableUtil::deleteTable(outHighRes);
+      TableUtil::deleteTable(outLowRes);
     }
     return true;
   } catch (AipsError x) {
@@ -4753,7 +4754,7 @@ Bool Imager::setjy(const Vector<Int>& /*fieldid*/,
 	};
 	  
 	// Delete the temporary component list and image tables
-	Table::deleteTable(tempCL);
+	TableUtil::deleteTable(tempCL);
 
       }
     }
@@ -4763,7 +4764,7 @@ Bool Imager::setjy(const Vector<Int>& /*fieldid*/,
 
   } catch (AipsError x) {
     this->unlock();
-    if(Table::canDeleteTable(tempCL)) Table::deleteTable(tempCL);
+    if(TableUtil::canDeleteTable(tempCL)) TableUtil::deleteTable(tempCL);
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -5203,8 +5204,8 @@ Record Imager::setjy(const Vector<Int>& /*fieldid*/,
 
           //didAnything = true;
 
-          if(Table::canDeleteTable(errmsg, tempCLs[selspw]))
-            Table::deleteTable(tempCLs[selspw]);
+          if(TableUtil::canDeleteTable(errmsg, tempCLs[selspw]))
+            TableUtil::deleteTable(tempCLs[selspw]);
           else
             os << LogIO::WARN
                << "Could not rm " << tempCLs[selspw]
@@ -5240,7 +5241,7 @@ Record Imager::setjy(const Vector<Int>& /*fieldid*/,
     this->unlock();
     for(Int i = tempCLs.nelements(); i--;){
       if(tempCLs[i] != "")
-        Table::deleteTable(tempCLs[i]);
+        TableUtil::deleteTable(tempCLs[i]);
     }
     if (tmodimage) delete tmodimage; tmodimage=NULL;
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
