@@ -260,7 +260,7 @@ inline void transformData(
   Bool b1;
   T *p = inout.getStorage(b1);
   // TODO: optimize condition for multi-threading
-  #pragma omp parallel for num_threads(numThreads) if((shape[2] > 10 && shape[1] > 500))
+  #pragma omp parallel for num_threads(numThreads) if(numThreads > 1 && shape[2] > 10 && shape[1] > 500)
   for (ssize_t ir = 0; ir < shape[2]; ++ir) {
     Int const index = indexForCorrection[ir];
     if (index >= 0) {
@@ -796,7 +796,8 @@ void SDAtmosphereCorrectionTVI::initializeAtmosphereModel(Record const &configur
     channelWidthsPerSpw[spw] = spectralWindowSubtablecols().chanWidth().get(spw);
   }
 
-  #pragma omp parallel for num_threads(processSpwList_.size()) if(processSpwList_.size() > 1)
+  int const numThreads = min(numThreads_, static_cast<int>(processSpwList_.size()));
+  #pragma omp parallel for num_threads(numThreads) if(numThreads > 1)
   for (unsigned int i = 0; i < processSpwList_.size(); ++i) {
     SpwId const spw = processSpwList_[i];
     #pragma omp critical (logging)
