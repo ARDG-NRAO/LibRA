@@ -1084,7 +1084,8 @@ void SDAtmosphereCorrectionTVI::updateCorrectionFactorInAdvance() {
        << LogIO::POST;
     }
     atm::SkyStatus ss(skyStatus);
-    #pragma omp parallel for firstprivate(ss) num_threads(numThreads_) if(timeIndexList.size() > 1)
+    int const numThreads = min(numThreads_, static_cast<int>(timeIndexList.size()));
+    #pragma omp parallel for firstprivate(ss) num_threads(numThreads) if(numThreads > 1)
     for (unsigned int i = 0; i < timeIndexList.size(); ++i) {
       Double const t = timeListForCorrection[timeIndexList[i]];
       Vector<Double> correctionFactor = updateCorrectionFactor(ss, t);
