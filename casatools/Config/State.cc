@@ -20,6 +20,18 @@ namespace casatools {
     }
 
     std::string State::resolve(const std::string &subdir) const {
+        // This function overrides the base class casacore::AppState::resolve function to ensures
+        // that when the subdir being resolved is found in the current working directory then a
+        // fully qualified path is still returned. This allows the python level idiom:
+        //
+        //    file = 'casatestdata/some-ms.ms'
+        //    resolved = ctsys.resolve(file)
+        //    if file == resolved:
+        //        # then file not found
+        //        ...
+        //
+        // to still work. With this change, it is clear that the path was resolved because the
+        // result is a fully qualified path.
 
         // return immediately if subdir is null string
         if ( subdir.size( ) <= 0 ) return subdir;
