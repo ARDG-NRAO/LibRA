@@ -20,7 +20,7 @@ namespace casatools {
     }
 
     std::string State::resolve(const std::string &subdir) const {
-        // This function overrides the base class casacore::AppState::resolve function to ensures
+        // This function overrides the base class casacore::AppState::resolve function to ensure
         // that when the subdir being resolved is found in the current working directory then a
         // fully qualified path is still returned. This allows the python level idiom:
         //
