@@ -351,7 +351,7 @@ SDAtmosphereCorrectionTVI::SDAtmosphereCorrectionTVI(ViImplementation2 *inputVII
     numThreads_ = configuration.asInt("nthreads");
   }
 
-  if (numThreads_ < 0) {
+  if (numThreads_ <= 0) {
     constexpr int kNumThreads = 8;
     int const numProcessors = omp_get_num_procs();
     numThreads_ = min(kNumThreads, numProcessors);
