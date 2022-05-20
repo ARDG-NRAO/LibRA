@@ -29,7 +29,11 @@
 #define CALIBRATION_CALTABITER_H
 
 #include <casa/aips.h>
+#include <measures/Measures/MBaseline.h>
+#include <measures/Measures/MEpoch.h>
+#include <ms/MSOper/MSDerivedValues.h>
 #include <tables/Tables/TableIter.h>
+
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/CTColumns.h>
@@ -91,6 +95,9 @@ public:
 
   casacore::Int nrow() const { return ti_->table().nrow(); };
 
+  // When not included in ctor table
+  void setCTColumns(const NewCalTable& tab);
+
   // Column accessors
   // Those methods that return scalars for data coordinates 
   //  (e.g., thisTime(), thisField(), etc.) return the first element
@@ -140,7 +147,6 @@ public:
   casacore::Cube<casacore::Float> casfparam(casacore::String what="") const;
   void casfparam(casacore::Cube<casacore::Float>& casf, casacore::String what="") const;
 
-
   casacore::Cube<casacore::Float> paramErr() const;
   void paramErr(casacore::Cube<casacore::Float>& c) const;
 
@@ -160,6 +166,11 @@ public:
   void freq(casacore::Vector<casacore::Double>& v) const;
   int freqFrame(int spwId) const;
 
+  casacore::MDirection azel0(casacore::Double time);
+  casacore::Double hourang(casacore::Double time);
+  casacore::Float parang0(casacore::Double time);
+
+  casacore::Matrix<casacore::Double> uvw();
  protected:
 
   // Attach accessors
@@ -171,7 +182,16 @@ public:
   ROCTIter (const ROCTIter& other);
   ROCTIter& operator= (const ROCTIter& other);
 
-  // casacore::Data:
+  // Set epoch_ from first time measure
+  void initEpoch();
+
+  // Update phase center in MSDerivedValues
+  void updatePhaseCenter();
+
+  // Initialize and calculate uvw for each antenna.
+  // Based on msvis MSUVWGenerator
+  void initUVW();
+  void updateAntennaUVW();
 
   // Remember the sort columns...
   casacore::Vector<casacore::String> sortCols_;
@@ -180,12 +200,12 @@ public:
   //   safe to access channel axis info
   casacore::Bool singleSpw_;
 
-  // The parent NewCalTable (casacore::Table) object 
-  //  (stays in scope for the life of the CTIter)
+  // The parent NewCalTable (casacore::Table) object
+  // (stays in scope for the life of the CTIter)
   NewCalTable parentNCT_;
 
   // Access to subtables (e.g., for frequencies)
-  ROCTColumns calCol_;
+  ROCTColumns* calCol_;
 
   // The underlying TableIterator
   casacore::TableIterator *ti_;
@@ -196,7 +216,15 @@ public:
   // Per-iteration columns
   ROCTMainColumns *iROCTMainCols_;
 
-
+  // For calculated axes
+  bool init_epoch_, init_uvw_;
+  casacore::Int nAnt_;
+  casacore::MDirection phaseCenter_;
+  casacore::MEpoch epoch_;
+  casacore::MPosition refAntPos_;
+  casacore::MBaseline::Types baseline_type_;
+  casacore::Vector<casacore::MVBaseline> mvbaselines_;              // ant pos rel to ant0
+  casacore::Vector<casacore::Vector<casacore::Double>> antennaUVW_; // [u,v,w] for each ant
 };
 
 // Writable version (limited to certain 'columns')
