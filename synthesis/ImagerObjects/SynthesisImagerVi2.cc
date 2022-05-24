@@ -1770,7 +1770,7 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
                   //cerr << k << " rank " << rank << " successful " << endl;
                   cerr << "" ;
                 else
-                    logger << k << " rank " << rank << " failed " << LogIO::SEVERE;
+                    logger << LogIO::SEVERE << k << " rank " << rank << " failed " << LogIO::POST;
                 assigned = casa::applicator.nextAvailProcess ( cmc, rank );
 
             }
@@ -1815,7 +1815,7 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
               //cerr << "remainder rank " << rank << " successful " << endl;
               cerr << "";
             else
-                logger << "remainder rank " << rank << " failed " << LogIO::SEVERE;
+                logger << LogIO::SEVERE << "remainder rank " << rank << " failed " << LogIO::POST;
 
             rank = casa::applicator.nextProcessDone ( cmc, allDone );
 			if(casa::applicator.isSerial())
@@ -1836,7 +1836,7 @@ void SynthesisImagerVi2::appendToMapperList(String imagename,
             if(!String(x.getMesg()).contains("T/F"))
               throw(AipsError(x.getMesg()));
 	    else{
-	      logger << "Error : " << x.getMesg() << LogIO::WARN << LogIO::POST;
+	      logger << LogIO::WARN << "Error : " << x.getMesg() << LogIO::POST;
 	      //cout << "x.getMesg() " << endl;
 	    }
             ///ignore copy mask error and proceed as this happens with interactive
