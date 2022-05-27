@@ -514,7 +514,7 @@ void CalStatsAmp::norm( Vector<Double>& oAmp, Vector<Double>& oAmpErr,
 
   if ( uiNumAbsC <= 1 ) {
     LogIO log( LogOrigin( "CalStatsAmp", "norm", WHERE ) );
-    log << LogIO::WARN
+    log << LogIO::INFO
         << "Abscissa has a dimension <= 1, no normalization"
         << LogIO::POST;
     return;
