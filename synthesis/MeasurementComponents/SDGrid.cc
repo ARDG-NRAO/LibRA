@@ -1629,6 +1629,16 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
       logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
     }
 
+    // perform direction conversion to clear cache
+    // set timestamp 1 week earlier
+    MEpoch epoch_tmp(Quantity(vb.time()(row) - 86400.0 * 7, "s"));
+    mFrame_p.resetEpoch(epoch_tmp);
+    // perform conversion
+    MDirection _dir_tmp = (*pointingToImage)(vb.direction1()(row));
+
+    // revert timestamp
+    mFrame_p.resetEpoch(epoch);
+
   } else {
     mFrame_p.resetEpoch(epoch);
     if (lastAntID_p != vb.antenna1()(row)) {
