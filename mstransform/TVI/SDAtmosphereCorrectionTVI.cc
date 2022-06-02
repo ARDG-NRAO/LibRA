@@ -252,14 +252,15 @@ template<class T>
 inline void transformData(
   std::vector<Vector<Double> > const &correctionFactorList,
   std::vector<Int> const &indexForCorrection,
-  Cube<T> &inout
+  Cube<T> &inout,
+  int const numThreads
 ) {
   IPosition const shape = inout.shape();
   assert(shape[2] == static_cast<Int>(indexForCorrection.size()));
   Bool b1;
   T *p = inout.getStorage(b1);
   // TODO: optimize condition for multi-threading
-  #pragma omp parallel for if((shape[2] > 10 && shape[1] > 500))
+  #pragma omp parallel for num_threads(numThreads) if(numThreads > 1 && shape[2] > 10 && shape[1] > 500)
   for (ssize_t ir = 0; ir < shape[2]; ++ir) {
     Int const index = indexForCorrection[ir];
     if (index >= 0) {
@@ -334,12 +335,29 @@ SDAtmosphereCorrectionTVI::SDAtmosphereCorrectionTVI(ViImplementation2 *inputVII
     atmType_(2),
     atmSkyStatusPerSpw_(),
     correctionFactorList_(),
-    indexForCorrection_()
+    indexForCorrection_(),
+    numThreads_(1)
 {
 
   // Initialize attached VisBuffer
   LogIO os(LogOrigin("SDAtmosphereCorrectionTVI", __func__, WHERE));
   setVisBuffer(createAttachedVisBuffer(VbRekeyable));
+
+  // set numThreads_
+#ifdef _OPENMP
+  // TODO: optimize number of threads
+  // setup number of threads for OpenMP
+  if (configuration.isDefined("nthreads")) {
+    numThreads_ = configuration.asInt("nthreads");
+  }
+
+  if (numThreads_ <= 0) {
+    constexpr int kNumThreads = 8;
+    int const numProcessors = omp_get_num_procs();
+    numThreads_ = min(kNumThreads, numProcessors);
+  }
+  os << "Setting numThreads_ to " << numThreads_ << LogIO::POST;
+#endif
 }
 
 void SDAtmosphereCorrectionTVI::origin() {
@@ -382,14 +400,6 @@ void SDAtmosphereCorrectionTVI::originChunks(Bool forceRewind) {
 
   // initialize Atmosphere Transmission Model
   initializeAtmosphereModel(configuration_);
-
-#ifdef _OPENMP
-  // TODO: optimize number of threads
-  // setup number of threads for OpenMP
-  constexpr int kNumThreads = 8;
-  int const numProcessors = omp_get_num_procs();
-  omp_set_num_threads(min(kNumThreads, numProcessors));
-#endif
 }
 
 void SDAtmosphereCorrectionTVI::nextChunk() {
@@ -402,7 +412,7 @@ void SDAtmosphereCorrectionTVI::visibilityCorrected(Cube<Complex> & vis) const {
   if (getVii()->existsColumn(VisBufferComponent2::VisibilityCorrected)) {
     getVii()->visibilityCorrected(vis);
     if (transformSubchunk_) {
-      transformData(correctionFactorList_, indexForCorrection_, vis);
+      transformData(correctionFactorList_, indexForCorrection_, vis, numThreads_);
     }
   } else {
     vis.resize();
@@ -413,7 +423,7 @@ void SDAtmosphereCorrectionTVI::visibilityModel(Cube<Complex> & vis) const {
   if (getVii()->existsColumn(VisBufferComponent2::VisibilityModel)) {
     getVii()->visibilityModel(vis);
     if (transformSubchunk_) {
-      transformData(correctionFactorList_, indexForCorrection_, vis);
+      transformData(correctionFactorList_, indexForCorrection_, vis, numThreads_);
     }
   } else {
     vis.resize();
@@ -424,7 +434,7 @@ void SDAtmosphereCorrectionTVI::visibilityObserved(Cube<Complex> & vis) const {
   if (getVii()->existsColumn(VisBufferComponent2::VisibilityObserved)) {
     getVii()->visibilityObserved(vis);
     if (transformSubchunk_) {
-      transformData(correctionFactorList_, indexForCorrection_, vis);
+      transformData(correctionFactorList_, indexForCorrection_, vis, numThreads_);
     }
   } else {
     vis.resize();
@@ -435,7 +445,7 @@ void SDAtmosphereCorrectionTVI::floatData(casacore::Cube<casacore::Float> & fcub
   if (getVii()->existsColumn(VisBufferComponent2::FloatData)) {
     getVii()->floatData(fcube);
     if (transformSubchunk_) {
-      transformData(correctionFactorList_, indexForCorrection_, fcube);
+      transformData(correctionFactorList_, indexForCorrection_, fcube, numThreads_);
     }
   } else {
     fcube.resize();
@@ -786,7 +796,8 @@ void SDAtmosphereCorrectionTVI::initializeAtmosphereModel(Record const &configur
     channelWidthsPerSpw[spw] = spectralWindowSubtablecols().chanWidth().get(spw);
   }
 
-  #pragma omp parallel for num_threads(processSpwList_.size()) if(processSpwList_.size() > 1)
+  int const numThreads = min(numThreads_, static_cast<int>(processSpwList_.size()));
+  #pragma omp parallel for num_threads(numThreads) if(numThreads > 1)
   for (unsigned int i = 0; i < processSpwList_.size(); ++i) {
     SpwId const spw = processSpwList_[i];
     #pragma omp critical (logging)
@@ -1073,7 +1084,8 @@ void SDAtmosphereCorrectionTVI::updateCorrectionFactorInAdvance() {
        << LogIO::POST;
     }
     atm::SkyStatus ss(skyStatus);
-    #pragma omp parallel for firstprivate(ss) if(timeIndexList.size() > 1)
+    int const numThreads = min(numThreads_, static_cast<int>(timeIndexList.size()));
+    #pragma omp parallel for firstprivate(ss) num_threads(numThreads) if(numThreads > 1)
     for (unsigned int i = 0; i < timeIndexList.size(); ++i) {
       Double const t = timeListForCorrection[timeIndexList[i]];
       Vector<Double> correctionFactor = updateCorrectionFactor(ss, t);
