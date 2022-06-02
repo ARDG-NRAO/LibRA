@@ -3237,6 +3237,10 @@ Bool Imager::makeimage(const String& type, const String& image,
     if (!ft_p)
       createFTMachine();
     
+    os << LogIO::DEBUG << "FTMachine is : " << ftmachine 
+       << " (" << ft_p << ")" << LogIO::POST;
+    
+    
     // Now make the required image
     Matrix<Float> weight;
     ft_p->makeImage(seType, *rvi_p, cImageImage, weight);
