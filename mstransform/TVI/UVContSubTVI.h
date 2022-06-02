@@ -40,6 +40,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 namespace vi { //# NAMESPACE VI - BEGIN
 
+// One spw:chan (as str) + fit_order (as int) from the input fitspec record
+typedef std::pair<std::string, unsigned int> InFitSpec;
+
+// Specification of a fit (given per field, per spw, or globally)
+struct FitSpec {
+  FitSpec() = default;  // should be =delete when C++17/insert_or_assign is available
+  FitSpec(Vector<bool> mask, unsigned int order);
+
+  Vector<bool> lineFreeChannelMask;
+  unsigned int fitOrder = -1;
+};
+
 //////////////////////////////////////////////////////////////////////////
 // UVContSubTVI class
 //////////////////////////////////////////////////////////////////////////
@@ -81,21 +93,21 @@ protected:
                                                 int parallelCorrAxis=-1) const;
 
  private:
-    void parseFitSPW(const Record &configuration);
-    void parseListFitSPW(const Record &configuration);
-    void printFitSPW() const;
-    void populatePerFieldLineFreeChannelMask(int fieldID, const std::string& fieldFitspw);
+    void parseFitSpec(const Record &configuration);
+    void parseListFitSpec(const Record &configuration);
+    void printInputFitSpec() const;
+    void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;
-    // field -> fitspw spec
-    std::unordered_map<int, std::string> fitspw_p;
+    // field -> fitspw spec     // TODO: this can be moved out of priv members / .h
+    std::unordered_map<int, std::vector<InFitSpec>> fitspec_p;
     mutable bool withDenoisingLib_p;
     mutable uint nThreads_p;
     mutable uint niter_p;
 
     // Maps field -> SPW -> channel_mask (1s will be combined with flags to exclude chans)
-    unordered_map<int, unordered_map<int, Vector<bool>>> perFieldLineFreeChannelMaskMap_p;
+    unordered_map<int, unordered_map<int, FitSpec>> perFieldSpecMap_p;
     mutable map<int, denoising::GslPolynomialModel<Double>*> inputFrequencyMap_p;
 
     mutable UVContSubResult result_p;
