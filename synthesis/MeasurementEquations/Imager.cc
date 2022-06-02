@@ -3237,7 +3237,7 @@ Bool Imager::makeimage(const String& type, const String& image,
     if (!ft_p)
       createFTMachine();
     
-    os << LogIO::DEBUG << "FTMachine is : " << ftmachine 
+    os << LogIO::DEBUG1 << "FTMachine is : " << ftmachine 
        << " (" << ft_p << ")" << LogIO::POST;
     
     
