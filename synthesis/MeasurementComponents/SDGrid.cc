@@ -172,16 +172,15 @@ std::ostream& operator<<(std::ostream &os, const ChronoStat &c) {
   const auto empty = c.is_empty();
 	if (empty) {
 		cerr << "WARN: ChronoStat instance named: '" << c.name() << "' is empty.";
-	} else {
-		os  << "name: " << c.name() << eol
-			<< "sum:        " << std::setw(20) << std::right << c.laps_sum().count() << eol
-			<< "count:      " << std::setw(20) << std::right << c.laps_count() << eol
-			<< "min:        " << std::setw(20) << std::right << c.laps_min().count() << eol
-			<< "mean:       " << std::setw(20) << std::right << ( empty ? 0 : c.laps_mean().count()) << eol
-			<< "max:        " << std::setw(20) << std::right << c.laps_max().count() << eol
-			<< "overflows:  " << std::setw(20) << std::right << c.n_overflows() << eol
-			<< "underflows: " << std::setw(20) << std::right << c.n_underflows() << eol;
-	}
+	} 
+	os  << "name: " << c.name() << eol
+		<< "sum:        " << std::setw(20) << std::right << c.laps_sum().count() << eol
+		<< "count:      " << std::setw(20) << std::right << c.laps_count() << eol
+		<< "min:        " << std::setw(20) << std::right << c.laps_min().count() << eol
+		<< "mean:       " << std::setw(20) << std::right << ( empty ? 0 : c.laps_mean().count()) << eol
+		<< "max:        " << std::setw(20) << std::right << c.laps_max().count() << eol
+		<< "overflows:  " << std::setw(20) << std::right << c.n_overflows() << eol
+		<< "underflows: " << std::setw(20) << std::right << c.n_underflows() << eol;
 	return os;
 }
 
