@@ -78,6 +78,7 @@ public:
 protected:
 
     bool parseConfiguration(const Record &configuration);
+    void fitSpecToPerFieldMap();
     void initialize();
 
     template<class T> void transformDataCube(	const Cube<T> &inputVis,
@@ -93,8 +94,13 @@ protected:
                                                 int parallelCorrAxis=-1) const;
 
  private:
+    rownr_t getMaxMSFieldID() const;
     void parseFitSpec(const Record &configuration);
-    void parseListFitSpec(const Record &configuration);
+    void parseDictFitSpec(const Record &configuration);
+    void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs,
+                           const rownr_t maxMSField);
+    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const rownr_t maxMSField,
+                              const InFitSpec &spec);
     void printInputFitSpec() const;
     void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
 

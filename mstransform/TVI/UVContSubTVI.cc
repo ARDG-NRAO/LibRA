@@ -67,8 +67,6 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 	}
 
 	initialize();
-
-	return;
 }
 
 UVContSubTVI::~UVContSubTVI()
@@ -92,8 +90,8 @@ bool isFieldIndex(const std::string &str) {
     return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
 }
 
-/*
- * For a field string (example: '3', '0,1,4' get the integer indices
+/**
+ * For a field string (example: '3', '0,1,4') get the integer indices
  * specified in the string.
  * Tokenizes the string by ',' separator and trims spaces.
  *
@@ -105,17 +103,20 @@ std::vector<int> stringToFieldIdxs(const std::string &str)
 {
     stringstream stream(str);
     vector<int> result;
-
     while(stream.good()) {
         string token;
         getline(stream, token, ',' );
         token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
         if (!isFieldIndex(token)) {
-            throw AipsError("Invalid field index: " + token);
+            throw AipsError("Invalid field index: " + token + " (in " + str + ").");
 
         }
-        auto idx = std::stoi(token);
-        result.push_back(idx);
+        try {
+            auto idx = std::stoi(token);
+            result.push_back(idx);
+        } catch (const std::exception &exc) {
+            throw AipsError("Error trying to parse field ID: " + token + ", " + exc.what());
+        }
     }
     return result;
 }
@@ -137,101 +138,196 @@ void UVContSubTVI::parseFitSpec(const Record &configuration)
         fitspec_p.insert({-1, specs});
     } catch(AipsError &exc) {
         // alternatively, fitspec must be a record with field/spw specs
-        parseListFitSpec(configuration);
-    }
-}
-
-// TODO: this is just transition list->dict/record. Very limited, supports only single-SPW
-// strings
-unsigned int spwIDFromSpwStr(const std::string &spwStr) {
-    if (0 == spwStr.length()) {
-        throw AipsError("Unexpected empty SPW IDs string");
-    } else if (spwStr.find(',') != std::string::npos) {
-        // this would need to split by ',' and get the list of spws -> return list of int
-        throw AipsError("Unexpected SPW separator , found in per-field per-SPW spw ID");
-    } else {
-        auto pos = spwStr.find(':');
-        return stoi(spwStr.substr(0, pos));
+        parseDictFitSpec(configuration);
     }
 }
 
 /**
- * Takes the input list of fieldID: fitSpec, parses it and populates a
- * map in fitspec_p.
+ * For an spw string given in a fitspw per-field subdictionary
+ * (example: '0', '1,2') get the integer indices specified in the
+ * string. Tokenizes the string by ',' separator and trims
+ * spaces. Similar to stringToFieldIDxs but with spw-specific checks.
+ *
+ * @param a string with SPW indices as used in uvcontsub/fitspec parameter
+ * @param allowSemicolon whether to accept the ':' spw:chan separator
+ *
+ * @return vector of SPW indices
+ */
+std::vector<unsigned int> stringToSPWIdxs(const std::string &spwStr,
+                                          bool allowSemicolon=false) {
+    if (0 == spwStr.length()) {
+        throw AipsError("Unexpected empty SPW IDs string");
+    }
+    if (!allowSemicolon && spwStr.find(':') != std::string::npos) {
+        throw AipsError("Unexpected spw:chan separator character ':' found in SPW: " +
+                        spwStr + ". Not allowed in fitspec dictionaries");
+    }
+
+    vector<unsigned int> result;
+    stringstream stream(spwStr);
+    while(stream.good()) {
+        string token;
+        getline(stream, token, ',' );
+        token.erase(std::remove(token.begin(), token.end(), ' '), token.end());
+        if (!allowSemicolon && !isFieldIndex(token)) {
+            throw AipsError("Invalid SPW index: " + token + " (in " + spwStr + ")");
+        }
+        try {
+            auto idx = std::stoi(token);
+            result.push_back(idx);
+        } catch (const std::exception &exc) {
+            throw AipsError("Error trying to parse SPW: " + token + ", " + exc.what());
+        }
+    }
+    return result;
+}
+
+/**
+ * Get max valid FIELD IDs for this iterator. MSv2 uses the FIELD
+ * table row index as FIELD ID.
+ */
+rownr_t UVContSubTVI::getMaxMSFieldID() const
+{
+    const auto &fieldsTable = getVii()->fieldSubtablecols();
+    return fieldsTable.nrow() - 1;
+}
+
+// TODO: remove maxMSField (should be checked in parseDictFitSpec)
+void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
+                                     const rownr_t maxMSField,
+                                     const InFitSpec &spec)
+{
+    for (const auto fid: fieldIdxs) {
+        const auto fieldFound = fitspec_p.find(fid);
+        if (fieldFound == fitspec_p.end()) {
+            std::vector<InFitSpec> firstSpw = { spec };
+            fitspec_p[fid] = firstSpw;
+        } else {
+            fitspec_p[fid].emplace_back(spec);
+        }
+
+        // check that the field is in the MS
+        if (fid < 0 || static_cast<unsigned int>(fid) > maxMSField) {
+            throw AipsError("Wrong field ID given: " +
+                            std::to_string(fid) +
+                            ". This MeasurementSet has field IDs between"
+                            " 0 and " + std::to_string(maxMSField));
+        }
+    }
+}
+
+/**
+ * Takes one per-field subdict, parses it and populates a map in
+ * fitspec_p.
+ *
+ * @param fieldRec subdict from the configuration dict/record passed from the task/tool
+ *        interface, with uvcontsub task parameters
+ * @param fieldIdx IDs of the fields this spec applies to
+ * @param maxMSField maximum field ID in this MS (0 to maxMSField)
+ */
+void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
+                                     const std::vector<int> &fieldIdxs,
+                                     const rownr_t maxMSField)
+{
+    std::set<unsigned int> spwsSeen;
+    for (unsigned int spw=0; spw < fieldRec.nfields(); ++spw) {
+        const auto spwRec = fieldRec.subRecord(RecordFieldId(spw));
+        std::string spwStr  = fieldRec.name(RecordFieldId(spw));
+        const auto spwIdxs = stringToSPWIdxs(spwStr, false);
+        for (const auto sid : spwIdxs) {
+            if (spwsSeen.insert(sid).second == false) {
+                throw AipsError("Error in fitspec. SPW " + to_string(sid) + " is given "
+                                "multiple times. Found for SPW subdict '" + spwStr +
+                                "' and other subdicts(s).");
+            }
+        }
+        try {
+            const std::string chanStr = spwRec.asString(RecordFieldId("chan"));
+            if (!chanStr.empty()) {
+                spwStr = "";
+                for (const auto sid : spwIdxs) {
+                    const auto spw_chan = to_string(sid) + ":" + chanStr;
+                    if (spwStr.empty()) {
+                        spwStr = spw_chan;
+                    } else {
+                        spwStr += spw_chan;
+                    }
+                }
+            }
+        } catch (const AipsError &exc) {
+            throw AipsError("Error trying to get chan value in subdict for spw "
+                            + spwStr + ", " + exc.what());
+        }
+
+        int polOrder = fitOrder_p;
+        try {
+            polOrder  = spwRec.asInt(RecordFieldId("fitorder"));
+        } catch (const AipsError &exc) {
+            throw AipsError("Error trying to get fitorder value in subdict for spw "
+                            + spwStr + ", " + exc.what());
+        }
+        if (polOrder < 0) {
+            throw AipsError("Fit order cannot be negative. Value given: " +
+                            to_string(polOrder));
+        }
+
+        const auto spec = std::make_pair(spwStr, polOrder);
+        insertToFieldSpecMap(fieldIdxs, maxMSField, spec);
+    }
+}
+
+/**
+ * Takes the input dict of fieldID: SPW: {chan/fitorder}, parses it
+ * and populates a map in fitspec_p.
  *
  * @param configuration dictionary/record passed from the task/tool interface, with
  *        uvcontsub task parameters
  *
  */
-void UVContSubTVI::parseListFitSpec(const Record &configuration)
+void UVContSubTVI::parseDictFitSpec(const Record &configuration)
 {
-    // TODO: finish rename fitspw->fitspec. Should be split
-    const auto rawFieldFitspec = configuration.asArrayString("fitspec");
-    if (0 == rawFieldFitspec.size()) {
-        throw AipsError("The list of fit specifications is empty!");
+    // TODO: finish rename fitspw->fitspec.
+    const Record rawFieldFitspec = configuration.asRecord("fitspec");
+    if (rawFieldFitspec.empty()) {
+        throw AipsError("The dictionary 'fitspec' of fit specifications is empty!");
     }
 
-    const size_t mult = 3;
-    auto nelem = rawFieldFitspec.size();
-    if (0 != (nelem % mult)) {
-        throw AipsError("fitspec must be a string or a list of triplets: "
-                        "field, field_fitspw_chan, polynomial_order. But the list or array "
-                        "passed has " + std::to_string(nelem) + " items.");
-    }
-    const Matrix<String> fieldFitspec =
-        rawFieldFitspec.reform(IPosition(2, rawFieldFitspec.size()/mult, mult));
-    logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-             << "Number of per-field fit specifications read: "
-             << nelem/mult << LogIO::POST;
-
-    // Get valid FIELD IDs. MSv2 uses the FIELD table row index as FIELD ID.
-    const auto &fieldsTable = getVii()->fieldSubtablecols();
-    const auto maxField = fieldsTable.nrow() - 1;
-
-    const auto shape = fieldFitspec.shape();
-    // iterate through fields
-    for (int row=0; row<shape[0]; ++row) {
-        //for (int col=0; col<shape[0]; ++col) {
-        const auto &fieldsStr = fieldFitspec(row, 0);
-        const auto &spwStr = fieldFitspec(row, 1);
-        const auto &orderStr = fieldFitspec(row, 2);
-        int polOrder = fitOrder_p;
-        try {
-            // TODO: better check (no exception when converting and must be >0)
-            polOrder = std::stoi(orderStr);
-        } catch(std::exception &exc) {
-            throw AipsError("Invalid fit order value (" + std::string(exc.what()) + "): "
-                            + std::string(orderStr));
-        }
-        if (polOrder < 0) {
-            throw AipsError("Fit order cannot be negative. Value given: " + orderStr);
-        }
-
-        auto fieldIdxs = stringToFieldIdxs(fieldsStr);
+    const auto maxMSField = getMaxMSFieldID();
+    std::set<unsigned int> fieldsSeen;
+    // iterate through fields given in fitspec
+    for (unsigned int rid=0; rid < rawFieldFitspec.nfields(); ++rid) {
+        const std::string fieldsStr = rawFieldFitspec.name(RecordFieldId(rid));
+        const auto fieldIdxs = stringToFieldIdxs(fieldsStr);
         for (const auto fid: fieldIdxs) {
-            // TODO: transition list->dict/record - doesn't check for all possible errors
-            // in inputs (deferred)
-            const auto fieldFound = fitspec_p.find(fid);
-            auto spec = std::make_pair(spwStr, polOrder);
-            if (fieldFound == fitspec_p.end()) {
-                std::vector<InFitSpec> firstSpw = { spec };
-                fitspec_p[fid] = firstSpw;
-            } else {
-                fitspec_p[fid].emplace_back(spec);
+            if (fieldsSeen.insert(fid).second == false) {
+                throw AipsError("Error in fitspec. Field " + to_string(fid) + " is given "
+                                "multiple times. Found for field subdict '" + fieldsStr +
+                                "' and other subdict(s).");
             }
+        }
 
-            // check that the field is in the MS
-            if (fid < 0 || static_cast<unsigned int>(fid) > maxField) {
-                throw AipsError("Wrong field ID given: " +
-                                std::to_string(fid) +
-                                ". This MeasurementSet has field IDs between"
-                                " 0 and " + std::to_string(maxField));
+        std::string noneStr;
+        bool subRecordIsString = true;
+        try {
+            noneStr = rawFieldFitspec.asString(RecordFieldId(rid));
+        } catch (const AipsError &exc) {
+            subRecordIsString = false;
+        }
+        if (subRecordIsString){
+            if (noneStr != "NONE") {
+                throw AipsError("Wrong value found in fitspec, field subdict for field: '"
+                                + fieldsStr + "', value: '" +
+                                noneStr + "'. Only 'NONE' is accepted (= do not fit for " +
+                                "any SPW).");
             }
+        } else {
+            const Record fieldRec = rawFieldFitspec.subRecord(RecordFieldId(rid));
+            parseFieldSubDict(fieldRec, fieldIdxs, maxMSField);
         }
     }
 }
 
-std::string fieldNameFromId(int idx)
+std::string fieldTextFromId(int idx)
 {
     std::string name;
     if (idx >= 0) {
@@ -246,14 +342,15 @@ void UVContSubTVI::printInputFitSpec() const
 {
     if (fitspec_p.size() > 0) {
         logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                 << "Fit order and line-free channel specification is: " << LogIO::POST;
+                 << "Fit order and spw:line-free channel specification is: " << LogIO::POST;
 
         for (const auto &elem: fitspec_p) {
             const auto &specs = elem.second;
             for (const auto &oneSpw : specs) {
                 logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                         << "   field: " << fieldNameFromId(elem.first)
-                         << ": " << oneSpw.second << ", " << oneSpw.first << LogIO::POST;
+                         << "   field: " << fieldTextFromId(elem.first)
+                         << ": " << oneSpw.second << ", '" << oneSpw.first << "'"
+                         << LogIO::POST;
             }
         }
     } else {
@@ -377,8 +474,6 @@ bool UVContSubTVI::parseConfiguration(const Record &configuration)
 void UVContSubTVI::populatePerFieldSpec(int fieldID,
                                         const std::vector<InFitSpec> &fitSpecs)
 {
-    // TODO: transition list->record. Join individual spw:chan string, make map of
-    // spw->fitorder
     std::unordered_map<int, int> perSpwFitOrder;
     std::string fullSpwStr = "";
     for (const auto &spec : fitSpecs) {
@@ -390,8 +485,10 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
             // MSSelection syntax spw:chan, SPWs separated by commas
             fullSpwStr += "," + spec.first;
         }
-        auto spw = spwIDFromSpwStr(spec.first);
-        perSpwFitOrder[spw] = spec.second;
+        auto spws = stringToSPWIdxs(spec.first, true);
+        for (const auto sid : spws) {
+            perSpwFitOrder[sid] = spec.second;
+        }
     }
 
     // Some selection string
@@ -400,7 +497,7 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
     // This access the MS directly: far from ideal (CAS-11638) but no easy solution
     const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
 
-    // TODO: move this out into a function
+    // TODO: move this out into a function of its own
     // Create line-free channel map based on MSSelection channel ranges
     const auto nSelections = spwchan.shape()[0];
     unordered_map<Int,vector<Int> > lineFreeChannelSelMap;
@@ -459,20 +556,14 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
     perFieldSpecMap_p.emplace(fieldID, lineFreeChannelMaskMap);
 }
 
-// -----------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------
-void UVContSubTVI::initialize()
+/**
+ * Takes the map from fitspec_p and produces the per field map to be
+ * used in the iteration, with channel masks and fitorder per field
+ * per SPW.
+ */
+void UVContSubTVI::fitSpecToPerFieldMap()
 {
-    // Populate nchan input-output maps
-    for (auto spwInp: spwInpChanIdxMap_p)
-    {
-        auto spw = spwInp.first;
-        spwOutChanNumMap_p[spw] = spwInp.second.size();
-    }
-
-    // TODO: split to func fitspec_p -> populatePerFieldSpec
-    // Process line-free channel specifications
+     // Process line-free channel specifications
     for (const auto item: fitspec_p) {
         unordered_map<int, FitSpec> fieldSpecMap;
         // Parse line-free channel selection using MSSelection syntax
@@ -484,7 +575,7 @@ void UVContSubTVI::initialize()
         for (const auto spwSpec : specs) {
             const auto spwStr = spwSpec.first;
             const auto order = spwSpec.second;
-            const auto fieldName = fieldNameFromId(fieldID);
+            const auto fieldName = fieldTextFromId(fieldID);
             logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
                      << "Parsing fit spw:chan string and order for field: " << fieldName
                      << ", spw/chan: '" << spwStr << "', order: " << order << LogIO::POST;
@@ -505,19 +596,30 @@ void UVContSubTVI::initialize()
 
         if (1 == specs.size() && specs[0].first.empty()) {
             // -1 is the "all-fields-included" field pseudo-index
-            // empty spw string -> all SPW, channels, leave all SPW masks unset
+            // empty fieldSpecMap string -> all SPW, channels, leave all SPW masks unset
             if (-1 == fieldID) {
                 perFieldSpecMap_p.emplace(fieldID, fieldSpecMap);
             }
             continue;
         }
 
-        cerr << "specs.size: " << specs.size() << ", empty: " << specs.empty() << std::endl;
-        if (! specs.empty()) {
-            cerr << "specs[0] " << specs[0].first << ", " << specs[0].second << std::endl;
-        }
         populatePerFieldSpec(fieldID, specs);
     }
+}
+
+// -----------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------
+void UVContSubTVI::initialize()
+{
+    // Populate nchan input-output maps
+    for (auto spwInp: spwInpChanIdxMap_p)
+    {
+        auto spw = spwInp.first;
+        spwOutChanNumMap_p[spw] = spwInp.second.size();
+    }
+
+    fitSpecToPerFieldMap();
 }
 
 // -----------------------------------------------------------------------
