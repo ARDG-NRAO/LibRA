@@ -103,6 +103,7 @@ protected:
                               const InFitSpec &spec);
     void printInputFitSpec() const;
     void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
+    unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr);
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;

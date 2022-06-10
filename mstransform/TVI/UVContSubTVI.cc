@@ -75,7 +75,7 @@ UVContSubTVI::~UVContSubTVI()
 }
 
 
-/*
+/**
  * Check if this is a valid field index
  *
  * @param str string from a (multi)field spec string
@@ -464,6 +464,46 @@ bool UVContSubTVI::parseConfiguration(const Record &configuration)
 	return ret;
 }
 
+/**
+ * Produces a map spw -> vector of selected channels, to be used as an
+ * intermediate step to produce a channel mask for the fitting
+ * routines.
+ *
+ * @param spwChanStr An SPW:chan selection string (MSSelection syntax)
+ *
+ * @return Map from spw (int ID) -> vector of channel indices
+ */
+unordered_map<int, vector<int>> UVContSubTVI::makeLineFreeChannelSelMap(std::string
+                                                                        spwChanStr)
+{
+    MSSelection mssel;
+    mssel.setSpwExpr(spwChanStr);
+    // This access the MS directly: far from ideal (CAS-11638) but no easy solution
+    const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
+
+    // Create line-free channel map based on MSSelection channel ranges
+    const auto nSelections = spwchan.shape()[0];
+    unordered_map<int,vector<int>>  lineFreeChannelSelMap;
+    for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
+    {
+        auto spw = spwchan(selection_i,0);
+        if (lineFreeChannelSelMap.find(spw) == lineFreeChannelSelMap.end())
+        {
+            lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it
+        }
+
+        const auto channelStart = spwchan(selection_i, 1);
+        const auto channelStop = spwchan(selection_i, 2);
+        const auto channelStep = spwchan(selection_i, 3);
+        for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
+        {
+            lineFreeChannelSelMap[spw].push_back(inpChan);
+        }
+    }
+
+    return lineFreeChannelSelMap;
+}
+
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
@@ -487,34 +527,9 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
         }
     }
 
-    // Some selection string
-    MSSelection mssel;
-    mssel.setSpwExpr(fullSpwStr);
-    // This access the MS directly: far from ideal (CAS-11638) but no easy solution
-    const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
+    auto lineFreeChannelSelMap = makeLineFreeChannelSelMap(fullSpwStr);
 
-    // TODO: move this out into a function of its own
-    // Create line-free channel map based on MSSelection channel ranges
-    const auto nSelections = spwchan.shape()[0];
-    unordered_map<Int,vector<Int> > lineFreeChannelSelMap;
-    for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
-    {
-        auto spw = spwchan(selection_i,0);
-        if (lineFreeChannelSelMap.find(spw) == lineFreeChannelSelMap.end())
-        {
-            lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it
-        }
-
-        const auto channelStart = spwchan(selection_i, 1);
-        const auto channelStop = spwchan(selection_i, 2);
-        const auto channelStep = spwchan(selection_i, 3);
-        for (auto inpChan=channelStart; inpChan<=channelStop; inpChan += channelStep)
-        {
-            lineFreeChannelSelMap[spw].push_back(inpChan);
-        }
-    }
-
-    // Create line-free channel mask, spw->channel_mask
+    // Create line-free channel mask, spw->(channel_mask, fit_order)
     unordered_map<int, FitSpec> lineFreeChannelMaskMap;   // rename: fitSpecMap
     for (auto const spwInp: spwInpChanIdxMap_p)
     {
@@ -547,7 +562,7 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
         }
     }
 
-    // Poppulate per field map: field -> spw -> channel_mask
+    // Poppulate per field map: field -> spw -> fit spec
     // emplace struct (linefreechannelmaskmap, + fitorder)
     perFieldSpecMap_p.emplace(fieldID, lineFreeChannelMaskMap);
 }
@@ -565,8 +580,6 @@ void UVContSubTVI::fitSpecToPerFieldMap()
         // Parse line-free channel selection using MSSelection syntax
         const auto fieldID = item.first;
         const auto &specs = item.second;
-
-        // TODO: message 'parsing fit spw string' needs revisiting
         bool noneFound = false;
         for (const auto spwSpec : specs) {
             const auto spwStr = spwSpec.first;
