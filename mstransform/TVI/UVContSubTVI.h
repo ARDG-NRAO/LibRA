@@ -97,10 +97,8 @@ protected:
     rownr_t getMaxMSFieldID() const;
     void parseFitSpec(const Record &configuration);
     void parseDictFitSpec(const Record &configuration);
-    void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs,
-                           const rownr_t maxMSField);
-    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const rownr_t maxMSField,
-                              const InFitSpec &spec);
+    void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs);
+    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec);
     void printInputFitSpec() const;
     void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
     unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr);

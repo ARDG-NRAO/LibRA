@@ -188,10 +188,8 @@ rownr_t UVContSubTVI::getMaxMSFieldID() const
     return fieldsTable.nrow() - 1;
 }
 
-// TODO: remove maxMSField (should be checked in parseDictFitSpec)
 void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
-                                     const rownr_t maxMSField,
-                                     const InFitSpec &spec)
+                                        const InFitSpec &spec)
 {
     for (const auto fid: fieldIdxs) {
         const auto fieldFound = fitspec_p.find(fid);
@@ -202,13 +200,6 @@ void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
             fitspec_p[fid].emplace_back(spec);
         }
 
-        // check that the field is in the MS
-        if (fid < 0 || static_cast<unsigned int>(fid) > maxMSField) {
-            throw AipsError("Wrong field ID given: " +
-                            std::to_string(fid) +
-                            ". This MeasurementSet has field IDs between"
-                            " 0 and " + std::to_string(maxMSField));
-        }
     }
 }
 
@@ -222,8 +213,7 @@ void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
  * @param maxMSField maximum field ID in this MS (0 to maxMSField)
  */
 void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
-                                     const std::vector<int> &fieldIdxs,
-                                     const rownr_t maxMSField)
+                                     const std::vector<int> &fieldIdxs)
 {
     std::set<unsigned int> spwsSeen;
     for (unsigned int spw=0; spw < fieldRec.nfields(); ++spw) {
@@ -268,7 +258,7 @@ void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
         }
 
         const auto spec = std::make_pair(spwStr, polOrder);
-        insertToFieldSpecMap(fieldIdxs, maxMSField, spec);
+        insertToFieldSpecMap(fieldIdxs, spec);
     }
 }
 
@@ -295,6 +285,13 @@ void UVContSubTVI::parseDictFitSpec(const Record &configuration)
         const std::string fieldsStr = rawFieldFitspec.name(RecordFieldId(rid));
         const auto fieldIdxs = stringToFieldIdxs(fieldsStr);
         for (const auto fid: fieldIdxs) {
+            // check that the field is in the MS
+            if (fid < 0 || static_cast<unsigned int>(fid) > maxMSField) {
+                throw AipsError("Wrong field ID given: " +
+                                std::to_string(fid) +
+                                ". This MeasurementSet has field IDs between"
+                                " 0 and " + std::to_string(maxMSField));
+            }
             if (fieldsSeen.insert(fid).second == false) {
                 throw AipsError("Error in fitspec. Field " + to_string(fid) + " is given "
                                 "multiple times. Found for field subdict '" + fieldsStr +
@@ -318,7 +315,7 @@ void UVContSubTVI::parseDictFitSpec(const Record &configuration)
             }
         } else {
             const Record fieldRec = rawFieldFitspec.subRecord(RecordFieldId(rid));
-            parseFieldSubDict(fieldRec, fieldIdxs, maxMSField);
+            parseFieldSubDict(fieldRec, fieldIdxs);
         }
     }
 }
