@@ -114,7 +114,7 @@ protected:
 
     // Maps field -> SPW -> channel_mask (1s will be combined with flags to exclude chans)
     unordered_map<int, unordered_map<int, FitSpec>> perFieldSpecMap_p;
-    mutable map<int, denoising::GslPolynomialModel<Double>*> inputFrequencyMap_p;
+    mutable map<int, unique_ptr<denoising::GslPolynomialModel<double>>> inputFrequencyMap_p;
 
     mutable UVContSubResult result_p;
 

@@ -71,11 +71,7 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 
 UVContSubTVI::~UVContSubTVI()
 {
-	for (auto iter = inputFrequencyMap_p.begin();iter != inputFrequencyMap_p.end(); iter++)
-	{
-		delete iter->second;
-	}
-	inputFrequencyMap_p.clear();
+    inputFrequencyMap_p.clear();
 }
 
 
@@ -756,17 +752,12 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     }
 
     // Get polynomial model for this SPW (depends on number of channels and gridding)
-    // TODO: this if to keep reusing the polynomialmodels is no longer valid!!!
     const auto freqIter = inputFrequencyMap_p.find(spwId);
     const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
-    // STL should trigger move semantics
-    // TODO: unique_ptr. Perhaps per field-spw pair map - But can be big
-    //  n_fields X n_spw X n_chans
-    if (freqIter != inputFrequencyMap_p.end()) {
-        delete inputFrequencyMap_p.find(spwId)->second;
-    }
-    inputFrequencyMap_p[spwId] =
-        new denoising::GslPolynomialModel<double>(inputFrequencies, fitOrder);
+    // Could perhaps have a per field-spw pair map to avoid re-allocations - But can be big
+    // (n_fields X n_spws X n_chans) for many fields, many SPWs MSs
+    inputFrequencyMap_p[spwId].
+        reset(new denoising::GslPolynomialModel<double>(inputFrequencies, fitOrder));
 
     // Reshape output data before passing it to the DataCubeHolder
     outputVis.resize(getVisBuffer()->getShape(),False);
@@ -774,45 +765,43 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     // Get input flag Cube
     const Cube<bool> &flagCube = vb->flagCube();
 
-	// Transform data
-	if (nThreads_p > 1)
-	{
+    // Transform data
+    if (nThreads_p > 1)
+    {
 #ifdef _OPENMP
 
-		uInt nCorrs = vb->getShape()(0);
-		if (nCorrs < nThreads_p)
-		{
-			omp_set_num_threads(nCorrs);
-		}
-		else
-		{
-			omp_set_num_threads(nThreads_p);
-		}
-
-		#pragma omp parallel for
-		for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
-		{
-			transformDataCore(inputFrequencyMap_p[spwId],lineFreeChannelMask,
-					inputVis,flagCube,inputWeight,outputVis,corrIdx);
-		}
-
-		omp_set_num_threads(nThreads_p);
-#endif
-	}
-	else
-	{
-            auto scanID = vb->scan()[0];
-            uInt nCorrs = vb->getShape()(0);
-            for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
-            {
-                Complex chisq =
-                    transformDataCore(inputFrequencyMap_p[spwId], lineFreeChannelMask,
-                                      inputVis, flagCube, inputWeight, outputVis, corrIdx);
-                result_p.addOneFit(fieldID, scanID, spwId, (int)corrIdx, chisq);
-            }
+        uInt nCorrs = vb->getShape()(0);
+        if (nCorrs < nThreads_p)
+        {
+            omp_set_num_threads(nCorrs);
+        }
+        else
+        {
+            omp_set_num_threads(nThreads_p);
         }
 
-	return;
+#pragma omp parallel for
+        for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
+        {
+            transformDataCore(inputFrequencyMap_p[spwId].get(),lineFreeChannelMask,
+                              inputVis,flagCube,inputWeight,outputVis,corrIdx);
+        }
+
+        omp_set_num_threads(nThreads_p);
+#endif
+    }
+    else
+    {
+        auto scanID = vb->scan()[0];
+        uInt nCorrs = vb->getShape()(0);
+        for (uInt corrIdx=0; corrIdx < nCorrs; corrIdx++)
+        {
+            Complex chisq =
+                transformDataCore(inputFrequencyMap_p[spwId].get(), lineFreeChannelMask,
+                                  inputVis, flagCube, inputWeight, outputVis, corrIdx);
+            result_p.addOneFit(fieldID, scanID, spwId, (int)corrIdx, chisq);
+        }
+    }
 }
 
 // -----------------------------------------------------------------------
