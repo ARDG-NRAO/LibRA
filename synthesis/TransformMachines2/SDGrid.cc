@@ -1580,12 +1580,12 @@ Bool SDGrid::getXYPos(const vi::VisBuffer2& vb, Int row) {
     }
   }
 
-  MEpoch epoch(Quantity(vb.time()(row), "s"));
   if (!pointingToImage) {
     // Set the frame
     lastAntID_p = vb.antenna1()(row);
     MPosition pos = vb.subtableColumns().antenna().positionMeas()(lastAntID_p);
-    (!mFrame_p.epoch()) ?  mFrame_p.set(epoch) : mFrame_p.resetEpoch(epoch);
+    MEpoch dummyEpoch(Quantity(0, "s"));
+    (!mFrame_p.epoch()) ?  mFrame_p.set(dummyEpoch) : mFrame_p.resetEpoch(dummyEpoch);
     (!mFrame_p.position()) ? mFrame_p.set(pos) : mFrame_p.resetPosition(pos);
     if (!nullPointingTable) {
       if (dointerp) {
@@ -1606,34 +1606,27 @@ Bool SDGrid::getXYPos(const vi::VisBuffer2& vb, Int row) {
     }
 
     // perform direction conversion to clear cache
-    // set timestamp 1 week earlier
-    MEpoch epoch_tmp(Quantity(vb.time()(row) - 86400.0 * 7, "s"));
-    mFrame_p.resetEpoch(epoch_tmp);
-    // perform conversion
-    MDirection _dir_tmp = (*pointingToImage)(vb.direction1()(row));
+    MDirection _dir_tmp = (*pointingToImage)();
+  }
 
-    // revert timestamp
-    mFrame_p.resetEpoch(epoch);
-
-  } else {
-    mFrame_p.resetEpoch(epoch);
-    if (lastAntID_p != vb.antenna1()(row)) {
-      if (lastAntID_p == -1) {
-        // antenna ID is unset
-        logIO_p << LogIO::DEBUGGING
-          << "update antenna position for conversion: new MS ID " << msId_p
-          << ", antenna ID " << vb.antenna1()(row) << LogIO::POST;
-      } else {
-        logIO_p << LogIO::DEBUGGING
-          << "update antenna position for conversion: MS ID " << msId_p
-          << ", last antenna ID " << lastAntID_p
-          << ", new antenna ID " << vb.antenna1()(row) << LogIO::POST;
-      }
-      MPosition pos;
-      lastAntID_p = vb.antenna1()(row);
-      pos = vb.subtableColumns().antenna().positionMeas()(lastAntID_p);
-      mFrame_p.resetPosition(pos);
+  MEpoch epoch(Quantity(vb.time()(row), "s"));
+  mFrame_p.resetEpoch(epoch);
+  if (lastAntID_p != vb.antenna1()(row)) {
+    if (lastAntID_p == -1) {
+      // antenna ID is unset
+      logIO_p << LogIO::DEBUGGING
+        << "update antenna position for conversion: new MS ID " << msId_p
+        << ", antenna ID " << vb.antenna1()(row) << LogIO::POST;
+    } else {
+      logIO_p << LogIO::DEBUGGING
+        << "update antenna position for conversion: MS ID " << msId_p
+        << ", last antenna ID " << lastAntID_p
+        << ", new antenna ID " << vb.antenna1()(row) << LogIO::POST;
     }
+    MPosition pos;
+    lastAntID_p = vb.antenna1()(row);
+    pos = vb.subtableColumns().antenna().positionMeas()(lastAntID_p);
+    mFrame_p.resetPosition(pos);
   }
 
   if (!nullPointingTable) {
