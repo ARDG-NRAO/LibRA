@@ -21,7 +21,7 @@
 //# $Id: $
 
 #include <msvis/MSVis/IteratingParameters.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

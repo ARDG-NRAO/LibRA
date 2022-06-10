@@ -27,7 +27,7 @@
 
 #include <msvis/MSVis/VisIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 #include <casacore/casa/Arrays/ArrayLogical.h>
 #include <casacore/casa/Arrays/ArrayMath.h>

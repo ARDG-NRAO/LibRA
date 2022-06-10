@@ -41,8 +41,6 @@
 #include <vector>
 #include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 
-#include <mstransform/MSTransform/MSTransformManager.h>
-
 
 #ifndef MSVIS_SUBMS_H
 
@@ -64,6 +62,9 @@ namespace subms {
 double wtToSigma(casacore::Double wt);
 double sigToWeight(casacore::Double sig);
 }
+
+// forward declaration
+class MSTransformManager;
 
 // <summary>
 // SubMS provides functionalities to make a subset of an existing MS

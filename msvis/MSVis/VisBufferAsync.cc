@@ -4,7 +4,7 @@
  *  Created on: Nov 1, 2010
  *      Author: jjacobs
  */
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 using namespace casacore;
 #include <regex>  // >>>----------------> no compile failure

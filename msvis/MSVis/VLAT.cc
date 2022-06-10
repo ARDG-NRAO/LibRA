@@ -35,7 +35,7 @@
 #include <msvis/MSVis/VLAT.h>
 #include <msvis/MSVis/VisBufferAsync.h>
 
-#include "AsynchronousTools.h"
+#include <stdcasa/thread/AsynchronousTools.h>
 using namespace casacore;
 using namespace casa::async;
 
@@ -43,7 +43,7 @@ using namespace casa::async;
 #include <cstdarg>
 #include <functional>
 
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 using namespace casacore;
 using namespace casa::utilj;

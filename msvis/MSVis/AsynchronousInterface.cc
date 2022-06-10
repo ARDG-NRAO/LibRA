@@ -1,8 +1,8 @@
 #include "AsynchronousInterface.h"
-#include "AsynchronousTools.h"
 #include "VLAT.h"
-#include "UtilJ.h"
 
+#include <stdcasa/thread/AsynchronousTools.h>
+#include <stdcasa/UtilJ.h>
 #include <casacore/casa/System/AipsrcValue.h>
 #include <msvis/MSVis/VisBufferAsync.h>
 #include <msvis/MSVis/VisibilityIteratorImplAsync.h>
