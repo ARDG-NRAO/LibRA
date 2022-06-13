@@ -75,6 +75,8 @@ public:
     virtual void floatData (Cube<float> & vis) const;
     virtual void visibilityObserved (Cube<Complex> & vis) const;
     virtual void visibilityCorrected (Cube<Complex> & vis) const;
+    void savePrecalcModel(const Cube<Complex> & origVis,
+                          const Cube<Complex> & contSubVis) const;
     virtual void visibilityModel (Cube<Complex> & vis) const;
     virtual void result(casacore::Record &res) const;
 
@@ -97,16 +99,16 @@ protected:
 
  private:
     rownr_t getMaxMSFieldID() const;
-    InFitSpecMap parseFitSpec(const Record &configuration);
-    InFitSpecMap parseDictFitSpec(const Record &configuration);
-    void fitSpecToPerFieldMap(const InFitSpecMap &fitspec);
+    InFitSpecMap parseFitSpec(const Record &configuration) const;
+    InFitSpecMap parseDictFitSpec(const Record &configuration) const;
     void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs,
-                           InFitSpecMap &fitspec);
-    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec,
-                              InFitSpecMap &fitspec);
+                           InFitSpecMap &fitspec) const;
     void printInputFitSpec(const InFitSpecMap &fitspec) const;
     void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
-    unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr);
+    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec,
+                              InFitSpecMap &fitspec) const;
+    void fitSpecToPerFieldMap(const InFitSpecMap &fitspec);
+    unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr) const;
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;
@@ -114,7 +116,7 @@ protected:
     mutable uint nThreads_p;
     mutable uint niter_p;
 
-    // Maps field -> SPW -> channel_mask (1s will be combined with flags to exclude chans)
+    // Maps field->SPW->(order, channel_mask), 1s will be or-ed with flags to exclude chans.
     unordered_map<int, unordered_map<int, FitSpec>> perFieldSpecMap_p;
     mutable map<int, unique_ptr<denoising::GslPolynomialModel<double>>> inputFrequencyMap_p;
 

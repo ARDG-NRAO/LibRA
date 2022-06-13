@@ -114,7 +114,7 @@ std::vector<int> stringToFieldIdxs(const std::string &str)
     return result;
 }
 
-InFitSpecMap UVContSubTVI::parseFitSpec(const Record &configuration)
+InFitSpecMap UVContSubTVI::parseFitSpec(const Record &configuration) const
 {
     InFitSpecMap fitspec;
 
@@ -139,7 +139,7 @@ InFitSpecMap UVContSubTVI::parseFitSpec(const Record &configuration)
 }
 
 /**
- * For an spw string given in a fitspw per-field subdictionary
+ * For an spw string given in a fitspec per-field subdictionary
  * (example: '0', '1,2') get the integer indices specified in the
  * string. Tokenizes the string by ',' separator and trims
  * spaces. Similar to stringToFieldIDxs but with spw-specific checks.
@@ -190,7 +190,7 @@ rownr_t UVContSubTVI::getMaxMSFieldID() const
 
 void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
                                         const InFitSpec &spec,
-                                        InFitSpecMap &fitspec)
+                                        InFitSpecMap &fitspec) const
 {
     for (const auto fid: fieldIdxs) {
         const auto fieldFound = fitspec.find(fid);
@@ -214,7 +214,7 @@ void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
  */
 void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
                                      const std::vector<int> &fieldIdxs,
-                                     InFitSpecMap &fitspec)
+                                     InFitSpecMap &fitspec) const
 {
     std::set<unsigned int> spwsSeen;
     for (unsigned int spw=0; spw < fieldRec.nfields(); ++spw) {
@@ -237,7 +237,7 @@ void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
                     if (spwStr.empty()) {
                         spwStr = spw_chan;
                     } else {
-                        spwStr += spw_chan;
+                        spwStr += "," + spw_chan;
                     }
                 }
             }
@@ -270,10 +270,10 @@ void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
  * @param configuration dictionary/record passed from the task/tool interface, with
  *        uvcontsub task parameters
  *
+ * @return InFitSpecMap map populated from an input dict
  */
-InFitSpecMap UVContSubTVI::parseDictFitSpec(const Record &configuration)
+InFitSpecMap UVContSubTVI::parseDictFitSpec(const Record &configuration) const
 {
-    // TODO: finish rename fitspw->fitspec.
     const Record rawFieldFitspec = configuration.asRecord("fitspec");
     if (rawFieldFitspec.empty()) {
         throw AipsError("The dictionary 'fitspec' of fit specifications is empty!");
@@ -339,14 +339,15 @@ void UVContSubTVI::printInputFitSpec(const InFitSpecMap &fitspec) const
 {
     if (fitspec.size() > 0) {
         logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
-                 << "Fit order and spw:line-free channel specification is: " << LogIO::POST;
+                 << "Fitspec (order and spw:line-free channel) specification is: "
+                 << LogIO::POST;
 
         for (const auto &elem: fitspec) {
             const auto &specs = elem.second;
             for (const auto &oneSpw : specs) {
                 logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
                          << "   field: " << fieldTextFromId(elem.first)
-                         << ": " << oneSpw.second << ", '" << oneSpw.first << "'"
+                         << ". " << oneSpw.second << ", '" << oneSpw.first << "'"
                          << LogIO::POST;
             }
         }
@@ -387,7 +388,6 @@ InFitSpecMap UVContSubTVI::parseConfiguration(const Record &configuration)
 	}
 
         const auto fitspec = parseFitSpec(configuration);
-        // TODO: revisit the prints after fitspw/fitspec record changes
         printInputFitSpec(fitspec);
 
 	exists = configuration.fieldNumber ("writemodel");
@@ -472,7 +472,7 @@ InFitSpecMap UVContSubTVI::parseConfiguration(const Record &configuration)
  * @return Map from spw (int ID) -> vector of channel indices
  */
 unordered_map<int, vector<int>> UVContSubTVI::makeLineFreeChannelSelMap(std::string
-                                                                        spwChanStr)
+                                                                        spwChanStr) const
 {
     MSSelection mssel;
     mssel.setSpwExpr(spwChanStr);
@@ -643,6 +643,27 @@ void UVContSubTVI::floatData (Cube<Float> & vis) const
 	return;
 }
 
+/**
+ * To save the original_data - continumm_subtracted_data as model data
+ * for visibilityModel.
+ *
+ * @param origVis visibilities before continuum subtraction
+ * @param contSubvis visibilities after being cont-subtracted
+ */
+void UVContSubTVI::savePrecalcModel(const Cube<Complex> & origVis,
+                                    const Cube<Complex> & contSubVis) const
+{
+    // save it for visibilityModel
+    if (precalcModel_p) {
+        // Or otherwise the next assignment would fail a conform check
+        if (precalcModelVis_p.shape() != contSubVis.shape()) {
+            precalcModelVis_p.resize(contSubVis.shape());
+        }
+
+        precalcModelVis_p = origVis - contSubVis;
+    }
+}
+
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
@@ -660,14 +681,7 @@ void UVContSubTVI::visibilityObserved (Cube<Complex> & vis) const
     // Transform data
     transformDataCube(vb->visCube(),weightSpFromSigmaSp,vis);
 
-    // save it for visibilityModel
-    if (precalcModel_p) {
-        // Or otherwise the next assignment would fail a conform check
-        if (precalcModelVis_p.shape() != vis.shape()) {
-            precalcModelVis_p.resize(vis.shape());
-        }
-        precalcModelVis_p = vb->visCube() - vis;
-    }
+    savePrecalcModel(vb->visCube(), vis);
 }
 
 // -----------------------------------------------------------------------
@@ -681,14 +695,7 @@ void UVContSubTVI::visibilityCorrected (Cube<Complex> & vis) const
     // Transform data
     transformDataCube(vb->visCubeCorrected(),vb->weightSpectrum(),vis);
 
-    // save it for visibilityModel   ====> TODO: put into function
-    if (precalcModel_p) {
-        // Or otherwise the next assignment would fail a conform check
-        if (precalcModelVis_p.shape() != vis.shape()) {
-            precalcModelVis_p.resize(vis.shape());
-        }
-        precalcModelVis_p = vb->visCubeCorrected() - vis;
-    }
+    savePrecalcModel(vb->visCubeCorrected(), vis);
 }
 
 // -----------------------------------------------------------------------
