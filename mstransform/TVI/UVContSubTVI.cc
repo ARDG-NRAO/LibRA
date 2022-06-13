@@ -61,12 +61,9 @@ UVContSubTVI::UVContSubTVI(	ViImplementation2 * inputVii,
 	// Parse and check configuration parameters
 	// Note: if a constructor finishes by throwing an exception, the memory
 	// associated with the object itself is cleaned up — there is no memory leak.
-	if (not parseConfiguration(configuration))
-	{
-		throw AipsError("Error parsing UVContSubTVI configuration");
-	}
+	const auto fitspec = parseConfiguration(configuration);
 
-	initialize();
+	initialize(fitspec);
 }
 
 UVContSubTVI::~UVContSubTVI()
@@ -117,25 +114,28 @@ std::vector<int> stringToFieldIdxs(const std::string &str)
     return result;
 }
 
-void UVContSubTVI::parseFitSpec(const Record &configuration)
+InFitSpecMap UVContSubTVI::parseFitSpec(const Record &configuration)
 {
+    InFitSpecMap fitspec;
+
     const auto exists = configuration.fieldNumber ("fitspec");
     if (exists < 0) {
-        return;
+        return fitspec;
     }
 
     try {
         // fitspec is a simple string (spw:chan MSSelection syntax)
-        String fitspec;
-        configuration.get(exists, fitspec);
+        String specStr;
+        configuration.get(exists, specStr);
 
-        std::vector <InFitSpec> specs = { InFitSpec(fitspec, fitOrder_p) };
+        std::vector <InFitSpec> specs = { InFitSpec(specStr, fitOrder_p) };
         // -1 (all fields): global fit spw:chan string and global fitOrder
-        fitspec_p.insert({-1, specs});
+        fitspec.insert({-1, specs});
     } catch(AipsError &exc) {
         // alternatively, fitspec must be a record with field/spw specs
-        parseDictFitSpec(configuration);
+        fitspec = parseDictFitSpec(configuration);
     }
+    return fitspec;
 }
 
 /**
@@ -189,31 +189,32 @@ rownr_t UVContSubTVI::getMaxMSFieldID() const
 }
 
 void UVContSubTVI::insertToFieldSpecMap(const std::vector<int> &fieldIdxs,
-                                        const InFitSpec &spec)
+                                        const InFitSpec &spec,
+                                        InFitSpecMap &fitspec)
 {
     for (const auto fid: fieldIdxs) {
-        const auto fieldFound = fitspec_p.find(fid);
-        if (fieldFound == fitspec_p.end()) {
+        const auto fieldFound = fitspec.find(fid);
+        if (fieldFound == fitspec.end()) {
             std::vector<InFitSpec> firstSpw = { spec };
-            fitspec_p[fid] = firstSpw;
+            fitspec[fid] = firstSpw;
         } else {
-            fitspec_p[fid].emplace_back(spec);
+            fitspec[fid].emplace_back(spec);
         }
 
     }
 }
 
 /**
- * Takes one per-field subdict, parses it and populates a map in
- * fitspec_p.
+ * Takes one per-field subdict, parses it and populates a map field IDs->fit specs.
  *
  * @param fieldRec subdict from the configuration dict/record passed from the task/tool
  *        interface, with uvcontsub task parameters
  * @param fieldIdx IDs of the fields this spec applies to
- * @param maxMSField maximum field ID in this MS (0 to maxMSField)
+ * @param fitspec spec map to populate for this(ese) field(s)
  */
 void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
-                                     const std::vector<int> &fieldIdxs)
+                                     const std::vector<int> &fieldIdxs,
+                                     InFitSpecMap &fitspec)
 {
     std::set<unsigned int> spwsSeen;
     for (unsigned int spw=0; spw < fieldRec.nfields(); ++spw) {
@@ -258,19 +259,19 @@ void UVContSubTVI::parseFieldSubDict(const Record &fieldRec,
         }
 
         const auto spec = std::make_pair(spwStr, polOrder);
-        insertToFieldSpecMap(fieldIdxs, spec);
+        insertToFieldSpecMap(fieldIdxs, spec, fitspec);
     }
 }
 
 /**
  * Takes the input dict of fieldID: SPW: {chan/fitorder}, parses it
- * and populates a map in fitspec_p.
+ * and populates a map that is returned.
  *
  * @param configuration dictionary/record passed from the task/tool interface, with
  *        uvcontsub task parameters
  *
  */
-void UVContSubTVI::parseDictFitSpec(const Record &configuration)
+InFitSpecMap UVContSubTVI::parseDictFitSpec(const Record &configuration)
 {
     // TODO: finish rename fitspw->fitspec.
     const Record rawFieldFitspec = configuration.asRecord("fitspec");
@@ -279,6 +280,7 @@ void UVContSubTVI::parseDictFitSpec(const Record &configuration)
     }
 
     const auto maxMSField = getMaxMSFieldID();
+    InFitSpecMap fitspec;
     std::set<unsigned int> fieldsSeen;
     // iterate through fields given in fitspec
     for (unsigned int rid=0; rid < rawFieldFitspec.nfields(); ++rid) {
@@ -315,9 +317,11 @@ void UVContSubTVI::parseDictFitSpec(const Record &configuration)
             }
         } else {
             const Record fieldRec = rawFieldFitspec.subRecord(RecordFieldId(rid));
-            parseFieldSubDict(fieldRec, fieldIdxs);
+            parseFieldSubDict(fieldRec, fieldIdxs, fitspec);
         }
     }
+
+    return fitspec;
 }
 
 std::string fieldTextFromId(int idx)
@@ -331,13 +335,13 @@ std::string fieldTextFromId(int idx)
     return name;
 }
 
-void UVContSubTVI::printInputFitSpec() const
+void UVContSubTVI::printInputFitSpec(const InFitSpecMap &fitspec) const
 {
-    if (fitspec_p.size() > 0) {
+    if (fitspec.size() > 0) {
         logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
                  << "Fit order and spw:line-free channel specification is: " << LogIO::POST;
 
-        for (const auto &elem: fitspec_p) {
+        for (const auto &elem: fitspec) {
             const auto &specs = elem.second;
             for (const auto &oneSpw : specs) {
                 logger_p << LogIO::NORMAL << LogOrigin("UVContSubTVI", __FUNCTION__)
@@ -355,10 +359,8 @@ void UVContSubTVI::printInputFitSpec() const
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-bool UVContSubTVI::parseConfiguration(const Record &configuration)
+InFitSpecMap UVContSubTVI::parseConfiguration(const Record &configuration)
 {
-	bool ret = true;
-
 	auto exists = configuration.fieldNumber ("fitorder");
 	if (exists >= 0)
 	{
@@ -384,9 +386,9 @@ bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-        parseFitSpec(configuration);
+        const auto fitspec = parseFitSpec(configuration);
         // TODO: revisit the prints after fitspw/fitspec record changes
-        printInputFitSpec();
+        printInputFitSpec(fitspec);
 
 	exists = configuration.fieldNumber ("writemodel");
 	if (exists >= 0)
@@ -457,8 +459,7 @@ bool UVContSubTVI::parseConfiguration(const Record &configuration)
 		}
 	}
 
-
-	return ret;
+        return fitspec;
 }
 
 /**
@@ -565,14 +566,14 @@ void UVContSubTVI::populatePerFieldSpec(int fieldID,
 }
 
 /**
- * Takes the map from fitspec_p and produces the per field map to be
+ * Takes the map from fitspec and produces the per field map to be
  * used in the iteration, with channel masks and fitorder per field
  * per SPW.
  */
-void UVContSubTVI::fitSpecToPerFieldMap()
+void UVContSubTVI::fitSpecToPerFieldMap(const InFitSpecMap &fitspec)
 {
      // Process line-free channel specifications
-    for (const auto item: fitspec_p) {
+    for (const auto item: fitspec) {
         unordered_map<int, FitSpec> fieldSpecMap;
         // Parse line-free channel selection using MSSelection syntax
         const auto fieldID = item.first;
@@ -616,7 +617,7 @@ void UVContSubTVI::fitSpecToPerFieldMap()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void UVContSubTVI::initialize()
+void UVContSubTVI::initialize(const InFitSpecMap &fitspec)
 {
     // Populate nchan input-output maps
     for (auto spwInp: spwInpChanIdxMap_p)
@@ -625,7 +626,7 @@ void UVContSubTVI::initialize()
         spwOutChanNumMap_p[spw] = spwInp.second.size();
     }
 
-    fitSpecToPerFieldMap();
+    fitSpecToPerFieldMap(fitspec);
 }
 
 // -----------------------------------------------------------------------

@@ -43,6 +43,9 @@ namespace vi { //# NAMESPACE VI - BEGIN
 // One spw:chan (as str) + fit_order (as int) from the input fitspec record
 typedef std::pair<std::string, unsigned int> InFitSpec;
 
+// field -> fitspec spec with spw:chan string and fitorder
+typedef std::unordered_map<int, std::vector<InFitSpec>> InFitSpecMap;
+
 // Specification of a fit (given per field, per spw, or globally)
 struct FitSpec {
   FitSpec() = default;  // should be =delete when C++17/insert_or_assign is available
@@ -77,9 +80,8 @@ public:
 
 protected:
 
-    bool parseConfiguration(const Record &configuration);
-    void fitSpecToPerFieldMap();
-    void initialize();
+    InFitSpecMap parseConfiguration(const Record &configuration);
+    void initialize(const InFitSpecMap &fitspec);
 
     template<class T> void transformDataCube(	const Cube<T> &inputVis,
     											const Cube<float> &inputWeight,
@@ -95,18 +97,19 @@ protected:
 
  private:
     rownr_t getMaxMSFieldID() const;
-    void parseFitSpec(const Record &configuration);
-    void parseDictFitSpec(const Record &configuration);
-    void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs);
-    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec);
-    void printInputFitSpec() const;
+    InFitSpecMap parseFitSpec(const Record &configuration);
+    InFitSpecMap parseDictFitSpec(const Record &configuration);
+    void fitSpecToPerFieldMap(const InFitSpecMap &fitspec);
+    void parseFieldSubDict(const Record &fieldRec, const std::vector<int> &fieldIdxs,
+                           InFitSpecMap &fitspec);
+    void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec,
+                              InFitSpecMap &fitspec);
+    void printInputFitSpec(const InFitSpecMap &fitspec) const;
     void populatePerFieldSpec(int fieldID, const std::vector<InFitSpec> &fitSpecs);
     unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr);
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;
-    // field -> fitspw spec     // TODO: this can be moved out of priv members / .h
-    std::unordered_map<int, std::vector<InFitSpec>> fitspec_p;
     mutable bool withDenoisingLib_p;
     mutable uint nThreads_p;
     mutable uint niter_p;
