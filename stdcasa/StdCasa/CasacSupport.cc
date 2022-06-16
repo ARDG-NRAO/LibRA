@@ -155,7 +155,7 @@ Bool toCasaVectorQuantity(const ::casac::variant& theval, casacore::Vector<casac
   }
   else if(theval.type()== ::casac::variant::STRINGVEC){
     //Force resize as toStringVec sometimes give the wrong length (bug?)
-    Vector<Int> leShape=theval.arrayshape();
+    Vector<Int> leShape(theval.arrayshape());
     lesStrings=toVectorString(theval.toStringVec());
     lesStrings.resize(product(leShape), true);
   }
