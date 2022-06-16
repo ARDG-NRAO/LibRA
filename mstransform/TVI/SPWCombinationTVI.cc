@@ -143,7 +143,7 @@ casacore::Vector<double> SPWCombinationTVI::getFrequencies(double time, int fram
         auto outChanThisInputSpw = spwInpChanOutMap_p.at(spectralWindowId).at(inputSpw.first)[0];
         std::copy(innerFreqs.begin(), innerFreqs.end(), freqs.begin() + outChanThisInputSpw);
     }
-    return freqs;
+    return casacore::Vector<double>(freqs);
 }
 
 void SPWCombinationTVI::origin()
@@ -495,8 +495,8 @@ SPWCombinationTVILayerFactory::~SPWCombinationTVILayerFactory()
 {
 }
 
-ViImplementation2* 
-SPWCombinationTVILayerFactory::createInstance(ViImplementation2* vii0) const 
+ViImplementation2*
+SPWCombinationTVILayerFactory::createInstance(ViImplementation2* vii0) const
 {
     // Make the SPWCombinationTVI, using supplied ViImplementation2, and return it
     ViImplementation2 *vii = new SPWCombinationTVI(vii0);

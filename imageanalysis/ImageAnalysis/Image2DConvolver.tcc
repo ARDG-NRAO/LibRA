@@ -244,7 +244,8 @@ template <class T> void Image2DConvolver<T>::_convolve(
                 "arcsec*arcsec"
             );
             if (! _targetres) {
-                GaussianBeam kernelBeam(kernelParms);
+                Vector<Quantity> const kernelParmsV(kernelParms);
+                GaussianBeam kernelBeam(kernelParmsV);
                 factor1 = pixelArea/kernelBeam.getArea("arcsec*arcsec");
             }
         }
@@ -309,6 +310,8 @@ template <class T> void Image2DConvolver<T>::_doSingleBeam(
     Bool logFactors, Double factor1, Double pixelArea
 ) const {
     GaussianBeam inputBeam = imageIn.imageInfo().restoringBeam();
+    Vector<Quantity> const kernelParmsV(kernelParms);
+    Vector<Quantity> const originalParmsV(originalParms);
     if (_targetres) {
         kernelParms = _getConvolvingBeamForTargetResolution(
             originalParms, inputBeam
@@ -318,8 +321,8 @@ template <class T> void Image2DConvolver<T>::_doSingleBeam(
             ostringstream oss;
             oss << "Convolving image that has a beam of "
                 << inputBeam << " with a Gaussian of "
-                << GaussianBeam(kernelParms) << " to reach a target resolution of "
-                << GaussianBeam(originalParms);
+                << GaussianBeam(kernelParmsV) << " to reach a target resolution of "
+                << GaussianBeam(originalParmsV);
             _log(oss.str(), LogIO::NORMAL);
         }
         kernelVolume = _makeKernel(
@@ -329,7 +332,7 @@ template <class T> void Image2DConvolver<T>::_doSingleBeam(
     const CoordinateSystem& cSys = imageIn.coordinates();
     auto scaleFactor = _dealWithRestoringBeam(
         brightnessUnitOut, beamOut, kernel, kernelVolume,
-        kernelType, kernelParms, cSys, inputBeam,
+        kernelType, kernelParmsV, cSys, inputBeam,
         imageIn.units(), true
     );
     ostringstream oss;
@@ -338,7 +341,7 @@ template <class T> void Image2DConvolver<T>::_doSingleBeam(
     }
     if (logFactors) {
         if (_targetres) {
-            GaussianBeam kernelBeam(kernelParms);
+            GaussianBeam kernelBeam(kernelParmsV);
             factor1 = pixelArea/kernelBeam.getArea("arcsec*arcsec");
         }
         Double factor2 = beamOut.getArea("arcsec*arcsec")/inputBeam.getArea("arcsec*arcsec");
@@ -414,7 +417,8 @@ template <class T> void Image2DConvolver<T>::_doMultipleBeams(
     casacore::Int polarization = -1;
     if (_targetres) {
         iiOut.removeRestoringBeam();
-        iiOut.setRestoringBeam(casacore::GaussianBeam(kernelParms));
+        Vector<Quantity> const kernelParmsV(kernelParms);
+        iiOut.setRestoringBeam(casacore::GaussianBeam(kernelParmsV));
     }
     casacore::uInt count = (nChan > 0 && nPol > 0)
         ? nChan * nPol
@@ -456,9 +460,10 @@ template <class T> void Image2DConvolver<T>::_doMultipleBeams(
                     << " of " << nPol;
             }
             *this->_getLog() << " ";
+            Vector<Quantity> const originalParmsV(originalParms);
             if (
                 near(
-                    inputBeam, GaussianBeam(originalParms), 1e-5,
+                    inputBeam, GaussianBeam(originalParmsV), 1e-5,
                     casacore::Quantity(1e-2, "arcsec")
                 )
             ) {
@@ -474,10 +479,11 @@ template <class T> void Image2DConvolver<T>::_doMultipleBeams(
                 kernelVolume = _makeKernel(
                     kernel, kernelType, kernelParms, imageIn
                 );
+                Vector<Quantity> const kernelParmsV(kernelParms);
                 *this->_getLog() << ": Convolving image which has a beam of "
                     << inputBeam << " with a Gaussian of "
-                    << GaussianBeam(kernelParms) << " to reach a target "
-                    << "resolution of " << GaussianBeam(originalParms)
+                    << GaussianBeam(kernelParmsV) << " to reach a target "
+                    << "resolution of " << GaussianBeam(originalParmsV)
                     << LogIO::POST;
             }
         }
@@ -485,15 +491,16 @@ template <class T> void Image2DConvolver<T>::_doMultipleBeams(
             subImage.shape(), subImage.coordinates()
         );
         if (doConvolve) {
+            Vector<Quantity> const kernelParmsV(kernelParms);
             auto scaleFactor = _dealWithRestoringBeam(
                 brightnessUnitOut, beamOut, kernel, kernelVolume, kernelType,
-                kernelParms, subCsys, inputBeam, imageIn.units(), i == 0
+                kernelParmsV, subCsys, inputBeam, imageIn.units(), i == 0
             );
             {
                 *this->_getLog() << LogIO::NORMAL << "Scaling pixel values by ";
                 if (logFactors) {
                     if (_targetres) {
-                        casacore::GaussianBeam kernelBeam(kernelParms);
+                        casacore::GaussianBeam kernelBeam(kernelParmsV);
                         factor1 = pixelArea/kernelBeam.getArea("arcsec*arcsec");
                     }
                     auto factor2 = beamOut.getArea("arcsec*arcsec")
@@ -578,7 +585,8 @@ template <class T> Double Image2DConvolver<T>::_makeKernel(
 
 // Check number of parameters
 
-   _checkKernelParameters(kernelType, parameters);
+   Vector<Quantity> const parametersV(parameters);
+   _checkKernelParameters(kernelType, parametersV);
 
 // Convert kernel widths to pixels from world.  Demands major and minor
 // both in pixels or both in world, else exception
