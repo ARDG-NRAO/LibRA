@@ -273,6 +273,10 @@ public:
 
   virtual casacore::String name() const;
 
+  // SDGrid::Cache
+  void enableCache();
+  void disableCache();
+
 private:
 
   // Find the Primary beam and convert it into a convolution buffer
@@ -324,7 +328,19 @@ private:
 
   casacore::MDirection::Convert* pointingToImage;
 
+  // Stores - for spectra in the current MeasurementSet row -
+  // coordinates of antenna's direction at data-taking time (ms.MAIN.TIME),
+  // projected on image's spatial geometric plane.
   casacore::Vector<casacore::Double> xyPos;
+
+  // Keep track of xyPos member's validity
+  struct MaskedPixelRef {
+      MaskedPixelRef(casacore::Vector<casacore::Double>& xy, casacore::Bool isValid);
+      casacore::Vector<casacore::Double>& xy;
+      casacore::Bool isValid;
+  };
+  MaskedPixelRef rowPixel;
+
   //Original xypos of moving source
   casacore::Vector<casacore::Double> xyPosMovingOrig_p;
 
@@ -374,6 +390,95 @@ private:
                                   const casacore::Int& index, const casacore::Int& index1, const casacore::Int& index2);
 
   void pickWeights(const VisBuffer&vb, casacore::Matrix<casacore::Float>& weight);
+
+  // Cache
+  struct MaskedPixel {
+      MaskedPixel(
+          casacore::Double x = 0.0,
+          casacore::Double y = 0.0,
+          casacore::Bool isValid = false
+      );
+      casacore::Double x;
+      casacore::Double y;
+      casacore::Bool isValid;
+  };
+
+  // Description:
+  // A cache aimed at storing expensive computation results,
+  // which can be re-used across consecutive iterations
+  // over the same input MeasurementSets.
+  // Designed to be VisibilityIterator-friendly.
+  //
+  // Motivation:
+  // CASA sdimaging task always iterates twice over the same input MeasurementSets,
+  // to compute a normal image and a weight image.
+  class Cache {
+  public:
+      enum class AccessMode {
+          READ,
+          WRITE
+      };
+
+      Cache(SDGrid &parent);
+
+      void open(AccessMode accessMode);
+      void close();
+      void clear();
+
+      casacore::Bool isEmpty() const;
+      casacore::Bool isReadable() const;
+      casacore::Bool isWriteable() const;
+
+      // Synchronize the cache with the VisibilityIterator.
+      // Must be called exactly once each time the VisibilityIterator
+      // starts iterating over a new MS (including the first one)
+      void newMS(const casacore::MeasurementSet& ms);
+
+      // Cache spatial pixel computation result for the current row.
+      // Must be called exactly once per MeasurementSet row.
+      void storeRowPixel();
+
+      // Load from the cache Image's spatial pixel for the current row.
+      // Must be called exactly once per MeasurementSet row.
+      void loadRowPixel();
+
+  private:
+      void rewind();
+
+      SDGrid& sdgrid;
+
+      using Pixels = std::vector<MaskedPixel>;
+
+      struct MsCache {
+          MsCache(const casacore::String &msPath, casacore::rownr_t nRows);
+          casacore::String msPath;
+          casacore::rownr_t nRows;
+          Pixels pixels;
+      };
+
+      using MsCaches = std::vector<MsCache>;
+
+      MsCaches msCaches;
+
+      // State Control
+      casacore::Bool isOpened;
+      AccessMode accessMode;
+      casacore::Bool canRead;
+      casacore::Bool canWrite;
+
+      // Input/Output
+      // ---- Storing to the cache
+      const MaskedPixelRef& inputPixel;
+      Pixels *msPixels;
+
+      // ---- Loading from the cache
+      MaskedPixelRef& outputPixel;
+      MsCaches::const_iterator msCacheReadIterator;
+      Pixels::const_iterator pixelReadIterator;
+  };
+
+  Cache cache;
+  casacore::Bool cacheIsEnabled;
 
   //for debugging
   //FILE *pfile;
