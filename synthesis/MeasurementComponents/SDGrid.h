@@ -380,8 +380,8 @@ private:
 
   void dumpConvolutionFunction(const casacore::String &outfile, const casacore::Vector<casacore::Float> &f) const;
 
-  void init_perfs();
 #if defined(SDGRID_PERFS)
+  void init_perfs();
   ChronoStat cNextChunk;
   ChronoStat cMatchAllSpwChans;
   ChronoStat cMatchChannel;

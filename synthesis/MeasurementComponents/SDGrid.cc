@@ -271,8 +271,9 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 }
 
 //----------------------------------------------------------------------
-void SDGrid::init_perfs() {
 #if defined(SDGRID_PERFS)
+void SDGrid::init_perfs() {
+
   cNextChunk.set_name("iterator.next_chunk");
   cMatchAllSpwChans.set_name("matchAllSpwChans");
   cMatchChannel.set_name("matchChannel");
@@ -286,8 +287,8 @@ void SDGrid::init_perfs() {
   cComputeDirectionPixel.set_name("computeDirectionPixel");
   cHandleMovingSource.set_name("handleMovingSource");
   cGridData.set_name("gridData");
-#endif
 }
+#endif
 
 
 //----------------------------------------------------------------------
@@ -1444,6 +1445,7 @@ void SDGrid::makeImage(FTMachine::Type inType,
     const auto firstMsName = vb.msName();
 
     initializeToSky(theImage,weight,vb);
+
     // Loop over the visibilities, putting VisBuffers
     for (vi.originChunks(); vi.moreChunks();
 #if defined(SDGRID_PERFS)
