@@ -25,7 +25,7 @@
 //#
 //# $Id$
 
-#include <casa/stdio.h>
+#include <stdio.h>
 #include <flagging/Flagging/RFAMedianClip.h>
 #include <casacore/casa/Arrays/ArrayMath.h>
     

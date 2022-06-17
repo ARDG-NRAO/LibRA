@@ -25,6 +25,7 @@
 //#
 //# $Id$
 
+#include <iomanip>
 #include <nrao/VLA/VLAADA.h>
 #include <casacore/casa/Utilities/Assert.h>
 #include <casacore/casa/Exceptions/Error.h>
@@ -207,7 +208,7 @@ Vector<Double> VLAADA::pos() const {
   pos(2) = bz();
   return pos;
 }
-#include <casa/iomanip.h>
+
 String VLAADA::padName() const {
   DebugAssert(ok(), AipsError);
   const Double x = bx();

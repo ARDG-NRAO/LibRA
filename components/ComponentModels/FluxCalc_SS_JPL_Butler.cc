@@ -37,7 +37,7 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/System/Aipsrc.h>
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 #include <casacore/measures/Measures.h>
 #include <casacore/measures/Measures/MEpoch.h>
 #include <casacore/measures/Measures/MCEpoch.h>

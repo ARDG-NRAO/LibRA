@@ -26,7 +26,7 @@
 //# $Id: TwoSidedShape.cc 21292 2012-11-28 14:58:19Z gervandiepen $
 
 #include <components/ComponentModels/TwoSidedShape.h>
-#include <casa/iomanip.h>
+#include <iomanip>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/ArrayLogical.h>
 #include <casacore/casa/Containers/Record.h>

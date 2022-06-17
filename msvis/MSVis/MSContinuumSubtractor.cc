@@ -50,7 +50,7 @@
 #include <casacore/casa/Exceptions/Error.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/tables/TaQL/TableParse.h>
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

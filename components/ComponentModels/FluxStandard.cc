@@ -45,7 +45,7 @@
 #include <casacore/casa/OS/Path.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/measures/Measures/MCDirection.h>
 #include <casacore/measures/Measures/MeasConvert.h>

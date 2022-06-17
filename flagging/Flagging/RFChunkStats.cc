@@ -31,7 +31,7 @@
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <stdio.h>
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

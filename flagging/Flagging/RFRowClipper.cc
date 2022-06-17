@@ -34,7 +34,7 @@
 #include <casacore/casa/Arrays/ArrayLogical.h>
 #include <casacore/casa/Arrays/Slice.h>
 #include <casacore/scimath/Mathematics/MedianSlider.h>
-#include <casa/stdio.h>
+#include <stdio.h>
     
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

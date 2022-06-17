@@ -65,7 +65,7 @@
 
 #include <flagging/Flagging/ExtendFlagger.h>
 
-#include <casa/iomanip.h>
+#include <iomanip>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

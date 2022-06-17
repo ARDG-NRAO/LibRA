@@ -101,7 +101,7 @@
 #include <casacore/casa/Utilities/DataType.h>
 #include <casacore/casa/BasicSL/String.h>
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 
 #include <casacore/tables/TaQL/ExprNode.h>
 
