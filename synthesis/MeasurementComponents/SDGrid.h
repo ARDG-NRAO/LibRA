@@ -335,7 +335,11 @@ private:
 
   // Keep track of xyPos member's validity
   struct MaskedPixelRef {
-      MaskedPixelRef(casacore::Vector<casacore::Double>& xy, casacore::Bool isValid);
+  private:
+      static casacore::Vector<casacore::Double> xyDefault;
+  public:
+      MaskedPixelRef(casacore::Vector<casacore::Double>& xy = xyDefault, casacore::Bool isValid = false);
+      MaskedPixelRef& operator=(const MaskedPixelRef &other);
       casacore::Vector<casacore::Double>& xy;
       casacore::Bool isValid;
   };
@@ -419,7 +423,13 @@ private:
           WRITE
       };
 
-      Cache(SDGrid &parent);
+  private:
+      static SDGrid defaultParent;
+
+  public:
+      Cache(SDGrid &parent = defaultParent);
+
+      Cache& operator=(const Cache &other);
 
       void open(AccessMode accessMode);
       void close();
