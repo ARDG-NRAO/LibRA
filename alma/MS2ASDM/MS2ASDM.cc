@@ -3498,8 +3498,8 @@ namespace casa {
 	  asdmExecBlockId_p[execBlockStartTime[sBSummaryTag]] = tER->getExecBlockId();
 
 	  if(verbosity_p>2){
-	    cout << "eblock id defined in loop 1 for start time " << setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
-	    cout << "                                  end time " << setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
+	    std::cout << "eblock id defined in loop 1 for start time " << std::setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
+	    std::cout << "                                  end time " << std::setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
 	  }
 
 	  // undefine the mapping for this Tag since the ExecBlock was completed
@@ -3544,7 +3544,7 @@ namespace casa {
 	execBlockNumber[sBSummaryTag] = oldNum + 1; // sequential numbering starting at 1
 
 	if(verbosity_p>2){
-	  cout << "eblock number " << oldNum + 1 << " defined for start time " << setprecision (9) << timestampStartSecs(mainTabRow) << endl;
+	  std::cout << "eblock number " << oldNum + 1 << " defined for start time " << std::setprecision (9) << timestampStartSecs(mainTabRow) << endl;
 	}
 
 	obsIdFromSBSum[sBSummaryTag] = obsId; // remember the obsId for this exec block
@@ -3653,8 +3653,8 @@ namespace casa {
       asdmExecBlockId_p[execBlockStartTime[sBSummaryTag]] = tER->getExecBlockId();
 
       if(verbosity_p>2){
-	cout << "eblock id defined in loop 2 for start time " << setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
-	cout << "                                  end time " << setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
+	std::cout << "eblock id defined in loop 2 for start time " << std::setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
+	std::cout << "                                  end time " << std::setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
       }
 
       // undefine the mapping for this Tag since the ExecBlock was completed

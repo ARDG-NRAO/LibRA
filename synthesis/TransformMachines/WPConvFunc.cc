@@ -925,7 +925,7 @@ Bool WPConvFunc::checkCenterPix(const ImageInterface<Complex>& image){
 
   //Images with same number of pixels and increments can have the same conv functions
   ostringstream oos;
-  oos << setprecision(6);
+  oos << std::setprecision(6);
 
   oos << nx_p << "_"<< fabs(incr(0)) << "_";
   oos << ny_p << "_"<< fabs(incr(1));

@@ -468,7 +468,7 @@ class SubMS
 			   std::vector< casacore::Vector<casacore::Double> >& xold, 
 			   std::vector< casacore::Vector<casacore::Double> >& xout, 
 			   std::vector< casacore::Vector<casacore::Double> >& xin, 
-			   vector< casacore::Int >& method, // interpolation method cast to Int
+			   std::vector< casacore::Int >& method, // interpolation method cast to Int
 			   casacore::Bool& msMod,
 			   const casacore::String& outframe,
 			   const casacore::String& regridQuant,

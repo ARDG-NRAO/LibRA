@@ -291,7 +291,7 @@ String SkyComponent::positionToString(
 	else {
 		Quantity timeError = longErrOnGreatCircle ? dLong/cos(lat) : dLong;
 		position << " +/- " << std::fixed
-			<< setprecision(precision) << timeError << " ("
+			<< std::setprecision(precision) << timeError << " ("
 			<< dLong.getValue("arcsec") << " arcsec"
 			<< (longErrOnGreatCircle ? " along great circle" : "")
 			<< ")" << endl;
@@ -320,7 +320,7 @@ String SkyComponent::positionToString(
 			longPix.set(roundDouble(longPixErr));
 			latPix.set(roundDouble(latPixErr));
 			precision = precisionForValueErrorPairs(longPix, latPix);
-			position << std::fixed <<  setprecision(precision);
+			position << std::fixed <<  std::setprecision(precision);
 			position << "       --- " << labels.first << " " << (*pixelCoords)[0];
 			if (dLong.getValue() == 0) {
 				position << " (fixed)" << endl;
