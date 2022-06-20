@@ -76,9 +76,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   SDMaskHandler::SDMaskHandler()
   {
-#if ! defined(CASATOOLS)
-    interactiveMasker_p = new InteractiveMasking();
-#endif
     itsMax = DBL_MAX;
     itsRms = DBL_MAX;
     itsSidelobeLevel = 0.0;
@@ -97,10 +94,6 @@ itsTooLongForFname = false;
 
   SDMaskHandler::~SDMaskHandler()
   {
-#if ! defined(CASATOOLS)
-    if (interactiveMasker_p != 0)
-      delete interactiveMasker_p;
-#endif
   }
   
   void SDMaskHandler::resetMask(std::shared_ptr<SIImageStore> imstore)
@@ -936,11 +929,6 @@ itsTooLongForFname = false;
     cout << "Before interaction : niter : " << niter << " cycleniter : " << cycleniter << " thresh : " << threshold << "  cyclethresh : " << cyclethreshold << endl;
     //    ret = interactiveMasker_p->interactivemask(imageName, maskName,
     //                                            niter, ncycles, threshold);
-#if ! defined(CASATOOLS)
-    ret = interactiveMasker_p->interactivemask(imageName, maskName,
-                                               niter, cycleniter, threshold, cyclethreshold);
-    cout << "After interaction : niter : " << niter << " cycleniter : " << cycleniter << " thresh : " << threshold << " cyclethresh : " << cyclethreshold << "  ------ ret : " << ret << endl;
-#endif
     return ret;
   }
 

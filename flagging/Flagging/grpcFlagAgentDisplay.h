@@ -27,6 +27,8 @@
 #include <vector>
 #include <future>
 #include <flagging/Flagging/FlagAgentBase.h>
+#ifdef USE_GRPC
+#include <grpcpp/server.h>
 #include "plotserver.grpc.pb.h"
 #include "plotserver_events.grpc.pb.h"
 
@@ -224,6 +226,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   
   
 } //# NAMESPACE CASA - END
+
+#endif //# USE_GRPC
 
 #endif /* FLAGAGENTDISPLAY_H_ */
 

@@ -42,10 +42,8 @@
 
 #include <flagging/Flagging/FlagCalTableHandler.h>
 #include <flagging/Flagging/FlagMSHandler.h>
-#if defined(CASATOOLS)
+#ifdef USE_GRPC
 #include <flagging/Flagging/grpcFlagAgentDisplay.h>
-#else
-#include <flagging/Flagging/FlagAgentDisplay.h>
 #endif
 
 using namespace casacore;

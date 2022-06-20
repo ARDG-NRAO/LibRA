@@ -45,7 +45,7 @@ namespace casatools {   /** namespace for CASAtools classes within "CASA code" *
         State( ) { }
 
         virtual bool initialized( ) const {
-#if defined(CASATOOLS)
+#ifdef USE_GRPC
             return true;
 #else
             return false;

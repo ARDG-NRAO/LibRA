@@ -30,9 +30,6 @@
 
 #include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
-#if ! defined(CASATOOLS)
-#include <synthesis/ImagerObjects/DistributedSynthesisIterBot.h>
-#endif
 #include <synthesis/ImagerObjects/ParallelImager.h>
 
 #include <memory>
@@ -41,10 +38,6 @@ namespace casa {
 
 class IterationControl {
 
-private:
-#if ! defined(CASATOOLS)
-	std::unique_ptr<DistributedSynthesisIterBot> it;
-#endif
 protected:
 	void
 	setup_iteration_controller(MPI_Comm comm, casacore::Record &iter_pars) {
@@ -52,67 +45,38 @@ protected:
 		// Instantiate an iterbot. Use DistributedSynthesisIterBot when
 		// interaction with new GUI works; for now,
 		// DistributedSynthesisIterBotWithOldGUI works.
-#if ! defined(CASATOOLS)
-		it = std::unique_ptr<DistributedSynthesisIterBot>(
-			new DistributedSynthesisIterBotWithOldGUI(comm));
-		it->setupIteration(iter_pars);
-#endif
 	};
 
 	void
 	teardown_iteration_controller() {
-#if ! defined(CASATOOLS)
-		it.reset();
-#endif
 	}
 
 public:
 	void
 	end_major_cycle() {
-#if ! defined(CASATOOLS)
-		it->endMajorCycle();
-#endif
 	};
 
 	casacore::Record
 	get_minor_cycle_controls() {
-#if ! defined(CASATOOLS)
-		return it->getSubIterBot();
-#else
-        return casacore::Record( );
-#endif
+            return casacore::Record( );
 	};
 
 	void
 	merge_execution_records(const casacore::Vector<casacore::Record> &recs) {
-#if ! defined(CASATOOLS)
-		it->endMinorCycle(recs);
-#endif
 	};
 
 	void
 	merge_initialization_records(const casacore::Vector<casacore::Record> &recs) {
-#if ! defined(CASATOOLS)
-		it->startMinorCycle(recs);
-#endif
 	};
 
 	bool
 	is_clean_complete() {
-#if ! defined(CASATOOLS)
-		return it->cleanComplete() > 0;
-#else
-        return false;
-#endif
+            return false;
 	};
 
 	casacore::Record
 	get_summary() {
-#if ! defined(CASATOOLS)
-		return it->getIterationSummary();
-#else
-        return casacore::Record( );
-#endif
+            return casacore::Record( );
 	};
 
 	static int effective_rank(MPI_Comm comm) {

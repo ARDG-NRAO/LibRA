@@ -39,9 +39,6 @@
 
 #include<synthesis/ImagerObjects/SIImageStore.h>
 #include<synthesis/ImagerObjects/SIImageStoreMultiTerm.h>
-#if ! defined(CASATOOLS)
-#include <synthesis/ImagerObjects/InteractiveMasking.h>
-#endif
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -415,11 +412,6 @@ public:
   // Store pbmask level (a.k.a pblimit for mask)
   void setPBMaskLevel(const casacore::Float pbmasklevel);
   casacore::Float getPBMaskLevel();
-
-protected:
-#if ! defined(CASATOOLS)
-  InteractiveMasking *interactiveMasker_p;
-#endif
 
 private:
   double itsRms;

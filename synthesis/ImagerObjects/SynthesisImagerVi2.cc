@@ -61,9 +61,6 @@
 #include <casacore/ms/MSSel/MSSelection.h>
 
 
-#if ! defined(CASATOOLS)
-#include <synthesis/ImagerObjects/SIIterBot.h>
-#endif
 #include <synthesis/ImagerObjects/SynthesisImagerVi2.h>
 
 #include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
@@ -92,10 +89,6 @@
 #include <synthesis/TransformMachines2/SDGrid.h>
 #include <synthesis/TransformMachines/WProjectFT.h>
 #include <synthesis/TransformMachines2/BriggsCubeWeightor.h>
-#if ! defined(CASATOOLS)
-#include <casadbus/viewer/ViewerProxy.h>
-#include <casadbus/plotserver/PlotServerProxy.h>
-#endif
 #include <casacore/casa/Utilities/Regex.h>
 #include <casacore/casa/OS/Directory.h>
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>

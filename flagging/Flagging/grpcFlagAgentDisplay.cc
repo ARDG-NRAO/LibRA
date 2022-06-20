@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <casatools/Config/State.h>
 
+#ifdef USE_GRPC
 #include <flagging/Flagging/grpcFlagAgentDisplay.h>
 #include <grpc++/grpc++.h>
 #include "shutdown.grpc.pb.h"
@@ -2003,6 +2004,7 @@ Bool FlagAgentDisplay :: setReportLayout()
 
 }
 
+#endif // USE_GRPC
 
 } //# NAMESPACE CASA - END
 
