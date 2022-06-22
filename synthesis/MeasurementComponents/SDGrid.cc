@@ -92,12 +92,12 @@ ChronoStat::ChronoStat(const string & name)
     : name_ {name},
       started_ {false},
       n_laps_ {0},
-	  laps_sum_ {Duration::zero()},
-	  laps_min_ {Duration::max()},
-	  laps_max_ {Duration::min()},
-	  n_overflows_ {0},
-	  n_underflows_ {0}
-	  {}
+      n_overflows_ {0},
+      n_underflows_ {0},
+      laps_sum_ {Duration::zero()},
+      laps_min_ {Duration::max()},
+      laps_max_ {Duration::min()}
+  {}
 
 const std::string& ChronoStat::name() const {
 	return name_;
@@ -200,13 +200,12 @@ SDGrid::SDGrid(SkyJones& sj, Int icachesize, Int itilesize,
   : FTMachine(), sj_p(&sj), imageCache(0), wImageCache(0),
     cachesize(icachesize), tilesize(itilesize),
     isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(0.), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(false),
     cache {Cache(*(const_cast<SDGrid *>(this)))},
-    cacheIsEnabled {false},
-    rowPixel {xyPos, false}
+    cacheIsEnabled {false}
 {
   lastIndex_p=0;
   init_perfs();
@@ -217,13 +216,12 @@ SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize
   : FTMachine(),  sj_p(&sj), imageCache(0), wImageCache(0),
     cachesize(icachesize), tilesize(itilesize),
     isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0),  jwidth_p(0.0),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
     cache {Cache(*(const_cast<SDGrid *>(this)))},
-    cacheIsEnabled {false},
-    rowPixel {xyPos, false}
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
@@ -235,13 +233,12 @@ SDGrid::SDGrid(Int icachesize, Int itilesize,
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
     cachesize(icachesize), tilesize(itilesize),
     isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(0.), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(false),
     cache {Cache(*(const_cast<SDGrid *>(this)))},
-    cacheIsEnabled {false},
-    rowPixel {xyPos, false}
+    cacheIsEnabled {false}
 {
   lastIndex_p=0;
   init_perfs();
@@ -252,14 +249,13 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
     cachesize(icachesize), tilesize(itilesize),
     isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1),
     msId_p(-1),
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
     cache {Cache(*(const_cast<SDGrid *>(this)))},
-    cacheIsEnabled {false},
-    rowPixel {xyPos, false}
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
@@ -274,13 +270,12 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
     cachesize(icachesize), tilesize(itilesize),
     isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(-1),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(-1),
     truncate_p(truncate), gwidth_p(gwidth), jwidth_p(jwidth),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
     isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
     cache {Cache(*(const_cast<SDGrid *>(this)))},
-    cacheIsEnabled {false},
-    rowPixel {xyPos, false}
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
@@ -336,7 +331,7 @@ SDGrid& SDGrid::operator=(const SDGrid& other)
     pointingToImage=0;
     xyPos.resize();
     xyPos=other.xyPos;
-    rowPixel=MaskedPixelRef(xyPos,false);
+    rowPixel = MaskedPixelRef(xyPos, false);
     xyPosMovingOrig_p=other.xyPosMovingOrig_p;
     convFunc.resize();
     convFunc=other.convFunc;
@@ -378,7 +373,10 @@ Bool SDGrid::changed(const VisBuffer& /*vb*/) {
 }
 
 //----------------------------------------------------------------------
-SDGrid::SDGrid(const SDGrid& other):FTMachine()
+SDGrid::SDGrid(const SDGrid& other)
+  : FTMachine(),
+    rowPixel {MaskedPixelRef(xyPos)},
+    cache {Cache(*const_cast<SDGrid *>(this))}
 {
   operator=(other);
 }
@@ -920,12 +918,27 @@ void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
                << "will use clipping-capable Fortran gridder ggridsd2 for imaging"
                << LogIO::POST;
     }
+
+    cacheIsEnabled = true;
+    if (cacheIsEnabled) {
+        if (cache.isEmpty()) {
+            cache.open(Cache::AccessMode::WRITE);
+            logger << "Will compute and cache spectra pixels coordinates" 
+                   << LogIO::NORMAL << LogIO::POST;
+        } else {
+            cache.open(Cache::AccessMode::READ);
+            logger << "Will load cached spectra pixels coordinates instead of recomputing them." 
+                   << LogIO::NORMAL << LogIO::POST;
+        }
+    }
 }
 
 void SDGrid::finalizeToSky()
 {
     if (pointingToImage) delete pointingToImage;
     pointingToImage = nullptr;
+
+    if (cacheIsEnabled) cache.close();
 }
 
 Array<Complex>* SDGrid::getDataPointer(const IPosition& centerLoc2D,
@@ -1494,6 +1507,7 @@ void SDGrid::makeImage(FTMachine::Type inType,
         Bool doPSF;
         if (vi.newMS()) { // Note: the first MS is a new MS
             getParamsForFTMachineType(vi, inType, doPSF, actualType);
+            if (cacheIsEnabled) cache.newMS(vi.ms());
         }
         for (vi.origin(); vi.more(); vi++) {
             setupVisBufferForFTMachineType(actualType, vb);
@@ -1687,6 +1701,10 @@ Int SDGrid::getIndex(const MSPointingColumns& mspc, const Double& time,
 
 Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
+    if (cacheIsEnabled and cache.isReadable()) {
+        cache.loadRowPixel();
+        return rowPixel.isValid;
+    }
     // Check POINTING table.
     // If the calling code is iterating over millions of rows,
     // we'll do that check millions of times ...
@@ -1752,8 +1770,12 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
             logIO_p << LogIO::DEBUGGING << String(o) << LogIO::POST;
 
-            return false;
-        }
+            rowPixel.isValid = false;
+            if (cacheIsEnabled and cache.isWriteable()) {
+              cache.storeRowPixel();
+            }
+            return rowPixel.isValid;
+         }
     }
 
     // 2. At this stage we have a valid pointingIndex.
@@ -1893,7 +1915,11 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
             << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME) 
             << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE) 
             << LogIO::WARN << LogIO::POST;
-        return false;
+        rowPixel.isValid = false;
+        if (cacheIsEnabled and cache.isWriteable()) {
+          cache.storeRowPixel();
+        }
+        return rowPixel.isValid;
     }
 
     // 7. Handle moving sources
@@ -1922,8 +1948,12 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
         xyPos = xyPos + xyPosMovingOrig_p - actPix;
     }
-
-    return havePixel;
+    
+    rowPixel.isValid = true;
+    if (cacheIsEnabled and cache.isWriteable()) {
+          cache.storeRowPixel();
+    }
+    return rowPixel.isValid;
 }
 
 MDirection SDGrid::directionMeas(const MSPointingColumns& mspc, const Int& index){
@@ -2156,6 +2186,13 @@ SDGrid::MaskedPixelRef::MaskedPixelRef(Vector<Double>& xyIn, Bool isValidIn)
     isValid {isValidIn}
 {}
 
+SDGrid::MaskedPixelRef& 
+SDGrid::MaskedPixelRef::operator=(const SDGrid::MaskedPixelRef &other) {
+  xy = other.xy;
+  isValid = other.isValid;
+  return *this;
+}
+
 SDGrid::MaskedPixel::MaskedPixel(Double xIn, Double yIn, Bool isValidIn)
     : x {xIn},
       y {yIn},
@@ -2171,6 +2208,23 @@ SDGrid::Cache::Cache(SDGrid &parent)
       inputPixel {sdgrid.rowPixel},
       outputPixel {sdgrid.rowPixel}
 {}
+
+ SDGrid::Cache& SDGrid::Cache::operator=(const Cache &other) {
+    sdgrid = other.sdgrid;
+    msCaches = other.msCaches;
+    isOpened = false;
+    canRead = false;
+    canWrite = false;
+    // inputPixel = sdgrid.rowPixel;
+    inputPixel.xy = sdgrid.rowPixel.xy;
+    //inputPixel.isValid = sdgrid.rowPixel.isValid;
+    // <=> 
+    msPixels = nullptr;
+    outputPixel = other.outputPixel;
+    msCacheReadIterator =  MsCaches::const_iterator();
+    pixelReadIterator = Pixels::const_iterator();
+    return *this;
+ }
 
 void
 SDGrid::Cache::open(AccessMode accessModeIn) {
@@ -2227,7 +2281,7 @@ SDGrid::Cache::MsCache::MsCache(const String& msPathIn, rownr_t nRowsIn)
 }
 
 void
-SDGrid::Cache::newMS(const MeasurementSet& &ms) {
+SDGrid::Cache::newMS(const MeasurementSet& ms) {
     if (isWriteable()) {
         msCaches.emplace_back(ms.tableName(), ms.nrow());
         msPixels = &(msCaches.back().pixels);
@@ -2236,11 +2290,11 @@ SDGrid::Cache::newMS(const MeasurementSet& &ms) {
 
     if (isReadable()) {
         if (msCacheReadIterator == msCaches.cend()) {
-            logIO_p << "Cached data missing for: " << ms.tableName() << LogIO::EXCEPTION;
+            sdgrid.logIO_p << "Cached data missing for: " << ms.tableName() << LogIO::EXCEPTION;
         }
         const auto & pixels = msCacheReadIterator->pixels;
         if (pixels.size() != ms.nrow()) {
-            logIO_p << "Cached data size mismatch for: " << ms.tableName() << LogIO::EXCEPTION;
+            sdgrid.logIO_p << "Cached data size mismatch for: " << ms.tableName() << LogIO::EXCEPTION;
         }
         pixelReadIterator = pixels.cbegin();
         ++msCacheReadIterator;
@@ -2249,6 +2303,10 @@ SDGrid::Cache::newMS(const MeasurementSet& &ms) {
 
 void
 SDGrid::Cache::storeRowPixel() {
+    sdgrid.logIO() << "SDGrid::Cache::storeRowPixel():"
+                   << " msPixels: [size/capacity]"
+                   << "[" << msPixels->size() << " / " << msPixels->capacity() << "]"
+                   << LogIO::POST;
     msPixels->emplace_back(
         inputPixel.xy[0],
         inputPixel.xy[1],
