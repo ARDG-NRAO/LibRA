@@ -2232,6 +2232,10 @@ SDGrid::Cache::open(AccessMode accessModeIn) {
     accessMode = accessModeIn;
     canRead = accessMode == AccessMode::READ;
     canWrite = accessMode == AccessMode::WRITE;
+    if (outputPixel.xy.size() < 2) {
+      outputPixel.xy.resize(2);
+      outputPixel.isValid = false;
+    }
     rewind();
 }
 
@@ -2303,10 +2307,6 @@ SDGrid::Cache::newMS(const MeasurementSet& ms) {
 
 void
 SDGrid::Cache::storeRowPixel() {
-    sdgrid.logIO() << "SDGrid::Cache::storeRowPixel():"
-                   << " msPixels: [size/capacity]"
-                   << "[" << msPixels->size() << " / " << msPixels->capacity() << "]"
-                   << LogIO::POST;
     msPixels->emplace_back(
         inputPixel.xy[0],
         inputPixel.xy[1],
