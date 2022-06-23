@@ -919,7 +919,7 @@ void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
                << LogIO::POST;
     }
 
-    cacheIsEnabled = true;
+    cacheIsEnabled = false;
     if (cacheIsEnabled) {
         if (cache.isEmpty()) {
             cache.open(Cache::AccessMode::WRITE);
