@@ -423,11 +423,10 @@ private:
           WRITE
       };
 
-  //private:
-  //    static SDGrid defaultParent;
-
   public:
-      Cache(SDGrid &parent /* = defaultParent*/);
+      Cache(SDGrid &parent);
+
+      static const casacore::String& className();
 
       Cache& operator=(const Cache &other);
 
@@ -485,6 +484,7 @@ private:
       MaskedPixelRef& outputPixel;
       MsCaches::const_iterator msCacheReadIterator;
       Pixels::const_iterator pixelReadIterator;
+
   };
 
   Cache cache;

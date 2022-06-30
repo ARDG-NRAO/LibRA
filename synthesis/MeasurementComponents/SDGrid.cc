@@ -919,7 +919,7 @@ void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
                << LogIO::POST;
     }
 
-    cacheIsEnabled = false;
+    cacheIsEnabled = true;
     if (cacheIsEnabled) {
         if (cache.isEmpty()) {
             cache.open(Cache::AccessMode::WRITE);
@@ -2203,11 +2203,16 @@ SDGrid::Cache::Cache(SDGrid &parent)
     : sdgrid {parent},
       isOpened {false},
       accessMode {AccessMode::READ},
-      canRead { false },
+      canRead {false},
       canWrite {false},
       inputPixel {sdgrid.rowPixel},
       outputPixel {sdgrid.rowPixel}
 {}
+
+const casacore::String& SDGrid::Cache::className() {
+    static casacore::String className_ = "SDGrid::Cache";
+    return className_;
+}
 
  SDGrid::Cache& SDGrid::Cache::operator=(const Cache &other) {
     sdgrid = other.sdgrid;
@@ -2286,19 +2291,31 @@ SDGrid::Cache::MsCache::MsCache(const String& msPathIn, rownr_t nRowsIn)
 
 void
 SDGrid::Cache::newMS(const MeasurementSet& ms) {
+    LogIO os(LogOrigin(className(),"newMS"));
+    const auto msPath =  ms.getPartNames()[0];
+
     if (isWriteable()) {
+        os << "Will cache spectra pixels for MS: " << msPath << LogIO::POST;
         msCaches.emplace_back(ms.tableName(), ms.nrow());
         msPixels = &(msCaches.back().pixels);
         return;
     }
 
     if (isReadable()) {
+        os << "Will load spectra pixels cached for MS: " << msPath << LogIO::POST;
         if (msCacheReadIterator == msCaches.cend()) {
-            sdgrid.logIO_p << "Cached data missing for: " << ms.tableName() << LogIO::EXCEPTION;
+            os << "BUG! Cached data missing for MS: " << msPath << LogIO::EXCEPTION;
         }
         const auto & pixels = msCacheReadIterator->pixels;
         if (pixels.size() != ms.nrow()) {
-            sdgrid.logIO_p << "Cached data size mismatch for: " << ms.tableName() << LogIO::EXCEPTION;
+            os << "BUG! Cached data size mismatch for MS: " << msPath
+               << " : nRows: " << ms.nrow() 
+               << " nCachedRows: " << pixels.size() << LogIO::EXCEPTION;
+        }
+        if (  msCacheReadIterator->msPath != ms.tableName()) {
+            os << "BUG! Cached data was probably for a different selection of MS: " << msPath
+               << " current selection: " << ms.tableName()
+               << " cached selection: " <<  msCacheReadIterator->msPath << LogIO::EXCEPTION;
         }
         pixelReadIterator = pixels.cbegin();
         ++msCacheReadIterator;
