@@ -335,17 +335,10 @@ private:
 
   // Keep track of xyPos member's validity
   struct MaskedPixelRef {
-<<<<<<< HEAD
   // private:
   //    static casacore::Vector<casacore::Double> xyDefault;
   public:
       MaskedPixelRef(casacore::Vector<casacore::Double>& xy /*  = xyDefault */, casacore::Bool isValid = false);
-=======
-  private:
-      static casacore::Vector<casacore::Double> xyDefault;
-  public:
-      MaskedPixelRef(casacore::Vector<casacore::Double>& xy = xyDefault, casacore::Bool isValid = false);
->>>>>>> 163ec3db31b211c63bbcf33949a204bcbd0e764f
       MaskedPixelRef& operator=(const MaskedPixelRef &other);
       casacore::Vector<casacore::Double>& xy;
       casacore::Bool isValid;

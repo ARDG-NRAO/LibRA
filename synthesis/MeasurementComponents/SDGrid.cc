@@ -332,10 +332,6 @@ SDGrid& SDGrid::operator=(const SDGrid& other)
     xyPos.resize();
     xyPos=other.xyPos;
     rowPixel = MaskedPixelRef(xyPos, false);
-<<<<<<< HEAD
-=======
-    //rowPixel.xy = xyPos; rowPixel.isValid = false;
->>>>>>> 163ec3db31b211c63bbcf33949a204bcbd0e764f
     xyPosMovingOrig_p=other.xyPosMovingOrig_p;
     convFunc.resize();
     convFunc=other.convFunc;
@@ -2213,14 +2209,11 @@ SDGrid::Cache::Cache(SDGrid &parent)
       outputPixel {sdgrid.rowPixel}
 {}
 
-<<<<<<< HEAD
 const casacore::String& SDGrid::Cache::className() {
     static casacore::String className_ = "SDGrid::Cache";
     return className_;
 }
 
-=======
->>>>>>> 163ec3db31b211c63bbcf33949a204bcbd0e764f
  SDGrid::Cache& SDGrid::Cache::operator=(const Cache &other) {
     sdgrid = other.sdgrid;
     msCaches = other.msCaches;
