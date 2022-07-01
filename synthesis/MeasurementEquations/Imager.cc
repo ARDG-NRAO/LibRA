@@ -1990,10 +1990,11 @@ Bool Imager::setoptions(const String& ftmachine, const Long cache, const Int til
 }
 
 Bool Imager::setsdoptions(const Float scale, const Float weight, 
-			  const Int convsupport, String pointCol,
-			  const Quantity truncate,
-			  const Quantity gwidth, const Quantity jwidth,
-			  const Float minweight, const Bool clipminmax)
+                          const Int convsupport, String pointCol,
+                          const Quantity truncate,
+                          const Quantity gwidth, const Quantity jwidth,
+                          const Float minweight, const Bool clipminmax,
+                          const Bool enablecache)
 {
 
 
@@ -2022,6 +2023,7 @@ Bool Imager::setsdoptions(const Float scale, const Float weight,
   qjwidth_p=jwidth;
   minWeight_p = minweight;
   clipminmax_p = clipminmax;
+  enablecache_p = enablecache;
 
   // Destroy the FTMachine
   if(ft_p) {delete ft_p; ft_p=0;}

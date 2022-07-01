@@ -360,15 +360,9 @@ String SDGrid::name() const{
     return String("SDGrid");
 }
 
-// SDGrid::Cache
 void
-SDGrid::enableCache() {
-    cacheIsEnabled = true;
-}
-
-void
-SDGrid::disableCache() {
-    cacheIsEnabled = false;
+SDGrid::setEnableCache(Bool doEnable) {
+    cacheIsEnabled = doEnable;
 }
 
 //----------------------------------------------------------------------
@@ -1483,7 +1477,6 @@ void SDGrid::makeImage(FTMachine::Type inType,
     initializeToSky(theImage,weight,vb);
 
     // Setup SDGrid Cache Manager
-    cacheIsEnabled = true; // FIXME: remove after option is added.
     {
        LogIO logger(LogOrigin("SDGrid","makeImage"));
        logger << Cache::className() << " is "

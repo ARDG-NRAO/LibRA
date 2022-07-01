@@ -2506,7 +2506,6 @@ Bool Imager::createFTMachine()
     useDoublePrecGrid=true;
 
   LogIO os(LogOrigin("imager", "createFTMachine()", WHERE));
-  
 
   Float padding;
   padding=1.0;
@@ -2529,19 +2528,19 @@ Bool Imager::createFTMachine()
     os << LogIO::NORMAL << tangentPoint() << LogIO::POST; // Loglevel INFO
     if(gridfunction_p=="pb") {
       if(!gvp_p) {
-	MSColumns msc(*ms_p);
-	if (doDefaultVP_p) {
-	  os << LogIO::NORMAL // Loglevel INFO
+        MSColumns msc(*ms_p);
+        if (doDefaultVP_p) {
+          os << LogIO::NORMAL // Loglevel INFO
              << "Using defaults for primary beams used in gridding" << LogIO::POST;
-	  gvp_p=new VPSkyJones(msc, true, parAngleInc_p, squintType_p,
-                               skyPosThreshold_p);
-	} else {
-	  os << LogIO::NORMAL // Loglevel INFO
+            gvp_p=new VPSkyJones(msc, true, parAngleInc_p, squintType_p,
+                                 skyPosThreshold_p);
+        } else {
+          os << LogIO::NORMAL // Loglevel INFO
              << "Using VP as defined in " << vpTableStr_p <<  LogIO::POST;
-	  Table vpTable( vpTableStr_p ); 
-	  gvp_p=new VPSkyJones(msc, vpTable, parAngleInc_p, squintType_p,
+          Table vpTable( vpTableStr_p ); 
+          gvp_p=new VPSkyJones(msc, vpTable, parAngleInc_p, squintType_p,
                                skyPosThreshold_p);
-	}
+        }
       } 
       ft_p = new SDGrid(mLocation_p, *gvp_p, cache_p/2, tile_p, gridfunction_p,
                         sdConvSupport_p, minWeight_p, clipminmax_p);
@@ -2576,6 +2575,8 @@ Bool Imager::createFTMachine()
                         sdConvSupport_p, minWeight_p, clipminmax_p);
     }
     ft_p->setPointingDirColumn(pointingDirCol_p);
+    auto * sdgrid = dynamic_cast<SDGrid *>(ft_p);
+    if (sdgrid != nullptr) sdgrid->setEnableCache(enablecache_p);
 
     ROVisIter& vi(*rvi_p);
     // Get bigger chunks o'data: this should be tuned some time

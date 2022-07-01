@@ -276,9 +276,8 @@ public:
 
   virtual casacore::String name() const;
 
-  // SDGrid::Cache
-  void enableCache();
-  void disableCache();
+  // Enable/disable SDGrid::Cache
+  void setEnableCache(casacore::Bool doEnable);
 
 private:
 
