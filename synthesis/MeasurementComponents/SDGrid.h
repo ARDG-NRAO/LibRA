@@ -124,6 +124,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 // </todo>
 
 #if defined(SDGRID_PERFS)
+namespace sdgrid_perfs {
 class ChronoStat {
 public:
     using Clock = std::chrono::steady_clock;
@@ -172,6 +173,8 @@ public:
 private:
     ChronoStat& c_;
 };
+
+}
 
 #endif
 class SDGrid : public FTMachine {
@@ -408,10 +411,12 @@ private:
   };
 
   // Description:
-  // A cache aimed at storing expensive computation results,
+  // A cache aimed at storing expensive (spectra pixels) computation results,
   // which can be re-used across consecutive iterations
   // over the same input MeasurementSets.
   // Designed to be VisibilityIterator-friendly.
+  // Since it is currently not aimed to be re-used elsewhere,
+  // it is "welded" to its SDGrid container.
   //
   // Motivation:
   // CASA sdimaging task always iterates twice over the same input MeasurementSets,
@@ -459,8 +464,10 @@ private:
       using Pixels = std::vector<MaskedPixel>;
 
       struct MsCache {
-          MsCache(const casacore::String &msPath, casacore::rownr_t nRows);
+          MsCache(const casacore::String& msPath, const casacore::String& msTableName, casacore::rownr_t nRows);
+          casacore::Bool isConsistent() const;
           casacore::String msPath;
+          casacore::String msTableName;
           casacore::rownr_t nRows;
           Pixels pixels;
       };
@@ -490,6 +497,46 @@ private:
   Cache cache;
   casacore::Bool cacheIsEnabled;
 
+// Description:
+// Helper class handling SDGrid::Cache open/close.
+// A CacheManager does nothing if it is not on duty.
+// Otherwise, it opens the cache on construction,
+// and closes it on destruction.
+//
+// Motivation:
+// Synchronization matters most when dealing with caches.
+  class CacheManager {
+  public:
+      CacheManager(Cache &cache,
+        casacore::Bool onDuty=false, 
+        Cache::AccessMode accessMode=Cache::AccessMode::READ);
+      ~CacheManager();
+  private:
+      Cache& cache;
+      casacore::Bool onDuty;
+      Cache::AccessMode accessMode;
+  };
+
+// Description:
+// Helper class for storing data into SDGrid::Cache.
+// A CacheWriter does nothing if it is not on duty.
+// Otherwise, it stores on destruction
+// the pixel of spectra in the current row
+// of the current MeasurementSet.
+//
+// Motivation:
+// SDGrid::getXYPos() has a lot of branches.
+
+  class CacheWriter {
+  public:
+      CacheWriter(Cache &cache,
+        casacore::Bool onDuty=false);
+      ~CacheWriter();
+  private:
+      Cache& cache;
+      casacore::Bool onDuty;
+  };
+
   //for debugging
   //FILE *pfile;
 
@@ -497,19 +544,19 @@ private:
 
 #if defined(SDGRID_PERFS)
   void init_perfs();
-  ChronoStat cNextChunk;
-  ChronoStat cMatchAllSpwChans;
-  ChronoStat cMatchChannel;
-  ChronoStat cPickWeights;
-  ChronoStat cInterpolateFrequencyToGrid;
-  ChronoStat cSearchValidPointing;
-  ChronoStat cComputeSplines;
-  ChronoStat cResetFrame;
-  ChronoStat cInterpolateDirection;
-  ChronoStat cConvertDirection;
-  ChronoStat cComputeDirectionPixel;
-  ChronoStat cHandleMovingSource;
-  ChronoStat cGridData;
+  sdgrid_perfs::ChronoStat cNextChunk;
+  sdgrid_perfs::ChronoStat cMatchAllSpwChans;
+  sdgrid_perfs::ChronoStat cMatchChannel;
+  sdgrid_perfs::ChronoStat cPickWeights;
+  sdgrid_perfs::ChronoStat cInterpolateFrequencyToGrid;
+  sdgrid_perfs::ChronoStat cSearchValidPointing;
+  sdgrid_perfs::ChronoStat cComputeSplines;
+  sdgrid_perfs::ChronoStat cResetFrame;
+  sdgrid_perfs::ChronoStat cInterpolateDirection;
+  sdgrid_perfs::ChronoStat cConvertDirection;
+  sdgrid_perfs::ChronoStat cComputeDirectionPixel;
+  sdgrid_perfs::ChronoStat cHandleMovingSource;
+  sdgrid_perfs::ChronoStat cGridData;
 
   void collect_perfs(const std::string& path);
 #endif

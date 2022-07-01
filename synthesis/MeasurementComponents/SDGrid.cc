@@ -88,6 +88,7 @@ using namespace casacore;
 namespace casa {
 
 #if defined(SDGRID_PERFS)
+namespace sdgrid_perfs {
 ChronoStat::ChronoStat(const string & name)
     : name_ {name},
       started_ {false},
@@ -192,6 +193,10 @@ StartStop::StartStop(ChronoStat &c)
 StartStop::~StartStop() {
 	c_.stop();
 }
+
+} // namespace sdgrid_perfs
+
+using namespace sdgrid_perfs;
 
 #endif
 
@@ -918,27 +923,12 @@ void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
                << "will use clipping-capable Fortran gridder ggridsd2 for imaging"
                << LogIO::POST;
     }
-
-    cacheIsEnabled = true;
-    if (cacheIsEnabled) {
-        if (cache.isEmpty()) {
-            cache.open(Cache::AccessMode::WRITE);
-            logger << "Will compute and cache spectra pixels coordinates" 
-                   << LogIO::NORMAL << LogIO::POST;
-        } else {
-            cache.open(Cache::AccessMode::READ);
-            logger << "Will load cached spectra pixels coordinates instead of recomputing them." 
-                   << LogIO::NORMAL << LogIO::POST;
-        }
-    }
 }
 
 void SDGrid::finalizeToSky()
 {
     if (pointingToImage) delete pointingToImage;
     pointingToImage = nullptr;
-
-    if (cacheIsEnabled) cache.close();
 }
 
 Array<Complex>* SDGrid::getDataPointer(const IPosition& centerLoc2D,
@@ -1492,6 +1482,25 @@ void SDGrid::makeImage(FTMachine::Type inType,
 
     initializeToSky(theImage,weight,vb);
 
+    // Setup SDGrid Cache Manager
+    cacheIsEnabled = true; // FIXME: remove after option is added.
+    {
+       LogIO logger(LogOrigin("SDGrid","makeImage"));
+       logger << Cache::className() << " is "
+              << (cacheIsEnabled ? "enabled" : "disabled") << LogIO::POST;
+    }
+    const auto onDuty = cacheIsEnabled;
+    const auto accessMode = cache.isEmpty() ? Cache::AccessMode::WRITE
+                                            : Cache::AccessMode::READ;
+    CacheManager cacheManager(cache, onDuty, accessMode);
+    if (onDuty) {
+        LogIO logger(LogOrigin("SDGrid","makeImage"));
+        String msg = accessMode == Cache::AccessMode::WRITE ?
+               "Will compute and cache spectra pixels coordinates"
+             : "Will load cached spectra pixels coordinates instead of recomputing them.";
+        logger << msg << LogIO::POST;
+    }
+
     // Loop over the visibilities, putting VisBuffers
     for (vi.originChunks(); vi.moreChunks();
 #if defined(SDGRID_PERFS)
@@ -1701,16 +1710,23 @@ Int SDGrid::getIndex(const MSPointingColumns& mspc, const Double& time,
 
 Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
+    // Cache control
     if (cacheIsEnabled and cache.isReadable()) {
         cache.loadRowPixel();
         return rowPixel.isValid;
     }
+    const auto onDuty = cacheIsEnabled and cache.isWriteable();
+    CacheWriter cacheWriter(cache, onDuty);
+
+    // Until we manage to compute a valid one ...
+    rowPixel.isValid = false;
+
     // Check POINTING table.
     // If the calling code is iterating over millions of rows,
     // we'll do that check millions of times ...
     const MSPointingColumns& act_mspc = vb.msColumns().pointing();
     const auto nPointings = act_mspc.nrow();
-    Bool havePointings = (nPointings >= 1);
+    const auto havePointings = (nPointings >= 1);
 
     // We'll need to call these many times, so let's call them once for good
     const auto rowTime = vb.time()(row);
@@ -1753,7 +1769,7 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
         constexpr Double useTinyTolerance = -1.0;
         pointingIndex = getIndex(act_mspc, rowTime, useTinyTolerance , rowAntenna1);
 
-        const Bool foundPointing = (pointingIndex >= 0);
+        const auto foundPointing = (pointingIndex >= 0);
         if (not foundPointing) {
             // Try again using tolerance = MAIN.INTERVAL
             pointingIndex = getIndex(act_mspc, rowTime, rowTimeInterval, rowAntenna1);
@@ -1761,7 +1777,7 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
         // Making the implicit type conversion explicit. 
         // Conversion is safe because it occurs only when pointingIndex >= 0.
-        const Bool foundValidPointing = (foundPointing and (static_cast<rownr_t>(pointingIndex) < nPointings));
+        const auto foundValidPointing = (foundPointing and (static_cast<rownr_t>(pointingIndex) < nPointings));
 
         if (not foundValidPointing) {
             ostringstream o;
@@ -1770,10 +1786,6 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
             logIO_p << LogIO::DEBUGGING << String(o) << LogIO::POST;
 
-            rowPixel.isValid = false;
-            if (cacheIsEnabled and cache.isWriteable()) {
-              cache.storeRowPixel();
-            }
             return rowPixel.isValid;
          }
     }
@@ -1786,7 +1798,7 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     const auto needInterpolation = (rowTimeInterval < pointingInterval);
 
     // 3. Create interpolator if needed
-    Bool dointerp = false;
+    auto dointerp = false;
     if (havePointings && needInterpolation) {
         dointerp = true;
         // Known points are the directions of the specified
@@ -1906,19 +1918,18 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     #if defined(SDGRID_PERFS)
     cComputeDirectionPixel.start();
     #endif
-    Bool havePixel = directionCoord.toPixel(xyPos, worldPosMeas);
+
+    rowPixel.isValid = directionCoord.toPixel(xyPos, worldPosMeas);
+
     #if defined(SDGRID_PERFS)
     cComputeDirectionPixel.stop();
     #endif
-    if (not havePixel) {
+
+    if (not rowPixel.isValid) {
         logIO_p << "Failed to find a pixel for pointing direction of "
             << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME) 
             << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE) 
             << LogIO::WARN << LogIO::POST;
-        rowPixel.isValid = false;
-        if (cacheIsEnabled and cache.isWriteable()) {
-          cache.storeRowPixel();
-        }
         return rowPixel.isValid;
     }
 
@@ -1949,10 +1960,6 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
         xyPos = xyPos + xyPosMovingOrig_p - actPix;
     }
     
-    rowPixel.isValid = true;
-    if (cacheIsEnabled and cache.isWriteable()) {
-          cache.storeRowPixel();
-    }
     return rowPixel.isValid;
 }
 
@@ -2233,6 +2240,10 @@ const casacore::String& SDGrid::Cache::className() {
 
 void
 SDGrid::Cache::open(AccessMode accessModeIn) {
+    if (isOpened) {
+      LogIO logger(LogOrigin(className(), "open", WHERE));
+      logger << "BUG: Opened " << className() << " was re-opened before being closed." << LogIO::EXCEPTION;
+    }
     isOpened = true;
     accessMode = accessModeIn;
     canRead = accessMode == AccessMode::READ;
@@ -2256,6 +2267,27 @@ SDGrid::Cache::rewind() {
 
 void
 SDGrid::Cache::close() {
+    if (not isOpened) {
+      LogIO logger(LogOrigin(className(), "close", WHERE));
+      logger << "BUG: Closed " << className() << " was re-closed before being opened." << LogIO::EXCEPTION;
+    }
+    if (isWriteable()) {
+        // Make sure we have 1 pixel per row
+        for (const auto & msCache : msCaches) {
+            if (not msCache.isConsistent()) {
+                LogIO logger(LogOrigin(className(), "close", WHERE));
+                const auto didOverflow = msCache.pixels.size() > msCache.nRows;
+                const auto overOrUnder = didOverflow ? "over" : "under";
+                logger << "BUG: Cache " << overOrUnder << "flow:"
+                       << " nRows=" << msCache.nRows
+                       << " != nPixels=" <<  msCache.pixels.size()
+                       << " for: " << msCache.msPath
+                       << " with selection: " << msCache.msTableName
+                       << LogIO::EXCEPTION;
+            }
+        }
+    }
+    // Reset state
     isOpened = false;
     accessMode = AccessMode::READ;
     canRead = false;
@@ -2282,11 +2314,16 @@ SDGrid::Cache::clear()  {
     msCaches.clear();
 }
 
-SDGrid::Cache::MsCache::MsCache(const String& msPathIn, rownr_t nRowsIn)
+SDGrid::Cache::MsCache::MsCache(const String& msPathIn, const String& msTableNameIn, rownr_t nRowsIn)
     : msPath {msPathIn},
+      msTableName {msTableNameIn},
       nRows {nRowsIn}
 {
     pixels.reserve(nRows);
+}
+
+Bool SDGrid::Cache::MsCache::isConsistent() const {
+  return pixels.size() == nRows;
 }
 
 void
@@ -2295,29 +2332,29 @@ SDGrid::Cache::newMS(const MeasurementSet& ms) {
     const auto msPath =  ms.getPartNames()[0];
 
     if (isWriteable()) {
-        os << "Will cache spectra pixels for MS: " << msPath << LogIO::POST;
-        msCaches.emplace_back(ms.tableName(), ms.nrow());
+        os << "Will cache spectra pixels for: " << msPath << LogIO::POST;
+        msCaches.emplace_back(msPath, ms.tableName(), ms.nrow());
         msPixels = &(msCaches.back().pixels);
         return;
     }
 
     if (isReadable()) {
-        os << "Will load spectra pixels cached for MS: " << msPath << LogIO::POST;
+        os << "Will load cached spectra pixels for: " << msPath << LogIO::POST;
         if (msCacheReadIterator == msCaches.cend()) {
-            os << "BUG! Cached data missing for MS: " << msPath << LogIO::EXCEPTION;
+            os << "BUG! Cached data missing for: " << msPath << LogIO::EXCEPTION;
         }
-        const auto & pixels = msCacheReadIterator->pixels;
-        if (pixels.size() != ms.nrow()) {
-            os << "BUG! Cached data size mismatch for MS: " << msPath
+        const auto & pixelsToLoad = msCacheReadIterator->pixels;
+        if (pixelsToLoad.size() != ms.nrow()) {
+            os << "BUG! Cached data size mismatch for: " << msPath
                << " : nRows: " << ms.nrow() 
-               << " nCachedRows: " << pixels.size() << LogIO::EXCEPTION;
+               << " nCachedRows: " << pixelsToLoad.size() << LogIO::EXCEPTION;
         }
-        if (  msCacheReadIterator->msPath != ms.tableName()) {
-            os << "BUG! Cached data was probably for a different selection of MS: " << msPath
+        if (  msCacheReadIterator->msTableName != ms.tableName()) {
+            os << "BUG! Cached data was probably for a different selection of: " << msPath
                << " current selection: " << ms.tableName()
-               << " cached selection: " <<  msCacheReadIterator->msPath << LogIO::EXCEPTION;
+               << " cached selection: " <<  msCacheReadIterator->msTableName << LogIO::EXCEPTION;
         }
-        pixelReadIterator = pixels.cbegin();
+        pixelReadIterator = pixelsToLoad.cbegin();
         ++msCacheReadIterator;
     }
 }
@@ -2338,6 +2375,37 @@ SDGrid::Cache::loadRowPixel() {
     outputPixel.xy[1] = pixel.y;
     outputPixel.isValid = pixel.isValid;
     ++pixelReadIterator;
+}
+
+SDGrid::CacheManager::CacheManager(Cache& cacheIn,
+    Bool onDutyIn,  Cache::AccessMode accessModeIn)
+    : cache {cacheIn},
+      onDuty {onDutyIn},
+      accessMode {accessModeIn}
+{
+    if (onDuty) {
+      cache.open(accessMode);
+    }
+}
+
+SDGrid::CacheManager::~CacheManager()
+{
+    if (onDuty) {
+      cache.close();
+    }
+}
+
+SDGrid::CacheWriter::CacheWriter(Cache& cacheIn,
+    Bool onDutyIn)
+    : cache {cacheIn},
+      onDuty {onDutyIn}
+{}
+
+SDGrid::CacheWriter::~CacheWriter()
+{
+    if (onDuty) {
+      cache.storeRowPixel();
+    }
 }
 
 
