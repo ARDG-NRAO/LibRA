@@ -91,9 +91,6 @@ namespace casa {
         //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         float MadRMS;
 
-        //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-        int NSummaryFields;
-
     };
 
     class grpcInteractiveCleanGui {
@@ -160,7 +157,7 @@ namespace casa {
         void pushDetails( );
         void updateCycleThreshold( grpcInteractiveCleanState & );
         void resetMinorCycleInitInfo( grpcInteractiveCleanState & );
-        void mergeMinorCycleSummary( const casacore::Array<casacore::Double>&, grpcInteractiveCleanState & );
+        void mergeMinorCycleSummary( const casacore::Array<casacore::Double>&, grpcInteractiveCleanState &, casacore::Int immod );
 
         /**********
         casacore::Int interactivemask(const casacore::String& image, const casacore::String& mask, 
@@ -180,7 +177,7 @@ namespace casa {
         void addSummaryMajor( );
 
         void mergeCycleInitializationRecord( casacore::Record &initRecord );
-        void mergeCycleExecutionRecord( casacore::Record& );
+        void mergeCycleExecutionRecord( casacore::Record&, casacore::Int immod );
 
         void changeStopFlag( bool stopEnabled );
 
