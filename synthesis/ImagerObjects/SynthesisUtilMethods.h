@@ -181,6 +181,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                                  casacore::Quantity& filterbmaj,
                                  casacore::Quantity& filterbmin,
                                  casacore::Quantity& filterbpa, casacore::Double& fracBW, const casacore::Record& inrec);
+
+    static casacore::uLong getAllocatedMemoryInBytes();
     
 
   protected:
@@ -453,7 +455,9 @@ public:
   casacore::Float nsigma;
   int nMask;
   bool autoAdjust;
-
+  casacore::Float fusedThreshold;
+  casacore::String specmode;
+  casacore::Int largestscale;
 
  
   casacore::Bool interactive;

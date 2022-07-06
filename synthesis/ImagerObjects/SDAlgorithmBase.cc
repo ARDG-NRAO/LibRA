@@ -50,10 +50,15 @@
 #include <imageanalysis/ImageAnalysis/CasaImageBeamSet.h>
 
 #include <casa/sstream.h>
+#include <casacore/casa/OS/EnvVar.h>
 
 #include <casa/Logging/LogMessage.h>
 #include <casa/Logging/LogIO.h>
 #include <casa/Logging/LogSink.h>
+
+// supporting code for profileMinorCycle()
+#include <thread>
+#include <chrono>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -106,6 +111,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
        << LogIO::POST;
 
     Float itsPBMask = loopcontrols.getPBMask();
+    Int cycleStartIteration = loopcontrols.getIterDone();
 
     Float maxResidualAcrossPlanes=0.0; Int maxResChan=0,maxResPol=0;
     Float totalFluxAcrossPlanes=0.0;
@@ -118,24 +124,27 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    itsImages = imagestore->getSubImageStore( 0, 1, chanid, nSubChans, polid, nSubPols );
 
 	    Int startiteration = loopcontrols.getIterDone(); // TODO : CAS-8767 key off subimage index
-	    Float peakresidual=0.0;
+	    Float peakresidual=0.0, peakresidualnomask=0.0;
 	    Float modelflux=0.0;
 	    Int iterdone=0;
 
 	    ///itsMaskHandler.resetMask( itsImages ); //, (loopcontrols.getCycleThreshold()/peakresidual) );
 	    Int stopCode=0;
 
-	    Float startpeakresidual = 0.0;
+	    Float startpeakresidual = 0.0, startpeakresidualnomask = 0.0;
 	    Float startmodelflux = 0.0;
             Array<Double> robustrms;
 
-	    Bool validMask = ( itsImages->getMaskSum() > 0 );
+	    Float masksum = itsImages->getMaskSum();
+	    Bool validMask = ( masksum > 0 );
 
+	    peakresidualnomask = itsImages->getPeakResidual();
 	    if( validMask ) peakresidual = itsImages->getPeakResidualWithinMask();
-	    else peakresidual = itsImages->getPeakResidual();
+	    else peakresidual = peakresidualnomask;
 	    modelflux = itsImages->getModelFlux();
 
 	    startpeakresidual = peakresidual;
+	    startpeakresidualnomask = peakresidualnomask;
 	    startmodelflux = modelflux;
 
             //Float nsigma = 150.0; // will set by user, fixed for 3sigma for now.
@@ -147,6 +156,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
             } else{
               nsigmathresh = nsigma * (Float)robustrms(IPosition(1,0)); 
             }
+
+            ContextBoundBool stopProfiling(false); // will be set to true when loop exits
+            uLong peakMem = 0;
+            std::thread profileMemThread(&SDAlgorithmBase::profileMinorCycle, this, std::ref(stopProfiling), std::ref(peakMem));
+            std::chrono::steady_clock::time_point profileStartTime = std::chrono::steady_clock::now();
               
             Float thresholdtouse;
             if (nsigma>0.0) {
@@ -211,22 +225,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
             }
 	    loopcontrols.setPeakResidual( peakresidual );
 	    loopcontrols.resetMinResidual(); // Set it to current initial peakresidual.
-
             
 	    stopCode = checkStop( loopcontrols,  peakresidual );
 
-
-	    // stopCode=0;
-
 	    if( validMask && stopCode==0 )
 	      {
-                
-		
-		// Record info about the start of the minor cycle iterations
-		loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-					      modelflux, peakresidual );
-		//		loopcontrols.setPeakResidual( peakresidual );
-
 		// Init the deconvolver
                  //where we write in model and residual may be
                 {
@@ -273,9 +276,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		    loopcontrols.incrementMinorCycleCount( iterdone ); // CAS-8767 : add subimageindex and merge with addSummaryMinor call later.
 		    
 		    stopCode = checkStop( loopcontrols,  peakresidual );
-		    
-		    loopcontrols.addSummaryMinor( deconvolverid, chanid+polid*nSubChans, 
-						  modelflux, peakresidual );
 
 		    /// Catch the situation where takeOneStep returns without satisfying any
 		    ///  convergence criterion. For now, takeOneStep is the entire minor cycle.
@@ -297,6 +297,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                   LatticeLocker lock2 (*(itsImages->model()), FileLocker::Write);
                   finalizeDeconvolver();
                 }
+
+                // get the new peakres without a mask for the summary minor
+                peakresidualnomask = itsImages->getPeakResidual();
 
 	      }// if validmask
 	    
@@ -340,7 +343,25 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	      }
 
 	       os << LogIO::POST;
-	    
+	       
+	    Int rank(0);
+	    String rankStr = EnvironmentVariable::get("OMPI_COMM_WORLD_RANK");
+	    if (!rankStr.empty()) {
+	      rank = stoi(rankStr);
+	    }
+	    stopProfiling.stop();
+	    profileMemThread.join();
+	    std::chrono::steady_clock::time_point profileFinishTime = std::chrono::steady_clock::now();
+	    Float runtime = (  (Float) std::chrono::duration_cast<std::chrono::milliseconds>(profileFinishTime - profileStartTime).count()  )/1000.0;
+	    Float fpeakMem = (Float) peakMem / 1000000.0; // to MB
+	    int chunkId = chanid; // temporary CAS-13683 workaround
+	    if (SIMinorCycleController::useSmallSummaryminor()) { // temporary CAS-13683 workaround
+	        chunkId = chanid + nSubChans*polid;
+	    }
+	    loopcontrols.addSummaryMinor( deconvolverid, chunkId, polid, cycleStartIteration,
+	                                  startiteration, startmodelflux, startpeakresidual, startpeakresidualnomask,
+	                                  modelflux, peakresidual, peakresidualnomask, masksum, rank, fpeakMem, runtime, stopCode);
+
 	    loopcontrols.resetCycleIter(); 
 
 	    if( peakresidual > maxResidualAcrossPlanes && stopCode!=0 )
@@ -363,6 +384,26 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       }
 
   }// end of deconvolve
+
+  void SDAlgorithmBase::profileMinorCycle(ContextBoundBool &stop, uLong &peakMem)
+  {
+    LogIO os( LogOrigin("SDAlgorithmBase",__FUNCTION__,WHERE) );
+    while (true)
+    {
+      for (int i = 0; i < 10; i++) // check for stop 10 times a second
+      {
+      	bool doStop = stop.getVal();
+        if (i == 1 || doStop) { // check for peak memory usage 1 times a second
+          uLong currentMem = SynthesisUtilMethods::getAllocatedMemoryInBytes();
+          if (currentMem > peakMem) { peakMem = currentMem; }
+        }
+        if (doStop) {
+          return;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+    }
+  }
   
   Int SDAlgorithmBase::checkStop( SIMinorCycleController &loopcontrols, 
 				   Float currentresidual )
@@ -626,6 +667,33 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     return beam;
   }
 
-*/  
+*/ 
+
+  ContextBoundBool::ContextBoundBool(bool startValue)
+  {
+    itsVal = startValue;
+    itsInitialValue = startValue;
+  }
+
+  ContextBoundBool::~ContextBoundBool()
+  {
+    // This destructor is the entire reason this class exists.
+    // We need to guarantee that stop will be called when the encapsulating
+    // context around this object is closed (such as with a return or throw statement).
+    stop();
+  }
+
+  bool ContextBoundBool::getVal()
+  { // mutex context guard
+    std::lock_guard<std::mutex> lock(itsMutex);
+    return itsVal;
+  }
+
+  void ContextBoundBool::stop()
+  { // mutex context guard
+    std::lock_guard<std::mutex> lock(itsMutex);
+    itsVal = !itsInitialValue;
+  }
+ 
 } //# NAMESPACE CASA - END
 
