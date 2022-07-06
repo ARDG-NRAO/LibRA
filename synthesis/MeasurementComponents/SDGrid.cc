@@ -1477,22 +1477,10 @@ void SDGrid::makeImage(FTMachine::Type inType,
     initializeToSky(theImage,weight,vb);
 
     // Setup SDGrid Cache Manager
-    {
-       LogIO logger(LogOrigin("SDGrid","makeImage"));
-       logger << Cache::className() << " is "
-              << (cacheIsEnabled ? "enabled" : "disabled") << LogIO::POST;
-    }
     const auto onDuty = cacheIsEnabled;
     const auto accessMode = cache.isEmpty() ? Cache::AccessMode::WRITE
                                             : Cache::AccessMode::READ;
     CacheManager cacheManager(cache, onDuty, accessMode);
-    if (onDuty) {
-        LogIO logger(LogOrigin("SDGrid","makeImage"));
-        String msg = accessMode == Cache::AccessMode::WRITE ?
-               "Will compute and cache spectra pixels coordinates"
-             : "Will load cached spectra pixels coordinates instead of recomputing them.";
-        logger << msg << LogIO::POST;
-    }
 
     // Loop over the visibilities, putting VisBuffers
     for (vi.originChunks(); vi.moreChunks();
@@ -2325,14 +2313,14 @@ SDGrid::Cache::newMS(const MeasurementSet& ms) {
     const auto msPath =  ms.getPartNames()[0];
 
     if (isWriteable()) {
-        os << "Will cache spectra pixels for: " << msPath << LogIO::POST;
+        os << "Will compute and cache spectra pixels coordinates for: " << msPath << LogIO::POST;
         msCaches.emplace_back(msPath, ms.tableName(), ms.nrow());
         msPixels = &(msCaches.back().pixels);
         return;
     }
 
     if (isReadable()) {
-        os << "Will load cached spectra pixels for: " << msPath << LogIO::POST;
+        os << "Will load cached spectra pixels coordinates for: " << msPath << LogIO::POST;
         if (msCacheReadIterator == msCaches.cend()) {
             os << "BUG! Cached data missing for: " << msPath << LogIO::EXCEPTION;
         }
