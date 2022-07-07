@@ -1437,7 +1437,7 @@ template<class T> Complex UVContEstimationDenoisingKernel<T>::kernelCore(	Vector
 																		Vector<T> &outputVector)
 {
 	fitter_p.setWeightsAndFlags(inputWeights,inputFlags);
-    Vector<T> coeff;
+    std::vector<T> coeff;
     Complex chisq;
     tie(coeff, chisq) = fitter_p.calcFitCoeff(inputVector);
 	fitter_p.calcFitModel(outputVector);
