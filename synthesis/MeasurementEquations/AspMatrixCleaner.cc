@@ -69,11 +69,6 @@
 
 #include<synthesis/MeasurementEquations/AspMatrixCleaner.h>
 
-//for gsl bfgs
-#include <synthesis/MeasurementEquations/gslobjfunc.h>
-// for gsl
-using Eigen::VectorXd;
-
 // for alglib
 #include <synthesis/MeasurementEquations/objfunc_alglib.h>
 using namespace alglib;
