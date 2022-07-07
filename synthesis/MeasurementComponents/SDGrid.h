@@ -133,17 +133,18 @@ public:
 
     ChronoStat(const std::string & name = "");
     const std::string& name() const;
-    void set_name(const std::string& name);
+    void setName(const std::string& name);
     void start();
     void stop();
-    bool is_empty() const;
-    Duration laps_sum() const;
-    Duration laps_min() const;
-    Duration laps_max() const;
-    Duration laps_mean() const;
-    unsigned int laps_count() const;
-    unsigned int n_overflows() const;
-    unsigned int n_underflows() const;
+    bool isEmpty() const;
+    Duration lapsSum() const;
+    Duration lapsMin() const;
+    Duration lapsMax() const;
+    Duration lapsMean() const;
+    unsigned int lapsCount() const;
+    unsigned int nOverflows() const;
+    unsigned int nUnderflows() const;
+    std::string json() const;
 
 private:
     std::string name_;
@@ -157,11 +158,7 @@ private:
     Duration laps_min_;
     Duration laps_max_;
     
-};
-
-class ChronoStatError: public std::domain_error {
-public:
-    using std::domain_error::domain_error;
+    std::string quote(const std::string& s) const;
 };
 
 std::ostream& operator<<(std::ostream &os, const ChronoStat &c);
@@ -541,8 +538,9 @@ private:
 
   void dumpConvolutionFunction(const casacore::String &outfile, const casacore::Vector<casacore::Float> &f) const;
 
+  void initPerfs();
+  void collectPerfs();
 #if defined(SDGRID_PERFS)
-  void init_perfs();
   sdgrid_perfs::ChronoStat cNextChunk;
   sdgrid_perfs::ChronoStat cMatchAllSpwChans;
   sdgrid_perfs::ChronoStat cMatchChannel;
@@ -556,8 +554,6 @@ private:
   sdgrid_perfs::ChronoStat cComputeDirectionPixel;
   sdgrid_perfs::ChronoStat cHandleMovingSource;
   sdgrid_perfs::ChronoStat cGridData;
-
-  void collect_perfs(const std::string& path);
 #endif
 };
 

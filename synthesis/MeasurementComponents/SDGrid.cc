@@ -101,97 +101,104 @@ ChronoStat::ChronoStat(const string & name)
   {}
 
 const std::string& ChronoStat::name() const {
-	return name_;
+  return name_;
 }
 
-void ChronoStat::set_name(const std::string& name) {
-	name_ = name;
+void ChronoStat::setName(const std::string& name) {
+  name_ = name;
 }
 
 void ChronoStat::start() {
-	if (not started_) {
-		started_ = true;
-		++n_laps_;
-		lap_start_time_ = Clock::now();
-	} else {
-		++n_overflows_;
-	}
+  if (not started_) {
+    started_ = true;
+    ++n_laps_;
+    lap_start_time_ = Clock::now();
+  } else {
+    ++n_overflows_;
+  }
 }
 void ChronoStat::stop() {
-	if (started_) {
-		auto lap_duration = Clock::now() - lap_start_time_;
-		laps_sum_ += lap_duration;
-		started_ = false;
-		if (lap_duration < laps_min_) laps_min_ = lap_duration;
-		if (lap_duration > laps_max_) laps_max_ = lap_duration;
-	} else {
-		++n_underflows_;
-	}
+  if (started_) {
+    auto lap_duration = Clock::now() - lap_start_time_;
+    laps_sum_ += lap_duration;
+    started_ = false;
+    if (lap_duration < laps_min_) laps_min_ = lap_duration;
+    if (lap_duration > laps_max_) laps_max_ = lap_duration;
+  } else {
+    ++n_underflows_;
+  }
 }
 
-ChronoStat::Duration ChronoStat::laps_sum() const {
-	return laps_sum_;
+ChronoStat::Duration ChronoStat::lapsSum() const {
+  return laps_sum_;
 }
 
-ChronoStat::Duration ChronoStat::laps_min() const {
-	return laps_min_;
+ChronoStat::Duration ChronoStat::lapsMin() const {
+  return n_laps_ > 0 ? laps_min_ : Duration::zero();
 }
 
-ChronoStat::Duration ChronoStat::laps_max() const {
-	return laps_max_;
+ChronoStat::Duration ChronoStat::lapsMax() const {
+  return  n_laps_ > 0 ? laps_max_ : Duration::zero();
 }
 
-ChronoStat::Duration ChronoStat::laps_mean() const {
-	if (n_laps_ == 0) { 
-		stringstream msg;
-		msg << __FILE__ << ":" << __LINE__ 
-			<< ": instance: '" << name_ 
-			<< "': Cannot average an empty set of laps";
-		throw ChronoStatError(msg.str().c_str());
-	}
-	return laps_sum_ / n_laps_;
+ChronoStat::Duration ChronoStat::lapsMean() const {
+  return n_laps_ > 0 ? laps_sum_ / n_laps_ : Duration::zero();
 }
 
-unsigned int ChronoStat::laps_count() const {
-	return n_laps_;
+unsigned int ChronoStat::lapsCount() const {
+  return n_laps_;
 }
 
-bool ChronoStat::is_empty() const {
-	return n_laps_ == 0;
+bool ChronoStat::isEmpty() const {
+  return n_laps_ == 0;
 }
 
-unsigned int ChronoStat::n_overflows() const {
-	return n_overflows_;
+unsigned int ChronoStat::nOverflows() const {
+  return n_overflows_;
 }
 
-unsigned int ChronoStat::n_underflows() const {
-	return n_underflows_;
+unsigned int ChronoStat::nUnderflows() const {
+  return n_underflows_;
+}
+
+std::string ChronoStat::quote(const std::string& s) const {
+  return "\"" + s + "\"";
+}
+
+std::string ChronoStat::json() const {
+  std::ostringstream os;
+  os << quote(name()) << ": {"
+         << quote("sum") << ": " << lapsSum().count()
+         << " ," <<  quote("count") << ": " << lapsCount()
+         << " ," <<  quote("min") << ": " << lapsMin().count()
+         << " ," <<  quote("mean") << ": " << lapsMean().count()
+         << " ," <<  quote("max") << ": " << lapsMax().count()
+         << " ," <<  quote("overflows") << ": " << nOverflows()
+         << " ," <<  quote("underflows") << ": " << nUnderflows()
+         << "}";
+  return os.str();
 }
 
 std::ostream& operator<<(std::ostream &os, const ChronoStat &c) {
-	constexpr auto eol = '\n';
-  const auto empty = c.is_empty();
-	if (empty) {
-		cerr << "WARN: ChronoStat instance named: '" << c.name() << "' is empty.";
-	} 
-	os  << "name: " << c.name() << eol
-		<< "sum:        " << std::setw(20) << std::right << c.laps_sum().count() << eol
-		<< "count:      " << std::setw(20) << std::right << c.laps_count() << eol
-		<< "min:        " << std::setw(20) << std::right << c.laps_min().count() << eol
-		<< "mean:       " << std::setw(20) << std::right << ( empty ? 0 : c.laps_mean().count()) << eol
-		<< "max:        " << std::setw(20) << std::right << c.laps_max().count() << eol
-		<< "overflows:  " << std::setw(20) << std::right << c.n_overflows() << eol
-		<< "underflows: " << std::setw(20) << std::right << c.n_underflows() << eol;
-	return os;
+  constexpr auto eol = '\n';
+  os  << "name: " << c.name() << eol
+    << "sum:        " << std::setw(20) << std::right << c.lapsSum().count() << eol
+    << "count:      " << std::setw(20) << std::right << c.lapsCount() << eol
+    << "min:        " << std::setw(20) << std::right << c.lapsMin().count() << eol
+    << "mean:       " << std::setw(20) << std::right << c.lapsMean().count() << eol
+    << "max:        " << std::setw(20) << std::right << c.lapsMax().count() << eol
+    << "overflows:  " << std::setw(20) << std::right << c.nOverflows() << eol
+    << "underflows: " << std::setw(20) << std::right << c.nUnderflows();
+  return os;
 }
 
 StartStop::StartStop(ChronoStat &c) 
-	: c_ {c} {
-		c_.start();
+  : c_ {c} {
+    c_.start();
 }
 
 StartStop::~StartStop() {
-	c_.stop();
+  c_.stop();
 }
 
 } // namespace sdgrid_perfs
@@ -213,7 +220,7 @@ SDGrid::SDGrid(SkyJones& sj, Int icachesize, Int itilesize,
     cacheIsEnabled {false}
 {
   lastIndex_p=0;
-  init_perfs();
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize,
@@ -230,7 +237,7 @@ SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
-  init_perfs();
+  initPerfs();
 }
 
 SDGrid::SDGrid(Int icachesize, Int itilesize,
@@ -246,7 +253,7 @@ SDGrid::SDGrid(Int icachesize, Int itilesize,
     cacheIsEnabled {false}
 {
   lastIndex_p=0;
-  init_perfs();
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
@@ -264,9 +271,7 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
-#if defined(SDGRID_PERFS)
-  init_perfs();
-#endif
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
@@ -284,30 +289,29 @@ SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
-#if defined(SDGRID_PERFS)
-  init_perfs();
-#endif
+  initPerfs();
 }
 
 //----------------------------------------------------------------------
-#if defined(SDGRID_PERFS)
-void SDGrid::init_perfs() {
 
-  cNextChunk.set_name("iterator.next_chunk");
-  cMatchAllSpwChans.set_name("matchAllSpwChans");
-  cMatchChannel.set_name("matchChannel");
-  cPickWeights.set_name("pickWeights");
-  cInterpolateFrequencyToGrid.set_name("interpolateFrequencyToGrid");
-  cSearchValidPointing.set_name("searchValidPointing");
-  cComputeSplines.set_name("computeSplines");
-  cResetFrame.set_name("resetFrame");
-  cInterpolateDirection.set_name("interpolateDirection");
-  cConvertDirection.set_name("convertDirection");
-  cComputeDirectionPixel.set_name("computeDirectionPixel");
-  cHandleMovingSource.set_name("handleMovingSource");
-  cGridData.set_name("gridData");
-}
+void SDGrid::initPerfs() {
+#if defined(SDGRID_PERFS)
+  cNextChunk.setName("iterateNextChunk");
+  cMatchAllSpwChans.setName("matchAllSpwChans");
+  cMatchChannel.setName("matchChannel");
+  cPickWeights.setName("pickWeights");
+  cInterpolateFrequencyToGrid.setName("interpolateFrequencyToGrid");
+  cSearchValidPointing.setName("searchValidPointing");
+  cComputeSplines.setName("computeSplines");
+  cResetFrame.setName("resetFrame");
+  cInterpolateDirection.setName("interpolateDirection");
+  cConvertDirection.setName("convertDirection");
+  cComputeDirectionPixel.setName("computeDirectionPixel");
+  cHandleMovingSource.setName("handleMovingSource");
+  cGridData.setName("gridData");
 #endif
+}
+
 
 
 //----------------------------------------------------------------------
@@ -537,25 +541,33 @@ void SDGrid::init() {
 
 }
 
+void SDGrid::collectPerfs(){
 #if defined(SDGRID_PERFS)
-void SDGrid::collect_perfs(const std::string& path){
-  logIO() << LogIO::NORMAL << "Collecting perfs to file: " << LogIO::POST;
-  cout << cNextChunk << endl;
-  cout << cMatchAllSpwChans << endl;
-  cout << cMatchChannel << endl;
-  cout << cPickWeights << endl;
-  cout << cInterpolateFrequencyToGrid << endl;
-  cout << cSearchValidPointing << endl;
-  cout << cComputeSplines << endl;
-  cout << cResetFrame << endl;
-  cout << cInterpolateDirection << endl;
-  cout << cConvertDirection << endl;
-  cout << cComputeDirectionPixel << endl;
-  cout << cHandleMovingSource << endl;
-  cout << cGridData << endl;
-  
-}
+  LogIO os(LogOrigin(name(), "collectPerfs"));
+  std::vector<std::string> probes_json {
+      cNextChunk.json()
+    , cMatchAllSpwChans.json()
+    , cMatchChannel.json()
+    , cPickWeights.json()
+    , cInterpolateFrequencyToGrid.json()
+    , cSearchValidPointing.json()
+    , cComputeSplines.json()
+    , cResetFrame.json()
+    , cInterpolateDirection.json()
+    , cConvertDirection.json()
+    , cComputeDirectionPixel.json()
+    , cHandleMovingSource.json()
+    , cGridData.json()
+  };
+  os << "PERFS<SGRID> "
+     << "{ \"note\": \"sum, min, mean, max are in units of nanoseconds.\""
+     << ", \"probes\": "
+     <<        "{ " << join(probes_json.data(), probes_json.size(), ", " ) << " }"
+     << " }"
+     << LogIO::POST;
 #endif
+}
+
 
 // This is nasty, we should use CountedPointers here.
 SDGrid::~SDGrid() {
@@ -567,9 +579,7 @@ SDGrid::~SDGrid() {
   if (wArrayLattice) delete wArrayLattice; wArrayLattice = 0;
   if (interpolator) delete interpolator; interpolator = 0;
 
-#if defined(SDGRID_PERFS)
-  collect_perfs("perfs.txt");
-#endif
+  collectPerfs();
 }
 
 void SDGrid::findPBAsConvFunction(const ImageInterface<Complex>& image,
