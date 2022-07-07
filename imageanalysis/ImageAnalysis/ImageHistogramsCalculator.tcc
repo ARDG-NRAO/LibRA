@@ -79,8 +79,9 @@ template <class T> Record ImageHistogramsCalculator<T>::compute() const {
         }
     }
     ThrowIf(! histograms.setNBins(_nbins), histograms.errorMessage());
+    Vector<T> const includeRangeV(_includeRange);
     ThrowIf(
-        ! histograms.setIncludeRange(_includeRange), histograms.errorMessage()
+        ! histograms.setIncludeRange(includeRangeV), histograms.errorMessage()
     );
     ThrowIf(
         ! histograms.setForm(_doLog10, _cumulative), histograms.errorMessage()
