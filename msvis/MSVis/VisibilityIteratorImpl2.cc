@@ -148,7 +148,7 @@ public:
 	Vector<Slice>
 	getSlices() const
 		{
-			return subslicer_p;
+			return Vector<Slice>(subslicer_p);
 		}
 
 	size_t nelements() const
@@ -2576,7 +2576,7 @@ VisibilityIteratorImpl2::configureNewSubchunk()
     String msName = ms().tableName();
 
     auto nShapes = channelSelectors_p.size();
-    nRowsPerShape_p = channelSelectorsNrows_p;
+    nRowsPerShape_p = Vector<uInt64>(channelSelectorsNrows_p);
     nChannPerShape_p.resize(nShapes);
     nCorrsPerShape_p.resize(nShapes);
 

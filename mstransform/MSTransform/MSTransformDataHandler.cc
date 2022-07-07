@@ -761,8 +761,8 @@ bool MSTransformDataHandler::getCorrMaps(MSSelection& mssel,
         {
             Int pol = mi->first;
             std::vector<int> correlations_idx = mi->second[0].tovector();
-            std::sort(correlations_idx.begin(), correlations_idx.end()); 
-            outToIn[pol] = correlations_idx;
+            std::sort(correlations_idx.begin(), correlations_idx.end());
+            outToIn[pol] = Vector<Int>(correlations_idx);
         }
     }
     else

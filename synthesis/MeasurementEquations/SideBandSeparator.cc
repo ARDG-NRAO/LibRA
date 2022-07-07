@@ -246,7 +246,7 @@ Vector<float> SideBandSeparatorBase::solve(const Matrix<float> &specmat,
 
   aggregateMat(convmat, thisvec);
 
-  if (!otherside_) return thisvec;
+  if (!otherside_) return Vector<float>(thisvec);
 
   // subtract from the other side band.
   vector<float> othervec(nchan_, 0.);
