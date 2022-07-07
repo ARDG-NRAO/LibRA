@@ -108,10 +108,13 @@ protected:
     void insertToFieldSpecMap(const std::vector<int> &fieldIdxs, const InFitSpec &spec,
                               InFitSpecMap &fitspec) const;
     void fitSpecToPerFieldMap(const InFitSpecMap &fitspec);
+    void spwInputChecks(const MeasurementSet *msVii, MSSelection &spwChan) const;
     unordered_map<int, vector<int>> makeLineFreeChannelSelMap(std::string spwChanStr) const;
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;
+    // If the user gives SPWs in fitspec that are not in this list, give a warning
+    std::string allowedSpws_p;
     mutable bool withDenoisingLib_p;
     mutable uint nThreads_p;
     mutable uint niter_p;
