@@ -312,7 +312,48 @@ bool UVContSubTVI::parseConfiguration(const Record &configuration)
 	}
 
 
+	// If the user gives SPWs in fitspw that are not in this list, give a warning
+	exists = configuration.fieldNumber ("allowed_spws");
+	if (exists >= 0)
+	{
+		String allowed;
+		configuration.get (exists, allowed);
+		allowedSpws_p = allowed;
+	}
+
 	return ret;
+}
+
+/*
+ * Check consistency of spw related parameters (spw and
+ * fitspw). Prints a warning if there is an spw selection and fitspw
+ * uses SPWs not included in the selection. This condition was found
+ * to be confusing for users trying to set parameters as in the old
+ * uvcontsub with combine='spw'.
+ *
+ * @param msVii MS object attached to the Vi (remember - not the right
+ *              thing to use in a TVI)
+ * @param fieldFitspw MSSelection with the fitspw selection set
+ *
+ * @return vector of field indices
+ */
+void UVContSubTVI::spwInputChecks(const MeasurementSet *msVii,
+                                  MSSelection &fieldFitspw) const {
+    // note: fieldFitspw should be consst (if getSpwList() were const)
+    if (!allowedSpws_p.empty()) {
+        const auto usedSpws = fieldFitspw.getSpwList(msVii).tovector();
+        MSSelection checker;
+        checker.setSpwExpr(allowedSpws_p);
+        const auto allowed = checker.getSpwList(msVii).tovector();
+        for (const auto spw : usedSpws ) {
+            if (std::find(allowed.begin(), allowed.end(), spw) == allowed.end()) {
+                logger_p << LogIO::WARN << LogOrigin("UVContSubTVI", __FUNCTION__)
+                         << "SPW " << spw << " is used in fitspw but is not included in the "
+                         << "SPW selection ('" << allowedSpws_p <<  "'), please "
+                         << "double-check the spw and fitspw parameters." << LogIO::POST;
+            }
+        }
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -324,15 +365,18 @@ void UVContSubTVI::populatePerFieldLineFreeChannelMask(int fieldID,
     // Some selection string
     MSSelection mssel;
     mssel.setSpwExpr(fieldFitspw);
-    // This access the MS directly: far from ideal (CAS-11638) but no easy solution
-    const auto spwchan = mssel.getChanList(&(inputVii_p->ms()));
+    // This will access the MS directly: far from ideal (CAS-11638) but no easy solution
+    const auto msVii = &(inputVii_p->ms());
+    const auto spwchan = mssel.getChanList(msVii);
+
+    spwInputChecks(msVii, mssel);
 
     // Create line-free channel map based on MSSelection channel ranges
     const auto nSelections = spwchan.shape()[0];
     unordered_map<Int,vector<Int> > lineFreeChannelSelMap;
     for (uInt selection_i=0; selection_i<nSelections; ++selection_i)
     {
-        auto spw = spwchan(selection_i,0);
+        auto spw = spwchan(selection_i, 0);
         if (lineFreeChannelSelMap.find(spw) == lineFreeChannelSelMap.end())
         {
             lineFreeChannelSelMap[spw].clear(); // Accessing the vector creates it

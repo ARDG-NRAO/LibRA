@@ -5650,6 +5650,8 @@ void MSTransformManager::generateIterator()
 		std::unique_ptr<vi::UVContSubTVILayerFactory> uvContSubTVIFactory;
 		if (uvcontsub_p)
 		{
+			// needed for warning to prevent confusion with old uvcontsub!
+			uvcontsubRec_p.define("allowed_spws", spwSelection_p);
 			uvContSubTVIFactory.reset(new vi::UVContSubTVILayerFactory (uvcontsubRec_p));
 			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory.get();
 			TVIFactoryIdx++;

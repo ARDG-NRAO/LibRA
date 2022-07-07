@@ -84,12 +84,15 @@ protected:
     void parseFitSPW(const Record &configuration);
     void parseListFitSPW(const Record &configuration);
     void printFitSPW() const;
+    void spwInputChecks(const MeasurementSet *msVii, MSSelection &fieldFitspw) const;
     void populatePerFieldLineFreeChannelMask(int fieldID, const std::string& fieldFitspw);
 
     mutable uint fitOrder_p;
     mutable bool want_cont_p;
     // field -> fitspw spec
     std::unordered_map<int, std::string> fitspw_p;
+    // If the user gives SPWs in fitspw that are not in this list, give a warning
+    std::string allowedSpws_p;
     mutable bool withDenoisingLib_p;
     mutable uint nThreads_p;
     mutable uint niter_p;
