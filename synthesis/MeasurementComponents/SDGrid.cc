@@ -559,7 +559,7 @@ void SDGrid::collectPerfs(){
     , cHandleMovingSource.json()
     , cGridData.json()
   };
-  os << "PERFS<SGRID> "
+  os << "PERFS<SDGRID> "
      << "{ \"note\": \"sum, min, mean, max are in units of nanoseconds.\""
      << ", \"probes\": "
      <<        "{ " << join(probes_json.data(), probes_json.size(), ", " ) << " }"
