@@ -349,7 +349,7 @@ void CalSummary::listAntenna (LogIO& os, Bool verbose) const
     } else {
       MSMetaInfoForCal msmeta(msname_p);
       msmeta.antennaNames(antnames);
-      stations = msmeta.msmd().getAntennaStations();
+      stations = casacore::Vector<casacore::String>(msmeta.msmd().getAntennaStations());
 
       if (verbose) {
         // Detailed antenna list
@@ -575,7 +575,7 @@ void CalSummary::listField (LogIO& os, Bool /*verbose*/) const
     if (haveMS_p) {
       MSMetaInfoForCal msmeta(msname_p);
       msmeta.fieldNames(fieldNames);
-      codes = msmeta.msmd().getFieldCodes();
+      codes = casacore::Vector<casacore::String>(msmeta.msmd().getFieldCodes());
       phaseDirs = msmeta.msmd().getPhaseDirs();
       sourceIds = msmeta.msmd().getFieldTableSourceIDs();
     } 
