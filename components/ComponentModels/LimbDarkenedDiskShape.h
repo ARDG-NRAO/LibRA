@@ -26,8 +26,8 @@
 #define COMPONENT_LIMBDARKENED_DISKSHAPE_H
 
 //#! Includes go here
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <components/ComponentModels/TwoSidedShape.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 

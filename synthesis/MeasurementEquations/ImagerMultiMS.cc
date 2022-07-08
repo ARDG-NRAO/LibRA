@@ -29,38 +29,38 @@
 
 #include <synthesis/MeasurementEquations/ImagerMultiMS.h>
 #include <synthesis/TransformMachines/VisModelData.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Logging.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Logging.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSDataDescIndex.h>
-#include <ms/MeasurementSets/MSHistoryHandler.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSDataDescColumns.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSDataDescIndex.h>
+#include <casacore/ms/MeasurementSets/MSHistoryHandler.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSDataDescColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/SimpleSubMS.h>
 #include <msvis/MSVis/SubMS.h>
 #include <msvis/MSVis/VisSetUtil.h>
 #include <msvis/MSVis/VisibilityIterator.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
-#include <tables/TaQL/ExprNode.h>
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/SetupNewTab.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
 
-#include <lattices/LEL/LatticeExpr.h> 
+#include <casacore/lattices/LEL/LatticeExpr.h> 
 
-#include <casa/OS/File.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/Containers/Record.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

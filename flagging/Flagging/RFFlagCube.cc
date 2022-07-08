@@ -26,14 +26,14 @@
 //#
 //# $Id$
 #include <flagging/Flagging/RFFlagCube.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/LogiVector.h>
-#include <casa/Utilities/Regex.h>
-#include <casa/OS/Time.h>
-#include <casa/Quanta/MVTime.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/LogiVector.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/casa/OS/Time.h>
+#include <casacore/casa/Quanta/MVTime.h>
 #include <memory>
 #include <stdio.h>
 

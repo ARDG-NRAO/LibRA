@@ -28,26 +28,26 @@
 #include <synthesis/MeasurementEquations/CEMemModel.h>
 #include <synthesis/MeasurementEquations/CEMemProgress.h>
 #include <synthesis/MeasurementEquations/LatConvEquation.h>
-#include <casa/Arrays/IPosition.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LEL/LatticeExprNode.h>
-#include <lattices/Lattices/TiledLineStepper.h>
-#include <lattices/Lattices/TempLattice.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/ArrayError.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/VectorIter.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/System/PGPlotter.h>
-#include <casa/iostream.h> 
-#include <casa/sstream.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LEL/LatticeExprNode.h>
+#include <casacore/lattices/Lattices/TiledLineStepper.h>
+#include <casacore/lattices/Lattices/TempLattice.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/ArrayError.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/VectorIter.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/System/PGPlotter.h>
+#include <iostream> 
+#include <sstream>
 
 
 using namespace casacore;

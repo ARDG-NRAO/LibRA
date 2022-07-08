@@ -25,13 +25,13 @@
 //#
 //----------------------------------------------------------------------------
 
-#include <measures/Measures/Muvw.h>
-#include <measures/Measures/MCBaseline.h>
+#include <casacore/measures/Measures/Muvw.h>
+#include <casacore/measures/Measures/MCBaseline.h>
 #include <msvis/MSVis/ViImplementation2.h>
 #include <synthesis/CalTables/CTIter.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <casa/Arrays.h>
-#include <casa/OS/Timer.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/OS/Timer.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

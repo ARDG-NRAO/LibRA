@@ -27,14 +27,14 @@
  *      Author: kgolap
  */
 
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/ImageRegrid.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/WCBox.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/WCBox.h>
 #include <synthesis/MeasurementEquations/Imager.h>
 #include <synthesis/MeasurementEquations/LinearMosaic.h>
 using namespace std;

@@ -26,8 +26,8 @@
 //#
 //# $Id$
 #include <synthesis/Utilities/AppRC.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <synthesis/TransformMachines/Utils.h>
 using namespace casacore;
 namespace casa{

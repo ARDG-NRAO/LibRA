@@ -26,12 +26,12 @@
 //# $Id$
 
 #include <nrao/VLA/VLASpectralLineRecord.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-#include <casa/iomanip.h>
+#include <iomanip>
 
 VLASpectralLineRecord::VLASpectralLineRecord()
   :VLABaselineRecord(),

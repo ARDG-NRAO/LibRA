@@ -26,16 +26,16 @@
 //# $Id$
 
 #include <flagging/Flagging/RFASpectralRej.h> 
-#include <scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/System/PGPlotterInterface.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/System/PGPlotterInterface.h>
     
-#include <casa/stdio.h>
-#include <casa/stdlib.h>
+#include <stdio.h>
+#include <cstdlib>
     
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

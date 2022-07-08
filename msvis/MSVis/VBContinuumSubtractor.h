@@ -29,9 +29,9 @@
 #ifndef MSVIS_VBCONTINUUMSUBTRACTOR_H
 #define MSVIS_VBCONTINUUMSUBTRACTOR_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Cube.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 //#include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisBuffer2.h>
 

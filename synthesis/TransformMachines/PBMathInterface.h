@@ -29,12 +29,12 @@
 #ifndef SYNTHESIS_PBMATHINTERFACE_H
 #define SYNTHESIS_PBMATHINTERFACE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/TransformMachines/BeamSquint.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/ComponentShape.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/TransformMachines/SkyJones.h>
 
 namespace casacore{

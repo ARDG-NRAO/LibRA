@@ -25,17 +25,17 @@
 //#
 //# $Id$
 #include <flagging/Flagging/RFAUVBinner.h> 
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MaskArrMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/Slice.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Slice.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/System/PGPlotterInterface.h>
+#include <casacore/casa/System/PGPlotterInterface.h>
     
-#include <casa/stdio.h>
-#include <casa/stdlib.h>
+#include <stdio.h>
+#include <cstdlib>
     
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

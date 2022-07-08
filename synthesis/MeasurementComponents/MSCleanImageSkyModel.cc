@@ -26,25 +26,25 @@
 //# $Id$
 
 
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 #include <synthesis/MeasurementComponents/MSCleanImageSkyModel.h>
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/File.h>
 #include <synthesis/MeasurementEquations/ImageMSCleaner.h>
-#include <images/Images/SubImage.h>
-#include <lattices/LRegions/LCBox.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/lattices/LRegions/LCBox.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
 #include <synthesis/MeasurementEquations/LatticeModel.h>
 #include <synthesis/MeasurementEquations/LatConvEquation.h>
-#include <lattices/LEL/LatticeExprNode.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <lattices/Lattices/TempLattice.h>
+#include <casacore/lattices/LEL/LatticeExprNode.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/lattices/Lattices/TempLattice.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 
 using namespace casacore;

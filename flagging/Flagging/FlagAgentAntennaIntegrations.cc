@@ -24,8 +24,8 @@
 
 #include <sstream>
 
-#include <casa/Quanta/MVTime.h>
-#include <casa/Utilities/DataType.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Utilities/DataType.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

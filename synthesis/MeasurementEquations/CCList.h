@@ -30,12 +30,12 @@
 #define SYNTHESIS_CCLIST_H
 
 
-#include <casa/aips.h>
-#include <casa/Containers/Block.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/GenSort.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/GenSort.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 // <summary>

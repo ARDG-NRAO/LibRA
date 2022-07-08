@@ -8,8 +8,8 @@
 #ifndef MSVIS_SPECTRALWINDOW_H_
 #define MSVIS_SPECTRALWINDOW_H_
 
-#include <casa/aipstype.h>
-#include <casa/BasicSL.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/BasicSL.h>
 #include <vector>
 
 namespace casacore{

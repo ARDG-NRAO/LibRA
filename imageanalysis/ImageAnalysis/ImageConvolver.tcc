@@ -27,23 +27,23 @@
 //   
 #include <imageanalysis/ImageAnalysis/ImageConvolver.h>
 //
-#include <casa/aips.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/String.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <images/Regions/RegionHandler.h>
-#include <images/Regions/ImageRegion.h>
-#include <images/Images/ImageUtilities.h>
-#include <lattices/Lattices/ArrayLattice.h>
-#include <lattices/LatticeMath/LatticeConvolver.h>
-#include <lattices/Lattices/LatticeUtilities.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LEL/LatticeExprNode.h>
-#include <casa/iostream.h>
+#include <casacore/casa/aips.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Regions/RegionHandler.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/lattices/LatticeMath/LatticeConvolver.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LEL/LatticeExprNode.h>
+#include <iostream>
 
 #include <memory>
 

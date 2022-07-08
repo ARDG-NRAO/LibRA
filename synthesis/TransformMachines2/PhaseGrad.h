@@ -29,8 +29,8 @@
 #ifndef SYNTHESIS_TRANSFORM2_PHASEGRAD_H
 #define SYNTHESIS_TRANSFORM2_PHASEGRAD_H
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/PointingOffsets.h>

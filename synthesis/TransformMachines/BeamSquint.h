@@ -29,10 +29,10 @@
 #ifndef SYNTHESIS_BEAMSQUINT_H
 #define SYNTHESIS_BEAMSQUINT_H
 
-#include <casa/aips.h>
-#include <measures/Measures.h>
-#include <coordinates/Coordinates.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/aips.h>
+#include <casacore/measures/Measures.h>
+#include <casacore/coordinates/Coordinates.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

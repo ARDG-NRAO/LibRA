@@ -1,7 +1,7 @@
 #ifndef IMAGEANALYSIS_IMAGEEXPRCALCULATOR_H
 #define IMAGEANALYSIS_IMAGEEXPRCALCULATOR_H
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casacore{
 

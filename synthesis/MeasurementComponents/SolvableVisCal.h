@@ -28,10 +28,10 @@
 #ifndef SYNTHESIS_SOLVABLEVISCAL_H
 #define SYNTHESIS_SOLVABLEVISCAL_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Constants.h>
 #include <synthesis/MeasurementComponents/VisCal.h>
 #include <synthesis/MeasurementComponents/CalCorruptor.h>
 #include <synthesis/MeasurementComponents/Mueller.h>
@@ -47,10 +47,10 @@
 #include <msvis/MSVis/CalVisBuffer.h>
 #include <msvis/MSVis/VisBuffGroupAcc.h>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/Timer.h>
 #if ! defined(CASATOOLS)
 #include <casadbus/plotserver/PlotServerProxy.h>
 #include <casadbus/utilities/BusAccess.h>

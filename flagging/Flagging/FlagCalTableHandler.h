@@ -25,7 +25,7 @@
 
 #include <flagging/Flagging/FlagDataHandler.h>
 
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 #include <msvis/MSVis/StokesVector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

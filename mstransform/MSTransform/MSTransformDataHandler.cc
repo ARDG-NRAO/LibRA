@@ -21,9 +21,9 @@
 //# $Id: $
 
 #include <mstransform/MSTransform/MSTransformDataHandler.h>
-#include <tables/Tables/TableProxy.h>
-#include <tables/TaQL/TableParse.h>
-#include <ms/MSOper/MSMetaData.h>
+#include <casacore/tables/Tables/TableProxy.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
 #include <asdmstman/AsdmStMan.h>
 
 

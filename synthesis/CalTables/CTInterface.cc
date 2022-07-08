@@ -27,7 +27,7 @@
 //----------------------------------------------------------------------------
 
 #include <synthesis/CalTables/CTInterface.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
 #include <unordered_set>
 

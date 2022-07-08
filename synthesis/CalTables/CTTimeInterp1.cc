@@ -28,16 +28,16 @@
 #include <synthesis/CalTables/CTTimeInterp1.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/RIorAParray.h>
-#include <casa/aips.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/IO/ArrayIO.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <scimath/Functionals/Interpolate1D.h>
-#include <scimath/Functionals/ScalarSampledFunctional.h>
-#include <scimath/Functionals/ArraySampledFunctional.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/scimath/Functionals/Interpolate1D.h>
+#include <casacore/scimath/Functionals/ScalarSampledFunctional.h>
+#include <casacore/scimath/Functionals/ArraySampledFunctional.h>
 
 #define CTTIMEINTERPVERB1 false
 

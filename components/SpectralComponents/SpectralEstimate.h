@@ -29,7 +29,7 @@
 #ifndef COMPONENTS_SPECTRALESTIMATE_H
 #define COMPONENTS_SPECTRALESTIMATE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <components/SpectralComponents/SpectralElement.h>
 #include <components/SpectralComponents/SpectralList.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>

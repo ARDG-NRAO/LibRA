@@ -28,11 +28,11 @@
 //# Includes
 #include <components/SpectralComponents/GaussianSpectralElement.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <scimath/Functionals/Gaussian1D.h>
+#include <casacore/scimath/Functionals/Gaussian1D.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

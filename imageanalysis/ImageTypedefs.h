@@ -27,9 +27,9 @@
 #ifndef IMAGETYPEDEFS_H_
 #define IMAGETYPEDEFS_H_
 
-#include <casa/aipstype.h>
-#include <casa/BasicSL/Complexfwd.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/BasicSL/Complexfwd.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #define SPIIT std::shared_ptr<casacore::ImageInterface<T>>
 #define SPCIIT std::shared_ptr<const casacore::ImageInterface<T>>

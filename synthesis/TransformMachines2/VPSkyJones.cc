@@ -26,34 +26,34 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/TransformMachines/PBMath.h>
 #include <synthesis/TransformMachines2/VPSkyJones.h>
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <tables/Tables.h>
-#include <tables/Tables/TableRecord.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/tables/Tables.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/Stokes.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/ComponentShape.h>
 
-#include <images/Images/ImageInterface.h>
-#include <lattices/Lattices/LatticeStepper.h>
-#include <lattices/Lattices/LatticeIterator.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <coordinates/Coordinates/Projection.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/Projection.h>
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

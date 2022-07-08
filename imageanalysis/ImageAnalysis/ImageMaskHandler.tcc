@@ -28,10 +28,10 @@
 
 #include <imageanalysis/ImageAnalysis/ImageFactory.h>
 
-#include <casa/Exceptions/Error.h>
-#include <images/Images/ImageExprParse.h>
-#include <images/Images/ImageProxy.h>
-#include <images/Regions/RegionHandler.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/images/Images/ImageExprParse.h>
+#include <casacore/images/Images/ImageProxy.h>
+#include <casacore/images/Regions/RegionHandler.h>
 
 namespace casa {
 

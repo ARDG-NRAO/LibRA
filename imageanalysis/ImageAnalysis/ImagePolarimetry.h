@@ -28,13 +28,13 @@
 #ifndef IMAGES_IMAGEPOLARIMETRY_H
 #define IMAGES_IMAGEPOLARIMETRY_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Block.h> 
-#include <measures/Measures/Stokes.h>
-#include <casa/BasicSL/Complex.h>
-#include <images/Images/ImageInterface.h>
-#include <scimath/Fitting/LinearFitSVD.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Block.h> 
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/scimath/Fitting/LinearFitSVD.h>
 
 #include <imageanalysis/ImageTypedefs.h>
 

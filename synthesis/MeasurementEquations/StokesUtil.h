@@ -30,8 +30,8 @@
 #define SYNTHESIS_STOKESUTIL_H
 
 
-#include <casa/aips.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <msvis/MSVis/StokesVector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -29,11 +29,11 @@
 #ifndef SYNTHESIS_IDL_H
 #define SYNTHESIS_IDL_H
 
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/String.h>
 
 #ifdef HAVE_IDL_LIB
-#include <casa/stdio.h>
+#include <stdio.h>
 #include "export.h"
 #endif
 

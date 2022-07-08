@@ -28,8 +28,8 @@
 #define FLAGGING_RFROWCLIPPER_H
 
 #include <flagging/Flagging/RFCommon.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
     
 namespace casa { //# NAMESPACE CASA - BEGIN
 

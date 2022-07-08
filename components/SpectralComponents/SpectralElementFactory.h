@@ -29,8 +29,8 @@
 #define COMPONENTS_SPECTRALELEMENTFACTORY_H
 
 //# Includes
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Containers/RecordInterface.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Containers/RecordInterface.h>
 #include <components/SpectralComponents/SpectralElement.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -22,32 +22,32 @@
 
 //#Includes
 
-#include <casa/Inputs/Input.h>
-#include <casa/OS/File.h>
-#include <casa/Utilities/GenSort.h>
+#include <casacore/casa/Inputs/Input.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Utilities/GenSort.h>
 
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayUtil.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayUtil.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
 
-#include <measures/Measures.h>
-#include <measures/Measures/MPosition.h>
-#include <measures/Measures/MeasData.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/measures/Measures/MeasData.h>
+#include <casacore/measures/Measures/Stokes.h>
 
-#include <tables/Tables.h>
-#include <tables/Tables/TableInfo.h>
+#include <casacore/tables/Tables.h>
+#include <casacore/tables/Tables/TableInfo.h>
 
-#include <ms/MeasurementSets.h> 
+#include <casacore/ms/MeasurementSets.h> 
 
-#include <mirlib/maxdimc.h>
-#include <mirlib/miriad.h>
+#include <casacore/mirlib/maxdimc.h>
+#include <casacore/mirlib/miriad.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 

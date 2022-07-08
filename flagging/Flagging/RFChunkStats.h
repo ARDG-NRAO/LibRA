@@ -27,12 +27,12 @@
 #ifndef FLAGGING_RFCHUNKSTATS_H
 #define FLAGGING_RFCHUNKSTATS_H
 
-#include <measures/Measures/Stokes.h> 
-#include <casa/Arrays/Vector.h> 
-#include <casa/Arrays/Matrix.h> 
-#include <casa/Arrays/Cube.h> 
-#include <casa/Containers/Block.h> 
-#include <lattices/Lattices/LatticeIterator.h> 
+#include <casacore/measures/Measures/Stokes.h> 
+#include <casacore/casa/Arrays/Vector.h> 
+#include <casacore/casa/Arrays/Matrix.h> 
+#include <casacore/casa/Arrays/Cube.h> 
+#include <casacore/casa/Containers/Block.h> 
+#include <casacore/lattices/Lattices/LatticeIterator.h> 
 #include <flagging/Flagging/RFCommon.h>
 
 namespace casacore{

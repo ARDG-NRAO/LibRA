@@ -28,11 +28,11 @@
 #ifndef SPLAT_SEARCHENGINE_H
 #define SPLAT_SEARCHENGINE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <spectrallines/Splatalogue/SplatalogueTable.h>
 
 namespace casa {

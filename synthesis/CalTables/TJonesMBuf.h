@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_TJONESMBUF_H
 #define CALIBRATION_TJONESMBUF_H
 
-#include <measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/MFrequency.h>
 #include <synthesis/CalTables/SolvableVJMBuf.h>
 #include <synthesis/CalTables/TJonesMCol.h>
 #include <synthesis/CalTables/TJonesTable.h>

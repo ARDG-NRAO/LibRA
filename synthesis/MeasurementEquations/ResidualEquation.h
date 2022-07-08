@@ -30,7 +30,7 @@
 #ifndef SYNTHESIS_RESIDUALEQUATION_H
 #define SYNTHESIS_RESIDUALEQUATION_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementEquations/LinearModel.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -21,7 +21,7 @@
 //# $Id: $
 #include <ctime>
 #include <mstransform/MSTransform/MSTransformIteratorFactory.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 using namespace casacore;
 namespace casa
 {

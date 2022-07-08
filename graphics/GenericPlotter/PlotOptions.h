@@ -31,8 +31,8 @@
 #include <cctype>
 #include <vector>
 
-#include <casa/Utilities/CountedPtr.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa {
 
