@@ -3329,7 +3329,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         std::vector<Double> stlchanfreq;
         chanFreq.tovector(stlchanfreq);
         std::reverse(stlchanfreq.begin(),stlchanfreq.end());
-        chanFreq=stlchanfreq;
+        chanFreq=Vector<Double>(stlchanfreq);
         chanFreqStep=-chanFreqStep;
       }
     }

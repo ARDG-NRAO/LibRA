@@ -485,7 +485,8 @@ FlagMSHandler::generateIterator()
       }
 
       //Create the final visibility iterator
-      visibilityIterator_p = new vi::VisibilityIterator2(factories);
+      Vector<vi::ViiLayerFactory*> const factoriesV(factories);
+      visibilityIterator_p = new vi::VisibilityIterator2(factoriesV);
     }
 
     // Do quack pre-sweep
