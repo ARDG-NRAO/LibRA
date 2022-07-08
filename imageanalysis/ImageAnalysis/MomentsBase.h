@@ -34,7 +34,7 @@
 #include <casacore/measures/Measures/MDoppler.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Arrays/Vector.h>
-#include <casa/iosfwd.h>
+#include <iosfwd>
 
 namespace casacore{
 

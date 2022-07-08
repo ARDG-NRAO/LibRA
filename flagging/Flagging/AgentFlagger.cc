@@ -33,8 +33,8 @@
 #include <casacore/casa/Exceptions/Error.h>
 #include <flagging/Flagging/AgentFlagger.h>
 #include <flagging/Flagging/FlagVersion.h>
-#include <casa/stdio.h>
-#include <casa/math.h>
+#include <stdio.h>
+#include <cmath>
 #include <stdarg.h>
 #include <sstream>
 #include <iostream>

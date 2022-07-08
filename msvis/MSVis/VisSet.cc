@@ -50,7 +50,7 @@
 #include <casacore/casa/Arrays/Slice.h>
 #include <casacore/casa/Arrays/Slicer.h>
 #include <casacore/casa/Utilities/GenSort.h>
-#include <casa/iostream.h>
+#include <iostream>
 
 #include <casacore/casa/Logging/LogMessage.h>
 #include <casacore/casa/Logging/LogSink.h>

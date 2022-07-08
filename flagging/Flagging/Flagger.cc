@@ -43,8 +43,8 @@
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <casacore/casa/System/ProgressMeter.h>
-#include <casa/stdio.h>
-#include <casa/math.h>
+#include <stdio.h>
+#include <cmath>
 #include <stdarg.h>
 
 #include <casacore/tables/Tables/Table.h>

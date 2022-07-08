@@ -36,7 +36,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Containers/RecordInterface.h>
 #include <casacore/casa/Exceptions/Error.h>
-#include <casa/iomanip.h>
+#include <iomanip>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogOrigin.h>
 #include <casacore/casa/Quanta/MVTime.h>

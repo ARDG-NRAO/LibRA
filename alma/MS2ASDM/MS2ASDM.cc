@@ -60,8 +60,8 @@
 #include <casacore/tables/DataMan/TiledDataStMan.h>
 #include <casacore/tables/DataMan/TiledStManAccessor.h>
 #include <casacore/measures/Measures/MeasTable.h>
-#include <casa/sstream.h>
-#include <casa/iomanip.h>
+#include <sstream>
+#include <iomanip>
 
 #include <algorithm>
 #include <casacore/casa/OS/Directory.h>

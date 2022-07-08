@@ -43,7 +43,7 @@
 #include <casacore/tables/LogTables/NewFile.h>
 
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 
 namespace casa {
 

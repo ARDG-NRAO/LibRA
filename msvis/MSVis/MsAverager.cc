@@ -33,7 +33,6 @@
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/Arrays/Slice.h>
 #include <casacore/casa/OS/Timer.h>
-#include <casa/iomanip.h>
 
 #include <graphics/X11/X_enter.h>
 #include <stdio.h>

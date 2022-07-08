@@ -62,7 +62,7 @@
 
 #include <casacore/casa/Logging/LogIO.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using std::vector;
 using std::pair;
