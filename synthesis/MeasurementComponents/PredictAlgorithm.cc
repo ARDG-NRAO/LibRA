@@ -25,30 +25,30 @@
 //#
 //# $Id$
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisSetUtil.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <synthesis/MeasurementComponents/PredictAlgorithm.h>
-#include <casa/OS/Time.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/casa/OS/Time.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/System/ProgressMeter.h>
 #include <synthesis/Parallel/Applicator.h>
 #include <unistd.h>
-#include <lattices/LRegions/LCBox.h>
-#include <lattices/Lattices/SubLattice.h>   
-#include <lattices/Lattices/TiledShape.h>  
+#include <casacore/lattices/LRegions/LCBox.h>
+#include <casacore/lattices/Lattices/SubLattice.h>   
+#include <casacore/lattices/Lattices/TiledShape.h>  
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

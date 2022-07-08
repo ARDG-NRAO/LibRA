@@ -27,9 +27,9 @@
 //----------------------------------------------------------------------------
 
 #include <msvis/MSVis/VisBuffGroupAcc.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MSSel/MSSelection.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

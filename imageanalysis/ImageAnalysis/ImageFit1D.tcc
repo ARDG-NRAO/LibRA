@@ -27,19 +27,19 @@
 
 #include <imageanalysis/ImageAnalysis/ImageFit1D.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Exceptions/Error.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <lattices/Lattices/LatticeUtilities.h>
-#include <lattices/LatticeMath/LatticeMathUtil.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/LatticeMath/LatticeMathUtil.h>
 #include <components/SpectralComponents/SpectralEstimate.h>
 #include <components/SpectralComponents/SpectralElement.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 #include <memory>
 

@@ -27,9 +27,9 @@
 #ifndef FLAGGING_FLAGGER_H
 #define FLAGGING_FLAGGER_H
 
-#include <casa/Logging/LogIO.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Record.h>
 
 // This is needed for FlagAgentList, which should probably go into a separate header
 #include <flagging/Flagging/FlagAgentBase.h>

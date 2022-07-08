@@ -25,29 +25,29 @@
 //#
 //# $Id: SkyComponent.cc 21292 2012-11-28 14:58:19Z gervandiepen $
 
-#include <casa/Quanta/QMath.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/Quanta/QMath.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/ComponentShape.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/SkyCompRep.h>
 #include <components/ComponentModels/SpectralModel.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/RecordInterface.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/RecordInterface.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <casa/iomanip.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Utilities/Precision.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Utilities/Precision.h>
 
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
-#include <casa/Quanta/MVAngle.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
 
 #include <iomanip>
 

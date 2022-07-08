@@ -28,30 +28,30 @@
 
 #include <imageanalysis/ImageAnalysis/SepImageConvolver.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Containers/Block.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
-#include <scimath/Mathematics/Convolver.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/scimath/Mathematics/Convolver.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <images/Images/PagedImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <images/Images/SubImage.h>
-#include <images/Images/TempImage.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/LatticeUtilities.h>
-#include <lattices/Lattices/TiledLineStepper.h>
-#include <scimath/Mathematics/VectorKernel.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/Lattices/TiledLineStepper.h>
+#include <casacore/scimath/Mathematics/VectorKernel.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 #include <casa/iomanip.h>
 
 

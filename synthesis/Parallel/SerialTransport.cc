@@ -28,7 +28,7 @@
 //# Includes
 
 #include <synthesis/Parallel/SerialTransport.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

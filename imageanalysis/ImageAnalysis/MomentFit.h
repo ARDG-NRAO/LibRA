@@ -28,14 +28,14 @@
 #ifndef IMAGEANALYSIS_MOMENTFIT_H
 #define IMAGEANALYSIS_MOMENTFIT_H
 
-#include <casa/aips.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <lattices/LatticeMath/LineCollapser.h>
-#include <scimath/Functionals/Gaussian1D.h>
-#include <scimath/Mathematics/NumericTraits.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/aips.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/lattices/LatticeMath/LineCollapser.h>
+#include <casacore/scimath/Functionals/Gaussian1D.h>
+#include <casacore/scimath/Mathematics/NumericTraits.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 namespace casa {
 

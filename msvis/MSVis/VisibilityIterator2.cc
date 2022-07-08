@@ -7,22 +7,22 @@
 
 #include <msvis/MSVis/VisibilityIterator2.h>
 
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Slicer.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Quanta/MVDoppler.h>
-#include <casa/aips.h>
-#include <casa/System/AipsrcValue.h>
-#include <measures/Measures/MCDoppler.h>
-#include <measures/Measures/MDoppler.h>
-#include <measures/Measures/MeasConvert.h>
-#include <measures/Measures/Stokes.h>
-#include <ms/MSOper/MSDerivedValues.h>
-#include <ms/MeasurementSets/MSIter.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <scimath/Mathematics/RigidVector.h>
-#include <scimath/Mathematics/SquareMatrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Slicer.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Quanta/MVDoppler.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/System/AipsrcValue.h>
+#include <casacore/measures/Measures/MCDoppler.h>
+#include <casacore/measures/Measures/MDoppler.h>
+#include <casacore/measures/Measures/MeasConvert.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/ms/MSOper/MSDerivedValues.h>
+#include <casacore/ms/MeasurementSets/MSIter.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/SquareMatrix.h>
 #include <msvis/MSVis/AveragingTvi2.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <msvis/MSVis/StokesVector.h>
@@ -32,8 +32,8 @@
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/VisibilityIteratorImplAsync2.h>
 #include <msvis/MSVis/UtilJ.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
 
 #include <cstdarg>
 #include <map>

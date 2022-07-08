@@ -26,15 +26,15 @@
 
 #include <imageanalysis/ImageAnalysis/ImageInputProcessor.h>
 
-#include <casa/Utilities/Sort.h>
-#include <casa/iostream.h>
+#include <casacore/casa/Utilities/Sort.h>
+#include <iostream>
 
-#include <images/Images/FITSImage.h>
-#include <images/Images/MIRIADImage.h>
-#include <images/Regions/WCBox.h>
+#include <casacore/images/Images/FITSImage.h>
+#include <casacore/images/Images/MIRIADImage.h>
+#include <casacore/images/Regions/WCBox.h>
 #include <imageanalysis/ImageAnalysis/ImageMetaData.h>
 
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/Stokes.h>
 
 namespace casa {
 

@@ -28,7 +28,7 @@
 
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 namespace casa {
 

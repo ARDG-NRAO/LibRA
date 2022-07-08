@@ -28,8 +28,8 @@
 #ifndef MSVIS_VBREMAPPER_H
 #define MSVIS_VBREMAPPER_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/VisBufferComponents.h>
 #include <map>
 

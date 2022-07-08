@@ -17,7 +17,7 @@
 #ifndef ANNOTATIONS_ANNCENTERBOX_H
 #define ANNOTATIONS_ANNCENTERBOX_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <imageanalysis/Annotations/AnnPolygon.h>
 
 namespace casa {

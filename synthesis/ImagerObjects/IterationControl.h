@@ -28,7 +28,7 @@
 #ifndef ITERATION_CONTROL_H_
 #define ITERATION_CONTROL_H_
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #if ! defined(CASATOOLS)
 #include <synthesis/ImagerObjects/DistributedSynthesisIterBot.h>

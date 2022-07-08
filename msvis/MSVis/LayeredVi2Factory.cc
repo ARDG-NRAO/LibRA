@@ -32,7 +32,7 @@
 #include <msvis/MSVis/CalibratingVi2FactoryI.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <msvis/MSVis/UtilJ.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

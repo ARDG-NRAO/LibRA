@@ -29,10 +29,10 @@
 #ifndef SYNTHESIS_SIMACOHCALC_H
 #define SYNTHESIS_SIMACOHCALC_H
 
-#include <casa/aips.h>
-#include <casa/BasicMath/Random.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicMath/Random.h>
 #include <synthesis/MeasurementComponents/ACoh.h>
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/Quantum.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

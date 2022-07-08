@@ -31,12 +31,12 @@
 
 #include <imageanalysis/IO/ImageFitterResults.h>
 
-#include <casa/BasicSL/STLIO.h>
-#include <casa/OS/File.h>
-#include <casa/Quanta/QLogical.h>
-#include <casa/Utilities/Precision.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/casa/BasicSL/STLIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Quanta/QLogical.h>
+#include <casacore/casa/Utilities/Precision.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 #include <components/ComponentModels/GaussianShape.h>
 #include <imageanalysis/IO/LogFile.h>

@@ -29,11 +29,11 @@
 #ifndef NRAO_VLAPROJECTFILTER_H
 #define NRAO_VLAPROJECTFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 
 // <summary>

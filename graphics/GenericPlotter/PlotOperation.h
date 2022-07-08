@@ -27,8 +27,8 @@
 #ifndef PLOTOPERATION_H_
 #define PLOTOPERATION_H_
 
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #include <vector>
 

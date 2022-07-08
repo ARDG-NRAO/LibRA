@@ -1,10 +1,10 @@
 #include "ImageExprCalculator.h"
 
 
-#include <casa/BasicSL/String.h>
-#include <images/Images/ImageBeamSet.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/ImageProxy.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/images/Images/ImageBeamSet.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageProxy.h>
 
 #include <imageanalysis/ImageTypedefs.h>
 #include <imageanalysis/ImageAnalysis/ImageFactory.h>

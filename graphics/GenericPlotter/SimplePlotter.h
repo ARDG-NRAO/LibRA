@@ -29,7 +29,7 @@
 
 #include <graphics/GenericPlotter/PlotFactory.h>
 
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 namespace casa {
 

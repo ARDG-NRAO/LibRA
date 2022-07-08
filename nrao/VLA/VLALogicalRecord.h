@@ -28,9 +28,9 @@
 #ifndef NRAO_VLALOGICALRECORD_H
 #define NRAO_VLALOGICALRECORD_H
 
-#include <casa/Containers/Block.h>
-#include <casa/Utilities/CountedPtr.h>
-#include <casa/aips.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAADA.h>
 #include <nrao/VLA/VLAArchiveInput.h>
 #include <nrao/VLA/VLACDA.h>
@@ -38,7 +38,7 @@
 #include <nrao/VLA/VLARCA.h>
 #include <nrao/VLA/VLASDA.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 // <summary>This class interprets a VLA logical record.</summary>
 

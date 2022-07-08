@@ -30,7 +30,7 @@
 #define COMPONENTS_SPECTRALFIT_H
 
 //# Includes
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <components/SpectralComponents/SpectralList.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 

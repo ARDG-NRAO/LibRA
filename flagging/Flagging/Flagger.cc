@@ -24,15 +24,15 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <casa/BasicSL/Complex.h>
-#include <measures/Measures/Stokes.h>
-#include <casa/Utilities/Regex.h>
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <flagging/Flagging/Flagger.h>
 #include <flagging/Flagging/RFAFlagExaminer.h>
 #include <flagging/Flagging/RFAMedianClip.h>
@@ -42,31 +42,31 @@
 #include <flagging/Flagging/RFATimeFreqCrop.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/System/ProgressMeter.h>
 #include <casa/stdio.h>
 #include <casa/math.h>
 #include <stdarg.h>
 
-#include <tables/Tables/Table.h>
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
 
-#include <tables/TaQL/ExprNode.h>
+#include <casacore/tables/TaQL/ExprNode.h>
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisSetUtil.h>
 
-#include <measures/Measures/Stokes.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/Quanta/MVAngle.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <casa/Quanta/MVEpoch.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/MeasTable.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/casa/Quanta/MVEpoch.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MeasTable.h>
 
 #include <flagging/Flagging/RFANewMedianClip.h>
 

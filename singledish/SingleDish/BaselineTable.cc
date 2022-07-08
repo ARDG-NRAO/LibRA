@@ -26,20 +26,20 @@
 //# $Id$
 #include <assert.h>
 
-#include <casa/Containers/ValueHolder.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/OS/Path.h>
-#include <measures/TableMeasures/TableMeasDesc.h>
-#include <measures/TableMeasures/TableMeasRefDesc.h>
-#include <measures/TableMeasures/TableMeasValueDesc.h>
+#include <casacore/casa/Containers/ValueHolder.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/measures/TableMeasures/TableMeasDesc.h>
+#include <casacore/measures/TableMeasures/TableMeasRefDesc.h>
+#include <casacore/measures/TableMeasures/TableMeasValueDesc.h>
 #include <singledish/SingleDish/BaselineTable.h>
 #include <stdcasa/StdCasa/CasacSupport.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/SetupNewTab.h>
-#include <tables/Tables/ArrColDesc.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableProxy.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableProxy.h>
 
 using namespace casacore;
 using namespace casacore;

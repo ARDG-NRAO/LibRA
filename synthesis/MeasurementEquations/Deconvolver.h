@@ -29,18 +29,18 @@
 #ifndef SYNTHESIS_DECONVOLVER_H
 #define SYNTHESIS_DECONVOLVER_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Quanta/Quantum.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <measures/Measures/MRadialVelocity.h>
-#include <lattices/LatticeMath/LatticeCleaner.h>
-#include <scimath/Mathematics/GaussianBeam.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/measures/Measures/MRadialVelocity.h>
+#include <casacore/lattices/LatticeMath/LatticeCleaner.h>
+#include <casacore/scimath/Mathematics/GaussianBeam.h>
 
 #include <synthesis/MeasurementEquations/MultiTermMatrixCleaner.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 
 template<class T> class Lattice;

@@ -29,10 +29,10 @@
 #ifndef NRAO_VLARCA_H
 #define NRAO_VLARCA_H
 
-#include <casa/aips.h>
-#include <casa/IO/ByteSource.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/ByteSource.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 //# Forward Declarations
 
 // <summary></summary>

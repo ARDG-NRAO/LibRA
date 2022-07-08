@@ -34,20 +34,20 @@ Modification history:
 // Includes
 // -----------------------------------------------------------------------------
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
-#include <casa/Arrays/MaskedArray.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
 
-#include <scimath/Functionals/Polynomial.h>
-#include <scimath/Mathematics/AutoDiff.h>
-#include <scimath/Fitting/LinearFitSVD.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Mathematics/AutoDiff.h>
+#include <casacore/scimath/Fitting/LinearFitSVD.h>
 
 // -----------------------------------------------------------------------------
 // Start of casa namespace

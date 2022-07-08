@@ -29,12 +29,12 @@
 #ifndef COMPONENTS_FLUX_H
 #define COMPONENTS_FLUX_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <scimath/Mathematics/NumericTraits.h>
-#include <measures/Measures/Stokes.h>
-#include <casa/Quanta/Unit.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/scimath/Mathematics/NumericTraits.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Quanta/Unit.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 #include <components/ComponentModels/ComponentType.h>
 
 namespace casacore{

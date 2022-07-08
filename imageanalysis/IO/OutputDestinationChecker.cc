@@ -26,7 +26,7 @@
 
 #include <imageanalysis/IO/OutputDestinationChecker.h>
 
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/File.h>
 
 
 using namespace casacore;

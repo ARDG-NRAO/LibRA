@@ -29,19 +29,19 @@
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTColumns.h>
 #include <synthesis/CalTables/CTMainColumns.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MSOper/MSMetaData.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/SetupNewTab.h>
-#include <tables/Tables/TableCopy.h>
-#include <tables/Tables/TableRow.h>
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/TableInfo.h>
-#include <measures/Measures/MEpoch.h>
-#include <casa/Arrays.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/TableCopy.h>
+#include <casacore/tables/Tables/TableRow.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/TableInfo.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <synthesis/CalTables/CTEnums.h>
 
 using namespace casacore;

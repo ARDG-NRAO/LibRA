@@ -29,18 +29,18 @@
 #define SYNTHESIS_TRANSFORM2_UTILS_H
 
 
-#include <casa/aips.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <casa/Quanta/Quantum.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/images/Images/ImageInterface.h>
 //#include <ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <synthesis/TransformMachines/CFCell.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/iostream.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <iostream>
 
 namespace casa
 {

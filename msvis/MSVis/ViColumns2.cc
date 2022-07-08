@@ -1,5 +1,5 @@
 #include <msvis/MSVis/ViColumns2.h>
-#include <ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets.h>
 
 using namespace casacore;
 namespace casa {

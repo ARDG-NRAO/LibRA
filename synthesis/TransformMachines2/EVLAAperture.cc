@@ -34,10 +34,10 @@
 #include <synthesis/TransformMachines2/WTerm.h>
 #include <synthesis/TransformMachines2/VLACalcIlluminationConvFunc.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 //
 //---------------------------------------------------------------------
 //

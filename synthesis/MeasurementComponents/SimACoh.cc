@@ -26,7 +26,7 @@
 //#
 //# $Id$
 
-#include <casa/BasicMath/Math.h>
+#include <casacore/casa/BasicMath/Math.h>
 #include <synthesis/MeasurementComponents/SimACoh.h>
 #include <msvis/MSVis/VisBuffer.h>
 

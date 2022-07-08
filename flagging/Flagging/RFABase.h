@@ -27,10 +27,10 @@
 #ifndef FLAGGING_RFABASE_H
 #define FLAGGING_RFABASE_H
 
-#include <casa/Arrays/Cube.h> 
+#include <casacore/casa/Arrays/Cube.h> 
 #include <flagging/Flagging/RFChunkStats.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

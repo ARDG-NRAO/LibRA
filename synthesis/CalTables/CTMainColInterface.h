@@ -30,16 +30,16 @@
 #ifndef CT_CTMAINCOLINTERFACE_H
 #define CT_CTMAINCOLINTERFACE_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
-#include <tables/TaQL/ExprNode.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSMainEnums.h>
-#include <ms/MSSel/MSSelectionError.h>
-#include <ms/MSSel/MSSelectableTable.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSMainEnums.h>
+#include <casacore/ms/MSSel/MSSelectionError.h>
+#include <casacore/ms/MSSel/MSSelectableTable.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -21,7 +21,7 @@
 //# $Id: $
 
 #include <mstransform/TVI/ChannelAverageTVI.h>
-#include <casa/Arrays/VectorIter.h>
+#include <casacore/casa/Arrays/VectorIter.h>
 
 #ifdef _OPENMP
  #include <omp.h>

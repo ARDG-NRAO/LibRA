@@ -29,17 +29,17 @@
 
 #include <asdmstman/AsdmStMan.h>
 #include <asdmstman/AsdmColumn.h>
-#include <tables/Tables/Table.h>
-#include <tables/DataMan/DataManError.h>
-#include <casa/Containers/Record.h>
-#include <casa/Containers/BlockIO.h>
-#include <casa/IO/AipsIO.h>
-#include <casa/OS/CanonicalConversion.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/OS/DOos.h>
-#include <casa/Utilities/BinarySearch.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/DataMan/DataManError.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Containers/BlockIO.h>
+#include <casacore/casa/IO/AipsIO.h>
+#include <casacore/casa/OS/CanonicalConversion.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/OS/DOos.h>
+#include <casacore/casa/Utilities/BinarySearch.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 #include <map>
 
