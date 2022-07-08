@@ -35,7 +35,7 @@
 #include <casacore/casa/BasicMath/Math.h>
 #include <casacore/measures/Measures/MeasConvert.h>
 #include <casacore/casa/Quanta/MVFrequency.h>
-#include <casa/iomanip.h>
+#include <iomanip>
 
 VLAFrequencyFilter::VLAFrequencyFilter()
   :itsTopEdge(C::dbl_max),

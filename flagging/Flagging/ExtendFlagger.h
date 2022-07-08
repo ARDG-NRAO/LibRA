@@ -37,7 +37,7 @@
 //# Includes
 
 #include <casacore/casa/aips.h>
-#include <casa/iostream.h>
+#include <iostream>
 #include <casacore/casa/OS/Timer.h>
 
 #include <casacore/casa/Arrays/Vector.h>

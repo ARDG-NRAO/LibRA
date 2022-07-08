@@ -52,7 +52,7 @@
 #include <casacore/casa/System/ProgressMeter.h>
 
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 
 
 namespace casa { //# NAMESPACE CASA - BEGIN

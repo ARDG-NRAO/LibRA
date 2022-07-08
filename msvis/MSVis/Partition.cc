@@ -85,8 +85,8 @@
 #include <casacore/tables/DataMan/TiledDataStMan.h>
 #include <casacore/tables/DataMan/TiledStManAccessor.h>
 #include <casacore/ms/MeasurementSets/MSTileLayout.h>
-#include <casa/sstream.h>
-#include <casa/iomanip.h>
+#include <sstream>
+#include <iomanip>
 #include <functional>
 #include <casacore/measures/Measures/MeasTable.h>
 #include <casacore/casa/Quanta/MVTime.h>

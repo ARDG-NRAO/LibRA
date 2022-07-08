@@ -101,7 +101,7 @@
 #include <casacore/casa/Utilities/DataType.h>
 #include <casacore/casa/BasicSL/String.h>
 #include <sstream>
-#include <casa/iomanip.h>
+#include <iomanip>
 
 #include <casacore/tables/TaQL/ExprNode.h>
 
@@ -2126,7 +2126,7 @@ uInt VLAFiller::addSpectralWindow(const VLAEnum::CDA cda,
     }
     ostringstream str;
     str << nChan
-	<< "*" << setprecision(3) << qChanWidth
+	<< "*" << std::setprecision(3) << qChanWidth
 	<< " channels @ " << qRefFreq 
 	<< " (" << refFreq.getRefString() << ")";
     spw.name().put(newRow, String(str));

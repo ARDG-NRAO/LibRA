@@ -30,7 +30,7 @@
 #include <msvis/MSVis/VisBuffer.h>
 #include <casacore/casa/System/PGPlotterInterface.h>
 
-#include <casa/stdio.h>    
+#include <stdio.h>
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 

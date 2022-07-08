@@ -31,7 +31,7 @@
 #include <casacore/casa/Exceptions/Error.h>
 #include <casacore/casa/Utilities/Assert.h>
 
-#include <casa/iomanip.h>
+#include <iomanip>
 
 VLASpectralLineRecord::VLASpectralLineRecord()
   :VLABaselineRecord(),

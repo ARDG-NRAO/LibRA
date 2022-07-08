@@ -26,7 +26,7 @@
 //# $Id: TwoSidedShape.cc 21292 2012-11-28 14:58:19Z gervandiepen $
 
 #include <components/ComponentModels/TwoSidedShape.h>
-#include <casa/iomanip.h>
+#include <iomanip>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/ArrayLogical.h>
 #include <casacore/casa/Containers/Record.h>
@@ -696,7 +696,7 @@ String TwoSidedShape::sizeToString(
 	uInt precision2 = precisionForValueErrorPairs(paVec, Vector<Double>(0));
 
 	ostringstream summary;
-	summary << std::fixed << setprecision(precision1);
+	summary << std::fixed << std::setprecision(precision1);
 	summary << "       --- major axis FWHM:     " << major.getValue();
 	if (includeUncertainties) {
 		if (majorErr.getValue() == 0) {
@@ -723,7 +723,7 @@ String TwoSidedShape::sizeToString(
 	else {
 		summary << " " << prefUnits << endl;
 	}
-	summary << setprecision(precision2);
+	summary << std::setprecision(precision2);
 	summary << "       --- position angle: " << pa;
 	if (includeUncertainties) {
 		if (dpa == 0) {

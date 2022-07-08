@@ -35,7 +35,7 @@
 #include <casacore/casa/Logging/LogIO.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/stdio.h>
+#include <stdio.h>
 #include <map>
 #include <sstream>
 #include <cassert>

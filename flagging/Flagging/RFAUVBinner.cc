@@ -34,8 +34,8 @@
 #include <msvis/MSVis/VisBuffer.h>
 #include <casacore/casa/System/PGPlotterInterface.h>
     
-#include <casa/stdio.h>
-#include <casa/stdlib.h>
+#include <stdio.h>
+#include <cstdlib>
     
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
