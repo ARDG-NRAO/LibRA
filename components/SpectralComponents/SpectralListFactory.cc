@@ -37,7 +37,7 @@ using namespace casacore;
 using namespace casac;
 
 using namespace casacore;
-namespace casa { 
+namespace casa {
 
 SpectralList SpectralListFactory::create(
 	LogIO& log, const variant& pampest,
@@ -279,8 +279,10 @@ void SpectralListFactory::_addPowerLogPolynomial(
 			<< "either be 0 or equal to the number of elements in the estimates list"
 			<< LogIO::EXCEPTION;
 	}
-	PowerLogPolynomialSpectralElement plp(myplpest);
-	plp.fix(myplpfix);
+    Vector<double> const myplpestV(myplpest);
+    Vector<bool> const myplpfixV(myplpfix);
+	PowerLogPolynomialSpectralElement plp(myplpestV);
+	plp.fix(myplpfixV);
 	spectralList.add(plp);
 }
 
@@ -307,8 +309,10 @@ void SpectralListFactory::_addLogTransformedPolynomial(
 			"of elements in the estimates list"
 		);
 	}
-	LogTransformedPolynomialSpectralElement ltp(myltpest);
-	ltp.fix(myltpfix);
+    Vector<double> const myltpestV(myltpest);
+    Vector<bool> const myltpfixV(myltpfix);
+	LogTransformedPolynomialSpectralElement ltp(myltpestV);
+	ltp.fix(myltpfixV);
 	spectralList.add(ltp);
 }
 

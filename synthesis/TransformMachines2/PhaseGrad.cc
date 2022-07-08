@@ -155,7 +155,8 @@ namespace casa{
 	      // cerr<<"Ant2: "<<antGrp.second << " "<< ant2PO_l[0] << " " << ant2PO_l[1] << endl;
 	      blPO_l[0] = (ant1PO_l[0] + ant2PO_l[0])/2;
 	      blPO_l[1] = (ant1PO_l[1] + ant2PO_l[1])/2;
-	      tmpblPO_l = pointingOffsets_p->gradPerPixel(blPO_l);
+          Vector<double> const blPO_l_casavec(blPO_l);
+	      tmpblPO_l = pointingOffsets_p->gradPerPixel(blPO_l_casavec);
 	      cached_FieldOffset_p[row](0) = tmpblPO_l[0];
 	      cached_FieldOffset_p[row](1) = tmpblPO_l[1];
 	    }

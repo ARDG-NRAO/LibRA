@@ -318,7 +318,7 @@ ostream &operator<<(ostream& os, const GaussianMultipletSpectralElement& elem) {
 	os << SpectralElement::fromType((elem.getType())) << " element: " << endl;
 	os << "  Function:    " << elem.getFunction() << endl;
 	os << "  Gaussians:" << endl;
-	Vector<GaussianSpectralElement> gaussians = elem.getGaussians();
+	Vector<GaussianSpectralElement> gaussians(elem.getGaussians());
 	for (uInt i=0; i<gaussians.size(); i++) {
 		os << "Gaussian " << i << ": " << gaussians[i] << endl;
 	}
