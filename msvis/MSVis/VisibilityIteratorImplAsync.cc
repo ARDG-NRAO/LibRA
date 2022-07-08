@@ -14,8 +14,8 @@
 #include <msvis/MSVis/UtilJ.h>
 #include <casacore/casa/Utilities/GenSort.h>
 
-#include <ms/MeasurementSets/MSColumns.h>
-#include <casa/System/AipsrcValue.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 #include <algorithm>
 #include <cstdarg>

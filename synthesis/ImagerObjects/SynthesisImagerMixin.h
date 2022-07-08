@@ -28,8 +28,8 @@
 #ifndef SYNTHESIS_IMAGER_MIXIN_H_
 #define SYNTHESIS_IMAGER_MIXIN_H_
 
-#include <casa/Containers/Record.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #include <synthesis/ImagerObjects/SynthesisImager.h>
 #include <sys/types.h>

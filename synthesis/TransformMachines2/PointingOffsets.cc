@@ -28,8 +28,8 @@
 //
 
 #include <msvis/MSVis/VisibilityIterator2.h>
-#include <measures/Measures/MeasTable.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
 // #include <casa/Logging/LogIO.h>

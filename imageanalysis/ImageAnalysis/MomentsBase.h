@@ -28,12 +28,12 @@
 #ifndef IMAGES_MOMENTSBASE_H
 #define IMAGES_MOMENTSBASE_H
 
-#include <casa/aips.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/Quanta/Quantum.h>
-#include <measures/Measures/MDoppler.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/aips.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/measures/Measures/MDoppler.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <casa/iosfwd.h>
 
 namespace casacore{

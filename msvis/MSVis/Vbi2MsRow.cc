@@ -5,8 +5,8 @@
  *      Author: jjacobs
  */
 
-#include <casa/Exceptions.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/Exceptions.h>
+#include <casacore/measures/Measures/MDirection.h>
 #include <msvis/MSVis/Vbi2MsRow.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisModelDataI.h>

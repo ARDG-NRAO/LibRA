@@ -28,20 +28,20 @@
 #ifndef SYNTHESIS_EPJONES_H
 #define SYNTHESIS_EPJONES_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 #include <synthesis/MeasurementComponents/nPBWProjectFT.h>
 #include <synthesis/MeasurementComponents/PBMosaicFT.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/ImageInfo.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInfo.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <msvis/MSVis/VisSet.h>
 #include <synthesis/CalTables/CalSet.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 // Forward declaration

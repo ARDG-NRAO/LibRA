@@ -29,8 +29,8 @@
 
 #include <imageanalysis/ImageAnalysis/ImageMomentsProgress.h>
 #include <imageanalysis/ImageAnalysis/ImageMomentsProgressMonitor.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/String.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

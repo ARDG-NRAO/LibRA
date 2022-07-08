@@ -36,24 +36,24 @@
 
 //# Includes
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <casa/iostream.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Slicer.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Slicer.h>
 
-#include <tables/Tables/Table.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/TableColumn.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/TableColumn.h>
 
-#include <tables/TaQL/ExprNode.h>
-#include <tables/TaQL/RecordGram.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/tables/TaQL/RecordGram.h>
 
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <flagging/Flagging/Flagger.h>
 
 

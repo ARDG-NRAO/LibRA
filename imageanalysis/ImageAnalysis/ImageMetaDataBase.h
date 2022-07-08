@@ -27,9 +27,9 @@
 #ifndef IMAGEANALYSIS_IMAGEMETADATABASE_H
 #define IMAGEANALYSIS_IMAGEMETADATABASE_H
 
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <imageanalysis/ImageTypedefs.h>
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 namespace casa {
 

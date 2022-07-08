@@ -28,7 +28,7 @@
 
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/RIorAParray.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
 
 using namespace casacore;

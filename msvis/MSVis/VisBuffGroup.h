@@ -27,9 +27,9 @@
 #ifndef MSVIS_VISBUFFGROUP_H
 #define MSVIS_VISBUFFGROUP_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -28,9 +28,9 @@
  
 #include <synthesis/TransformMachines/PBMath1DEVLA.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <measures/Measures.h>
-#include <measures/Measures/MeasConvert.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/measures/Measures.h>
+#include <casacore/measures/Measures/MeasConvert.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 using namespace casacore;
 

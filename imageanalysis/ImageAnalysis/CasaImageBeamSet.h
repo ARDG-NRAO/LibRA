@@ -26,7 +26,7 @@
 #ifndef IMAGEANALYSIS_CASACasaImageBeamSet
 #define IMAGEANALYSIS_CASACasaImageBeamSet
 
-#include <images/Images/ImageBeamSet.h>
+#include <casacore/images/Images/ImageBeamSet.h>
 
 namespace casa {
 

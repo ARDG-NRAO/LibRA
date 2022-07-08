@@ -27,9 +27,9 @@
 //# $Id$
 #ifndef SYNTHESIS_CFDEFS_H
 #define SYNTHESIS_CFDEFS_H
-#include <casa/Arrays/Array.h>
-#include <scimath/Mathematics/RigidVector.h>
-#include <casa/aips.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
+#include <casacore/casa/aips.h>
 
 namespace casa
 {

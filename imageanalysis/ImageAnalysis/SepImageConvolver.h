@@ -30,12 +30,12 @@
 
 
 //# Includes
-#include <casa/aips.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Block.h>
-#include <images/Images/ImageInterface.h>
-#include <scimath/Mathematics/VectorKernel.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/scimath/Mathematics/VectorKernel.h>
 
 namespace casacore{
 

@@ -1,7 +1,7 @@
 #ifndef IMAGES_IMAGECOLLAPSERDATA_H
 #define IMAGES_IMAGECOLLAPSERDATA_H
 
-#include <casa/typeinfo.h>
+#include <casacore/casa/typeinfo.h>
 
 #include <map>
 #include <memory>

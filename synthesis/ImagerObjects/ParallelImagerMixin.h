@@ -31,7 +31,7 @@
 #include <vector>
 
 #include <synthesis/ImagerObjects/MPIGlue.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/ParallelImagerParams.h>
 #include <synthesis/ImagerObjects/ParamFieldIterator.h>
 #include <synthesis/ImagerObjects/SynthesisUtilMethods.h>

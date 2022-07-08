@@ -28,10 +28,10 @@
 #ifndef SYNTHESIS_CALSOLVI2ORGANIZER_H
 #define SYNTHESIS_CALSOLVI2ORGANIZER_H
 
-#include <casa/aips.h>
-#include <casa/iostream.h>
-#include <casa/BasicSL/String.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <iostream>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/SimpleSimVi2.h>
 #include <mstransform/TVI/ChannelAverageTVI.h>
 #include <synthesis/MeasurementComponents/CalibratingVi2.h>

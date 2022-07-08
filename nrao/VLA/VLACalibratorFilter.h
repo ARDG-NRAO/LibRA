@@ -29,12 +29,12 @@
 #ifndef NRAO_VLACALIBRATORFILTER_H
 #define NRAO_VLACALIBRATORFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 
 // <summary>

@@ -30,7 +30,7 @@
 #define SYNTHESIS_LINEAREQUATION_H
 
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementEquations/LinearModel.h>
 #include <synthesis/MeasurementEquations/ResidualEquation.h>
 

@@ -28,9 +28,9 @@
 //# Includes
 #include <components/SpectralComponents/PolynomialSpectralElement.h>
 
-#include <scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

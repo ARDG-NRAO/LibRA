@@ -27,15 +27,15 @@
 
 #include <imageanalysis/ImageAnalysis/ImageHistograms.h>
 
-#include <casa/aips.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/ImageUtilities.h>
-#include <lattices/LatticeMath/LatticeHistograms.h>
+#include <casacore/casa/aips.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/lattices/LatticeMath/LatticeHistograms.h>
 #include <casacore/casa/IO/ArrayIO.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 

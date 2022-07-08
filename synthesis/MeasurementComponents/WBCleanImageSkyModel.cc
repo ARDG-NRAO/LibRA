@@ -26,42 +26,42 @@
 //# $Id: WBCleanImageSkyModel.cc 13615 2010-12-20 14:04:00 UrvashiRV$
 //# v2.6 : Added psf-patch support to reduce memory footprint.
 
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 #include <synthesis/MeasurementComponents/WBCleanImageSkyModel.h>
 #include <synthesis/MeasurementEquations/CubeSkyEquation.h>
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/File.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <synthesis/MeasurementEquations/LatticeModel.h>
 #include <synthesis/MeasurementEquations/LatConvEquation.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-#include <images/Images/PagedImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <images/Regions/RegionManager.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/images/Regions/RegionManager.h>
 
-#include <images/Regions/WCBox.h>
+#include <casacore/images/Regions/WCBox.h>
 
-#include <measures/Measures/Quality.h>
-#include <coordinates/Coordinates/QualityCoordinate.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/measures/Measures/Quality.h>
+#include <casacore/coordinates/Coordinates/QualityCoordinate.h>
+#include <casacore/images/Images/ImageUtilities.h>
 
-#include <scimath/Mathematics/MatrixMathLA.h>
+#include <casacore/scimath/Mathematics/MatrixMathLA.h>
 
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisSetUtil.h>
 
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/OS/HostInfo.h>
 
 
 using namespace casacore;

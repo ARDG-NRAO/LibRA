@@ -27,8 +27,8 @@
 #include <mstransform/TVI/FreqAxisTVI.h>
 
 // Fitting classes
-#include <scimath/Fitting/LinearFitSVD.h>
-#include <scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Fitting/LinearFitSVD.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
 #include <mstransform/TVI/DenoisingLib.h>
 
 // OpenMP

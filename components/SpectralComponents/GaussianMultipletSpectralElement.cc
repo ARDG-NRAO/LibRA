@@ -27,12 +27,12 @@
 #include <components/SpectralComponents/GaussianMultipletSpectralElement.h>
 
 #include <casacore/casa/IO/ArrayIO.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Containers/Record.h>
 #include <components/SpectralComponents/GaussianSpectralElement.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

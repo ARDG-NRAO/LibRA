@@ -27,7 +27,7 @@
 
 #include <components/ComponentModels/GaussianDeconvolver.h>
 #include <casacore/casa/BasicMath/Math.h>
-#include <scimath/Mathematics/GaussianBeam.h>
+#include <casacore/scimath/Mathematics/GaussianBeam.h>
 
 using namespace casacore;
 namespace casa {

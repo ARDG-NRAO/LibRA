@@ -17,7 +17,7 @@
 #ifndef ANNOTATIONS_ANNRECTBOX_H
 #define ANNOTATIONS_ANNRECTBOX_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <imageanalysis/Annotations/AnnPolygon.h>
 
 namespace casa {

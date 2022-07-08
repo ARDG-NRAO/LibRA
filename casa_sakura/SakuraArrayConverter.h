@@ -5,15 +5,15 @@
 #include <string>
 #include <stdexcept>
 //#include <libsakura/sakura.h>
-#include <casa/aipstype.h>
+#include <casacore/casa/aipstype.h>
 
 // AIPS++
-#include <casa/aips.h>
-#include <casa/Utilities/CountedPtr.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/BasicSL/Complex.h>
 
 using namespace std;
 

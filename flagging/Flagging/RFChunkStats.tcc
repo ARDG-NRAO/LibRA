@@ -24,15 +24,15 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <flagging/Flagging/Flagger.h>
 #include <flagging/Flagging/RFChunkStats.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <stdio.h>
-#include <casa/sstream.h>
-#include <casa/System/PGPlotter.h>
+#include <sstream>
+#include <casacore/casa/System/PGPlotter.h>
     
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -36,12 +36,12 @@
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
 #include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Vector.h>
 #define CF_TYPE casacore::Double
 
 namespace casa{

@@ -50,13 +50,13 @@ imaging with doPointing=True
  */
 
 #include <synthesis/TransformMachines2/BaselineType.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogOrigin.h>
-#include <scimath/Mathematics/Combinatorics.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/scimath/Mathematics/Combinatorics.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/BasicSL/Constants.h>
 using namespace casacore;
 namespace casa{
   using namespace refim;

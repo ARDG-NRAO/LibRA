@@ -27,8 +27,8 @@
 
 #include <imageanalysis/IO/LogFile.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/OS/File.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/OS/File.h>
 #include <imageanalysis/IO/OutputDestinationChecker.h>
 
 #include <fcntl.h>

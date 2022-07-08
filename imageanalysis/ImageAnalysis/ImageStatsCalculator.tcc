@@ -28,8 +28,8 @@
 
 #include <imageanalysis/ImageAnalysis/ImageStatsCalculator.h>
 
-#include <casa/BasicSL/String.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/images/Images/ImageUtilities.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
 
 #include <iomanip>

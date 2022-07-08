@@ -30,26 +30,26 @@
 #include <synthesis/MeasurementComponents/MSMetaInfoForCal.h>
 #include <msvis/MSVis/VisBuffer.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MaskArrMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayIter.h>
-#include <casa/Arrays/MaskedArray.h>
-#include <scimath/Mathematics/MatrixMathLA.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Quanta/QuantumHolder.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/OS/Memory.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayIter.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
+#include <casacore/scimath/Mathematics/MatrixMathLA.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/OS/Memory.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
-#include <casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/MVTime.h>
 
 #define PRTLEV 0
 

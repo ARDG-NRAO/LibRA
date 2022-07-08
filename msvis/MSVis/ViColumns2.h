@@ -1,9 +1,9 @@
 #if ! defined (ViColumns_H_121126_1506)
 #define ViColumns_H_121126_1506
 
-#include <casa/aips.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/ScalarColumn.h>
+#include <casacore/casa/aips.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
 
 
 namespace casa {

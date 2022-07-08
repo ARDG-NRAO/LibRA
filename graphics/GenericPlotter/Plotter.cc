@@ -26,7 +26,7 @@
 //# $Id: $
 #include <graphics/GenericPlotter/Plotter.h>
 
-#include <casa/OS/Time.h>
+#include <casacore/casa/OS/Time.h>
 
 #include <ctype.h>
 #include <iomanip>

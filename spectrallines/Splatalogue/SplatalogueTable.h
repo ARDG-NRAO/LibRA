@@ -28,11 +28,11 @@
 #ifndef SPLAT_SPLATALOGUETABLE_H
 #define SPLAT_SPLATALOGUETABLE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Record.h>
-#include <tables/Tables/Table.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/tables/Tables/Table.h>
 
 namespace casa {
 

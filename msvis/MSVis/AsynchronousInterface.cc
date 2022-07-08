@@ -3,7 +3,7 @@
 #include "VLAT.h"
 #include "UtilJ.h"
 
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/System/AipsrcValue.h>
 #include <msvis/MSVis/VisBufferAsync.h>
 #include <msvis/MSVis/VisibilityIteratorImplAsync.h>
 

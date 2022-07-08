@@ -28,11 +28,11 @@
 #ifndef VISBUFFER_ASYNC_WRAPPER_H
 #define VISBUFFER_ASYNC_WRAPPER_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <msvis/MSVis/VisBuffer2.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

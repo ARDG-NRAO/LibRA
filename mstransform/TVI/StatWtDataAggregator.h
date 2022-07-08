@@ -21,7 +21,7 @@
 #define STATWTDATAAGGREGATOR_H_
 
 #include <msvis/MSVis/VisBuffer2.h>
-#include <scimath/StatsFramework/ClassicalStatistics.h>
+#include <casacore/scimath/StatsFramework/ClassicalStatistics.h>
 
 #include <mstransform/TVI/StatWtTypes.h>
 #include <mstransform/TVI/StatWtVarianceAndWeightCalculator.h>

@@ -35,14 +35,14 @@
 
 #include <libsakura/sakura.h>
 
-#include <casa/aipstype.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Containers/Record.h>
 #include <casa_sakura/SakuraAlignedArray.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <mstransform/MSTransform/MSTransformManager.h>
-#include <scimath/Mathematics/Convolver.h>
-#include <scimath/Mathematics/VectorKernel.h>
+#include <casacore/scimath/Mathematics/Convolver.h>
+#include <casacore/scimath/Mathematics/VectorKernel.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
