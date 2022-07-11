@@ -696,7 +696,7 @@ String TwoSidedShape::sizeToString(
 	uInt precision2 = precisionForValueErrorPairs(paVec, Vector<Double>(0));
 
 	ostringstream summary;
-	summary << std::fixed << setprecision(precision1);
+	summary << std::fixed << std::setprecision(precision1);
 	summary << "       --- major axis FWHM:     " << major.getValue();
 	if (includeUncertainties) {
 		if (majorErr.getValue() == 0) {
@@ -723,7 +723,7 @@ String TwoSidedShape::sizeToString(
 	else {
 		summary << " " << prefUnits << endl;
 	}
-	summary << setprecision(precision2);
+	summary << std::setprecision(precision2);
 	summary << "       --- position angle: " << pa;
 	if (includeUncertainties) {
 		if (dpa == 0) {

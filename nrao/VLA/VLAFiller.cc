@@ -2126,7 +2126,7 @@ uInt VLAFiller::addSpectralWindow(const VLAEnum::CDA cda,
     }
     ostringstream str;
     str << nChan
-	<< "*" << setprecision(3) << qChanWidth
+	<< "*" << std::setprecision(3) << qChanWidth
 	<< " channels @ " << qRefFreq 
 	<< " (" << refFreq.getRefString() << ")";
     spw.name().put(newRow, String(str));
