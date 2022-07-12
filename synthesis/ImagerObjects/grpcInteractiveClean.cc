@@ -151,9 +151,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
 
 	void grpcInteractiveCleanManager::pushDetails() {
-#ifdef INTERACTIVE_ITERATION
-        /*FIXME    detailUpdate(fromRecord(getDetailsRecord())); */
-#endif
 	}
 
     grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2, 
