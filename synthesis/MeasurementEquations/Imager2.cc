@@ -4655,7 +4655,7 @@ Bool Imager::calcImFreqs(Vector<Double>& imgridfreqs,
       std::vector<double>  stlimgridfreqs;
       imgridfreqs.tovector(stlimgridfreqs);
       std::reverse(stlimgridfreqs.begin(),stlimgridfreqs.end());  
-      imgridfreqs=stlimgridfreqs;
+      imgridfreqs=Vector<Double>(stlimgridfreqs);
     }
     //cerr<<"Final imgridfreqs(0)="<<imgridfreqs(0)<<endl;
     

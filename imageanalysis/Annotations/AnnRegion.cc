@@ -277,7 +277,8 @@ void AnnRegion::_extend() {
 			n++;
 		}
 		if (nBoxes == 1) {
-			WCBox wbox = _makeExtensionBox(freqRange, stokesRanges, pixelAxes);
+            Vector<Stokes::StokesTypes> const stokesRangesV(stokesRanges);
+			WCBox wbox = _makeExtensionBox(freqRange, stokesRangesV, pixelAxes);
 			_imageRegion = ImageRegion(WCExtension(_directionRegion, wbox));
 		}
 		else {

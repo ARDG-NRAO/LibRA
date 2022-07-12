@@ -204,7 +204,11 @@ namespace casa{
 	  if(baselineType_p->getCachedGroups())
 	    {
 	      Vector < Vector <Double> > cachedAntPO_l = baselineType_p->getCachedAntennaPO();
-	      Vector < Vector <Double> > po_l =  pointingOffsets_p->fetchAntOffsetToPix(vb, doPointing_p) ; 
+	      auto const po_l_v =  pointingOffsets_p->fetchAntOffsetToPix(vb, doPointing_p) ;
+	      Vector < Vector <Double> > po_l(po_l_v.size());
+          for (size_t i = 0; i < po_l_v.size(); ++i) {
+              po_l[i] = Vector<Double>(po_l_v[i]);
+          }
 
 	      unsigned int poShape_X = po_l.shape()[0];
 	      unsigned int poShape_Y = po_l(0).shape()[0];
