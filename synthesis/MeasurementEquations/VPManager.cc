@@ -1609,10 +1609,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     } // end for k
 
     if(rval){
-      unique_out_rec_list=recList;
+      unique_out_rec_list=Vector<Record>(recList);
       beam_index.resize(beamIndex.size());
       for(uInt i=0; i<beamIndex.size(); i++){
-	beam_index[i] = beamIndex[i];
+        beam_index[i] = Vector<uInt>(beamIndex[i]);
       }
     }
 

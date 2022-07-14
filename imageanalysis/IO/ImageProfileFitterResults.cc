@@ -319,7 +319,7 @@ void ImageProfileFitterResults::_processSolutions(
             const GaussianMultipletSpectralElement *gm = dynamic_cast<
                 const GaussianMultipletSpectralElement*
             >(solutions[i]);
-            const Vector<GaussianSpectralElement> g = gm->getGaussians();
+            const Vector<GaussianSpectralElement> g(gm->getGaussians());
             for (uInt k=0; k<g.size(); k++) {
                 _insertPCF(
                     *pcfArrays, pixel, g[k], gmCount+2,
@@ -1157,7 +1157,7 @@ String ImageProfileFitterResults::_gaussianMultipletToString(
     const CoordinateSystem& csys,
     const Vector<Double>& world, const IPosition& imPos
 ) const {
-    Vector<GaussianSpectralElement> g = gm.getGaussians();
+    Vector<GaussianSpectralElement> g(gm.getGaussians());
     ostringstream summary;
     summary << "        Type     : GAUSSIAN MULTIPLET" << endl;
     for (uInt i=0; i<g.size(); i++) {
