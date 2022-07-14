@@ -174,13 +174,6 @@
 #include <components/ComponentModels/PointShape.h>
 #include <components/ComponentModels/DiskShape.h>
 
-#if ! defined(CASATOOLS)
-#include <casadbus/viewer/ViewerProxy.h>
-#include <casadbus/plotserver/PlotServerProxy.h>
-#include <casadbus/utilities/BusAccess.h>
-#include <casadbus/session/DBusSession.h>
-#endif
-
 #include <casacore/casa/OS/HostInfo.h>
 
 #include <components/ComponentModels/ComponentList.h>

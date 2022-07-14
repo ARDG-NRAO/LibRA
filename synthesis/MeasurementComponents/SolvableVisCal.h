@@ -51,11 +51,6 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/OS/Timer.h>
-#if ! defined(CASATOOLS)
-#include <casadbus/plotserver/PlotServerProxy.h>
-#include <casadbus/utilities/BusAccess.h>
-#include <casadbus/session/DBusSession.h>
-#endif
 
 #include <iostream>
 #include <fstream>
@@ -1076,11 +1071,6 @@ private:
        wPhase_p, wFlag_p,  wPol_p,  wAntCol_p, 
        wTotal_p, wPreAnt_p;
 
-  //for plotting
-#if ! defined(CASATOOLS)
-  PlotServerProxy* plotter_;
-  casacore::Vector<dbus::variant> panels_id_;
-#endif
 
 };
 

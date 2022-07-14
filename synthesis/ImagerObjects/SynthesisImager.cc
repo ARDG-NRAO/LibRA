@@ -57,9 +57,6 @@
 
 #include <casacore/tables/Tables/TableUtil.h>
 
-#if ! defined(CASATOOLS)
-#include <synthesis/ImagerObjects/SIIterBot.h>
-#endif
 #include <synthesis/ImagerObjects/SynthesisImager.h>
 
 #include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
@@ -85,10 +82,6 @@
 #include <synthesis/TransformMachines/AWConvFuncEPJones.h>
 #include <synthesis/TransformMachines/NoOpATerm.h>
 
-#if ! defined(CASATOOLS)
-#include <casadbus/viewer/ViewerProxy.h>
-#include <casadbus/plotserver/PlotServerProxy.h>
-#endif
 #include <casacore/casa/Utilities/Regex.h>
 #include <casacore/casa/OS/Directory.h>
 

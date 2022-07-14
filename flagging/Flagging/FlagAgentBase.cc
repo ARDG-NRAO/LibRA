@@ -35,12 +35,10 @@
 #include <flagging/Flagging/FlagAgentShadow.h>
 #include <flagging/Flagging/FlagAgentExtension.h>
 #include <flagging/Flagging/FlagAgentRFlag.h>
-#if defined(CASATOOLS)
-#include <flagging/Flagging/grpcFlagAgentDisplay.h>
-#else
-#include <flagging/Flagging/FlagAgentDisplay.h>
-#endif
 #include <flagging/Flagging/FlagAgentAntennaIntegrations.h>
+#ifdef USE_GRPC
+#include <flagging/Flagging/grpcFlagAgentDisplay.h>
+#endif
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
