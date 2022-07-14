@@ -12,7 +12,7 @@
 #include <casacore/casa/aipstype.h>
 #include <casacore/casa/BasicSL/String.h>
 #include <mutex>
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 #include <map>
 #include <queue>

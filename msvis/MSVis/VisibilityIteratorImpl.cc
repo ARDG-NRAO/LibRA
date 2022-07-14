@@ -25,10 +25,10 @@
 //#
 //# $Id: VisibilityIterator.cc,v 19.15 2006/02/01 01:25:14 kgolap Exp $
 
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisibilityIteratorImpl.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/MSUtil.h>
 ////#include <synthesis/TransformMachines/VisModelData.h>
 #include <casacore/scimath/Mathematics/InterpolateArray1D.h>

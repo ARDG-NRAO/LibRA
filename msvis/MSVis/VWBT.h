@@ -24,7 +24,7 @@
 #define VWBT_H_
 
 #include <msvis/MSVis/VisibilityIterator.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 using namespace casa::async;
 
 namespace casa { //# NAMESPACE CASA - BEGIN

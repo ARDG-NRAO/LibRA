@@ -30,7 +30,7 @@
 #include <synthesis/TransformMachines/PolOuterProduct.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines/Utils.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <casacore/casa/Quanta/MVTime.h>
 #include <fstream>
 

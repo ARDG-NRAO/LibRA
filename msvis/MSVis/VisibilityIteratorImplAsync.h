@@ -13,7 +13,7 @@
 
 #include <msvis/MSVis/VisibilityIteratorImpl.h>
 #include <msvis/MSVis/AsynchronousInterface.h>
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 #define NotImplementedROVIA throw utilj::AipsErrorTrace (casacore::String ("Method not legal in ROVIA: ") + __PRETTY_FUNCTION__, __FILE__, __LINE__)
 #define NotPrefetched throw utilj::AipsErrorTrace (casacore::String ("Column not prefetched for async I/O: ") + __PRETTY_FUNCTION__, __FILE__, __LINE__)

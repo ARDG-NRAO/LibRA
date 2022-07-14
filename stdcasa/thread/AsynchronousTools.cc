@@ -32,7 +32,7 @@
 #include <thread>
 
 #include "AsynchronousTools.h"
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 using namespace std;
 using namespace casacore;

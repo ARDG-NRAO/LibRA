@@ -11,7 +11,7 @@
 #include <msvis/MSVis/VisBufferAsyncWrapper.h>
 #include <msvis/MSVis/VLAT.h>
 #include <msvis/MSVis/AsynchronousInterface.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <casacore/casa/Utilities/GenSort.h>
 
 #include <casacore/ms/MeasurementSets/MSColumns.h>
@@ -23,7 +23,6 @@
 
 using namespace std;
 
-#include "UtilJ.h"
 using namespace casacore;
 using namespace casa::utilj;
 
