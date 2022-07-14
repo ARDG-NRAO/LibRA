@@ -1713,8 +1713,6 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     rowPixel.isValid = false;
 
     // Check POINTING table.
-    // If the calling code is iterating over millions of rows,
-    // we'll do that check millions of times ...
     const MSPointingColumns& act_mspc = vb.msColumns().pointing();
     const auto nPointings = act_mspc.nrow();
     const auto havePointings = (nPointings >= 1);
@@ -1812,20 +1810,18 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     }
 
     // 4. If it does not already exist, create the machine to convert pointings directions
-    //    and update the frame holding the measurements for this row
-    const MEpoch rowEpoch(Quantity(rowTime, "s"));
     if (not pointingToImage) {
         // Set the frame
         const auto & rowAntenna1Position = 
                 vb.msColumns().antenna().positionMeas()(rowAntenna1);
-
-        mFrame_p = MeasFrame(rowEpoch, rowAntenna1Position);
+        const MEpoch dummyEpoch(Quantity(0, "s"));
+        mFrame_p = MeasFrame(dummyEpoch, rowAntenna1Position);
 
         // Remember antenna id for next call,
         // which may be done using a different VisBuffer ...
         lastAntID_p = rowAntenna1;
 
-        // Not clear why we compute directions at this stage
+        // Compute the "model" required to setup the conversion machine
         if (havePointings) {
             worldPosMeas = dointerp ? directionMeas(act_mspc, pointingIndex, rowTime)
                                     : directionMeas(act_mspc, pointingIndex);
@@ -1841,40 +1837,48 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
         if (not pointingToImage) {
             logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
         }
-    } else {
+        // Perform 1 dummy direction conversion to clear values
+        // cached in static variables of casacore functions like MeasTable::dUT1
+        MDirection _dir_tmp = (*pointingToImage)();
+    } 
+
+    // 5. Update the frame holding the measurements for this row
+    const MEpoch rowEpoch(Quantity(rowTime, "s"));
+    // ---- Always reset the epoch
+    {
         #if defined(SDGRID_PERFS)
         StartStop trigger(cResetFrame);
         #endif
-        // Reset the frame
-        // Always reset epoch
         mFrame_p.resetEpoch(rowEpoch);
-
-        // Reset antenna position only if antenna changed since we were last called
-        if (lastAntID_p != rowAntenna1) {
-            // Debug messages
-            if (lastAntID_p == -1) {
-                // antenna ID is unset
-                logIO_p << LogIO::DEBUGGING
-                    << "updating antenna position for conversion: new MS ID " << msId_p
-                    << ", antenna ID " << rowAntenna1 << LogIO::POST;
-            } else {
-                logIO_p << LogIO::DEBUGGING
-                    << "updating antenna position for conversion: MS ID " << msId_p
-                    << ", last antenna ID " << lastAntID_p
-                    << ", new antenna ID " << rowAntenna1 << LogIO::POST;
-            }
-            const auto & rowAntenna1Position =
-                      vb.msColumns().antenna().positionMeas()(rowAntenna1);
-
-            mFrame_p.resetPosition(rowAntenna1Position);
-
-            // Remember antenna id for next call,
-            // which may be done using a different VisBuffer ...
-            lastAntID_p = rowAntenna1;
+    }
+    // ---- Reset antenna position only if antenna changed since we were last called
+    if (lastAntID_p != rowAntenna1) {
+        // Debug messages
+        if (lastAntID_p == -1) {
+            // antenna ID is unset
+            logIO_p << LogIO::DEBUGGING
+                << "updating antenna position for conversion: new MS ID " << msId_p
+                << ", antenna ID " << rowAntenna1 << LogIO::POST;
+        } else {
+            logIO_p << LogIO::DEBUGGING
+                << "updating antenna position for conversion: MS ID " << msId_p
+                << ", last antenna ID " << lastAntID_p
+                << ", new antenna ID " << rowAntenna1 << LogIO::POST;
         }
+        const auto & rowAntenna1Position =
+                  vb.msColumns().antenna().positionMeas()(rowAntenna1);
+        {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cResetFrame);
+            #endif
+            mFrame_p.resetPosition(rowAntenna1Position);
+        }
+        // Remember antenna id for next call,
+        // which may be done using a different VisBuffer ...
+        lastAntID_p = rowAntenna1;
     }
 
-    // 5. First: interpolate pointing direction if needed,
+    // 6. First: interpolate pointing direction if needed,
     //    Then: convert the result to image's reference frame
     if (havePointings) {
         if (dointerp) {
@@ -1901,30 +1905,28 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
             worldPosMeas = (*pointingToImage)(directionMeas(act_mspc, pointingIndex));
         }
     } else {
-            // Without pointings, this converts the direction of the phase center
-            worldPosMeas = (*pointingToImage)(vb.direction1()(row));
+        // Without pointings, this converts the direction of the phase center
+        worldPosMeas = (*pointingToImage)(vb.direction1()(row));
     }
 
-    // 6. Convert world position coordinates to image pixel coordinates
-    #if defined(SDGRID_PERFS)
-    cComputeDirectionPixel.start();
-    #endif
+    // 7. Convert world position coordinates to image pixel coordinates
+    {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cComputeDirectionPixel);
+        #endif
 
-    rowPixel.isValid = directionCoord.toPixel(xyPos, worldPosMeas);
-
-    #if defined(SDGRID_PERFS)
-    cComputeDirectionPixel.stop();
-    #endif
+        rowPixel.isValid = directionCoord.toPixel(xyPos, worldPosMeas);
+    }
 
     if (not rowPixel.isValid) {
         logIO_p << "Failed to find a pixel for pointing direction of "
-            << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME) 
-            << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE) 
+            << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME)
+            << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE)
             << LogIO::WARN << LogIO::POST;
         return rowPixel.isValid;
     }
 
-    // 7. Handle moving sources
+    // 8. Handle moving sources
     if ((pointingDirCol_p == "SOURCE_OFFSET") || (pointingDirCol_p == "POINTING_OFFSET")) {
         // It makes no sense to track in offset coordinates...
         // hopefully the user sets the image coords right
