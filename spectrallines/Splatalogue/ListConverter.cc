@@ -28,16 +28,16 @@
 
 #include <spectrallines/Splatalogue/ListConverter.h>
 
-#include <casa/Quanta/Quantum.h>
-#include <casa/Quanta/Unit.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/IO/RegularFileIO.h>
-#include <casa/Utilities/Regex.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/SetupNewTab.h>
-#include <tables/DataMan/StandardStMan.h>
-#include <tables/Tables/TableDesc.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/Unit.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/IO/RegularFileIO.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/DataMan/StandardStMan.h>
+#include <casacore/tables/Tables/TableDesc.h>
 
 using namespace casacore;
 namespace casa {

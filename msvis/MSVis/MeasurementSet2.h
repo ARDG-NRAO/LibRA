@@ -1,7 +1,7 @@
 #if ! defined (MeasurementSet2_H_121204_1015)
 #define MeasurementSet2_H_121204_1015
 
-#include <ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets.h>
 
 namespace casacore{
 

@@ -28,7 +28,7 @@
 
 #include <synthesis/CalTables/SolvableVJDesc.h>
 #include <msvis/MSVis/MSCalEnums.h>
-#include <tables/Tables/ArrColDesc.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

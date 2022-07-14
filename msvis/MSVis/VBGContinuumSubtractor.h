@@ -28,8 +28,8 @@
 #ifndef MSVIS_VBGCONTINUUMSUBTRACTOR_H
 #define MSVIS_VBGCONTINUUMSUBTRACTOR_H
 
-#include <casa/aips.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/GroupWorker.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBufferComponents.h>

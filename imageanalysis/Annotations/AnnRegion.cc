@@ -1,14 +1,14 @@
 #include <imageanalysis/Annotations/AnnRegion.h>
 
-#include <casa/Exceptions/Error.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
 //#include <imageanalysis/Regions/CasacRegionManager.h>
 #include <imageanalysis/IO/ParameterParser.h>
-#include <images/Regions/WCExtension.h>
-#include <images/Regions/WCUnion.h>
-#include <tables/Tables/TableRecord.h>
+#include <casacore/images/Regions/WCExtension.h>
+#include <casacore/images/Regions/WCUnion.h>
+#include <casacore/tables/Tables/TableRecord.h>
 
 #include <iomanip>
 

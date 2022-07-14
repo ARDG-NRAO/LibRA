@@ -29,23 +29,23 @@
 #include <synthesis/CalTables/CTInterface.h>
 #include <synthesis/CalTables/CTIter.h>
 
-#include <scimath/Mathematics/InterpolateArray1D.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/OS/Path.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/OS/Path.h>
 
-#include <ms/MSSel/MSSelectableTable.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MSSel/MSSelectableTable.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 #define CTPATCHPANELVERB false
 
 //#include <casa/BasicSL/Constants.h>
 //#include <casa/OS/File.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

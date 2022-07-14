@@ -29,11 +29,11 @@
 #ifndef NRAO_VLATIMEFILTER_H
 #define NRAO_VLATIMEFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
-#include <casa/Quanta/MVEpoch.h>
+#include <casacore/casa/Quanta/MVEpoch.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 
 // <summary>

@@ -29,10 +29,10 @@
 #ifndef SYNTHESIS_PBMATH2DIMAGE_H
 #define SYNTHESIS_PBMATH2DIMAGE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/TransformMachines/PBMath2D.h>
-#include <images/Images/ImageInterface.h>
-#include <measures/Measures.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/measures/Measures.h>
 
 namespace casacore{
 

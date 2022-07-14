@@ -27,10 +27,10 @@
 
 #include <synthesis/CalTables/CTPatchedInterp.h>
 #include <synthesis/CalTables/CTIter.h>
-#include <scimath/Mathematics/InterpolateArray1D.h>
-#include <casa/OS/Path.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/aips.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/aips.h>
 
 #define CTPATCHEDINTERPVERB false
 
@@ -39,10 +39,10 @@
 #define CUBIC InterpolateArray1D<Double,Float>::cubic
 #define SPLINE InterpolateArray1D<Double,Float>::spline
 
-#include <ms/MSOper/MSMetaData.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
 #include <synthesis/MeasurementComponents/MSMetaInfoForCal.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

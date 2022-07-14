@@ -27,7 +27,7 @@
 #include <casacore/lattices/Lattices/LatticeLocker.h>
 #include <synthesis/ImagerObjects/CubeMinorCycleAlgorithm.h>
 #include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 

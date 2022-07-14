@@ -27,7 +27,7 @@
 #ifndef PARALLEL_IMAGER_H_
 #define PARALLEL_IMAGER_H_
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa {
 

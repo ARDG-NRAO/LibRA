@@ -26,7 +26,7 @@
 
 #include <synthesis/CalLibrary/CalLibraryParse.h>
 #include <casacore/casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 using namespace casacore;
 namespace casa {

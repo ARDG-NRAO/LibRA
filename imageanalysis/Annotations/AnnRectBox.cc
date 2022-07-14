@@ -17,7 +17,7 @@
 
 #include <imageanalysis/Annotations/AnnRectBox.h>
 
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 using namespace casacore;
 namespace casa {

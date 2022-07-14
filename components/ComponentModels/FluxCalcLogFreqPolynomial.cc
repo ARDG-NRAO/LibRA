@@ -24,15 +24,15 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 #include <components/ComponentModels/FluxCalcLogFreqPolynomial.h>
-#include <casa/BasicSL/String.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
 // Handy for passing anonymous arrays to functions.
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 
 #include <map>
 
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

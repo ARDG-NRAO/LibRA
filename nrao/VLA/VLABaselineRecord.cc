@@ -26,11 +26,11 @@
 //# $Id$
 
 #include <nrao/VLA/VLABaselineRecord.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
-#include <casa/iomanip.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <iomanip>
 
 VLABaselineRecord::VLABaselineRecord()
   :itsRecord(),

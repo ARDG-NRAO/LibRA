@@ -27,7 +27,7 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/TransformMachines2/SkyJones.h>
 
 using namespace casacore;

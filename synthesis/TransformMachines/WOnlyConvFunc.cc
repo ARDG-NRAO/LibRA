@@ -30,15 +30,15 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines/WTerm.h>
 #include <synthesis/TransformMachines/PSTerm.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <synthesis/TransformMachines/Utils.h>
 #include <synthesis/TransformMachines/CFStore.h>
 #include <synthesis/TransformMachines/ConvolutionFunction.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
-#include <casa/ostream.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/casa/ostream.h>
 using namespace casacore;
 namespace casa{
   void WOnlyConvFunc::makeConvFunction(const ImageInterface<Complex>& image,

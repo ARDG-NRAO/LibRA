@@ -26,18 +26,18 @@
 //# $Id: VisibilityIterator2.cc,v 19.15 2006/02/01 01:25:14 kgolap Exp $
 
 #include <tuple>
-#include <casa/Arrays.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Containers/Record.h>
-#include <casa/Exceptions.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/System/AipsrcValue.h>
-#include <casa/Utilities.h>
-#include <ms/MeasurementSets.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSpwIndex.h>
-#include <scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Exceptions.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/System/AipsrcValue.h>
+#include <casacore/casa/Utilities.h>
+#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSpwIndex.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 //#include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/MeasurementSet2.h>
 #include <msvis/MSVis/MSUtil.h>
@@ -51,13 +51,13 @@
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/PointingDirectionCache.h>
 #include <msvis/MSVis/VisModelDataI.h>
-#include <tables/Tables/ColDescSet.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/DataMan/IncrStManAccessor.h>
-#include <tables/DataMan/StandardStManAccessor.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/DataMan/TiledStManAccessor.h>
+#include <casacore/tables/Tables/ColDescSet.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/DataMan/IncrStManAccessor.h>
+#include <casacore/tables/DataMan/StandardStManAccessor.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/DataMan/TiledStManAccessor.h>
 
 #include <cassert>
 #include <algorithm>

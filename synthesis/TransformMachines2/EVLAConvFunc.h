@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_TRANSFORM2_EVLACONVFUNC_H
 #define SYNTHESIS_TRANSFORM2_EVLACONVFUNC_H
 
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines/BeamCalc.h>
 #include <synthesis/TransformMachines2/CFStore.h>
@@ -37,10 +37,10 @@
 //#include <synthesis/MeasurementComponents/IlluminationConvFunc.h>
 //#include <synthesis/MeasurementComponents/PixelatedConvFunc.h>
 #include <synthesis/TransformMachines2/ConvolutionFunction.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Logging/LogOrigin.h>

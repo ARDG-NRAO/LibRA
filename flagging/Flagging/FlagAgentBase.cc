@@ -23,7 +23,7 @@
 #include <flagging/Flagging/FlagAgentBase.h>
 
 #include <stdcasa/StdCasa/CasacSupport.h>
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 
 // Headers of every concrete agent, needed for the factory method (create)
 #include <flagging/Flagging/FlagAgentTimeFreqCrop.h>

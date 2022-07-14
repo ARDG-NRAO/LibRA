@@ -1,6 +1,6 @@
 
 #include <casacore/casa/Arrays/ArrayFwd.h>
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <vector>
 #if ! defined (MSVIS_VisModelDataI_H)
 #define MSVIS_VisModelDataI_H

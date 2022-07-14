@@ -28,11 +28,11 @@
 
 #include <synthesis/MeasurementComponents/SimACohCalc.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSAntennaColumns.h>
-#include <casa/Logging/LogIO.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <measures/Measures.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/measures/Measures.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

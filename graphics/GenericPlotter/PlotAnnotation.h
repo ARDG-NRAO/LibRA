@@ -29,7 +29,7 @@
 
 #include <graphics/GenericPlotter/PlotItem.h>
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 namespace casa {
 

@@ -28,11 +28,11 @@
 #ifndef SYNTHESIS_VISVECTOR_H
 #define SYNTHESIS_VISVECTOR_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/iostream.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <iostream>
+#include <casacore/casa/Exceptions/Error.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

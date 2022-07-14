@@ -27,7 +27,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 #include <singledish/SingleDish/BLParameterParser.h>
 
 using namespace std;

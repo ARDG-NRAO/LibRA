@@ -26,20 +26,20 @@
 //# $Id: MomentCalculator.tcc 19940 2007-02-27 05:35:22Z Malte.Marquarding $
 //
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <scimath/Fitting/NonLinearFitLM.h>
-#include <scimath/Functionals/Polynomial.h>
-#include <scimath/Functionals/CompoundFunction.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/scimath/Fitting/NonLinearFitLM.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Functionals/CompoundFunction.h>
 #include <imageanalysis/ImageAnalysis/MomentsBase.h>
-#include <lattices/LatticeMath/LatticeStatsBase.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/Logging/LogIO.h> 
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/lattices/LatticeMath/LatticeStatsBase.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/Logging/LogIO.h> 
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 namespace casa {
 

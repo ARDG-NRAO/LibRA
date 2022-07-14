@@ -23,13 +23,13 @@
 #include <flagging/Flagging/FlagMSHandler.h>
 
 // Measurement Set selection
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MeasurementSets/MSAntennaColumns.h>
-#include <ms/MeasurementSets/MSFieldColumns.h>
-#include <ms/MeasurementSets/MSPolColumns.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <ms/MeasurementSets/MSProcessorColumns.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
+#include <casacore/ms/MeasurementSets/MSFieldColumns.h>
+#include <casacore/ms/MeasurementSets/MSPolColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/ms/MeasurementSets/MSProcessorColumns.h>
 
 #include <msvis/MSVis/ViFrequencySelection.h>
 

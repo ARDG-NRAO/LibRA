@@ -27,8 +27,8 @@
 //----------------------------------------------------------------------------
 
 #include <synthesis/CalTables/BJonesDesc.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/ArrColDesc.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
 #include <msvis/MSVis/MSCalEnums.h>
 
 using namespace casacore;

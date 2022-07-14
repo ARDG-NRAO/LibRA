@@ -24,17 +24,17 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Utilities/Regex.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <flagging/Flagging/AgentFlagger.h>
 #include <flagging/Flagging/FlagVersion.h>
-#include <casa/stdio.h>
-#include <casa/math.h>
+#include <stdio.h>
+#include <cmath>
 #include <stdarg.h>
 #include <sstream>
 #include <iostream>

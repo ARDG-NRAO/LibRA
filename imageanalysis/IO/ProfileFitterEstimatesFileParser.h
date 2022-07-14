@@ -28,10 +28,10 @@
 #define IMAGEANALYSIS_PROFILEFITTERESTIMATESFILEPARSER_H
 
 //# Includes
-#include <casa/aips.h>
-#include <casa/OS/RegularFile.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/OS/RegularFile.h>
 #include <components/SpectralComponents/SpectralList.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <memory>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -35,14 +35,14 @@
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines2/VBStore.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/AsynchronousTools.h>
 
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/OS/Timer.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   using namespace vi;

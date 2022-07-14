@@ -17,12 +17,12 @@
 #ifndef REGIONS_ANNREGION_H
 #define REGIONS_ANNREGION_H
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <imageanalysis/Annotations/AnnotationBase.h>
-#include <images/Regions/WCBox.h>
-#include <images/Regions/ImageRegion.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/images/Regions/WCBox.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
 namespace casa {
 

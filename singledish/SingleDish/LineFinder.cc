@@ -33,7 +33,7 @@
 
 #include <libsakura/sakura.h>
 
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <singledish/SingleDish/LineFinder.h>
 #include <singledish/SingleDish/LineFindingUtils.h>
 #include <casacore/casa/Utilities/Assert.h>

@@ -28,21 +28,21 @@
 #ifndef SYNTHESIS_TRANSFORM2_VB2CFBMAP_H
 #define SYNTHESIS_TRANSFORM2_VB2CFBMAP_H
 
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/BaselineType.h>
-#include <casa/Utilities/CountedPtr.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/TempImage.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/TempImage.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
  namespace refim{

@@ -3,7 +3,7 @@
 
 #include <imageanalysis/ImageTypedefs.h>
 
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/Quantum.h>
 
 namespace casa {
 
