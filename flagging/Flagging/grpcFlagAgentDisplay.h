@@ -28,7 +28,7 @@
 #include <future>
 #include <flagging/Flagging/FlagAgentBase.h>
 #ifdef USE_GRPC
-#include <grpcpp/server.h>
+#include <grpc++/server.h>
 #include "plotserver.grpc.pb.h"
 #include "plotserver_events.grpc.pb.h"
 
