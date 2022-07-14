@@ -27,18 +27,18 @@
 
 #include <imageanalysis/ImageAnalysis/ImagePrimaryBeamCorrector.h>
 
-#include <casa/OS/Directory.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/OS/SymLink.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/ExtendImage.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/OS/SymLink.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/ExtendImage.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
-#include <images/Images/TempImage.h>
-#include <images/Regions/WCBox.h>
-#include <lattices/LatticeMath/LatticeStatistics.h>
-#include <lattices/LRegions/LCLELMask.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Regions/WCBox.h>
+#include <casacore/lattices/LatticeMath/LatticeStatistics.h>
+#include <casacore/lattices/LRegions/LCLELMask.h>
 
 #include <imageanalysis/ImageAnalysis/ImageInputProcessor.h>
 

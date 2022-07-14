@@ -28,8 +28,8 @@
 #ifndef IMAGEANALYSIS_LOGFILE_H
 #define IMAGEANALYSIS_LOGFILE_H
 
-#include <casa/IO/FiledesIO.h>
-#include <casa/namespace.h>
+#include <casacore/casa/IO/FiledesIO.h>
+#include <casacore/casa/namespace.h>
 #include <memory>
 
 namespace casa {

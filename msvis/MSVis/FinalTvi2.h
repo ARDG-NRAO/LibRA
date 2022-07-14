@@ -28,8 +28,8 @@
 #if ! defined (MSVIS_WritingVi2_H_121115_0950)
 #define MSVIS_WritingVi2_H_121115_0950
 
-#include <casa/aips.h>
-#include <ms/MeasurementSets.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MeasurementSets.h>
 #include <msvis/MSVis/TransformingVi2.h>
 #include <msvis/MSVis/ViColumns2.h>
 

@@ -27,12 +27,12 @@
 
 #include <synthesis/MeasurementComponents/VisVector.h>
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/iostream.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/namespace.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <iostream>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/namespace.h>
 
 
 using namespace casacore;

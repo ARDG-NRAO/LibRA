@@ -5,7 +5,7 @@
 
 #include <imageanalysis/ImageAnalysis/ImageCollapserData.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casacore{
 

@@ -25,11 +25,11 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementEquations/StokesUtil.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

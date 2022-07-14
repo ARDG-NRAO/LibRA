@@ -30,9 +30,9 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines/SynthesisMath.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/OS/Timer.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/OS/Timer.h>
 #include <fstream>
 #include <iostream>
 #include <typeinfo>

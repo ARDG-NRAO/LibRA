@@ -25,32 +25,32 @@
 //#
 //# $Id$
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <synthesis/MeasurementComponents/CSCleanImageSkyModel.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/PagedImage.h>
-#include <casa/OS/File.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LEL/LatticeExprNode.h>
-#include <lattices/Lattices/LatticeStepper.h>
-#include <lattices/Lattices/LatticeIterator.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LEL/LatticeExprNode.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 #include <msvis/MSVis/StokesVector.h>
 #include <synthesis/MeasurementEquations/LatConvEquation.h>
 #include <synthesis/MeasurementEquations/ClarkCleanLatModel.h>
-#include <lattices/Lattices/SubLattice.h>
-#include <lattices/LRegions/LCBox.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/lattices/LRegions/LCBox.h>
 
 using namespace casacore;
 namespace casa {

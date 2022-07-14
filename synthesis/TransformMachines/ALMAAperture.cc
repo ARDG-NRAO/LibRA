@@ -32,9 +32,9 @@
 #include <synthesis/TransformMachines/BeamCalc.h>
 #include <synthesis/TransformMachines/WTerm.h>
 #include <synthesis/TransformMachines/ALMACalcIlluminationConvFunc.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
 
 using namespace casacore;
 namespace casa{

@@ -29,23 +29,23 @@
 
 #define USETABLES 1
 #include <synthesis/TransformMachines/VLACalcIlluminationConvFunc.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/LinearCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/LinearCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
 #include <synthesis/TransformMachines/Utils.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
-#include <images/Images/ImageRegrid.h>
-#include <images/Images/PagedImage.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/OS/File.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/OS/File.h>
 #include <fstream>
-#include <casa/sstream.h>
-#include <casa/OS/Timer.h>
+#include <sstream>
+#include <casacore/casa/OS/Timer.h>
 using namespace casacore;
 namespace casa{
 

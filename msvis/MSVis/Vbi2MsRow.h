@@ -8,7 +8,7 @@
 #ifndef VBI2MSROW_H_
 #define VBI2MSROW_H_
 
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <msvis/MSVis/MsRows.h>
 
 // Forward Decls

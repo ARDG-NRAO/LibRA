@@ -25,8 +25,8 @@
 //#
 //# $Id$
 #include <flagging/Flagging/RFAFlagCubeBase.h>
-#include <casa/iostream.h>
-#include <casa/stdio.h>
+#include <iostream>
+#include <stdio.h>
    
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

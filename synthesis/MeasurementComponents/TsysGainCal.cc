@@ -29,23 +29,23 @@
 #include <synthesis/MeasurementComponents/MSMetaInfoForCal.h>
 // not yet: #include <synthesis/MeasurementComponents/CalCorruptor.h>
 
-#include <ms/MeasurementSets/MSColumns.h>
-#include <casa/BasicMath/Math.h>
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableIter.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableIter.h>
 #include <synthesis/CalTables/CTGlobals.h>
 
-#include <casa/Arrays/MaskArrMath.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/System/Aipsrc.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/System/Aipsrc.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 // math.h ?
 
 using namespace casacore;

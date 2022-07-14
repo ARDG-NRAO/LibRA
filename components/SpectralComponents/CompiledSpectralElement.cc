@@ -26,10 +26,10 @@
 
 #include <components/SpectralComponents/CompiledSpectralElement.h>
 
-#include <scimath/Functionals/CompiledFunction.h>
-#include <scimath/Mathematics/AutoDiffMath.h>
+#include <casacore/scimath/Functionals/CompiledFunction.h>
+#include <casacore/scimath/Mathematics/AutoDiffMath.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

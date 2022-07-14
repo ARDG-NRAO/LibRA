@@ -30,15 +30,15 @@
 #define SYNTHESIS_AWCONVFUNCEPJONES_H
 
 #include <synthesis/TransformMachines/AWConvFunc.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <synthesis/TransformMachines/PSTerm.h>
 #include <synthesis/TransformMachines/WTerm.h>
 #include <synthesis/TransformMachines/ATerm.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogOrigin.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogOrigin.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   //

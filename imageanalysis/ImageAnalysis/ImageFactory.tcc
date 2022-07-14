@@ -27,14 +27,14 @@
 
 #include <imageanalysis/ImageAnalysis/ImageFactory.h>
 
-#include <casa/OS/Directory.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/OS/SymLink.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <tables/LogTables/NewFile.h>
-#include <tables/Tables/TableUtil.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/OS/SymLink.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/tables/LogTables/NewFile.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <imageanalysis/ImageAnalysis/ImageHistory.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>

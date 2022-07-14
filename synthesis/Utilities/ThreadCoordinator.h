@@ -26,8 +26,8 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
-#include <casa/aipstype.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/aipstype.h>
 #include <cstddef>
 
 //<example>

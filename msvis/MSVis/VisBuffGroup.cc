@@ -26,8 +26,8 @@
 //----------------------------------------------------------------------------
 
 #include <msvis/MSVis/VisBuffGroup.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

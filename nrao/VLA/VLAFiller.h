@@ -52,7 +52,7 @@
 #include <unordered_map>
 #include <string>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 class Path;
 class MPosition;

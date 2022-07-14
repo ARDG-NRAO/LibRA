@@ -12,7 +12,7 @@
 
 #include <tuple>
 
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 #include <algorithm>
 #include <list>

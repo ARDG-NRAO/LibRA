@@ -30,11 +30,11 @@
 #define SYNTHESIS_POLOUTERPRODUCT_H
 
 
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <scimath/Mathematics/RigidVector.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <ms/MeasurementSets/MSIter.h> // Just to get MSIter::{Linear,Circular}!
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/ms/MeasurementSets/MSIter.h> // Just to get MSIter::{Linear,Circular}!
 #include <synthesis/TransformMachines/CFDefs.h>
 namespace casa{
   // <summary>  

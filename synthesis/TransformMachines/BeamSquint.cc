@@ -26,8 +26,8 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <synthesis/TransformMachines/BeamSquint.h>
 
 

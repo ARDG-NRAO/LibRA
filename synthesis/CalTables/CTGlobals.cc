@@ -29,18 +29,18 @@
 #include <synthesis/CalTables/CTIter.h>
 #include <synthesis/CalTables/RIorAParray.h>
 
-#include <casa/Arrays.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/Exceptions/Error.h>
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableIter.h>
-#include <tables/Tables/TableVector.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableIter.h>
+#include <casacore/tables/Tables/TableVector.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
