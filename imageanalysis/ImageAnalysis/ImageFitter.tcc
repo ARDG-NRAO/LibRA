@@ -948,13 +948,13 @@ template <class T> void ImageFitter<T>::_finishConstruction(const String& estima
 
     CasacRegionManager rm(this->_getImage()->coordinates());
     uInt nSelectedChannels;
-    _chanVec = this->_getChans().empty()
+    _chanVec = Vector<uInt>(this->_getChans().empty()
         ? rm.setSpectralRanges(
             nSelectedChannels, this->_getRegion(), this->_getImage()->shape()
         )
         : rm.setSpectralRanges(
             this->_getChans(), nSelectedChannels, this->_getImage()->shape()
-        );
+        ));
     if (_chanVec.size() == 0) {
         _chanVec.resize(2);
         _chanVec.set(0);
