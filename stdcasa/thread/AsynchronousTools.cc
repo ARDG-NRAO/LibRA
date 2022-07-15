@@ -15,6 +15,7 @@
 #include <fcntl.h>
 
 #include <time.h>
+#include <casacore/casa/aips.h>
 #if defined(AIPS_LINUX)
 #if ! defined(_GNU_SOURCE)
 #define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
