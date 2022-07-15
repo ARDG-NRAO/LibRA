@@ -35,7 +35,6 @@
 #include <casacore/casa/Arrays/MaskArrMath.h>
 #include <casacore/casa/Arrays/ArrayUtil.h>
 #include <casacore/casa/OS/Path.h>
-#include <components/ComponentModels/ComponentList.h>
 #include <casacore/casa/Utilities/Assert.h>
 #include <casacore/casa/Utilities/GenSort.h>
 #include <casacore/casa/OS/Timer.h>
