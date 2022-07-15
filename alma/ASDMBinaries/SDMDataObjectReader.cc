@@ -1,5 +1,6 @@
 #include <alma/ASDMBinaries/SDMDataObjectReader.h>
 
+#include <string.h>
 #include <iostream>
 #include <iomanip>
 #include <unistd.h>
