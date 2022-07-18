@@ -1079,7 +1079,7 @@ void ImageProfileFitter::_flagFitterIfNecessary(
                 const GaussianMultipletSpectralElement *gm = dynamic_cast<
                     const GaussianMultipletSpectralElement*
                 >(solutions[i]);
-                Vector<GaussianSpectralElement> gse = gm->getGaussians();
+                Vector<GaussianSpectralElement> gse(gm->getGaussians());
                 for (uInt j=0; j<gse.size(); j++) {
                     if (! _isPCFSolutionOK(&gse[i])) {
                         fitter.invalidate();

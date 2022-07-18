@@ -244,7 +244,7 @@ template <class T> Vector<Quantity> ImageMetaData<T>::_getRefValue() const {
             _refVal.push_back(Quantity(vals[i], units[i]));
         }
     }
-    return _refVal;
+    return Vector<Quantity>(_refVal);
 }
 
 template <class T> String ImageMetaData<T>::_getRefFreqType() const {
