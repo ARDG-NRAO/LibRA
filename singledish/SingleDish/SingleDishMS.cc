@@ -3242,16 +3242,18 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             Matrix<Int> fpar_mtx2 = fpar_mtx[0][ipol];
             Matrix<Float> rms_mtx2 = rms_mtx[0][ipol];
             string bltype_name;
+            string blparam_name = " order = ";
             if (bltype_mtx2(0, 0) == (uInt)0) {
               bltype_name = "poly";
             } else if (bltype_mtx2(0, 0) == (uInt)1) {
               bltype_name = "chebyshev";
             } else if (bltype_mtx2(0, 0) == (uInt)2) {
               bltype_name = "cspline";
+              blparam_name = " npiece = ";
             }
 
             ofs_txt << "Baseline parameters  Function = "
-                    << bltype_name.c_str() << ' ' << " npiece = "
+                    << bltype_name << " " << blparam_name
                     << fpar_mtx2(0, 0) << endl;
             ofs_txt << endl;
             ofs_txt << "Results of baseline fit" << endl;
