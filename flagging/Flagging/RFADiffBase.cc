@@ -32,8 +32,6 @@
 #include <casacore/casa/Arrays/ArrayLogical.h>
 #include <casacore/casa/Arrays/Slice.h>
 
-#include <stdio.h>
-
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
