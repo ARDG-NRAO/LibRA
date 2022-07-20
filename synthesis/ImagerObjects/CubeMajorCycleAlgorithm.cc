@@ -193,7 +193,8 @@ void CubeMajorCycleAlgorithm::task(){
           }
           subImgr.setCubeGridding(False);
           // TO DO get weight param and set weight
-          if(!weightParams_p.isDefined("type") || weightParams_p.asString("type")=="natural"){
+          // Modified to fix CAS-13660 bug for natural weight setting with uvtaper
+          if(!weightParams_p.isDefined("type") ){
             subImgr.weight("natural");
           }
           else{
