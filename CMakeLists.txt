@@ -98,6 +98,11 @@ macro(declare_casacpp_component name)
   # Set the shared object version property to the project's major version.
   set_target_properties(casacpp_${name} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 
+  # Set -Wall compiler option for supported compilers
+  target_compile_options(casacpp_${name} PRIVATE
+      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+          -Wall>)
+
   # Install the library
   install(TARGETS casacpp_${name}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
