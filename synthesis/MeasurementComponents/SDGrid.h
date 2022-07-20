@@ -537,6 +537,7 @@ private:
 
   void initPerfs();
   void collectPerfs();
+  void nextChunk(ROVisibilityIterator &vi);
 #if defined(SDGRID_PERFS)
   sdgrid_perfs::ChronoStat cNextChunk;
   sdgrid_perfs::ChronoStat cMatchAllSpwChans;

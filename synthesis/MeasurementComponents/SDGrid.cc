@@ -1461,6 +1461,13 @@ void abortOnPolFrameChange(const StokesImageUtil::PolRep refPolRep, const String
 
 } // SDGrid::makeImage helper functions namespace
 
+void SDGrid::nextChunk(ROVisibilityIterator &vi) {
+#if defined(SDGRID_PERFS)
+    StartStop trigger(cNextChunk);
+#endif 
+    vi.nextChunk();
+}
+
 // Make a plain straightforward honest-to-FSM image. This returns
 // a complex image, without conversion to Stokes. The representation
 // is that required for the visibilities.
@@ -1493,15 +1500,7 @@ void SDGrid::makeImage(FTMachine::Type inType,
     CacheManager cacheManager(cache, onDuty, accessMode);
 
     // Loop over the visibilities, putting VisBuffers
-    for (vi.originChunks(); vi.moreChunks();
-#if defined(SDGRID_PERFS)
-        cNextChunk.start(),
-#endif
-                                              vi.nextChunk()
-#if defined(SDGRID_PERFS)
-        , cNextChunk.stop()
-#endif
-                                                              ) {
+    for (vi.originChunks(); vi.moreChunks(); nextChunk(vi)) {
         abortOnPolFrameChange(imgPolRep,firstMsName,vi);
         FTMachine::Type actualType;
         Bool doPSF;
