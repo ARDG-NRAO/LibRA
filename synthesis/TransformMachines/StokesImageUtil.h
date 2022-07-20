@@ -77,17 +77,14 @@ public:
   };
 
   static const casacore::String & toString(PolRep polRep) {
-      constexpr auto maxPolRep = static_cast<int>(PolRep::LINEAR);
-      constexpr auto maxPolRepNameIndex = maxPolRep + 1;
-      constexpr auto nPolRepNames = maxPolRepNameIndex + 1;
-      static std::array<casacore::String,nPolRepNames> polRepName {"CIRCULAR", "LINEAR", "UNKOWN"};
+      static const std::array<const casacore::String,3> polRepName {"CIRCULAR", "LINEAR", "UNKOWN"};
       switch(polRep) {
       case PolRep::CIRCULAR:
       case PolRep::LINEAR:
           return polRepName[polRep];
           break;
       default:
-          return polRepName[maxPolRepNameIndex];
+          return polRepName.back();
       }
   }
   // Make a Gaussian PSF
