@@ -167,6 +167,13 @@ bool BaselineTable::getApply(uInt irow, uInt ipol) const
   return static_cast<bool>(apply[ipol]);
 }
 
+std::vector<bool> BaselineTable::getMask(uInt irow, uInt ipol)
+{
+  uInt nchan = nchanCol_.get(irow);
+  Matrix<uInt> masklist = maskCol_.get(irow);
+  return getMaskFromMaskList(nchan, masklist.row(ipol));
+}
+
 uint BaselineTable::getBaselineType(uInt irow, uInt ipol) const
 {
   Vector<uInt> ftype = ftypeCol_.get(irow);
@@ -285,20 +292,20 @@ uInt BaselineTable::nchan(uInt ifno)
   return tmp;
 }
 
-std::vector<bool> BaselineTable::getMaskFromMaskList(uInt const nchan, std::vector<int> const& masklist)
+std::vector<bool> BaselineTable::getMaskFromMaskList(uInt const nchan, Vector<uInt> const& masklist)
 {
   if (masklist.size() % 2 != 0) {
     throw(AipsError("masklist must have even number of elements."));
   }
 
-  std::vector<bool> res((int)nchan);
+  std::vector<bool> res((int)nchan, false);
 
-  for (int i = 0; i < (int)nchan; ++i) {
-    res[i] = false;
-  }
   for (uInt j = 0; j < masklist.size(); j += 2) {
     for (int i = masklist[j]; i <= min((Int)nchan-1, (Int)masklist[j+1]); ++i) {
       res[i] = true;
+    }
+    if (masklist[j+1] == nchan-1) {
+      break;
     }
   }
 
