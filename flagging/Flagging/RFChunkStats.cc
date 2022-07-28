@@ -30,8 +30,6 @@
 #include <flagging/Flagging/RFChunkStats.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <stdio.h>
-#include <sstream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

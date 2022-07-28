@@ -36,7 +36,6 @@
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <flagging/Flagging/RFASelector.h>
-#include <stdio.h>
 
 #include <iomanip>
 #include <ostream>
