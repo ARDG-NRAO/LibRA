@@ -28,7 +28,7 @@
 #define MULTI_PARAM_FIELD_ITERATOR_H_
 
 #include <synthesis/ImagerObjects/ParamFieldIterator.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <iterator>
 #include <array>
 

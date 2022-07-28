@@ -29,13 +29,13 @@
 
 //# Includes
 #include <synthesis/Parallel/PabloIO.h>
-#include <casa/OS/EnvVar.h>
-#include <casa/OS/Path.h>
-#include <casa/OS/File.h>
-#include <casa/Utilities/Regex.h>
+#include <casacore/casa/OS/EnvVar.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Utilities/Regex.h>
 #include "IOTrace.h"
 #include "PabloTrace.h"
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

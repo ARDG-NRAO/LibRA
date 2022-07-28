@@ -25,30 +25,30 @@
 //#
 //# $Id: Calibrater.cc,v 19.37 2006/03/16 01:28:09 gmoellen Exp $
 
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/Tables/TableUtil.h>
-#include <tables/TaQL/TableParse.h>
-#include <tables/Tables/ArrColDesc.h>
-#include <tables/DataMan/TiledShapeStMan.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/Tables/TableUtil.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
+#include <casacore/tables/DataMan/TiledShapeStMan.h>
 
-#include <casa/System/AipsrcValue.h>
-#include <casa/Arrays/ArrayUtil.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayPartMath.h>
+#include <casacore/casa/System/AipsrcValue.h>
+#include <casacore/casa/Arrays/ArrayUtil.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayPartMath.h>
 //#include <casa/Arrays/ArrayMath.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MSSel/MSFieldIndex.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
-#include <ms/MSOper/MSMetaData.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
-#include <casa/sstream.h>
-#include <casa/OS/File.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MSSel/MSFieldIndex.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
+#include <sstream>
+#include <casacore/casa/OS/File.h>
 #include <synthesis/MeasurementComponents/Calibrater.h>
 #include <synthesis/CalTables/CLPatchPanel.h>
 #include <synthesis/MeasurementComponents/CalSolVi2Organizer.h>
@@ -62,13 +62,13 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
-#include <casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/MVTime.h>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-#include <tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
 #include <vector>
 using std::vector;
 #include <msvis/MSVis/UtilJ.h>

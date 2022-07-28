@@ -26,43 +26,43 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-#include <tables/Tables/ArrColDesc.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/TableCopy.h>
-#include <tables/DataMan/TiledDataStMan.h>
-#include <tables/DataMan/TiledShapeStMan.h>
-#include <tables/DataMan/StandardStMan.h>
-#include <tables/DataMan/TiledDataStManAccessor.h>
-#include <tables/DataMan/CompressComplex.h>
-#include <tables/DataMan/CompressFloat.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/TableCopy.h>
+#include <casacore/tables/DataMan/TiledDataStMan.h>
+#include <casacore/tables/DataMan/TiledShapeStMan.h>
+#include <casacore/tables/DataMan/StandardStMan.h>
+#include <casacore/tables/DataMan/TiledDataStManAccessor.h>
+#include <casacore/tables/DataMan/CompressComplex.h>
+#include <casacore/tables/DataMan/CompressFloat.h>
 
 
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/VisModelDataI.h>
 
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisSetUtil.h>
 
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <measures/Measures/Stokes.h>
-#include <casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Quanta/MVAngle.h>
 
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using std::vector;
 using std::pair;

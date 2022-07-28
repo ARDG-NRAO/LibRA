@@ -28,13 +28,13 @@
 #ifndef VISBUFFER_ASYNC_WRAPPER_H
 #define VISBUFFER_ASYNC_WRAPPER_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/BasicSL/Complex.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MEpoch.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MEpoch.h>
 #include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisBufferAsync.h>

@@ -1,12 +1,12 @@
 #include <stdcasa/StdCasa/CasacSupport.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Containers/Record.h>
-#include <casa/Containers/ValueHolder.h>
-#include <casa/Quanta/QuantumHolder.h>
-#include <casa/Quanta/MVAngle.h>
-#include <measures/Measures/MeasureHolder.h>
-#include <measures/Measures/MeasTable.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Containers/ValueHolder.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/measures/Measures/MeasureHolder.h>
+#include <casacore/measures/Measures/MeasTable.h>
 #include <algorithm>
 
 using namespace casacore;
@@ -155,7 +155,7 @@ Bool toCasaVectorQuantity(const ::casac::variant& theval, casacore::Vector<casac
   }
   else if(theval.type()== ::casac::variant::STRINGVEC){
     //Force resize as toStringVec sometimes give the wrong length (bug?)
-    Vector<Int> leShape=theval.arrayshape();
+    Vector<Int> leShape(theval.arrayshape());
     lesStrings=toVectorString(theval.toStringVec());
     lesStrings.resize(product(leShape), true);
   }

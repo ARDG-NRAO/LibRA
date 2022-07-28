@@ -23,13 +23,13 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <components/ComponentModels/SkyComponentFactory.h>
-#include <casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVAngle.h>
 #include <components/ComponentModels/GaussianDeconvolver.h>
 #include <components/ComponentModels/GaussianShape.h>
 #include <components/ComponentModels/ComponentType.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/images/Images/ImageUtilities.h>
 
 using namespace casacore;
 namespace casa { 

@@ -27,10 +27,10 @@
 #ifndef IMAGEANALYSIS_FITTERESTIMATESFILEPARSER_H
 #define IMAGEANALYSIS_FITTERESTIMATESFILEPARSER_H
 
-#include <casa/aips.h>
-#include <casa/OS/RegularFile.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/OS/RegularFile.h>
 #include <components/ComponentModels/ComponentList.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <memory>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

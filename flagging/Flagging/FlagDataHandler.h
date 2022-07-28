@@ -30,7 +30,7 @@
 #include <msvis/MSVis/AveragingVi2Factory.h>
 
 // Records interface
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 // casacore::Data mapping
 #include <map>

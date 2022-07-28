@@ -27,12 +27,12 @@
 #if !defined(CEXP_H)
 #define CEXP_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <stdlib.h>
 #include <math.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
+#include <casacore/casa/Arrays/Vector.h>
 
 namespace casa{
 

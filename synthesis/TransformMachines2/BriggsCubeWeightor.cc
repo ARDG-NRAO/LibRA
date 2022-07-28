@@ -27,20 +27,20 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //#
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/Containers/Record.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/ArrColDesc.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/TableUtil.h>
-#include <tables/DataMan/StManAipsIO.h>
-#include <tables/DataMan/IncrementalStMan.h>
-#include <tables/DataMan/TiledShapeStMan.h>
-#include <tables/DataMan/StandardStMan.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/ArrColDesc.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/TableUtil.h>
+#include <casacore/tables/DataMan/StManAipsIO.h>
+#include <casacore/tables/DataMan/IncrementalStMan.h>
+#include <casacore/tables/DataMan/TiledShapeStMan.h>
+#include <casacore/tables/DataMan/StandardStMan.h>
 #include<msvis/MSVis/VisImagingWeight.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisibilityIterator2.h>

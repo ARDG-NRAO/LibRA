@@ -29,15 +29,14 @@
 #ifndef SYNTHESIS_SDALGORITHMMSCLEAN_H
 #define SYNTHESIS_SDALGORITHMMSCLEAN_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <synthesis/MeasurementComponents/SkyModel.h>
-#include <casa/Arrays/Matrix.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/System/PGPlotter.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/System/PGPlotter.h>
 
 #include<synthesis/ImagerObjects/SDAlgorithmBase.h>
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
@@ -59,16 +58,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		       casacore::Int stoppointmode=-1 );
     virtual  ~SDAlgorithmMSClean();
     
-    //    void restore( casacore::CountedPtr<SIImageStore> imagestore );
-
-      //returns the estimate of memory used in kilobytes (kB);
+    //returns the estimate of memory used in kilobytes (kB);
     virtual casacore::Long estimateRAM( const std::vector<int>& imsize);
   protected:
     
     // Local functions to be overloaded by various algorithm deconvolvers.
     void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, 
 		      casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int &iterdone );
-    //    void initializeDeconvolver( casacore::Float &peakresidual, casacore::Float &modelflux );
     void initializeDeconvolver();
     void finalizeDeconvolver();
 

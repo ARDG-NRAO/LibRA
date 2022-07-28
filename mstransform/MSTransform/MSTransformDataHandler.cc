@@ -21,9 +21,9 @@
 //# $Id: $
 
 #include <mstransform/MSTransform/MSTransformDataHandler.h>
-#include <tables/Tables/TableProxy.h>
-#include <tables/TaQL/TableParse.h>
-#include <ms/MSOper/MSMetaData.h>
+#include <casacore/tables/Tables/TableProxy.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
 #include <asdmstman/AsdmStMan.h>
 
 
@@ -745,8 +745,8 @@ Bool MSTransformDataHandler::getCorrMaps(MSSelection& mssel,
         {
             Int pol = mi->first;
             std::vector<int> correlations_idx = mi->second[0].tovector();
-            std::sort(correlations_idx.begin(), correlations_idx.end()); 
-            outToIn[pol] = correlations_idx;
+            std::sort(correlations_idx.begin(), correlations_idx.end());
+            outToIn[pol] = Vector<Int>(correlations_idx);
         }
     }
     else

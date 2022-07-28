@@ -28,9 +28,9 @@
 #ifndef IMAGES_ASCIIANNOTATIONFILELINE_H
 #define IMAGES_ASCIIANNOTATIONFILELINE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <imageanalysis/Annotations/AnnotationBase.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/Stokes.h>
 
 namespace casa {
 

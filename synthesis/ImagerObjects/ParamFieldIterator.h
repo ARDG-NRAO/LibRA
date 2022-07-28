@@ -27,7 +27,7 @@
 #ifndef PARAM_FIELD_ITERATOR_H_
 #define PARAM_FIELD_ITERATOR_H_
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <iterator>
 
 namespace casa {

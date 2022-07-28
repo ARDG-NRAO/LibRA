@@ -27,14 +27,14 @@
 //----------------------------------------------------------------------------
 
 #include <synthesis/CalTables/CalMainBuffer.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/MaskedArray.h>
-#include <casa/Arrays/ArrayUtil.h>
-#include <tables/Tables/RefRows.h>
-#include <casa/Exceptions/Error.h>
-#include <measures/Measures/MCFrequency.h>
-#include <casa/typeinfo.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
+#include <casacore/casa/Arrays/ArrayUtil.h>
+#include <casacore/tables/Tables/RefRows.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/measures/Measures/MCFrequency.h>
+#include <casacore/casa/typeinfo.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

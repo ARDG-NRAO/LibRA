@@ -349,7 +349,7 @@ void CalSummary::listAntenna (LogIO& os, Bool verbose) const
     } else {
       MSMetaInfoForCal msmeta(msname_p);
       msmeta.antennaNames(antnames);
-      stations = msmeta.msmd().getAntennaStations();
+      stations = casacore::Vector<casacore::String>(msmeta.msmd().getAntennaStations());
 
       if (verbose) {
         // Detailed antenna list
@@ -369,7 +369,7 @@ void CalSummary::listAntenna (LogIO& os, Bool verbose) const
         QVector<Double> diameters = msmeta.msmd().getAntennaDiameters();
         vector<MPosition> positions = msmeta.msmd().getAntennaPositions();
         vector<QVector<Double> > offsets = msmeta.msmd().getAntennaOffsets();
-        Bool posIsITRF = (positions[0].type() == MPosition::ITRF);
+        Bool posIsITRF = (positions[0].getRef().getType() == MPosition::ITRF);
 
         // Get observatory position info for antenna offsets 
         // *not read from antenna table OFFSET column!*
@@ -526,7 +526,7 @@ bool CalSummary::getObservatoryPosition(casacore::MPosition& obspos,
     // get telescope name
     name = msmeta.msmd().getObservatoryNames()[0];
     obsposOk = MeasTable::Observatory(obspos, name);
-    if (obsposOk && (obspos.type() != MPosition::ITRF)) {
+    if (obsposOk && (obspos.getRef().getType() != MPosition::ITRF)) {
         MeasConvert<MPosition> toItrf(obspos, MPosition::ITRF);
         obspos = toItrf(obspos);
     }
@@ -575,7 +575,7 @@ void CalSummary::listField (LogIO& os, Bool /*verbose*/) const
     if (haveMS_p) {
       MSMetaInfoForCal msmeta(msname_p);
       msmeta.fieldNames(fieldNames);
-      codes = msmeta.msmd().getFieldCodes();
+      codes = casacore::Vector<casacore::String>(msmeta.msmd().getFieldCodes());
       phaseDirs = msmeta.msmd().getPhaseDirs();
       sourceIds = msmeta.msmd().getFieldTableSourceIDs();
     } 

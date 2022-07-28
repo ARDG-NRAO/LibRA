@@ -28,7 +28,7 @@
 #ifndef SYNTHESIS_ACCORJONES_H
 #define SYNTHESIS_ACCORJONES_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -25,26 +25,26 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <ms/MeasurementSets/MSRange.h>
+#include <casacore/ms/MeasurementSets/MSRange.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <casa/Logging/LogIO.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/MeasTable.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MeasTable.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/ImageRegrid.h>
-#include <casa/Containers/Record.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/TiledLineStepper.h> 
-#include <lattices/Lattices/LatticeStepper.h> 
-#include <lattices/LatticeMath/LatticeFFT.h>
-#include <casa/System/Aipsrc.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/TiledLineStepper.h> 
+#include <casacore/lattices/Lattices/LatticeStepper.h> 
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/casa/System/Aipsrc.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 
 using namespace casacore;
@@ -783,11 +783,11 @@ namespace casa{
     }
     template 
     Int SynthesisUtils::getenv(const char *name, const Int defaultVal);
-  template 
+    template 
     Bool SynthesisUtils::getenv(const char *name, const Bool defaultVal);
-  template 
+    template 
     Float SynthesisUtils::getenv(const char *name, const Float defaultVal);
-  template 
+    template 
     double SynthesisUtils::getenv(const char *name, const double defaultVal);
 
   Float SynthesisUtils::libreSpheroidal(Float nu) 

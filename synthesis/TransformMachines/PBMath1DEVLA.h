@@ -27,7 +27,7 @@
 //# $Id$
 #ifndef SYNTHESIS_PBMATH1DEVLA_H
 #define SYNTHESIS_PBMATH1DEVLA_H
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/TransformMachines/PBMath1DPoly.h>
 #include <synthesis/TransformMachines/PBMath1D.h>
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -1,6 +1,6 @@
 #include <msvis/MSVis/MeasurementSet2.h>
-#include <ms/MSSel/MSSelection.h>
-#include <tables/Tables.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/tables/Tables.h>
 
 using namespace casacore;
 

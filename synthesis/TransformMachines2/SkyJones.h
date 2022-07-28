@@ -29,12 +29,12 @@
 #ifndef SYNTHESIS_TRANSFORM2_SKYJONES_H
 #define SYNTHESIS_TRANSFORM2_SKYJONES_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <components/ComponentModels/ComponentList.h>
 #include <components/ComponentModels/SkyComponent.h>
-#include <casa/Utilities/CompositeNumber.h>
+#include <casacore/casa/Utilities/CompositeNumber.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/TransformMachines/SkyJones.h>
 

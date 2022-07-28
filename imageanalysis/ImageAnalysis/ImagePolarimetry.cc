@@ -25,7 +25,7 @@
 //#
 //# $Id: ImagePolarimetry.cc 20652 2009-07-06 05:04:32Z Malte.Marquarding $
 
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 
 #include <imageanalysis/ImageAnalysis/ImagePolarimetry.h>
 
@@ -70,7 +70,7 @@
 #include <casacore/casa/Utilities/Assert.h>
 #include <casacore/casa/BasicSL/String.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 namespace casa {

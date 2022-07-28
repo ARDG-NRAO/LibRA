@@ -28,9 +28,9 @@
 //
 #include <synthesis/TransformMachines/ATerm.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
 //
 //---------------------------------------------------------------------
 //

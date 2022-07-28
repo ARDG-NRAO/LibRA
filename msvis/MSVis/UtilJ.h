@@ -10,9 +10,9 @@
 
 // Casa Includes
 
-#include <casa/aips.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 // C++ and System Includes
 

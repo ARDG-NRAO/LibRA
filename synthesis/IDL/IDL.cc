@@ -25,11 +25,11 @@
 //#
 //# $Id$
 
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <synthesis/IDL/IDL.h>
-#include <casa/sstream.h>
+#include <sstream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

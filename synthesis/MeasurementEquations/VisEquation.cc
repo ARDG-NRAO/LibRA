@@ -28,17 +28,17 @@
 
 #include <synthesis/MeasurementEquations/VisEquation.h>
 #include <synthesis/MeasurementComponents/SolveDataBuffer.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayPartMath.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayPartMath.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <msvis/MSVis/VisBuffer.h>
 //#include <casa/Quanta/MVTime.h>
-#include <casa/iostream.h>
+#include <iostream>
 
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 
 #define VISEQPRTLEV 0
 

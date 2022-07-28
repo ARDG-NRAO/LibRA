@@ -22,7 +22,7 @@
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
-#include <tables/Tables/TableUtil.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <mstransform/TVI/PolAverageTVI.h>
 #include <mstransform/TVI/PointingInterpolationTVI.h>
@@ -2291,7 +2291,7 @@ void MSTransformManager::initDataSelectionParams()
 
         //spwList.resize(noDupSpwList.size());
         //for (uInt idx=0;idx < noDupSpwList.size(); idx++) spwList(idx) = noDupSpwList[idx];
-        Vector<Int> spwList = noDupSpwList;
+        Vector<Int> spwList(noDupSpwList);
 
         if (freqbin_p.size() == 1)
         {

@@ -33,10 +33,10 @@
 
 //# Includes
 #include <asdmstman/AsdmStMan.h> 
-#include <tables/DataMan/StManColumn.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Containers/Block.h>
-#include <casa/OS/Conversion.h>
+#include <casacore/tables/DataMan/StManColumn.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/OS/Conversion.h>
 
 namespace casa {
 

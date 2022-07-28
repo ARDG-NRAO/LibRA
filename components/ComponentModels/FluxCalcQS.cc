@@ -24,13 +24,13 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 #include <components/ComponentModels/FluxCalcQS.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/String.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
 // Handy for passing anonymous arrays to functions.
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 
 #include <map>
 

@@ -28,17 +28,17 @@
 #ifndef SYNTHESIS_UVMOD_H
 #define SYNTHESIS_UVMOD_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Constants.h>
 #include <synthesis/MeasurementEquations/Iterate.h>
 #include <msvis/MSVis/VisSet.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <components/ComponentModels/ComponentType.h>
 #include <components/ComponentModels/ComponentList.h>
 #include <components/ComponentModels/SkyComponent.h>

@@ -1323,7 +1323,7 @@ const MFrequency::Types & MSTransformBufferImpl::freqRefFrameType () const
 		}
 
 		MFrequency refFrame = Vector<MFrequency>(spwRefRame_p(inputSPWIndex))(0);
-		freqRefFrameType_p = MFrequency::castType (refFrame.type());
+		freqRefFrameType_p = MFrequency::castType (refFrame.getRef().getType());
 	}
 
 	return freqRefFrameType_p;
@@ -1465,7 +1465,8 @@ Vector<Int> MSTransformBufferImpl::getChannelNumbersSelected (Int outputChannelI
 				// CAS-8018: If there is channel average then getChannelNumbers
 				//           is just an index ranging from 0 to nOutChans so there
 				//           is no need to re-map it.
-				outputInputChannelMap_p[outChanIdx] = manager_p->dataHandler_p->getSelectedChannelsMap()[inputSpw][outChanIdx];
+				outputInputChannelMap_p[outChanIdx] =
+                  Vector<Int>(manager_p->dataHandler_p->getSelectedChannelsMap()[inputSpw][outChanIdx]);
 			}
 		}
 

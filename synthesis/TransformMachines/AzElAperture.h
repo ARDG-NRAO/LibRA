@@ -32,7 +32,7 @@
 #include <casacore/images/Images/ImageInterface.h>
 #include <synthesis/TransformMachines/ATerm.h>
 #include <synthesis/TransformMachines/Utils.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 //
 //---------------------------------------------------------------------

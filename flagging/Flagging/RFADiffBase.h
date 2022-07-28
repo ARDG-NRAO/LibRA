@@ -31,9 +31,9 @@
 #include <flagging/Flagging/RFDataMapper.h> 
 #include <flagging/Flagging/RFFloatLattice.h>
 #include <flagging/Flagging/RFRowClipper.h>
-#include <scimath/Mathematics/MedianSlider.h> 
-#include <casa/Arrays/LogiVector.h>
-#include <casa/Containers/RecordInterface.h>
+#include <casacore/scimath/Mathematics/MedianSlider.h> 
+#include <casacore/casa/Arrays/LogiVector.h>
+#include <casacore/casa/Containers/RecordInterface.h>
 
 
 namespace casa { //# NAMESPACE CASA - BEGIN

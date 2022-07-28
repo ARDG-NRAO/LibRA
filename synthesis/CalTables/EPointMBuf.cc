@@ -27,8 +27,8 @@
 //----------------------------------------------------------------------------
 
 #include <synthesis/CalTables/EPointMBuf.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <tables/Tables/RefRows.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/tables/Tables/RefRows.h>
 using namespace casacore;
 namespace casa {
 //----------------------------------------------------------------------------

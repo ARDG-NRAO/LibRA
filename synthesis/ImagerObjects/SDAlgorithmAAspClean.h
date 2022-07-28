@@ -29,18 +29,17 @@
 #ifndef SYNTHESIS_SDALGORITHMAASPCLEAN_H
 #define SYNTHESIS_SDALGORITHMAASPCLEAN_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-//#include <synthesis/MeasurementComponents/SkyModel.h>
-#include <casa/Arrays/Matrix.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/System/PGPlotter.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/System/PGPlotter.h>
 
-#include<synthesis/ImagerObjects/SDAlgorithmBase.h>
-#include<synthesis/ImagerObjects/SDAlgorithmHogbomClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmBase.h>
+#include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -48,26 +47,21 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class SIMinorCycleController;
 
 
-  class SDAlgorithmAAspClean : public SDAlgorithmBase 
+  class SDAlgorithmAAspClean : public SDAlgorithmBase
   {
   public:
-    
+
     // Empty constructor
-    SDAlgorithmAAspClean();
+    SDAlgorithmAAspClean(casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1);
     virtual  ~SDAlgorithmAAspClean();
-    
+
   protected:
-    
+
     // Local functions to be overloaded by various algorithm deconvolvers.
     virtual void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int &iterdone );
-    //    virtual void initializeDeconvolver( casacore::Float &peakresidual, casacore::Float &modelflux );
     virtual void initializeDeconvolver();
     virtual void finalizeDeconvolver();
 
-    SDAlgorithmHogbomClean hogbom_p;
-
-    ///    virtual void queryDesiredShape(casacore::Bool &onechan, casacore::Bool &onepol); // , nImageFacets.
-    //    virtual void restorePlane();
 
     /*
     void findNextComponent( casacore::Float loopgain );
@@ -81,15 +75,24 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     */
     //casacore::SubImage<casacore::Float> itsResidual, itsPsf, itsModel, itsImage;
 
-    casacore::Array<casacore::Float> itsMatResidual, itsMatModel, itsMatPsf, itsMatMask;
+    casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
+    casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
+
+    AspMatrixCleaner itsCleaner;
+    std::vector<casacore::Float> itsScaleSizes;
+    casacore::Int itsStopPointMode;
+    casacore::Float itsFusedThreshold;
+    casacore::Int itsUserLargestScale;
 
     /*
     casacore::IPosition itsMaxPos;
     casacore::Float itsPeakResidual;
     casacore::Float itsModelFlux;
-
-    casacore::Matrix<casacore::Float> itsMatMask;
     */
+    private:
+    casacore::Bool itsMCsetup; // if we should do setup or not   
+    casacore::Float itsPrevPsfWidth;
+    bool itsIsSingle;
 
   };
 

@@ -29,8 +29,8 @@
 #ifndef CALIBRATION_CALINTERPOLATOR_H
 #define CALIBRATION_CALINTERPOLATOR_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <synthesis/CalTables/CalInterpolation.h>
 

@@ -35,10 +35,10 @@
 #include <synthesis/TransformMachines/ALMAAperture.h>
 #include <synthesis/MeasurementComponents/CExp.new3.h>
 #include <synthesis/MeasurementComponents/ExpCache.h>
-#include <images/Images/TempImage.h>
-#include <casa/Exceptions.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Exceptions.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/sstream.h>
+#include <sstream>
 #include <synthesis/TransformMachines/Utils.h>
 namespace casa{
 

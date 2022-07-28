@@ -28,9 +28,9 @@
 #ifndef SYNTHESIS_CTGLOBALS_H
 #define SYNTHESIS_CTGLOBALS_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/CalTables/NewCalTable.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

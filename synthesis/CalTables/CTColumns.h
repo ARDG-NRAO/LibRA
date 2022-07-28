@@ -28,15 +28,15 @@
 #ifndef CALIBRATION_NEWCALTABLECOLUMNS_H
 #define CALIBRATION_NEWCALTABLECOLUMNS_H
 
-#include <casa/aips.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MEpoch.h>
+#include <casacore/casa/aips.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MEpoch.h>
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTMainColumns.h>
-#include <ms/MeasurementSets/MSAntennaColumns.h>
-#include <ms/MeasurementSets/MSFieldColumns.h>
-#include <ms/MeasurementSets/MSHistoryColumns.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
+#include <casacore/ms/MeasurementSets/MSFieldColumns.h>
+#include <casacore/ms/MeasurementSets/MSHistoryColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

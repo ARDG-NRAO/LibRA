@@ -6,7 +6,7 @@
 
 //#include <libsakura/sakura.h>
 
-#include <casa/aipstype.h>
+#include <casacore/casa/aipstype.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

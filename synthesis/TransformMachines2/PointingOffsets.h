@@ -31,10 +31,10 @@
 
 #include <synthesis/MeasurementComponents/SolvableVisCal.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <msvis/MSVis/VisBufferUtil.h>
-#include <images/Images/TempImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <msvis/MSVis/VisBuffer2.h>
 
 class SolvableVisJones;
