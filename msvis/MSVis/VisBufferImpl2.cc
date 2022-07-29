@@ -18,7 +18,7 @@
 #include <typeinfo>
 #include <components/ComponentModels/ComponentList.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisBufferAsyncWrapper2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
@@ -28,7 +28,6 @@
 #include <msvis/MSVis/Vbi2MsRow.h>
 #include <msvis/MSVis/VisModelDataI.h>
 #include <msvis/MSVis/VisBufferImpl2Internal.h>
-#include <msvis/MSVis/UtilJ.h>
 
 
 #define CheckVisIter() checkVisIter (__func__, __FILE__, __LINE__)

@@ -8,8 +8,8 @@
 #ifndef ASYNCHRONOUS_INTERFACE_H_
 #define ASYNCHRONOUS_INTERFACE_H_
 
-#include "AsynchronousTools.h"
-#include "UtilJ.h"
+#include <stdcasa/thread/AsynchronousTools.h>
+#include <stdcasa/UtilJ.h>
 
 using casa::utilj::ThreadTimes;
 using casa::utilj::DeltaThreadTimes;

@@ -11,9 +11,9 @@
 #include <casacore/casa/aips.h>
 #include <casacore/casa/BasicSL/String.h>
 #include <casacore/casa/Exceptions/Error.h>
+#include <stdcasa/UtilJ.h>
 #include "VisBuffer.h"
 #include "VisibilityIterator.h"
-#include "UtilJ.h"
 
 #include <memory>
 #include <tuple>

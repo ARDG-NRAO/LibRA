@@ -1,10 +1,10 @@
 #include <casacore/casa/aips.h>
 #include <casacore/casa/Arrays.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/FinalTvi2.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/tables/Tables/RefRows.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/VisBuffer2.h>
 
 using namespace casacore;

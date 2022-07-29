@@ -28,7 +28,7 @@
 // probably be split from the rather large FlagDataHandler.h
 #include <flagging/Flagging/FlagDataHandler.h>
 
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <flagging/Flagging/FlagReport.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
