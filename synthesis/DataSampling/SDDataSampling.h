@@ -31,10 +31,10 @@
 
 #include <synthesis/DataSampling/DataSampling.h>
 #include <synthesis/TransformMachines/SkyJones.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 namespace casacore{
 

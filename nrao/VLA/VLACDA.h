@@ -29,12 +29,12 @@
 #ifndef NRAO_VLACDA_H
 #define NRAO_VLACDA_H
 
-#include <casa/aips.h>
-#include <casa/IO/ByteSource.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/ByteSource.h>
+#include <casacore/casa/Containers/Block.h>
 #include <nrao/VLA/VLABaselineRecord.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 // <summary></summary>
 
 // <use visibility=export>

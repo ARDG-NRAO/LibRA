@@ -29,15 +29,15 @@
 #ifndef SYNTHESIS_CLARKCLEANMODEL_H
 #define SYNTHESIS_CLARKCLEANMODEL_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <synthesis/MeasurementEquations/ArrayModel.h>
 #include <synthesis/MeasurementEquations/Iterate.h>
 //#include <synthesis/MeasurementEquations/ResidualEquation.h>
 #include <synthesis/MeasurementEquations/ConvolutionEquation.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

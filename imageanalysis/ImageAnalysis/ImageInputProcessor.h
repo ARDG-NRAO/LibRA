@@ -26,13 +26,13 @@
 #ifndef IMAGES_IMAGEINPUTPROCESSOR_H
 #define IMAGES_IMAGEINPUTPROCESSOR_H
 
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 #include <imageanalysis/ImageTypedefs.h>
 #include <imageanalysis/IO/OutputDestinationChecker.h>
 #include <imageanalysis/Regions/CasacRegionManager.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

@@ -23,8 +23,8 @@
 #include <synthesis/MeasurementComponents/CalibratingVi2.h>
 #include <synthesis/MeasurementComponents/Calibrater.h>
 #include <synthesis/CalLibrary/CalLibraryTools.h>
-#include <casa/Arrays/ArrayPartMath.h>
-#include <casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/Arrays/ArrayPartMath.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
 
 #ifdef _OPENMP
 #include <omp.h>

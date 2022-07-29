@@ -6,35 +6,35 @@
 #include <sys/time.h>
 #include <vector>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Allocator.h>
-#include <casa/Containers/Block.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/GenSort.h>
-#include <ms/MeasurementSets/MSSpectralWindow.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Allocator.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/ms/MeasurementSets/MSSpectralWindow.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisSetUtil.h>
-#include <scimath/Fitting/GenericL2Fit.h>
-#include <scimath/Fitting/NonLinearFitLM.h>
-#include <scimath/Functionals/CompiledFunction.h>
-#include <scimath/Functionals/CompoundFunction.h>
-#include <scimath/Functionals/Function.h>
-#include <scimath/Functionals/Gaussian1D.h>
-#include <scimath/Functionals/Lorentzian1D.h>
-#include <scimath/Mathematics/Convolver.h>
-#include <scimath/Mathematics/VectorKernel.h>
+#include <casacore/scimath/Fitting/GenericL2Fit.h>
+#include <casacore/scimath/Fitting/NonLinearFitLM.h>
+#include <casacore/scimath/Functionals/CompiledFunction.h>
+#include <casacore/scimath/Functionals/CompoundFunction.h>
+#include <casacore/scimath/Functionals/Function.h>
+#include <casacore/scimath/Functionals/Gaussian1D.h>
+#include <casacore/scimath/Functionals/Lorentzian1D.h>
+#include <casacore/scimath/Mathematics/Convolver.h>
+#include <casacore/scimath/Mathematics/VectorKernel.h>
 #include <singledish/SingleDish/BaselineTable.h>
 #include <singledish/SingleDish/BLParameterParser.h>
 #include <singledish/SingleDish/LineFinder.h>
 #include <singledish/SingleDish/SingleDishMS.h>
 #include <stdcasa/StdCasa/CasacSupport.h>
-#include <tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
 
 // for importasap and importnro
 #include <singledishfiller/Filler/NRO2MSReader.h>
@@ -1687,21 +1687,21 @@ void SingleDishMS::doSubtractBaseline(string const& in_column_name,
             Matrix<Float> rms_mtx2 = rms_mtx[0][ipol];
             string bltype_name;
 
-            string blparam_name =" order = ";
+            string blparam_name ="order";
             if (bltype_mtx2(0, 0) == (uInt)0) {
               bltype_name = "poly";
             } else if (bltype_mtx2(0, 0) == (uInt)1) {
               bltype_name = "chebyshev";
             } else if (bltype_mtx2(0, 0) == (uInt)2) {
-                blparam_name = " npiece = ";
+                blparam_name = "npiece";
                 bltype_name = "cspline";
             } else if (bltype_mtx2(0, 0) == (uInt)3) {
-                blparam_name = " nwave = ";
+                blparam_name = "nwave";
                 bltype_name = "sinusoid";
             }
 
             ofs_txt << "Baseline parameters  Function = "
-                    << bltype_name.c_str() << " " << blparam_name;
+                    << bltype_name << "  " << blparam_name << " = ";
             Matrix<Int> fpar_mtx3 = fpar_mtx;
             if (bltype_mtx2(0,0) == (uInt)3) {
               for (size_t num = 0; num < num_fpar_max; ++num) {
@@ -2908,6 +2908,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
         size_t num_ffpar_max = 0;
         size_t num_masklist_max = 0;
         size_t num_coeff_max = 0;
+        std::vector<size_t> numcoeff(num_pol);
 
         // loop over polarization
         for (size_t ipol = 0; ipol < num_pol; ++ipol) {
@@ -3002,6 +3003,8 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
           default:
             throw(AipsError("Unsupported baseline type."));
           }
+          numcoeff[ipol] = num_coeff;
+
           // Final check of the valid number of channels
           size_t num_min = (bltype == BaselineType_kCubicSpline) ? fit_param.npiece + 3 : num_coeff;
           if (NValidMask(num_chan, mask_data) < num_min) {
@@ -3242,22 +3245,24 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             Matrix<Int> fpar_mtx2 = fpar_mtx[0][ipol];
             Matrix<Float> rms_mtx2 = rms_mtx[0][ipol];
             string bltype_name;
+            string blparam_name = "order";
             if (bltype_mtx2(0, 0) == (uInt)0) {
               bltype_name = "poly";
             } else if (bltype_mtx2(0, 0) == (uInt)1) {
               bltype_name = "chebyshev";
             } else if (bltype_mtx2(0, 0) == (uInt)2) {
               bltype_name = "cspline";
+              blparam_name = "npiece";
             }
 
             ofs_txt << "Baseline parameters  Function = "
-                    << bltype_name.c_str() << ' ' << " npiece = "
+                    << bltype_name << "  " << blparam_name << " = "
                     << fpar_mtx2(0, 0) << endl;
             ofs_txt << endl;
             ofs_txt << "Results of baseline fit" << endl;
             ofs_txt << endl;
             Matrix<Float> coeff_mtx2 = coeff_mtx;
-            for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_txt << "p" << icoeff << " = "
                       << setprecision(8) << coeff_mtx2(ipol, icoeff) << "  ";
             }
@@ -3311,7 +3316,7 @@ void SingleDishMS::subtractBaselineVariable(string const& in_column_name,
             Matrix<Float> coeff_mtx2 = coeff_mtx;
             ofs_csv << bltype_name.c_str() << ',' << fpar_mtx2(ipol, 0)
                     << ',';
-            for (size_t icoeff = 0; icoeff < num_coeff_max; ++icoeff) {
+            for (size_t icoeff = 0; icoeff < numcoeff[ipol]; ++icoeff) {
               ofs_csv << setprecision(8) << coeff_mtx2(ipol, icoeff) << ',';
             }
             Matrix<Float> rms_mtx2 = rms_mtx;

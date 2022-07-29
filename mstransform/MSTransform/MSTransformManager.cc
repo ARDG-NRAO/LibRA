@@ -22,7 +22,7 @@
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
-#include <tables/Tables/TableUtil.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <mstransform/TVI/PolAverageTVI.h>
 #include <mstransform/TVI/PointingInterpolationTVI.h>

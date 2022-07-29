@@ -30,7 +30,7 @@
 #include <stdcasa/StdCasa/CasacSupport.h>
 
 // Measurement Set Selection
-#include <ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelection.h>
 
 // casacore::Data handling
 #include <mstransform/MSTransform/MSTransformDataHandler.h>
@@ -55,16 +55,16 @@
 #include <msvis/MSVis/AveragingTvi2.h>
 
 // To apply hanning smooth
-#include <scimath/Mathematics/Smooth.h>
+#include <casacore/scimath/Mathematics/Smooth.h>
 
 // To apply fft shift
-#include <scimath/Mathematics/FFTServer.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
 
 // To apply 1D interpolations
-#include <scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 
 // single dish specific
-#include <scimath/Mathematics/Convolver.h>
+#include <casacore/scimath/Mathematics/Convolver.h>
 
 #include <map>
 

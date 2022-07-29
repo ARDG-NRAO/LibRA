@@ -29,16 +29,16 @@
 
 #include <imageanalysis/ImageAnalysis/ImageMetaDataRW.h>
 
-#include <casa/Containers/ValueHolder.h>
-#include <casa/Quanta/QuantumHolder.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <tables/Tables/TableRecord.h>
+#include <casacore/casa/Containers/ValueHolder.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/tables/Tables/TableRecord.h>
 
 #include <imageanalysis/ImageAnalysis/ImageHistory.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 #include <iomanip>
 

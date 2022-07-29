@@ -29,8 +29,8 @@
 #ifndef CALIBRATION_CALDESCRECORD_H
 #define CALIBRATION_CALDESCRECORD_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

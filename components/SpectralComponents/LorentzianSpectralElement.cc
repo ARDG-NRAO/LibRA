@@ -28,11 +28,11 @@
 //# Includes
 #include <components/SpectralComponents/LorentzianSpectralElement.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <scimath/Functionals/Lorentzian1D.h>
+#include <casacore/scimath/Functionals/Lorentzian1D.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

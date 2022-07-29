@@ -28,12 +28,12 @@
 #ifndef NRAO_VLATAPEINPUT_H
 #define NRAO_VLATAPEINPUT_H
 
-#include <casa/aips.h>
-#include <casa/IO/TapeIO.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/TapeIO.h>
+#include <casacore/casa/Containers/Block.h>
 #include <nrao/VLA/VLAArchiveInput.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 
 class Path;

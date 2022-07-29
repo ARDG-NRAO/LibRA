@@ -17,13 +17,13 @@
 #ifndef ANNOTATIONS_REGIONTEXTLIST_H
 #define ANNOTATIONS_REGIONTEXTLIST_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <imageanalysis/IO/AsciiAnnotationFileLine.h>
 #include <imageanalysis/IO/RegionTextParser.h>
-#include <images/Regions/WCRegion.h>
-#include <images/Regions/WCUnion.h>
+#include <casacore/images/Regions/WCRegion.h>
+#include <casacore/images/Regions/WCUnion.h>
 
 namespace casacore{
 

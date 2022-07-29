@@ -28,10 +28,10 @@
 #ifndef MSVIS_VISIBILITYITERATOR2_H
 #define MSVIS_VISIBILITYITERATOR2_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <ms/MeasurementSets/MSIter.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSIter.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <msvis/MSVis/ViiLayerFactory.h>

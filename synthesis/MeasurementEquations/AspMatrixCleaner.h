@@ -30,11 +30,11 @@
 #define SYNTHESIS_ASPMATRIXCLEANER_H
 
 //# Includes
-#include <scimath/Mathematics/FFTServer.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
 #include <deque>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -29,18 +29,18 @@
 #ifndef SYNTHESIS_SDPOSINTERPOLATOR_H
 #define SYNTHESIS_SDPOSINTERPOLATOR_H
 
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Quanta/MVAngle.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/Measure.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/Measure.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

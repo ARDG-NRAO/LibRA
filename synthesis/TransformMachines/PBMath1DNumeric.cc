@@ -26,13 +26,13 @@
 //#
 //# $Id$
  
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicMath/Math.h>
-#include <scimath/Mathematics/FFTServer.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
 #include <synthesis/TransformMachines/PBMath1DNumeric.h>
-#include <casa/Quanta.h>
-#include <measures/Measures.h>
+#include <casacore/casa/Quanta.h>
+#include <casacore/measures/Measures.h>
 
 
 

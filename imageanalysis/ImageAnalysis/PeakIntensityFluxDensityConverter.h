@@ -29,9 +29,9 @@
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
 
 #include <components/ComponentModels/ComponentType.h>
-#include <scimath/Mathematics/GaussianBeam.h>
+#include <casacore/scimath/Mathematics/GaussianBeam.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

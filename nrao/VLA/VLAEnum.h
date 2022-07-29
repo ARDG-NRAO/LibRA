@@ -29,8 +29,8 @@
 #ifndef NRAO_VLAENUM_H
 #define NRAO_VLAENUM_H
 
-#include <casa/aips.h>
-#include <casa/namespace.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 
 class String;

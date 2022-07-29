@@ -28,10 +28,10 @@
 
 #ifndef MSVIS_MSUTIL_H
 #define MSVIS_MSUTIL_H
-#include <casa/aips.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/measures/Measures/MDirection.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 
   class MSUtil{

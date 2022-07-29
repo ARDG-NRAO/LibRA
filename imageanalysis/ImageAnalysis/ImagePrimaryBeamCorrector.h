@@ -31,7 +31,7 @@
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
 #include <memory>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

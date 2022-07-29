@@ -26,20 +26,20 @@
 //#
 //#
 //# $Id$
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSMainEnums.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSMainEnums.h>
 //#include <msvis/MSVis/VisIterator.h>
 #include <msvis/MSVis/VisBufferComponents.h>
-#include <casa/aips.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
-#include <tables/Tables/Table.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/tables/Tables/Table.h>
 //#include <casa/Utilities/CountedPtr.h>
 #include <map>
 #include <set>
 #include <vector>
-#include <scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
@@ -468,7 +468,7 @@ class SubMS
 			   std::vector< casacore::Vector<casacore::Double> >& xold, 
 			   std::vector< casacore::Vector<casacore::Double> >& xout, 
 			   std::vector< casacore::Vector<casacore::Double> >& xin, 
-			   vector< casacore::Int >& method, // interpolation method cast to Int
+			   std::vector< casacore::Int >& method, // interpolation method cast to Int
 			   casacore::Bool& msMod,
 			   const casacore::String& outframe,
 			   const casacore::String& regridQuant,

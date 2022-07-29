@@ -29,23 +29,23 @@
 #ifndef _SYNTHESIS_POINTING_DIRECTION_CALCULATOR_H_
 #define _SYNTHESIS_POINTING_DIRECTION_CALCULATOR_H_
 
-#include <casa/aipstype.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Quanta/MVDirection.h>
-#include <casa/Utilities/CountedPtr.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSPointing.h>
-#include <ms/MeasurementSets/MSPointingColumns.h>
-#include <measures/Measures/MCDirection.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MPosition.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/MeasFrame.h>
-#include <measures/TableMeasures/ScalarMeasColumn.h>
-#include <measures/TableMeasures/ArrayMeasColumn.h>
-#include <tables/Tables/ScalarColumn.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSPointing.h>
+#include <casacore/ms/MeasurementSets/MSPointingColumns.h>
+#include <casacore/measures/Measures/MCDirection.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MeasFrame.h>
+#include <casacore/measures/TableMeasures/ScalarMeasColumn.h>
+#include <casacore/measures/TableMeasures/ArrayMeasColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
 // CAS-8418 //
 #include <synthesis/Utilities/SDPosInterpolator.h>
 #include <memory>  // for unique_ptr<> 

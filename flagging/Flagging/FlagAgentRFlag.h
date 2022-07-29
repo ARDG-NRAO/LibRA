@@ -24,7 +24,7 @@
 #define FlagAgentRFlag_H_
 
 #include <flagging/Flagging/FlagAgentBase.h>
-#include <casa/Utilities/DataType.h>
+#include <casacore/casa/Utilities/DataType.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

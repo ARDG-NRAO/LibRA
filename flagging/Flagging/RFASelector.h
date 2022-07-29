@@ -30,8 +30,8 @@
 
 #include <flagging/Flagging/RFAFlagCubeBase.h> 
 #include <flagging/Flagging/RFDataMapper.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <casa/Arrays/LogiVector.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/Arrays/LogiVector.h>
     
 namespace casa { //# NAMESPACE CASA - BEGIN
 

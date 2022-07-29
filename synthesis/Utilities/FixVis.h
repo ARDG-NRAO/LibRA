@@ -28,9 +28,9 @@
 #ifndef SYN_FIXVIS_H
 #define SYN_FIXVIS_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/String.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/MSUVWGenerator.h>
 
 // casacore::UVWMachine Does rotation, including B1950 <-> J2000, refocusing, and maybe

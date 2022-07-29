@@ -28,12 +28,11 @@
 #ifndef CALIBRATION_CALTABITER_H
 #define CALIBRATION_CALTABITER_H
 
-#include <casa/aips.h>
-#include <measures/Measures/MBaseline.h>
-#include <measures/Measures/MEpoch.h>
-#include <ms/MSOper/MSDerivedValues.h>
-#include <tables/Tables/TableIter.h>
-
+#include <casacore/casa/aips.h>
+#include <casacore/tables/Tables/TableIter.h>
+#include <casacore/measures/Measures/MBaseline.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/ms/MSOper/MSDerivedValues.h>
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/CTColumns.h>
