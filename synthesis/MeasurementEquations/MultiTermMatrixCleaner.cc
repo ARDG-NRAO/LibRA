@@ -466,27 +466,15 @@ Int MultiTermMatrixCleaner::mtclean(Int maxniter, Float stopfraction, Float inpu
   //  writeMatrixToDisk("modelimage_scale_"+String::toString(scale) , vecScaleModel_p[scale]);
 
 
-  // At this stage, vecDirty_p contains the original residual images from the start of minorcycle iterations,
-  // Here, we need to update vecDirty_p with image-domain residuals that account for the model 
-  // components that have been found in this call to mtclean(). 
-  //  Math :  Update residual :  Ires_t = Ires_t -  sum_q [ Ipsf_tq * Im_q ]
-  //              where  Ipsf_tq = sum_nu ( w^{t+q} Ipsf_nu   =   Ipsf_{00, 11, 12/21}
-  for(Int taylor1=0;taylor1<ntaylor_p;taylor1++)
+  // Fill the updated residual image for scale 0 back into vecDirty_p
+  // TODO This is an unnecessary copy, but needed only to get updated residuals
+  //         at the end of a deconvolver call. If this mem-copy can go, it would be great.
+  for(Int taylor=0;taylor<ntaylor_p;taylor++)
     {
-      for(Int taylor2=0;taylor2<ntaylor_p;taylor2++)
-	{
-	  // Convolve model with psf
-	  Matrix<Complex> modelFT;  
-	  fftcomplex.fft0(modelFT, vecModel_p[taylor2], false);
-	  modelFT= ( vecPsfFT_p[taylor1+taylor2]  ) * modelFT;
-	  Matrix<Float> smoothMod(vecDirty_p[taylor1].shape());
-	  fftcomplex.fft0(smoothMod, modelFT, false);
-	  fftcomplex.flip(smoothMod, false, false);
-	  // Subtract from initial residual (vecDirty_p)
-	  vecDirty_p[taylor1] =  vecDirty_p[taylor1]  - smoothMod;
-	}
+	vecDirty_p[taylor] =  matR_p[IND2(taylor,0)] ; // This is the one that gets updated during iters.
     }
-  // Note : In the restore step, vecDirty_p is over-written and reused in computeprincipalsolution.
+  
+  //UUU cout << "major " << totalIters_p << endl;
 
   /* Return the number of minor-cycle iterations completed in this run */
   return iterdone;
