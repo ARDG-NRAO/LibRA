@@ -49,7 +49,15 @@ find_package(FLEX REQUIRED)
 # protobuf/grpc dependency
 find_package(Protobuf REQUIRED)
 find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
-#find_package(gRPC REQUIRED)
+# Try to detect GRPC using native cmake support (for distributions like Fedora or source compilation)
+find_package(gRPC QUIET)
+# If that fails, try detecting GRPC with pkgconfig (for distributions like Ubuntu, Rocky Linux)
+if(NOT DEFINED gRPC_FOUND OR gRPC_FOUND EQUAL 0libprotobuf-dev:amd64)
+  pkg_check_modules(GRPC REQUIRED IMPORTED_TARGET grpc++)
+  set(gRPC_USES_FIND_PACKAGE OFF)
+else()
+  set(gRPC_USES_FIND_PACKAGE ON)
+endif()
 add_definitions(-DUSE_GRPC)
 
 # GSL dependency
