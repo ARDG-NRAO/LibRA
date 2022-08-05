@@ -23,11 +23,9 @@ declare_casacpp_component("synthesis")
 
 # We need to add the BISON and FLEX outputs to the sources.
 # This overwrites the target_sourcescommand from declare_casacpp_component
-file(GLOB_RECURSE synthesis_library_modules "*.cc" "*.f")
-file(GLOB_RECURSE synthesis_public_headers "*.h" "*.tcc")
 target_sources(casacpp_synthesis
   PRIVATE
-   ${synthesis_library_modules}
+   ${synthesis_library_sources}
    ${BISON_CalLibraryGramBison_OUTPUTS}
    ${FLEX_CalLibraryGramFlex_OUTPUTS}
   PUBLIC
