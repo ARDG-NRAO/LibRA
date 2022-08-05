@@ -31,7 +31,7 @@ include(CheckCXXCompilerFlag)
 include(FindPkgConfig)
 
 # Set a default build type if none was specified
-set(default_build_type Release)
+set(default_build_type RelWithDebInfo)
 
 # Set C++ standard to c++11
 set(CMAKE_CXX_STANDARD 11)
