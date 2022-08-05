@@ -23,6 +23,7 @@ target_link_libraries(casacpp_msvis PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies
 add_dependencies(casacpp_msvis casacpp_stdcasa casacpp_asdmstman)
-target_link_libraries(casacpp_msvis PRIVATE casacpp_stdcasa casacpp_asdmstman)
+target_link_libraries(casacpp_msvis PUBLIC casacpp_stdcasa)
+target_link_libraries(casacpp_msvis PRIVATE casacpp_asdmstman)
 # the top level source directory, so that we can find all the includes
 target_include_directories(casacpp_msvis PUBLIC ${CMAKE_SOURCE_DIR})

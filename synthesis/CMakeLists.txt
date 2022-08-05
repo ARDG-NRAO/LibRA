@@ -42,8 +42,8 @@ target_link_libraries(casacpp_synthesis PUBLIC OpenMP::OpenMP_CXX)
 target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::SAKURA)
 
 # Internal dependencies
-target_link_libraries(casacpp_synthesis PRIVATE casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_asdmstman casacpp_protobuf casacpp_imageanalysis)
-add_dependencies(casacpp_synthesis casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_asdmstman casacpp_protobuf casacpp_imageanalysis)
+target_link_libraries(casacpp_synthesis PUBLIC casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+add_dependencies(casacpp_synthesis casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
 # the generated protobuf headers
 target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
 # Include directory for the generated flex/bison
