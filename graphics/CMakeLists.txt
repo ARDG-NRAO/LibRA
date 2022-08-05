@@ -19,7 +19,6 @@
 declare_casacpp_component("graphics")
 
 # External Dependencies
-target_include_directories(casacpp_graphics PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_graphics PUBLIC PkgConfig::CASACORE)
 
 # Internal Dependencies

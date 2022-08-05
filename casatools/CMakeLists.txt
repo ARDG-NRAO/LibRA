@@ -19,7 +19,6 @@
 declare_casacpp_component("casatools")
 
 # External dependencies
-target_include_directories(casacpp_casatools PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_casatools PUBLIC PkgConfig::CASACORE)
 #target_link_libraries(casacpp_casatools PUBLIC gRPC::grpc++)
 target_link_libraries(casacpp_casatools PRIVATE casacpp_protobuf)

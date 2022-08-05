@@ -21,10 +21,9 @@ declare_casacpp_component("alma")
 #Additional definitions for this module
 add_definitions( -DWITHOUT_ACS -DWITHOUT_BOOST )
 # External dependencies
-target_include_directories(casacpp_alma PUBLIC ${LibXML++_INCLUDE_DIRS})
+target_link_libraries(casacpp_alma PUBLIC PkgConfig::LibXML++)
 target_link_libraries(casacpp_alma PUBLIC PkgConfig::CASACORE)
-target_link_libraries(casacpp_alma PUBLIC ${LibXML++_LIBRARIES})
-target_link_libraries(casacpp_alma PUBLIC ${XSLT_LIBRARIES})
+target_link_libraries(casacpp_alma PUBLIC PkgConfig::XSLT)
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes

@@ -19,11 +19,9 @@
 declare_casacpp_component("components")
 
 # External dependencies
-target_include_directories(casacpp_components PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_components PUBLIC PkgConfig::CASACORE)
-target_include_directories(casacpp_components PUBLIC ${GSL_INCLUDE_DIRS})
-target_link_libraries(casacpp_components PUBLIC ${GSL_LIBRARIES})
-target_include_directories(casacpp_components PUBLIC ${CFITSIO_INCLUDE_DIRS})
+target_link_libraries(casacpp_components PUBLIC GSL::gsl)
+target_link_libraries(casacpp_components PUBLIC PkgConfig::CFITSIO)
 
 # Internal dependencies
 add_dependencies(casacpp_components casacpp_casatools casacpp_stdcasa)

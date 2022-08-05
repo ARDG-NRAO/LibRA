@@ -38,7 +38,6 @@ target_sources(casacpp_stdcasa
     ${stdcasa_public_headers})
 
 # External dependencies
-target_include_directories(casacpp_stdcasa PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_stdcasa PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies

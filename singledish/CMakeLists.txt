@@ -19,9 +19,7 @@
 declare_casacpp_component("singledish")
 
 # External dependencies
-target_include_directories(casacpp_singledish PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_singledish PUBLIC PkgConfig::CASACORE)
-target_include_directories(casacpp_singledish PUBLIC ${SAKURA_INCLUDE_DIRS})
 target_link_libraries(casacpp_singledish PUBLIC PkgConfig::SAKURA)
 
 # Internal dependencies

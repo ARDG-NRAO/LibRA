@@ -19,9 +19,7 @@
 declare_casacpp_component("mstransform")
 
 # External dependencies
-target_include_directories(casacpp_mstransform PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_mstransform PUBLIC PkgConfig::CASACORE)
-target_include_directories(casacpp_mstransform PUBLIC ${GSL_INCLUDE_DIRS})
 target_link_libraries(casacpp_mstransform PUBLIC GSL::gsl)
 target_link_libraries(casacpp_mstransform PUBLIC OpenMP::OpenMP_CXX)
 

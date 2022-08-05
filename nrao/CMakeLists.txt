@@ -19,7 +19,6 @@
 declare_casacpp_component("nrao")
 
 # External dependencies
-target_include_directories(casacpp_nrao PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_nrao PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies

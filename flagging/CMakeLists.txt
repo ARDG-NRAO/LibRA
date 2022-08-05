@@ -19,14 +19,12 @@
 declare_casacpp_component("flagging")
 
 # External Dependencies
-target_include_directories(casacpp_flagging PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_flagging PUBLIC PkgConfig::CASACORE)
 #target_link_libraries(casacpp_flagging PUBLIC gRPC::grpc++)
 
 # Internal dependencies
 add_dependencies(casacpp_flagging casacpp_protobuf casacpp_stdcasa casacpp_casatools casacpp_msvis)
-target_link_libraries(casacpp_flagging PRIVATE casacpp_stdcasa casacpp_msvis)
-target_link_libraries(casacpp_flagging PRIVATE casacpp_protobuf)
+target_link_libraries(casacpp_flagging PUBLIC casacpp_protobuf casacpp_stdcasa casacpp_msvis)
 # the top level source directory, so that we can find all the includes
 target_include_directories(casacpp_flagging PRIVATE ${CMAKE_SOURCE_DIR})
 # the generated protobuf headers

@@ -19,7 +19,6 @@
 declare_casacpp_component("calanalysis")
 
 # External dependencies
-target_include_directories(casacpp_calanalysis PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_calanalysis PUBLIC PkgConfig::CASACORE)
 
 # internal dependencies

@@ -28,7 +28,6 @@ target_sources(casacpp_parallel
   PUBLIC
     ${parallel_public_headers})
 # External dependencies
-target_include_directories(casacpp_parallel PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_parallel PUBLIC PkgConfig::CASACORE)
 
 

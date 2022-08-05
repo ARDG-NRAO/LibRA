@@ -19,7 +19,6 @@
 declare_casacpp_component("casadbus")
 
 # External dependencies
-target_include_directories(casacpp_casadbus PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_casadbus PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies

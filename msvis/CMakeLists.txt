@@ -19,7 +19,6 @@
 declare_casacpp_component("msvis")
 
 # External dependencies
-target_include_directories(casacpp_msvis PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_msvis PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies

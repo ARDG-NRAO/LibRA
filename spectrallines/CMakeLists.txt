@@ -19,11 +19,9 @@
 declare_casacpp_component("spectrallines")
 
 # Dependencies
-target_include_directories(casacpp_spectrallines PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_spectrallines PUBLIC PkgConfig::CASACORE)
-target_include_directories(casacpp_spectrallines PUBLIC ${SQLite3_INCUDE_DIRS})
 target_link_libraries(casacpp_spectrallines PUBLIC SQLite::SQLite3)
-target_include_directories(casacpp_spectrallines PUBLIC ${CFITSIO_INCLUDE_DIRS})
+target_link_libraries(casacpp_spectrallines PUBLIC PkgConfig::CFITSIO)
 
 # Internal dependencies
 add_dependencies(casacpp_spectrallines casacpp_casatools)

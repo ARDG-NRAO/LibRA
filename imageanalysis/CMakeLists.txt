@@ -19,9 +19,8 @@
 declare_casacpp_component("imageanalysis")
 
 # External dependencies
-target_include_directories(casacpp_imageanalysis PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_imageanalysis PUBLIC PkgConfig::CASACORE)
-target_include_directories(casacpp_imageanalysis PUBLIC ${CFITSIO_INCLUDE_DIRS})
+target_link_libraries(casacpp_imageanalysis PUBLIC PkgConfig::CFITSIO)
 
 # Internal dependencies
 add_dependencies(casacpp_imageanalysis casacpp_casatools casacpp_stdcasa casacpp_components)
