@@ -15,18 +15,9 @@
 # limitations under the License.
 #
 
-# List the files that are going to be compiled. It is a recursive search
-file(GLOB_RECURSE parallel_library_modules "*.cc")
-# List the header files and template header files, also recursive
-file(GLOB_RECURSE parallel_public_headers "*.h" "*.tcc")
-# Add a library target to cmake
-add_library(casacpp_parallel SHARED)
-# Specify which files belong to the target
-target_sources(casacpp_parallel
-  PRIVATE
-    ${parallel_library_modules}
-  PUBLIC
-    ${parallel_public_headers})
+# Declare this component using the function in the top level CMakeList.txt
+declare_casacpp_component("parallel")
+
 # External dependencies
 target_link_libraries(casacpp_parallel PUBLIC PkgConfig::CASACORE)
 
