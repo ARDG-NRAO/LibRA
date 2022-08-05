@@ -48,8 +48,16 @@ add_library(casacpp_protobuf SHARED)
 target_sources(casacpp_protobuf
   PRIVATE
     ${proto_generated_srcs} ${proto_generated_hdrs})
-#  PUBLIC
-#    ${proto_generated_hdrs})
+
+# Add external GRPC dependency.
+if (gRPC_USES_FIND_PACKAGE)
+  # GRPC has been detected using native cmake support
+  target_link_libraries(casacpp_protobuf PUBLIC gRPC::grpc++)
+else()
+  # GRPC has been detected using pkgconfig
+  target_link_libraries(casacpp_protobuf PUBLIC PkgConfig::GRPC)
+  target_link_libraries(casacpp_protobuf PUBLIC ${Protobuf_LIBRARIES})
+endif()
 
 # Install the library
 install(TARGETS casacpp_protobuf
