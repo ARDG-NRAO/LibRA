@@ -26,6 +26,6 @@ target_link_libraries(casacpp_singledish PUBLIC PkgConfig::SAKURA)
 target_link_libraries(casacpp_singledish PRIVATE casacpp_singledishfiller casacpp_casa_sakura casacpp_msvis casacpp_mstransform casacpp_stdcasa)
 add_dependencies(casacpp_singledish casacpp_singledishfiller casacpp_casa_sakura casacpp_msvis casacpp_mstransform casacpp_stdcasa)
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_singledish PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_singledish PUBLIC ${CMAKE_SOURCE_DIR})
 # the generated protobuf headers
-target_include_directories(casacpp_singledish PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+target_include_directories(casacpp_singledish PUBLIC ${CMAKE_BINARY_DIR}/protobuf_generated)

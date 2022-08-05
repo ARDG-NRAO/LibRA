@@ -27,4 +27,4 @@ target_link_libraries(casacpp_alma PUBLIC PkgConfig::XSLT)
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_alma PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_alma PUBLIC ${CMAKE_SOURCE_DIR})

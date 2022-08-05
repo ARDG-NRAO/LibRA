@@ -27,4 +27,4 @@ target_link_libraries(casacpp_mstransform PUBLIC OpenMP::OpenMP_CXX)
 add_dependencies(casacpp_mstransform casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_asdmstman casacpp_imageanalysis)
 target_link_libraries(casacpp_mstransform PRIVATE casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_asdmstman casacpp_imageanalysis)
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_mstransform PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_mstransform PUBLIC ${CMAKE_SOURCE_DIR})

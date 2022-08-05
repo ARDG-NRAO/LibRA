@@ -49,4 +49,4 @@ target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobu
 # Include directory for the generated flex/bison
 target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_synthesis PUBLIC ${CMAKE_SOURCE_DIR})

@@ -24,4 +24,4 @@ target_link_libraries(casacpp_casa_sakura PUBLIC PkgConfig::SAKURA)
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_casa_sakura PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_casa_sakura PUBLIC ${CMAKE_SOURCE_DIR})

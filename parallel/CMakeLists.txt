@@ -33,4 +33,4 @@ target_link_libraries(casacpp_parallel PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_parallel PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_parallel PUBLIC ${CMAKE_SOURCE_DIR})

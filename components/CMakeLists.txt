@@ -25,6 +25,6 @@ target_link_libraries(casacpp_components PUBLIC PkgConfig::CFITSIO)
 
 # Internal dependencies
 add_dependencies(casacpp_components casacpp_casatools casacpp_stdcasa)
-target_link_libraries(casacpp_components PRIVATE casacpp_casatools casacpp_stdcasa)
+target_link_libraries(casacpp_components PUBLIC casacpp_casatools casacpp_stdcasa)
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_components PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_components PUBLIC ${CMAKE_SOURCE_DIR})

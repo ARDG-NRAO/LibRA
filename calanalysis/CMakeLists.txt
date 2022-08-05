@@ -26,4 +26,4 @@ target_link_libraries(casacpp_calanalysis PUBLIC PkgConfig::CASACORE)
 target_include_directories(casacpp_calanalysis PUBLIC ${CMAKE_SOURCE_DIR})
 # the other components dependencies
 add_dependencies(casacpp_calanalysis casacpp_synthesis)
-target_link_libraries(casacpp_calanalysis PRIVATE casacpp_synthesis)
+target_link_libraries(casacpp_calanalysis PUBLIC casacpp_synthesis)
