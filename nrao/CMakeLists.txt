@@ -1,27 +1,30 @@
 # -*- mode: cmake -*-
-# Copyright 2021 Associated Universities, Inc. Washington DC, USA.
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2022 CASA project
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
+# Correspondence concerning CASA should be addressed as follows:
+#        Internet email: casa-feedback@nrao.edu.
 
 # Declare this component using the function in the top level CMakeList.txt
 declare_casacpp_component("nrao")
 
 # External dependencies
-target_include_directories(casacpp_nrao PUBLIC ${CASACORE_INCLUDE_DIRS})
 target_link_libraries(casacpp_nrao PUBLIC PkgConfig::CASACORE)
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_nrao PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(casacpp_nrao PUBLIC ${CMAKE_SOURCE_DIR})

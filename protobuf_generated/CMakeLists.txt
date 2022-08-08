@@ -1,15 +1,23 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# -*- mode: cmake -*-
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2022 CASA project
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.
 #
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+# Correspondence concerning CASA should be addressed as follows:
+#        Internet email: casa-feedback@nrao.edu.
 
 # Macro for the gen_grpc command
 macro(gen_grpc _proto _hdrs _srcs)
@@ -48,8 +56,16 @@ add_library(casacpp_protobuf SHARED)
 target_sources(casacpp_protobuf
   PRIVATE
     ${proto_generated_srcs} ${proto_generated_hdrs})
-#  PUBLIC
-#    ${proto_generated_hdrs})
+
+# Add external GRPC dependency.
+if (gRPC_USES_FIND_PACKAGE)
+  # GRPC has been detected using native cmake support
+  target_link_libraries(casacpp_protobuf PUBLIC gRPC::grpc++)
+else()
+  # GRPC has been detected using pkgconfig
+  target_link_libraries(casacpp_protobuf PUBLIC PkgConfig::GRPC)
+  target_link_libraries(casacpp_protobuf PUBLIC ${Protobuf_LIBRARIES})
+endif()
 
 # Install the library
 install(TARGETS casacpp_protobuf
