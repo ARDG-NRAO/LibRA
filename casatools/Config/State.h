@@ -45,11 +45,7 @@ namespace casatools {   /** namespace for CASAtools classes within "CASA code" *
         State( ) { }
 
         virtual bool initialized( ) const {
-#ifdef USE_GRPC
             return true;
-#else
-            return false;
-#endif
         }
 
         // use the data path to find the filename...
