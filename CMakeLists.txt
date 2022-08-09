@@ -49,7 +49,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## Check for dependencies
 
 # Find MPI compiler
-find_package(MPI REQUIRED)
+find_package(MPI)
 
 # casacore dependency
 pkg_check_modules(CASACORE REQUIRED IMPORTED_TARGET casacore)
