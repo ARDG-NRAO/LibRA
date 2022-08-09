@@ -72,6 +72,7 @@ public:
   double getTime(casacore::uInt irow) const {return static_cast<double>(timeCol_.get(irow));}
 
   bool getApply(casacore::uInt irow, casacore::uInt ipol) const;
+  std::vector<bool> getMask(casacore::uInt irow, casacore::uInt ipol);
   uint getBaselineType(casacore::uInt irow, casacore::uInt ipol) const;
   int getFPar(casacore::uInt irow, casacore::uInt ipol) const;
 
@@ -124,6 +125,7 @@ public:
   casacore::Matrix<casacore::Float> getFuncFParam() {return ffparCol_.getColumn();}
   casacore::Matrix<casacore::Float> getFuncFParam(casacore::uInt irow) {return ffparCol_.get(irow);}
   casacore::Matrix<casacore::uInt> getMaskList() {return maskCol_.getColumn();}
+  casacore::Matrix<casacore::uInt> getMaskList(casacore::uInt irow) {return maskCol_.get(irow);}
   casacore::Matrix<casacore::Float> getResult() {return resCol_.getColumn();}
   casacore::Matrix<casacore::Float> getResult(casacore::uInt irow) {return resCol_.get(irow);}
   casacore::Matrix<casacore::Float> getRms() {return rmsCol_.getColumn();}
@@ -135,8 +137,6 @@ public:
   casacore::Matrix<casacore::Float> getLineFinderThreshold() {return lfthresCol_.getColumn();}
   casacore::Matrix<casacore::uInt> getLineFinderChanAvg() {return lfavgCol_.getColumn();}
   casacore::Matrix<casacore::uInt> getLineFinderEdge() {return lfedgeCol_.getColumn();}
-
-  std::vector<bool> getMaskFromMaskList(casacore::uInt const nchan, std::vector<int> const& masklist);
 
 private:
   void setbasedata(casacore::uInt irow, casacore::uInt scanno, casacore::uInt beamno, casacore::uInt antno, 
@@ -161,6 +161,8 @@ private:
   casacore::ArrayColumn<casacore::Float> lfthresCol_;
   casacore::ArrayColumn<casacore::uInt> lfavgCol_;
   casacore::ArrayColumn<casacore::uInt> lfedgeCol_;
+
+  std::vector<bool> getMaskFromMaskList(casacore::uInt const nchan, casacore::Vector<casacore::uInt> const& masklist);
 };
 
 }

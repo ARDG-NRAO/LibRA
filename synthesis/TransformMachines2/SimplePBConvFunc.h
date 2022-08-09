@@ -163,7 +163,7 @@ namespace refim{ //namespace for imaging refactor
       casacore::Vector<casacore::Bool> doneMainConv_p;
       casacore::Bool calcFluxScale_p;
       std::map<casacore::String, casacore::Int> vbConvIndex_p;
-      virtual casacore::Int convIndex(const vi::VisBuffer2& vb);
+      virtual casacore::Int convIndex(const vi::VisBuffer2& vb, const casacore::uInt nchan);
       std::map<casacore::String, casacore::Int> ant1PointVal_p;
       casacore::Vector<casacore::MDirection> ant1PointingCache_p;
       const casacore::MDirection& pointingDirAnt1(const vi::VisBuffer2& vb);
