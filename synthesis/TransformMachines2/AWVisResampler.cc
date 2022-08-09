@@ -350,7 +350,7 @@ namespace casa{
   // Moved the accumulateFromGrid() method to file to play with
   // multi-threading it to not clutter this file.  Both versions
   // (threaded and non-threaded) are in this file.
-#include "accumulateFromGrid.cc"
+#include "accumulateFromGrid2.inc"
   //
   //-----------------------------------------------------------------------------------
   //
