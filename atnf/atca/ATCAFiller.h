@@ -29,14 +29,14 @@
 #define ATNF_ATCAFILLER_H
 
 //# Includes
-#include <casa/aips.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Logging/LogIO.h>
-#include <tables/DataMan/TiledDataStManAccessor.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/tables/DataMan/TiledDataStManAccessor.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_TIMEVARVJMREC_H
 #define CALIBRATION_TIMEVARVJMREC_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/CalTables/VisJonesMRec.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

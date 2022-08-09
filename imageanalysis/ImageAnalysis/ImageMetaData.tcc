@@ -27,9 +27,9 @@
 
 #include <casacore/casa/Logging/LogFilter.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <images/Images/ImageSummary.h>
+#include <casacore/images/Images/ImageSummary.h>
 
 
 #ifndef IMAGEANALYSIS_IMAGEMETADATA_TCC

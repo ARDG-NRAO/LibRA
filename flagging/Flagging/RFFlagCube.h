@@ -31,10 +31,10 @@
 //#include <flagging/Flagging/RedFlagger.h>
 #include <flagging/Flagging/RFCubeLattice.h>
 #include <flagging/Flagging/RFChunkStats.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/LogiMatrix.h>
-#include <casa/Arrays/LogiVector.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/LogiMatrix.h>
+#include <casacore/casa/Arrays/LogiVector.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <stdexcept>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

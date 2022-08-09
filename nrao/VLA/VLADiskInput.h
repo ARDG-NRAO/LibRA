@@ -28,11 +28,11 @@
 #ifndef NRAO_VLADISKINPUT_H
 #define NRAO_VLADISKINPUT_H
 
-#include <casa/aips.h>
-#include <casa/IO/RegularFileIO.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/RegularFileIO.h>
 #include <nrao/VLA/VLAArchiveInput.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 
 class Path;

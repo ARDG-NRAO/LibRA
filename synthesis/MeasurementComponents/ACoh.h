@@ -29,8 +29,8 @@
 #ifndef SYNTHESIS_ACOH_H
 #define SYNTHESIS_ACOH_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
 #include <synthesis/MeasurementEquations/Iterate.h>
 #include <msvis/MSVis/VisSet.h>
 

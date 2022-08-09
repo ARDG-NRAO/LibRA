@@ -30,10 +30,10 @@
 
 
 //# Includes
-#include <casa/aips.h>
-#include <lattices/LatticeMath/LatticeHistograms.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/aips.h>
+#include <casacore/lattices/LatticeMath/LatticeHistograms.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/BasicSL/String.h>
 
 
 namespace casacore{

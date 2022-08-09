@@ -29,16 +29,16 @@
 #ifndef CT_CTINTERFACE_H
 #define CT_CTINTERFACE_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/String.h>
-#include <ms/MSSel/MSSelectableTable.h>
-#include <ms/MeasurementSets/MSMainEnums.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/ms/MSSel/MSSelectableTable.h>
+#include <casacore/ms/MeasurementSets/MSMainEnums.h>
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTEnums.h>
 #include <synthesis/CalTables/CTMainColInterface.h>
 //#include <ms/MeasurementSets/MSDataDescription.h>
-#include <tables/Tables/SetupNewTab.h>
-#include <tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/Tables/TableDesc.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 
   class CTInterface: public casacore::MSSelectableTable

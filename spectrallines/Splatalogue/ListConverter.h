@@ -28,12 +28,12 @@
 #ifndef SPLAT_LISTCONVERTER_H
 #define SPLAT_LISTCONVERTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/RegularFile.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/RegularFile.h>
 #include <spectrallines/Splatalogue/SplatalogueTable.h>
 
 namespace casa {

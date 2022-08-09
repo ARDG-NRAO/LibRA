@@ -1,11 +1,11 @@
 #ifndef IMAGEANALYSIS_TWOPOINTCORRELATOR_H
 #define IMAGEANALYSIS_TWOPOINTCORRELATOR_H
 
-#include <lattices/LatticeMath/LatticeTwoPtCorr.h>
+#include <casacore/lattices/LatticeMath/LatticeTwoPtCorr.h>
 
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

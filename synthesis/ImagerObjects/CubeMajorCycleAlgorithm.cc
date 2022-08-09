@@ -28,10 +28,10 @@
 #include <synthesis/ImagerObjects/CubeMajorCycleAlgorithm.h>
 #include <synthesis/ImagerObjects/SynthesisImagerVi2.h>
 #include <synthesis/ImagerObjects/SynthesisNormalizer.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 #include <chrono>
 #include <thread>
 using namespace casacore;

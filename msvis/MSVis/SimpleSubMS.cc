@@ -24,8 +24,8 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id: $
-#include <casa/System/AppInfo.h>
-#include <casa/Utilities/GenSort.h>
+#include <casacore/casa/System/AppInfo.h>
+#include <casacore/casa/Utilities/GenSort.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/SimpleSubMS.h>

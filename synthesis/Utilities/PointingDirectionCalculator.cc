@@ -34,20 +34,20 @@
 #include <memory>  // for unique_ptr<>
 #include <utility> // for std::pair
 
-#include <casa/aipstype.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <casacore/casa/IO/ArrayIO.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Containers/Block.h>
-#include <casa/Utilities/BinarySearch.h>
-#include <casa/Logging/LogIO.h>
-#include <tables/TaQL/ExprNode.h>
-#include <ms/MSSel/MSSelection.h>
-#include <measures/Measures/MPosition.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Utilities/BinarySearch.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/MDirection.h>
 // CAS-8418 NEW //
 #include <synthesis/Utilities/SDPosInterpolator.h>
 

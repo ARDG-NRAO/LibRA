@@ -1,7 +1,7 @@
 #ifndef IMAGESANALYSIS_IMAGEMASKATTACHER_H
 #define IMAGESANALYSIS_IMAGEMASKATTACHER_H
 
-#include <images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

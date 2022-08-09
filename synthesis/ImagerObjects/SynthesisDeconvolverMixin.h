@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_DECONVOLVER_MIXIN_H_
 #define SYNTHESIS_DECONVOLVER_MIXIN_H_
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
 #include <memory>

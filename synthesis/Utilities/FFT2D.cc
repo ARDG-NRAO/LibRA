@@ -27,11 +27,11 @@
 //# $kgolap$
 //DEDICATED TO HONGLIN YE 
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Array.h>
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <synthesis/Utilities/FFT2D.h>
-#include <lattices/Lattices/Lattice.h>
+#include <casacore/lattices/Lattices/Lattice.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

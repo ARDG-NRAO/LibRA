@@ -29,10 +29,10 @@
 #ifndef NRAO_VLAFREQUENCYFILTER_H
 #define NRAO_VLAFREQUENCYFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 namespace casacore{
 
 class MVFrequency;

@@ -36,7 +36,7 @@
 #include <vector>
 #include <memory>
 
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/Stokes.h>
 
 namespace casacore {
 // forward declaration

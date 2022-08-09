@@ -29,20 +29,20 @@
 #ifndef SYNTHESIS_SDALGORITHMBASE_H
 #define SYNTHESIS_SDALGORITHMBASE_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 //#include <synthesis/MeasurementComponents/SkyModel.h>
-#include <casa/Arrays/Matrix.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/System/PGPlotter.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/System/PGPlotter.h>
 
-#include <casa/aips.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/casa/aips.h>
+#include <casacore/images/Images/ImageInterface.h>
 #include <components/ComponentModels/ComponentList.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 
 #include<synthesis/ImagerObjects/SDMaskHandler.h>

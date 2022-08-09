@@ -25,21 +25,21 @@
 //#
 //# $Id$
 
-#include <casa/iostream.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/System/ProgressMeter.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <iostream>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/System/ProgressMeter.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <lattices/LEL/LatticeExpr.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
 
 #include <synthesis/MeasurementComponents/SkyModel.h>
 #include <synthesis/MeasurementEquations/CubeSkyEquation.h>
@@ -63,8 +63,8 @@
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <synthesis/TransformMachines/Utils.h>
 #include <synthesis/Utilities/SigHandler.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/SubImage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/SubImage.h>
 
 #include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/VisBufferUtil.h>

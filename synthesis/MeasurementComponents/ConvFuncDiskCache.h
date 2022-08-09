@@ -28,15 +28,15 @@
 #ifndef SYNTHESIS_CONVFUNCDISKCACHE_H
 #define SYNTHESIS_CONVFUNCDISKCACHE_H
 
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
-#include <lattices/Lattices/LatticeCache.h>
-#include <lattices/Lattices/ArrayLattice.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/lattices/Lattices/LatticeCache.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <synthesis/TransformMachines/VPSkyJones.h>
 // Apparently not required here? (gmoellen 06Nov20)
 //#include <synthesis/MeasurementComponents/EPTimeVarVisJones.h>

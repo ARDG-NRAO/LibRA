@@ -25,17 +25,18 @@
 //#
 //# $Id$
 
+#include <iomanip>
 #include <nrao/VLA/VLAADA.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Quanta/QC.h>
-#include <casa/Quanta/Unit.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/BasicMath/Math.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Quanta/QC.h>
+#include <casacore/casa/Quanta/Unit.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/BasicMath/Math.h>
 
 Double ns2m;
 
@@ -207,7 +208,7 @@ Vector<Double> VLAADA::pos() const {
   pos(2) = bz();
   return pos;
 }
-#include <casa/iomanip.h>
+
 String VLAADA::padName() const {
   DebugAssert(ok(), AipsError);
   const Double x = bx();

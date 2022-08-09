@@ -28,7 +28,7 @@
 #ifndef IMAGESANALYSIS_SUBIMAGEFACTORY_H
 #define IMAGESANALYSIS_SUBIMAGEFACTORY_H
 
-#include <images/Images/SubImage.h>
+#include <casacore/images/Images/SubImage.h>
 
 #include <imageanalysis/ImageTypedefs.h>
 

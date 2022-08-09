@@ -27,12 +27,12 @@
 
 #ifndef CALTABLES_CALINTERP_H
 #define CALTABLES_CALINTERP_H
-#include <casa/aips.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Constants.h>
 #include <synthesis/CalTables/CalSet.h>
-#include <casa/OS/File.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -26,7 +26,7 @@
 //# $Id$
 
 #include <synthesis/MeasurementEquations/CCList.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 
 using namespace casacore;

@@ -27,7 +27,7 @@
 
 #include <msvis/MSVis/VisChunkAverager.h>
 
-#include <casa/Arrays/ArrayPartMath.h>
+#include <casacore/casa/Arrays/ArrayPartMath.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

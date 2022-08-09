@@ -28,9 +28,9 @@
 #ifndef SYNTHESIS_WRITEMSALGORITHM_H
 #define SYNTHESIS_WRITEMSALGORITHM_H
 
-#include <casa/BasicSL/String.h>
-#include <casa/Arrays/Array.h>
-#include <lattices/Lattices/PagedArray.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/lattices/Lattices/PagedArray.h>
 #include <synthesis/Parallel/Algorithm.h>
 #include <synthesis/Parallel/Applicator.h>
 

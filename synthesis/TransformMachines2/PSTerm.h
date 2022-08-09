@@ -31,12 +31,12 @@
 
 #include <synthesis/TransformMachines2/Utils.h>
 
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <scimath/Mathematics/ConvolveGridder.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <synthesis/TransformMachines2/CFStore.h>
 #include <synthesis/TransformMachines2/CFTerms.h>
 

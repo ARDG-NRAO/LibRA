@@ -1,5 +1,5 @@
 #include <msvis/MSVis/VisModelDataI.h>
-#include <casa/Exceptions.h>
+#include <casacore/casa/Exceptions.h>
 
 using namespace casacore;
 namespace casa {

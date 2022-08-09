@@ -29,8 +29,8 @@
 #ifndef SYNTHESIS_VPSKYJONES_H
 #define SYNTHESIS_VPSKYJONES_H
 
-#include <casa/aips.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/casa/aips.h>
+#include <casacore/measures/Measures/Stokes.h>
 #include <synthesis/TransformMachines/BeamSkyJones.h>
 
 

@@ -32,10 +32,10 @@
 
 //# Includes
 #include <asdmstman/AsdmIndex.h>
-#include <tables/DataMan/DataManager.h>
-#include <casa/IO/FiledesIO.h>
-#include <casa/Containers/Block.h>
-#include <casa/Containers/Record.h>
+#include <casacore/tables/DataMan/DataManager.h>
+#include <casacore/casa/IO/FiledesIO.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa {
 

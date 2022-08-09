@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_EPOINTVJMREC_H
 #define CALIBRATION_EPOINTVJMREC_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/CalTables/SolvableVJMRec.h>
 
 namespace casa {

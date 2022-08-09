@@ -29,11 +29,11 @@
 
 #include <graphics/GenericPlotter/PlotOptions.h>
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 #include <casacore/casa/BasicMath/Math.h>
 
 namespace casa {

@@ -128,7 +128,6 @@
 #include <synthesis/DataSampling/SynDataSampling.h>
 #include <synthesis/DataSampling/SDDataSampling.h>
 #include <synthesis/DataSampling/ImageDataSampling.h>
-#include <synthesis/DataSampling/PixonProcessor.h>
 
 #include <casacore/lattices/LRegions/LattRegionHolder.h>
 #include <casacore/lattices/Lattices/TiledLineStepper.h> 

@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_CALDESCBUFFER_H
 #define CALIBRATION_CALDESCBUFFER_H
 
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <synthesis/CalTables/CalIterBase.h>
 #include <synthesis/CalTables/CalTable.h>
 #include <synthesis/CalTables/CalDescColumns.h>

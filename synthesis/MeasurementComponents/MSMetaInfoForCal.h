@@ -28,10 +28,10 @@
 #ifndef SYNTHESIS_MSMETAINFOFORCAL_H
 #define SYNTHESIS_MSMETAINFOFORCAL_H
 
-#include <casa/aips.h>
-#include <casa/iostream.h>
-#include <casa/BasicSL/String.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <iostream>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/SimpleSimVi2.h>
 
 namespace casacore {

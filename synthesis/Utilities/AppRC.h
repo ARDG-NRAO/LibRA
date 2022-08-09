@@ -28,9 +28,9 @@
 #ifndef SYNTHESIS_APPRC_H
 #define SYNTHESIS_APPRC_H
 
-#include <casa/aips.h>
-#include <casa/System/Casarc.h>
-#include <casa/sstream.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/System/Casarc.h>
+#include <sstream>
 #include <iostream>
 #include <unistd.h>
 

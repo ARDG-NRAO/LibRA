@@ -25,11 +25,11 @@
 //# $Id:  $
 #include <synthesis/MeasurementEquations/MatrixNACleaner.h>
 #include <synthesis/MeasurementEquations/ImageNACleaner.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
 using namespace std;
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

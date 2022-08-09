@@ -16,9 +16,9 @@
 
 #include <imageanalysis/Annotations/AnnEllipse.h>
 
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <casa/Quanta/QLogical.h>
-#include <images/Regions/WCEllipsoid.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/Quanta/QLogical.h>
+#include <casacore/images/Regions/WCEllipsoid.h>
 
 using namespace casacore;
 namespace casa {

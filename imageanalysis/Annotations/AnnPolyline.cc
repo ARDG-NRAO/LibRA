@@ -17,7 +17,7 @@
 
 #include <imageanalysis/Annotations/AnnPolyline.h>
 
-#include <images/Regions/WCPolygon.h>
+#include <casacore/images/Regions/WCPolygon.h>
 
 using namespace casacore;
 namespace casa {

@@ -29,8 +29,8 @@
 #ifndef _SYNTHESIS_SKY_CAL_H_
 #define _SYNTHESIS_SKY_CAL_H_
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -26,19 +26,19 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSObsColumns.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <tables/Tables.h>
-#include <measures/Measures/Stokes.h>
-#include <measures/Measures/MeasConvert.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSObsColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/tables/Tables.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/MeasConvert.h>
 
-#include <casa/BasicSL/Constants.h>
-#include <measures/Measures/MeasTable.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/measures/Measures/MeasTable.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/ComponentShape.h>
 #include <components/ComponentModels/TabularSpectrum.h>
@@ -48,14 +48,14 @@
 
 #include <msvis/MSVis/VisBuffer.h>
 
-#include <images/Images/ImageInterface.h>
-#include <images/Regions/ImageRegion.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Regions/ImageRegion.h>
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 /*
 // temporary, for debugging
-#include <casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVAngle.h>
 void printDirection(std::ostream &os,const casa::MDirection &dir) throw (casa::AipsError) {
   double lngbuf=dir.getValue().getLong("deg").getValue();
   if (lngbuf<0) lngbuf+=360.;
