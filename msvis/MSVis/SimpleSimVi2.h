@@ -181,6 +181,8 @@ public:
   virtual casacore::Bool moreChunks () const override;
   virtual void nextChunk () override;
 
+  virtual void result(casacore::Record& res) const override;
+
   // Detecting the key change isn't possible (yet?)  
   virtual casacore::String keyChange() const override { SSVi2NotPossible() };
 
