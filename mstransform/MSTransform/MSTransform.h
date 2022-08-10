@@ -124,7 +124,7 @@ protected:
 
 
 	// variables for initAgents
-	MSTransformManager *mdh_p;
+	std::unique_ptr<MSTransformManager> mdh_p;
 
 public:  
 	// default constructor
