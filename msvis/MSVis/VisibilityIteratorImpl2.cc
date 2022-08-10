@@ -1928,6 +1928,17 @@ VisibilityIteratorImpl2::moreChunks() const
 	return msIter_p->more();
 }
 
+void
+VisibilityIteratorImpl2::result(casacore::Record& res) const
+{
+    if (moreChunks()) {
+        throw AipsError("TransformingVi2::result(Record&) can only be called at the end of "
+                        "the iteration. It has been called while there are still "
+                        "moreChunks(). Please check and/or revisit this condition.");
+    }
+    // For now nothing to add to result record from here
+}
+
 const MSColumns *
 VisibilityIteratorImpl2::msColumnsKluge() const
 {

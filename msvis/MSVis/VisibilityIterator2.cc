@@ -339,6 +339,12 @@ VisibilityIterator2::nextChunk ()
     impl_p->nextChunk ();
 }
 
+void
+VisibilityIterator2::result(casacore::Record& res) const
+{
+    impl_p->result(res);
+}
+
 // Report Name of slowest column that changes at end of current iteration
 String VisibilityIterator2::keyChange() const 
 { 
