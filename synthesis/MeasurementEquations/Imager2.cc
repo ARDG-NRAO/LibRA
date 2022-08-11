@@ -206,12 +206,6 @@
 
 using namespace std;
 
-
-#ifdef PABLO_IO
-#include "PabloTrace.h"
-#endif
-
-
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
