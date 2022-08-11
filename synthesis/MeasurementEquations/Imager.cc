@@ -192,12 +192,6 @@
 #endif
 using namespace std;
 
-
-#ifdef PABLO_IO
-#include "PabloTrace.h"
-#endif
-
-
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -222,10 +216,6 @@ Imager::Imager()
 
 void Imager::defaults() 
 {
-
-#ifdef PABLO_IO
-traceEvent(1,"Entering imager::defaults",25);
-#endif
 
   setimaged_p=false;
   nullSelect_p=false;
@@ -320,10 +310,6 @@ traceEvent(1,"Entering imager::defaults",25);
   mssFreqSel_p.resize();
   mssChanSel_p.resize();
   projection_p=String("SIN");
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting imager::defaults",24);
-#endif
-  
 
 }
 
@@ -532,10 +518,6 @@ Imager::~Imager()
 Bool Imager::open(MeasurementSet& theMs, Bool /*compress*/, Bool useModelCol)
 {
 
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::open",21);
-#endif
-
   LogIO os(LogOrigin("Imager", "open()", WHERE));
   
   if (!ms_p.null()) {
@@ -602,25 +584,13 @@ Bool Imager::open(MeasurementSet& theMs, Bool /*compress*/, Bool useModelCol)
 
     this->unlock();
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::open",21);
-#endif
-
     return true;
   } catch (AipsError x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught Exception: "<< x.getMesg() << LogIO::EXCEPTION;
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::open",21);
-#endif
-
     return false;
   } 
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::open",21);
-#endif
 
   return true;
 }
@@ -714,19 +684,8 @@ Bool Imager::setimage(const Int nx, const Int ny,
 		      const Quantity& distance)
 {
 
-
-
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::setimage",26);
-#endif
-
   if(!valid())
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::setimage",25);
-#endif
-
       return false;
     }
 
@@ -826,9 +785,6 @@ Bool Imager::setimage(const Int nx, const Int ny,
      if( whichStokes.nelements()==1 && whichStokes[0]==0 )
       {
       this->unlock();
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::setimage",25);
-#endif
       os << LogIO::SEVERE << "Stokes selection " << stokes_p << " is currently not supported." << LogIO::EXCEPTION;
       return false;
       }
@@ -871,26 +827,15 @@ Bool Imager::setimage(const Int nx, const Int ny,
     
     this->unlock();
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::setimage",25);
-#endif
-
     return true;
   } catch (AipsError x) {
     
     this->unlock();
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::setimage",25);
-#endif
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
     return false;
   } 
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::setimage",25);
-#endif
 
   return true;
 }
@@ -1045,9 +990,6 @@ Bool Imager::defineImage(const Int nx, const Int ny,
     if( whichStokes.nelements()==1 && whichStokes[0]==0 )
       {
       this->unlock();
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::defineimage",25);
-#endif
       os << LogIO::SEVERE << "Stokes selection " << stokes_p << " is currently not supported." << LogIO::EXCEPTION;
       return false;
       }
@@ -1807,19 +1749,6 @@ Bool Imager::setvp(const Bool dovp,
                    const Bool verbose)
 {
 
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::setvp",23);
-#endif
-
-  //  if(!valid())
-  //    {
-
-  //#ifdef PABLO_IO
-  //      traceEvent(1,"Exiting Imager::setvp",22);
-  //#endif
-
-  //     return false;
-  //    }
   LogIO os(LogOrigin("Imager", "setvp()", WHERE));
   
   os << LogIO::NORMAL << "Setting voltage pattern parameters" << LogIO::POST; // Loglevel PROGRESS
@@ -1860,10 +1789,6 @@ Bool Imager::setvp(const Bool dovp,
        << parAngleInc_p.getValue("deg") << " degrees"  << LogIO::POST;
   }
 
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::setvp",22);
-#endif
-
   // muddled with the state of SkyEquation..so redo it
   destroySkyEquation();
   return true;
@@ -1888,27 +1813,12 @@ Bool Imager::setoptions(const String& ftmachine, const Long cache, const Int til
 			const Bool wbawp,
 			const Bool conjBeams)
 {
-
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::setoptions",28);
-#endif
-
   if(!valid()) 
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::setoptions",27);
-#endif
-
       return false;
     }
   if(!assertDefinedImageParameters())
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::setoptions",27);
-#endif
-
       return false;
     }
   LogIO os(LogOrigin("imager", "setoptions()", WHERE));
@@ -1969,10 +1879,6 @@ Bool Imager::setoptions(const String& ftmachine, const Long cache, const Int til
   if(gvp_p) {delete gvp_p; gvp_p=0;}
   if(cft_p) {delete cft_p; cft_p=0;}
 
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::setoptions",27);
-#endif
-
   doPointing = applyPointingOffsets;
   doPBCorr = doPointingCorrection;
 ////The set below does not seemed to be remembered later in the process it 
@@ -1995,12 +1901,6 @@ Bool Imager::setsdoptions(const Float scale, const Float weight,
 			  const Quantity gwidth, const Quantity jwidth,
 			  const Float minweight, const Bool clipminmax)
 {
-
-
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::setsdoptions",28);
-#endif
-
   LogIO os(LogOrigin("imager", "setsdoptions()", WHERE));
   
   os << LogIO::NORMAL << "Setting single dish processing options" << LogIO::POST; // Loglevel PROGRESS
@@ -2027,10 +1927,6 @@ Bool Imager::setsdoptions(const Float scale, const Float weight,
   if(ft_p) {delete ft_p; ft_p=0;}
   if(gvp_p) {delete gvp_p; gvp_p=0;}
   if(cft_p) {delete cft_p; cft_p=0;}
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::setsdoptions",27);
-#endif
 
   return true;
 }
@@ -2995,17 +2891,8 @@ Bool Imager::apparentSensitivity(Double& effSensitivity,
 Bool Imager::makeimage(const String& type, const String& image,
                        const String& compleximage, const Bool verbose)
 {
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::makeimage",23);
-#endif
-  
   if(!valid()) 
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
-
       return false;
     }
   LogIO os(LogOrigin("imager", "makeimage()", WHERE));
@@ -3014,11 +2901,6 @@ Bool Imager::makeimage(const String& type, const String& image,
   try {
     if(!assertDefinedImageParameters())
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
-
 	return false;
       }
     
@@ -3136,10 +3018,6 @@ Bool Imager::makeimage(const String& type, const String& image,
       this->unlock();
       os << LogIO::SEVERE << "Unknown image type " << type << LogIO::EXCEPTION;
 
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::makeimage",22);
-#endif  
-
       return false;
     }
 
@@ -3172,11 +3050,6 @@ Bool Imager::makeimage(const String& type, const String& image,
     //if(!imagecoordinates(imagecoords, false))
     if(!imagecoordinates2(imagecoords, false))
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::makeimage",22);
-#endif  
-
 	return false;
       }
     make(imageName);
@@ -3208,11 +3081,6 @@ Bool Imager::makeimage(const String& type, const String& image,
     //if(!imagecoordinates(cimagecoords, false))
     if(!imagecoordinates2(cimagecoords, false))
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
-
 	return false;
       }
 
@@ -3278,18 +3146,9 @@ Bool Imager::makeimage(const String& type, const String& image,
       cImageImage.table().unmarkForDelete();
     }
     this->unlock();
-
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
-
     return true;
   } catch (AipsError x) {
     this->unlock();
-   
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
     throw(x);
     return false;
   }
@@ -3298,10 +3157,6 @@ Bool Imager::makeimage(const String& type, const String& image,
     throw(AipsError("Unknown exception caught ...imager/casa may need to be exited"));
   }
   this->unlock();
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::makeimage",22);
-#endif
 
   return true;
 }  
@@ -3717,9 +3572,6 @@ Record Imager::clean(const String& algorithm,
 		   const Vector<String>& psfnames,
                    const Bool firstrun)
 {
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::clean",22);
-#endif
   ////////////////////////
   //Double wtime0=omp_get_wtime();
   //////////////////////
@@ -3737,11 +3589,6 @@ Record Imager::clean(const String& algorithm,
 
   if(!valid())
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::clean",21);
-#endif
-
       return retval;
     }
   logSink_p.clearLocally();
@@ -3751,11 +3598,6 @@ Record Imager::clean(const String& algorithm,
   try {
     if(!assertDefinedImageParameters()) 
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::clean",21);
-#endif
-
 	return retval;
       }
     
@@ -3769,10 +3611,6 @@ Record Imager::clean(const String& algorithm,
 	  this->unlock();
 	  os << LogIO::SEVERE << "Need a name for model "
 	     << thismodel << LogIO::POST;
-
-#ifdef PABLO_IO
-	  traceEvent(1,"Exiting Imager::clean",21);
-#endif
 
 	  return retval;
 	}
@@ -3861,11 +3699,6 @@ Record Imager::clean(const String& algorithm,
 	removeTable(residualNames(thismodel));
 	if(!clone(model(thismodel), residualNames(thismodel)))
 	  {
-	    
-#ifdef PABLO_IO
-	    traceEvent(1,"Exiting Imager::clean",21);
-#endif
-
 	    return retval;
 	  }
       }
@@ -4026,10 +3859,6 @@ Record Imager::clean(const String& algorithm,
 	this->unlock();
 	os << LogIO::SEVERE << "Unknown algorithm: " << algorithm 
 	   << LogIO::POST;
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::clean",21);
-#endif
 	
 	return retval;
       }
@@ -4040,10 +3869,6 @@ Record Imager::clean(const String& algorithm,
       //    if (!se_p)
       if(!createSkyEquation(modelNames, fixed, maskNames, complist)) 
         {
-	
-#ifdef PABLO_IO
-          traceEvent(1,"Exiting Imager::clean",21);
-#endif
 	
           return retval;
         }
@@ -4080,10 +3905,6 @@ Record Imager::clean(const String& algorithm,
                                                          // log window.
     }
 
-#ifdef PABLO_IO
-    traceEvent(1,"Starting Deconvolution",23);
-#endif
-
     os << LogIO::NORMAL << (firstrun ? "Start" : "Continu")
        << "ing deconvolution" << LogIO::POST; // Loglevel PROGRESS
     if(se_p->solveSkyModel()) {
@@ -4096,10 +3917,6 @@ Record Imager::clean(const String& algorithm,
       os << LogIO::NORMAL << "Threshhold not reached yet." << LogIO::POST; // Loglevel PROGRESS
     }
     
-
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Deconvolution",21);
-#endif
 
     printbeam(sm_p, os, firstrun);
     
@@ -4126,10 +3943,6 @@ Record Imager::clean(const String& algorithm,
     
     this->unlock();
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::clean",21);
-#endif
-
     return retval;
   }
   catch (PSFZero&  x)
@@ -4145,9 +3958,6 @@ Record Imager::clean(const String& algorithm,
     destroySkyEquation();
     throw(AipsError(x.what()));
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::clean",21);
-#endif
     return retval;
   } 
 
@@ -4158,10 +3968,6 @@ Record Imager::clean(const String& algorithm,
     throw(AipsError("Unknown exception caught ...imager/casa may need to be exited"));
   }
   this->unlock();
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::clean",21);
-#endif  
 
   os << LogIO::NORMAL << "Exiting Imager::clean" << LogIO::POST; // Loglevel PROGRESS
   return retval;
@@ -6307,17 +6113,8 @@ Bool Imager::clone(const String& imageName, const String& newImageName)
 Bool Imager::make(const String& model)
 {
 
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::make",21);
-#endif
-
   if(!valid())
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::make",20);
-#endif
-
       return false;
     }
   LogIO os(LogOrigin("imager", "make()", WHERE));
@@ -6326,11 +6123,6 @@ Bool Imager::make(const String& model)
   try {
     if(!assertDefinedImageParameters())
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::make",20);
-#endif
-
 	return false;
       }
     
@@ -6345,37 +6137,21 @@ Bool Imager::make(const String& model)
     //if(!imagecoordinates(coords, false)) 
     if(!imagecoordinates2(coords, false)) 
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::make",20);
-#endif
 	this->unlock();
 	return false;
       }
     this->makeEmptyImage(coords, modelName, fieldid_p);
     this->unlock();
     
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::make",20);
-#endif
-
     return true;
   } catch (AipsError x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
 
-#ifdef PABLO_IO
-    traceEvent(1,"Exiting Imager::make",20);
-#endif
-
     return false;    
 
   } 
   this->unlock();
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::make",20);
-#endif
 
   return true;
 }
@@ -6383,17 +6159,8 @@ Bool Imager::make(const String& model)
 // Fit the psf. If psf is blank then make the psf first.
 Bool Imager::fitpsf(const String& psf, ImageBeamSet& mbeam) {
 
-#ifdef PABLO_IO
-  traceEvent(1,"Entering Imager::fitpsf",23);
-#endif
-
   if(!valid()) 
     {
-
-#ifdef PABLO_IO
-      traceEvent(1,"Exiting Imager::fitps",22);
-#endif
-
       return false;
     }
   LogIO os(LogOrigin("imager", "fitpsf()", WHERE));
@@ -6402,10 +6169,6 @@ Bool Imager::fitpsf(const String& psf, ImageBeamSet& mbeam) {
   try {
     if(!assertDefinedImageParameters()) 
       {
-
-#ifdef PABLO_IO
-	traceEvent(1,"Exiting Imager::fitps",22);
-#endif
 	this->unlock();
 	return false;
       }
@@ -6423,10 +6186,6 @@ Bool Imager::fitpsf(const String& psf, ImageBeamSet& mbeam) {
       os << LogIO::SEVERE << "PSF image " << lpsf << " does not exist"
 	 << LogIO::POST;
 
-#ifdef PABLO_IO
-     traceEvent(1,"Exiting Imager::fitpsf",22);
-#endif
-
       return false;
     }
 
@@ -6443,26 +6202,14 @@ Bool Imager::fitpsf(const String& psf, ImageBeamSet& mbeam) {
 
     this->unlock();
     
-#ifdef PABLO_IO
-     traceEvent(1,"Exiting Imager::fitps",22);
-#endif
-
-return true;
+    return true;
   } catch (AipsError x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
 
-#ifdef PABLO_IO
-     traceEvent(1,"Exiting Imager::fitps",22);
-#endif
-
      return false;
   } 
   this->unlock();
-
-#ifdef PABLO_IO
-  traceEvent(1,"Exiting Imager::fitps",22);
-#endif
 
   return true;
 }
