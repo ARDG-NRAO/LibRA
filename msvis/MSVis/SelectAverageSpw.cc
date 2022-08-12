@@ -32,16 +32,13 @@
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/Arrays/Slice.h>
 #include <casacore/measures/Measures/MeasTable.h>
-//#include <casa/OS/Timer.h>
 
-#include <graphics/X11/X_enter.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <graphics/X11/X_exit.h>
 
 #define LOG2 0
 
