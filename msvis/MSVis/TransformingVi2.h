@@ -136,6 +136,9 @@ public:
     virtual casacore::Bool moreChunks () const override;
     virtual void nextChunk () override;
 
+    // Pass results accumulated throughout iteration
+    void result(casacore::Record& res) const;
+
     // Report Name of slowest column that changes at end of current iteration
     virtual casacore::String keyChange() const override { return getVii()->keyChange(); };
 
