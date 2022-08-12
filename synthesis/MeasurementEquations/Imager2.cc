@@ -134,7 +134,6 @@
 #include <synthesis/DataSampling/SynDataSampling.h>
 #include <synthesis/DataSampling/SDDataSampling.h>
 #include <synthesis/DataSampling/ImageDataSampling.h>
-#include <synthesis/DataSampling/PixonProcessor.h>
 
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <casacore/lattices/LRegions/LattRegionHolder.h>
@@ -199,12 +198,6 @@
 #include <synthesis/Utilities/SingleDishBeamUtil.h>
 
 using namespace std;
-
-
-#ifdef PABLO_IO
-#include "PabloTrace.h"
-#endif
-
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -1945,143 +1938,6 @@ Bool Imager::pbguts(ImageInterface<Float>& inImage,
   return true;
 }
 
-
-Bool Imager::pixon(const String& algorithm,
-		   const Quantity& sigma, 
-		   const String& model)
-{
-  if(!valid()) {
-    return false;
-  }
-  LogIO os(LogOrigin("imager", "pixon()", WHERE));
-  
-  this->lock();
-
-  try {
-
-    if(algorithm=="singledish") {
-
-      if(!assertDefinedImageParameters()) {
-	return false;
-      }
-      String modelName=model;
-      if(modelName=="") modelName=imageName()+".pixon";
-      make(modelName);
-      
-      PagedImage<Float> modelImage(modelName);
-      
-      os << LogIO::NORMAL << "Single dish pixon processing" << LogIO::POST; // Loglevel PROGRESS
-      os << LogIO::NORMAL // Loglevel INFO
-         << "Using defaults for primary beams in pixon processing" << LogIO::POST;
-      MSColumns msc(*mssel_p);
-      gvp_p=new VPSkyJones(msc, true, parAngleInc_p, squintType_p,
-                           skyPosThreshold_p);
-      os << LogIO::NORMAL << "Calculating data sampling, etc." << LogIO::POST; // Loglevel PROGRESS
-      SDDataSampling ds(*mssel_p, *gvp_p, modelImage.coordinates(),
-			modelImage.shape(), sigma);
-      
-      os << LogIO::NORMAL << "Finding pixon solution" << LogIO::POST; // Loglevel PROGRESS
-      PixonProcessor pp;
-
-      IPosition zero(4, 0, 0, 0, 0);
-      Array<Float> result;
-      if(pp.calculate(ds, result)) {
-	os << LogIO::NORMAL << "Pixon solution succeeded" << LogIO::POST; // Loglevel INFO
-	modelImage.putSlice(result, zero);
-      }
-      else {
-	os << LogIO::WARN << "Pixon solution failed" << LogIO::POST;
-      }
-    }
-    else if(algorithm=="synthesis") {
-
-      if(!assertDefinedImageParameters()) {
-	return false;
-      }
-      String modelName=model;
-      if(modelName=="") modelName=imageName()+".pixon";
-      make(modelName);
-      
-      PagedImage<Float> modelImage(modelName);
-      
-      os << LogIO::NORMAL << "Synthesis pixon processing" << LogIO::POST; // Loglevel INFO
-      os << LogIO::NORMAL << "Calculating data sampling, etc." << LogIO::POST; // Loglevel PROGRESS
-      SynDataSampling ds(*mssel_p, modelImage.coordinates(),
-			 modelImage.shape(), sigma);
-      
-      os << LogIO::NORMAL << "Finding pixon solution" << LogIO::POST; // Loglevel PROGRESS
-      PixonProcessor pp;
-      
-      IPosition zero(4, 0, 0, 0, 0);
-      Array<Float> result;
-      if(pp.calculate(ds, result)) {
-	os << LogIO::NORMAL << "Pixon solution succeeded" << LogIO::POST; // Loglevel INFO
-	modelImage.putSlice(result, zero);
-      }
-      else {
-	os << LogIO::WARN << "Pixon solution failed" << LogIO::POST;
-      }
-    }
-    else if(algorithm=="synthesis-image") {
-
-      if(!assertDefinedImageParameters()) {
-	return false;
-      }
-      String modelName=model;
-      if(modelName=="") modelName=imageName()+".pixon";
-      make(modelName);
-      
-      PagedImage<Float> modelImage(modelName);
-      
-      os << LogIO::NORMAL << "Synthesis image pixon processing" << LogIO::POST; // Loglevel PROGRESS
-      String dirtyName=modelName+".dirty";
-      Imager::makeimage("corrected", dirtyName);
-      String psfName=modelName+".psf";
-      Imager::makeimage("psf", psfName);
-      PagedImage<Float> dirty(dirtyName);
-      PagedImage<Float> psf(psfName);
-      os << "Calculating data sampling, etc." << LogIO::POST;
-      ImageDataSampling imds(dirty, psf, sigma.getValue());
-      os << "Finding pixon solution" << LogIO::POST;
-      PixonProcessor pp;
-      IPosition zero(4, 0, 0, 0, 0);
-      Array<Float> result;
-      if(pp.calculate(imds, result)) {
-	os << "Pixon solution succeeded" << LogIO::POST;
-	modelImage.putSlice(result, zero);
-      }
-      else {
-	os << LogIO::WARN << "Pixon solution failed" << LogIO::POST;
-      }
-    }
-
-    else if(algorithm=="test") {
-
-      os << LogIO::NORMAL << "Pixon standard test" << LogIO::POST; // Loglevel INFO
-      PixonProcessor pp;
-
-      return pp.standardTest();
-      
-    } else {
-      this->unlock();
-      os << LogIO::SEVERE << "Unknown algorithm: " << algorithm << LogIO::POST;
-      return false;
-
-    }
-
-    this->unlock();
-
-    return true;
-  } catch (AipsError x) {
-    this->unlock();
-    os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
-
-    return false;
-  } 
-  this->unlock();
-  return true;
-
-}
 
 void Imager::printbeam(CleanImageSkyModel *sm_p, LogIO &os, const Bool firstrun)
 {

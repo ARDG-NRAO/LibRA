@@ -447,11 +447,6 @@ class Imager
 	   const casacore::Vector<casacore::String>& restored,
 	   const casacore::Vector<casacore::String>& residual);
   
-  // pixon algorithm
-  casacore::Bool pixon(const casacore::String& algorithm,
-	     const casacore::Quantity& sigma, 
-	     const casacore::String& model);
-  
   // NNLS algorithm
   casacore::Bool nnls(const casacore::String& algorithm, const casacore::Int niter, const casacore::Float tolerance,
 	    const casacore::Vector<casacore::String>& model, const casacore::Vector<casacore::Bool>& fixed,
