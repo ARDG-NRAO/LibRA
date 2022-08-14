@@ -25,39 +25,39 @@
 //#
 //# $Id$
 
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
-#include <casa/sstream.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
+#include <sstream>
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
-#include <casa/Logging.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/OS/DirectoryIterator.h>
-#include <casa/OS/File.h>
-#include <casa/OS/Path.h>
-#include <lattices/Lattices/LatticeLocker.h>
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/Logging.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/lattices/Lattices/LatticeLocker.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <components/ComponentModels/GaussianDeconvolver.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <imageanalysis/ImageAnalysis/CasaImageBeamSet.h>
-#include <lattices/LatticeMath/LatticeMathUtil.h>
-#include <ms/MeasurementSets/MSHistoryHandler.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <tables/Tables/TableUtil.h>
+#include <casacore/lattices/LatticeMath/LatticeMathUtil.h>
+#include <casacore/ms/MeasurementSets/MSHistoryHandler.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <synthesis/ImagerObjects/SIImageStore.h>
 #include <synthesis/ImagerObjects/SDMaskHandler.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
-#include <images/Images/ImageRegrid.h>
+#include <casacore/images/Images/ImageRegrid.h>
 #include <imageanalysis/ImageAnalysis/ImageStatsCalculator.h>
 
 //#include <imageanalysis/ImageAnalysis/ImageMaskedPixelReplacer.h>

@@ -4,8 +4,8 @@
 #include <libsakura/sakura.h>
 //#include <libsakura/config.h>
 
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
 
 namespace casa {
 template<typename T>

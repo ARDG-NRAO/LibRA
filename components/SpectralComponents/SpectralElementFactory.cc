@@ -27,8 +27,8 @@
 
 //# Includes
 
-#include <casa/Containers/Record.h>
-#include <casa/Utilities/PtrHolder.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Utilities/PtrHolder.h>
 #include <components/SpectralComponents/CompiledSpectralElement.h>
 #include <components/SpectralComponents/GaussianSpectralElement.h>
 #include <components/SpectralComponents/GaussianMultipletSpectralElement.h>

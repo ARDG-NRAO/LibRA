@@ -27,19 +27,19 @@
 #ifndef SYNTHESIS_IMAGER_H
 #define SYNTHESIS_IMAGER_H
 
-#include <casa/aips.h>
-#include <casa/OS/Timer.h>
-#include <casa/Containers/Record.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Quanta/Quantum.h>
 #include <components/ComponentModels/ConstantSpectrum.h>
 
-#include <measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MDirection.h>
 #include <components/ComponentModels/FluxStandard.h>
 //#include <measures/Measures/MDirection.h
-#include <measures/Measures/MPosition.h>
-#include <measures/Measures/MRadialVelocity.h>
+#include <casacore/measures/Measures/MPosition.h>
+#include <casacore/measures/Measures/MRadialVelocity.h>
 
 #include <synthesis/TransformMachines/FTMachine.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
@@ -449,11 +449,6 @@ class Imager
 	   const casacore::Vector<casacore::String>& mask,
 	   const casacore::Vector<casacore::String>& restored,
 	   const casacore::Vector<casacore::String>& residual);
-  
-  // pixon algorithm
-  casacore::Bool pixon(const casacore::String& algorithm,
-	     const casacore::Quantity& sigma, 
-	     const casacore::String& model);
   
   // NNLS algorithm
   casacore::Bool nnls(const casacore::String& algorithm, const casacore::Int niter, const casacore::Float tolerance,

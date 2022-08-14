@@ -30,9 +30,9 @@
 
 
 //# Includes
-#include <casa/aips.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Arrays/Array.h>
 
 namespace casacore{
 

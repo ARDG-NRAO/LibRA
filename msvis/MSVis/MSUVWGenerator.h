@@ -28,11 +28,11 @@
 #ifndef MS_MSUVWGENERATOR_H
 #define MS_MSUVWGENERATOR_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/String.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <measures/Measures/MBaseline.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/measures/Measures/MBaseline.h>
 
 // FTMachine::rotateUVW(casacore::Matrix<casacore::Double>& uvw, casacore::Vector<casacore::Double>& dphase,
 //                      const VisBuffer& vb)

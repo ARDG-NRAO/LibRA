@@ -34,10 +34,10 @@
 #include <climits>
 #include <sstream>
 
-#include <casa/aipstype.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <libsakura/sakura.h>
 #include <singledish/SingleDish/BaselineTable.h>
 

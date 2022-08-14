@@ -26,8 +26,8 @@
 //# $Id$
 
 #include <nrao/VLA/VLAFilter.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 VLAFilter::~VLAFilter() {
   DebugAssert(ok(), AipsError);

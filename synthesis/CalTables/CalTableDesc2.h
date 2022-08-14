@@ -29,9 +29,9 @@
 #ifndef CALIBRATION_CALTABLEDESC2_H
 #define CALIBRATION_CALTABLEDESC2_H
 
-#include <casa/aips.h>
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableDesc.h>
+#include <casacore/casa/aips.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableDesc.h>
 #include <synthesis/CalTables/VisCalEnum.h>
 namespace casa { //# NAMESPACE CASA - BEGIN
 

@@ -25,7 +25,7 @@
 #ifndef COMPONENTS_SKYCOMPONENTFACTORY_H
 #define COMPONENTS_SKYCOMPONENTFACTORY_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 #include <components/ComponentModels/SkyComponent.h>
 

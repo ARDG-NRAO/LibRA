@@ -25,18 +25,18 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/aips.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Quanta/Quantum.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSRange.h>
-#include <images/Images/ImageInterface.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSRange.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <synthesis/TransformMachines/CFCell.h>
-#include <casa/iostream.h>
+#include <iostream>
 
 #ifndef SYNTHESIS_UTILS_H
 #define SYNTHESIS_UTILS_H

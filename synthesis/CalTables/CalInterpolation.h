@@ -29,11 +29,11 @@
 #ifndef CALIBRATION_CALINTERPOLATION_H
 #define CALIBRATION_CALINTERPOLATION_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Quanta/Quantum.h>
 #include <msvis/MSVis/MSCalEnums.h>
-#include <ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelection.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

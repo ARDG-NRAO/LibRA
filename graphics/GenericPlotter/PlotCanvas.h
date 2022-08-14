@@ -37,7 +37,7 @@
 #include <graphics/GenericPlotter/PlotShape.h>
 #include <graphics/GenericPlotter/PlotTool.h>
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 namespace casa {
 

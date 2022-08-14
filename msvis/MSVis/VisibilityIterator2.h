@@ -28,10 +28,10 @@
 #ifndef MSVIS_VISIBILITYITERATOR2_H
 #define MSVIS_VISIBILITYITERATOR2_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <ms/MeasurementSets/MSIter.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSIter.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <msvis/MSVis/ViiLayerFactory.h>
@@ -521,6 +521,10 @@ public:
   //     }
   // }
   //
+  // Record result;
+  // vi.result(result);
+  // // return or do something with the result record
+  //
   // The outer loop is the "chunk" loop and the inner loop is the "subchunk"
   // loop.  A chunk contains all the rows having identical values for the
   // sort columns values except time; time can have an optional interval
@@ -552,6 +556,8 @@ public:
   // originChunks - Move to the first chunk of data.
   // operator++ - advance VI to the next chunk if it exists
   // moreChunks - returns true if the VI is pointing to a valid chunk.
+  //
+  // result - populate result record after iterating through chunks
 
   void origin(); // Reset to start of the chunk
   void next ();
@@ -560,6 +566,8 @@ public:
   void originChunks();
   void nextChunk();
   casacore::Bool moreChunks() const;
+
+  virtual void result(casacore::Record& res) const;
 
   // Report Name of slowest column that changes at end of current chunk iteration
   virtual casacore::String keyChange() const;

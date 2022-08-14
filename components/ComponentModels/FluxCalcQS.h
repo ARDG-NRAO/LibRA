@@ -29,11 +29,11 @@
 #define COMPONENTS_FLUXCALCQS_H
 
 #include <components/ComponentModels/FluxStandard.h>
-#include <casa/BasicSL/String.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 //# Handy for passing anonymous arrays to functions.
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 
 #include <map>
 

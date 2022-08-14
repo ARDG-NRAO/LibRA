@@ -1,6 +1,5 @@
 #include <casacore/casa/Exceptions/Error.h>
 
-#include <casa/stdio.h>
 #include <cstdlib>
 #include <stdcasa/variant.h>
 #include <stdcasa/record.h>

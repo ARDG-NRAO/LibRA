@@ -25,7 +25,7 @@
 //#
 //# $Id$
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 
 #include <synthesis/Parallel/Applicator.h>
 #include <synthesis/Parallel/MPITransport.h>
@@ -40,9 +40,6 @@
 #include <synthesis/ImagerObjects/CubeMakeImageAlgorithm.h>
 #include <synthesis/ImagerObjects/CubeMinorCycleAlgorithm.h>
 #include <synthesis/Parallel/MPIError.h>
-#ifdef PABLO_IO
-#include <synthesis/Parallel/PabloIO.h>
-#endif
 
 using namespace casacore;
 using namespace std;
@@ -91,9 +88,6 @@ void Applicator::initThreads(Int argc, Char *argv[]){
      comm = new MPITransport(argc, argv);
 
      // Initialize the process status list
-#ifdef PABLO_IO
-     PabloIO::init(argc, argv, comm->cpu());
-#endif
      setupProcStatus();
 
      // If controller then exit, else loop, waiting for an assigned task
@@ -167,9 +161,6 @@ void Applicator::init(Int argc, Char *argv[])
   if (debug_p) {
       cerr << "In init threads, not HAVE_MPI...\n";
   }
-#ifdef PABLO_IO
-     PabloIO::init(argc, argv, 0);
-#endif
   (void)argc;
   (void)argv;
   initThreads();

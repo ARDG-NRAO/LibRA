@@ -29,7 +29,7 @@
 #define IMAGEANALYSIS_IMAGECONCATENATOR_H
 
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casacore{
 

@@ -24,19 +24,19 @@
 #define MSTransformRegridder_H_
 
 // Logging
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 // casacore::Coordinate systems
-#include <measures/Measures/MeasTable.h>
+#include <casacore/measures/Measures/MeasTable.h>
 
 // casacore::MS handling
-#include <ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets.h>
 
 // To use ostringstream
 #include <iomanip>
 
 // Enable record conversions
-#include <casa/Quanta/QuantumHolder.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
 
 
 namespace casa { //# NAMESPACE CASA - BEGIN

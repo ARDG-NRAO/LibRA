@@ -26,12 +26,12 @@
 #ifndef IMAGES_OUTPUTDESTINATIONCHECKER_H
 #define IMAGES_OUTPUTDESTINATIONCHECKER_H
 
-#include <casa/aips.h>
-#include <casa/namespace.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/namespace.h>
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 #include <vector>
 

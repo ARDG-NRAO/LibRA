@@ -30,8 +30,8 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <casa/Logging/LogIO.h>
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/System/AipsrcValue.h>
 #include <msvis/MSVis/VLAT.h>
 #include <msvis/MSVis/VisBufferAsync.h>
 

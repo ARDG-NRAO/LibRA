@@ -29,8 +29,8 @@
 #ifndef SYNTHESIS_DBEAMSKYJONES_H
 #define SYNTHESIS_DBEAMSKYJONES_H
 
-#include <casa/aips.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/casa/aips.h>
+#include <casacore/measures/Measures/Stokes.h>
 #include <synthesis/TransformMachines/BeamSkyJones.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

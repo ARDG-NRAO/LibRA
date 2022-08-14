@@ -27,8 +27,8 @@
 
 //# Includes
 #include <components/SpectralComponents/SpectralEstimate.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicMath/Math.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicMath/Math.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

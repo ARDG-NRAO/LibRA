@@ -27,7 +27,7 @@
 //----------------------------------------------------------------------------
 
 #include <synthesis/CalTables/CalIter.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/Containers/Block.h>
 #include <msvis/MSVis/MSCalEnums.h>
 
 using namespace casacore;

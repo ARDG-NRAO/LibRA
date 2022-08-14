@@ -29,43 +29,43 @@
 // https://www.aanda.org/articles/aa/pdf/2011/08/aa17104-11.pdf
 
 // Same include list as in MatrixCleaner.cc
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
 #include <casacore/casa/IO/ArrayIO.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/File.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Containers/Record.h>
 
-#include <lattices/LRegions/LCBox.h>
-#include <casa/Arrays/Slicer.h>
-#include <scimath/Mathematics/FFTServer.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/Arrays/ArrayError.h>
-#include <casa/Arrays/ArrayIter.h>
-#include <casa/Arrays/VectorIter.h>
+#include <casacore/lattices/LRegions/LCBox.h>
+#include <casacore/casa/Arrays/Slicer.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/Arrays/ArrayError.h>
+#include <casacore/casa/Arrays/ArrayIter.h>
+#include <casacore/casa/Arrays/VectorIter.h>
 
 
-#include <casa/Utilities/GenSort.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/Fallible.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Fallible.h>
 
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
-#include <coordinates/Coordinates/TabularCoordinate.h>
+#include <casacore/coordinates/Coordinates/TabularCoordinate.h>
 
 // Additional include files
-#include <lattices/Lattices/SubLattice.h>
-#include <scimath/Mathematics/MatrixMathLA.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/scimath/Mathematics/MatrixMathLA.h>
+#include <casacore/images/Images/PagedImage.h>
 
 #include<synthesis/MeasurementEquations/MultiTermMatrixCleaner.h>
 

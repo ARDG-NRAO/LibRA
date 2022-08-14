@@ -27,11 +27,11 @@
 //----------------------------------------------------------------------------
 
 #include <msvis/MSVis/VisBuffAccumulator.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/iomanip.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <iomanip>
 
 #define PRTLEV_VBA 0
 

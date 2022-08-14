@@ -28,9 +28,9 @@
 #if ! defined (MSVIS_SimplSimVi2_H)
 #define MSVIS_SimplSimVi2_H
 
-#include <casa/aips.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL.h>
 #include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
 #include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
 #include <casacore/ms/MeasurementSets/MSDataDescColumns.h>
@@ -41,8 +41,8 @@
 #include <msvis/MSVis/VisBufferImpl2.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <measures/Measures/MFrequency.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/Stokes.h>
 #include <casacore/casa/Arrays.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 
@@ -180,6 +180,8 @@ public:
   virtual void originChunks (casacore::Bool forceRewind = false) override;
   virtual casacore::Bool moreChunks () const override;
   virtual void nextChunk () override;
+
+  virtual void result(casacore::Record& res) const override;
 
   // Detecting the key change isn't possible (yet?)  
   virtual casacore::String keyChange() const override { SSVi2NotPossible() };

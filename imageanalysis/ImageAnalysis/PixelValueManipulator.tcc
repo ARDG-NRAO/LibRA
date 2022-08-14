@@ -26,11 +26,11 @@
 
 #include <imageanalysis/ImageAnalysis/PixelValueManipulator.h>
 
-#include <casa/Quanta/QuantumHolder.h>
-#include <images/Images/ImageRegrid.h>
-#include <lattices/LatticeMath/LatticeAddNoise.h>
-#include <lattices/LatticeMath/LatticeSlice1D.h>
-#include <lattices/Lattices/PixelCurve1D.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/lattices/LatticeMath/LatticeAddNoise.h>
+#include <casacore/lattices/LatticeMath/LatticeSlice1D.h>
+#include <casacore/lattices/Lattices/PixelCurve1D.h>
 
 #include <imageanalysis/ImageAnalysis/ImageCollapser.h>
 

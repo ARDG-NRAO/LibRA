@@ -31,39 +31,39 @@
 
 #include <msvis/MSVis/VisBuffer.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MaskArrMath.h>
-#include <casa/Arrays/ArrayIter.h>
-#include <scimath/Mathematics/MatrixMathLA.h>
-#include <scimath/Fitting/LinearFit.h>
-#include <scimath/Functionals/Polynomial.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/OS/Memory.h>
-#include <casa/OS/File.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Quanta/QuantumHolder.h>
-#include <tables/Tables/TableCopy.h>
-#include <tables/Tables/TableUtil.h>
-#include <ms/MeasurementSets/MSAntennaColumns.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <ms/MeasurementSets/MSFieldColumns.h>
-#include <ms/MSOper/MSMetaData.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MaskArrMath.h>
+#include <casacore/casa/Arrays/ArrayIter.h>
+#include <casacore/scimath/Mathematics/MatrixMathLA.h>
+#include <casacore/scimath/Fitting/LinearFit.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/OS/Memory.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/tables/Tables/TableCopy.h>
+#include <casacore/tables/Tables/TableUtil.h>
+#include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/ms/MeasurementSets/MSFieldColumns.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
 #include <synthesis/CalTables/CTMainColumns.h>
 #include <synthesis/CalTables/CTColumns.h>
 #include <synthesis/CalTables/CTGlobals.h>
 #include <synthesis/CalTables/CTIter.h>
 #include <synthesis/CalTables/CTInterface.h>
 #include <synthesis/MeasurementComponents/SolveDataBuffer.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
-#include <casa/sstream.h>
-#include <casa/iostream.h>
-#include <casa/iomanip.h>
-#include <casa/Containers/RecordField.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <casacore/casa/Containers/RecordField.h>
 
 #if ! defined(CASATOOLS)
 #include <casadbus/plotserver/PlotServerProxy.h>
@@ -71,10 +71,10 @@
 #include <casadbus/session/DBusSession.h>
 #endif
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/System/Aipsrc.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/System/Aipsrc.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
 #include <fstream>
 

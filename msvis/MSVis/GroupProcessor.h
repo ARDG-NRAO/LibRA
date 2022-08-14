@@ -26,7 +26,7 @@
 #ifndef MSVIS_GROUPPROCESSOR_H
 #define MSVIS_GROUPPROCESSOR_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 //#include <casa/Containers/Stack.h>
 //#include <ms/MeasurementSets/MeasurementSet.h>
 //#include <msvis/MSVis/VisBuffGroup.h>

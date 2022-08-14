@@ -28,9 +28,9 @@
 #ifndef IMAGES_IMAGETWOPTCORR_H
 #define IMAGES_IMAGETWOPTCORR_H
 
-#include <casa/aips.h>
-#include <images/Images/ImageInterface.h>
-#include <lattices/LatticeMath/LatticeTwoPtCorr.h>
+#include <casacore/casa/aips.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/lattices/LatticeMath/LatticeTwoPtCorr.h>
 
 namespace casacore{
 

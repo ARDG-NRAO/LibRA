@@ -6,9 +6,9 @@
  */
 
 
-#include <ms/MeasurementSets.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <tables/Tables.h>
+#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/tables/Tables.h>
 #include <msvis/MSVis/SpectralWindow.h>
 #include <memory>
 #include <msvis/MSVis/UtilJ.h>

@@ -28,7 +28,7 @@
 
 #include <imageanalysis/ImageTypedefs.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

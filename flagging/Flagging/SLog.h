@@ -30,8 +30,8 @@
 #ifndef SLOG_H
 #define SLOG_H
 
-#include <casa/Logging/LogIO.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/BasicSL/String.h>
     
 namespace casa {
 

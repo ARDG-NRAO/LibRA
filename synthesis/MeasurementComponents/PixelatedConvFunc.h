@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_PIXELATEDCONVFUNC_H
 #define SYNTHESIS_PIXELATEDCONVFUNC_H
 
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 //#include <synthesis/MeasurementComponents/Exp.h>
 #include <synthesis/MeasurementComponents/CExp.h>
 #include <synthesis/TransformMachines/ConvolutionFunction.h>

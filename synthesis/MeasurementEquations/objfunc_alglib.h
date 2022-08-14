@@ -1,15 +1,15 @@
 #ifndef SYNTHESIS_OBJFUNCALGLIB_H
 #define SYNTHESIS_OBJFUNCALGLIB_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/IPosition.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 
-#include <scimath/Mathematics/FFTServer.h>
-#include <scimath/Functionals/Gaussian2D.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/scimath/Functionals/Gaussian2D.h>
 
 #include "lbfgs/optimization.h"
 

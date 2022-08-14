@@ -31,7 +31,7 @@
 #include <mutex>
 #include <thread>
 #include <stdcasa/record.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include "img.grpc.pb.h"
 
 namespace casa {

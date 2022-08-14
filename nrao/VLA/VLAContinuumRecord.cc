@@ -26,13 +26,12 @@
 //# $Id$
 
 #include <nrao/VLA/VLAContinuumRecord.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/IO/ByteIO.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/IO/ByteIO.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Utilities/Assert.h>
 
-//#include <casa/iomanip.h>
 
 VLAContinuumRecord::VLAContinuumRecord()
   :VLABaselineRecord()

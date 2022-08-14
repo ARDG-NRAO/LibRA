@@ -1,7 +1,7 @@
 #ifndef IMAGES_PIXELVALUEMANIPULATORDATA_H
 #define IMAGES_PIXELVALUEMANIPULATORDATA_H
 
-#include <casa/typeinfo.h>
+#include <casacore/casa/typeinfo.h>
 
 namespace casacore{
 
