@@ -7,10 +7,10 @@
 
 #include <msvis/MSVis/PointingDirectionCache.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <measures/Measures/MDirection.h>
-#include <ms/MeasurementSets/MSPointingColumns.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/ms/MeasurementSets/MSPointingColumns.h>
 
 #include <memory>
 

@@ -26,7 +26,7 @@
 //# $Id$
 
 #include <nrao/VLA/VLAEnum.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 String VLAEnum::name(VLAEnum::CorrMode modeEnum) {
   switch (modeEnum) {

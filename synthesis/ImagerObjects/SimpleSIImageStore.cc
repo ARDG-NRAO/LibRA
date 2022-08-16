@@ -24,8 +24,8 @@
  *         520 Edgemont Road
  *         Charlottesville, VA 22903-2475 USA
  */
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 
 using namespace std;

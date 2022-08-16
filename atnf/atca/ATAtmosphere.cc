@@ -29,8 +29,8 @@
 #include "ATAtmosphere.h"
 
 // casa includes
-#include <casa/Utilities/Assert.h>
-#include <casa/Quanta.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Quanta.h>
 
 // std includes
 //#include <cmath>

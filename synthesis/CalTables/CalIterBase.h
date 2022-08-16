@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_CALITERBASE_H
 #define CALIBRATION_CALITERBASE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/CalTables/CalTable.h>
 
 

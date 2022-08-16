@@ -27,11 +27,11 @@
 
 #include <imageanalysis/ImageAnalysis/ImageFactory.h>
 
-#include <casa/OS/EnvVar.h>
+#include <casacore/casa/OS/EnvVar.h>
 #include <casacore/casa/System/AppState.h>
-#include <images/Images/ImageFITSConverter.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/ImageOpener.h>
+#include <casacore/images/Images/ImageFITSConverter.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/ImageOpener.h>
 
 #include <imageanalysis/ImageAnalysis/PixelValueManipulator.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>

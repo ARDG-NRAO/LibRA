@@ -28,8 +28,8 @@
 #ifndef SYNTHESIS_IMAGER_MIXIN_H_
 #define SYNTHESIS_IMAGER_MIXIN_H_
 
-#include <casa/Containers/Record.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Arrays/Array.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #include <synthesis/ImagerObjects/SynthesisImager.h>
 #include <sys/types.h>
@@ -161,7 +161,7 @@ protected:
 			SynthesisParamsGrid &grid_pars0 = grid_pars.at(0);
 			if (!haveCFCache(grid_pars0.cfCache)) {
 				if (imaging_rank == 0) {
-					std::vector<std::string> empty;
+					Vector<String> const empty;
 					si->dryGridding(empty);
 				}
 				std::vector<std::string> cf_list =
@@ -170,8 +170,9 @@ protected:
 					if (si == nullptr)
 						si = std::unique_ptr<SynthesisImager>(
 							new SynthesisImager());
+                    casacore::Vector<casacore::String> const cf_list_casavec(cf_list);
 					si->fillCFCache(
-						cf_list, grid_pars0.ftmachine, grid_pars0.cfCache,
+						cf_list_casavec, grid_pars0.ftmachine, grid_pars0.cfCache,
 						grid_pars0.psTermOn, grid_pars0.aTermOn,grid_pars0.conjBeams);
 				}
 			}

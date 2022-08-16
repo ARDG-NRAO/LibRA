@@ -30,11 +30,11 @@
 #include <components/ComponentModels/FluxStandard.h>
 //#include <components/ComponentModels/FluxCalcQS.h>
 #include <components/ComponentModels/FluxCalcVQS.h>
-#include <casa/BasicSL/String.h>
-#include <measures/Measures/MFrequency.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/measures/Measures/MFrequency.h>
 
 //# Handy for passing anonymous arrays to functions.
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

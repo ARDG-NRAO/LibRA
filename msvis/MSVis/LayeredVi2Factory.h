@@ -27,7 +27,7 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/IteratingParameters.h>
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 namespace vi { //# NAMESPACE VI - BEGIN

@@ -25,9 +25,8 @@
 //#
 //# $Id$
 
-#include <casa/stdio.h>
 #include <flagging/Flagging/RFAMedianClip.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
     
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -29,12 +29,12 @@
 #ifndef NRAO_VLASOURCEFILTER_H
 #define NRAO_VLASOURCEFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
-#include <casa/BasicSL/String.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 
 // <summary>

@@ -30,9 +30,9 @@
 
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #include <synthesis/ImagerObjects/SynthesisNormalizer.h>
-#include <casa/OS/File.h>
-#include <casa/OS/Directory.h>
-#include <casa/OS/RegularFile.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/casa/OS/RegularFile.h>
 #include <memory>
 #include <algorithm>
 #include <vector>

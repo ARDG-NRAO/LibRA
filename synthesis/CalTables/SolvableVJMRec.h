@@ -29,7 +29,7 @@
 #ifndef CALIBRATION_SOLVABLEVJMREC_H
 #define CALIBRATION_SOLVABLEVJMREC_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/CalTables/TimeVarVJMRec.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

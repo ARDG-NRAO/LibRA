@@ -29,11 +29,11 @@
 #include <imageanalysis/ImageAnalysis/ImageFactory.h>
 #include <imageanalysis/ImageAnalysis/ImageMetaData.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
-#include <images/Images/ImageConcat.h>
-#include <images/Images/ImageRegrid.h>
-#include <scimath/Mathematics/Geometry.h>
+#include <casacore/images/Images/ImageConcat.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/scimath/Mathematics/Geometry.h>
 
-#include <casa/BasicSL/STLIO.h>
+#include <casacore/casa/BasicSL/STLIO.h>
 #include <memory>
 
 namespace casa {

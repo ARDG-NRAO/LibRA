@@ -8,22 +8,22 @@
 #ifndef ASYNCHRONOUS_INTERFACE_H_
 #define ASYNCHRONOUS_INTERFACE_H_
 
-#include "AsynchronousTools.h"
-#include "UtilJ.h"
+#include <stdcasa/thread/AsynchronousTools.h>
+#include <stdcasa/UtilJ.h>
 
 using casa::utilj::ThreadTimes;
 using casa::utilj::DeltaThreadTimes;
 
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Block.h>
-#include <casa/Quanta/MVRadialVelocity.h>
-#include <measures/Measures/MRadialVelocity.h>
-#include <measures/Measures/MDoppler.h>
-#include <msvis/MSVis/VisBufferAsync.h>
-#include <msvis/MSVis/VisibilityIterator.h>
-#include <msvis/MSVis/VisibilityIteratorImpl.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Quanta/MVRadialVelocity.h>
+#include <casacore/measures/Measures/MRadialVelocity.h>
+#include <casacore/measures/Measures/MDoppler.h>
+#include "VisBufferAsync.h"
+#include "VisibilityIterator.h"
+#include "VisibilityIteratorImpl.h"
 
 ///#pragma GCC diagnostic warning "-Wno-missing-field-initializers"
 #include <memory>

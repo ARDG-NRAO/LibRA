@@ -26,11 +26,11 @@
 //# $Id$
 
 #include <flagging/Flagging/RFANewMedianClip.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/System/PGPlotterInterface.h>
+#include <casacore/casa/System/PGPlotterInterface.h>
 
-#include <casa/stdio.h>    
+#include <stdio.h>
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 

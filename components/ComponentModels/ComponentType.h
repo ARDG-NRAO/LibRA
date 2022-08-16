@@ -29,7 +29,7 @@
 #ifndef COMPONENTS_COMPONENTTYPE_H
 #define COMPONENTS_COMPONENTTYPE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 //# Forward Declaration
 namespace casacore{

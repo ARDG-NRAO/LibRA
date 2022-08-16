@@ -439,7 +439,9 @@ namespace casa{
 		    muellerElements[ii][0]=mList[ii];
 		  }
 		Double wIncr; miscInfo.get("WIncr", wIncr);
-		cfb->resize(wIncr,0.0,wList,fList,
+        Vector<Double> const wListV(wList);
+        Vector<Double> const fListV(fList);
+		cfb->resize(wIncr,0.0,wListV,fListV,
 			    muellerElements,muellerElements,muellerElements,muellerElements);
 		cfb->setPA(paList_p[ipa]);
 		cfb->setDir(Dir);

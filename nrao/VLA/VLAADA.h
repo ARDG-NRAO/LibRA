@@ -29,12 +29,12 @@
 #ifndef NRAO_VLAADA_H
 #define NRAO_VLAADA_H
 
-#include <casa/aips.h>
-#include <casa/IO/ByteSource.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/IO/ByteSource.h>
+#include <casacore/measures/Measures/Stokes.h>
 #include <nrao/VLA/VLAEnum.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 } //# NAMESPACE CASA - END

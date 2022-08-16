@@ -30,8 +30,8 @@
 
 #include <imageanalysis/Annotations/AnnotationBase.h>
 
-#include <casa/Arrays/Vector.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 namespace casa {
 

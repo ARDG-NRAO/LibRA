@@ -27,21 +27,21 @@
 
 #include <imageanalysis/ImageAnalysis/ImageDecomposer.h>
 
-#include <casa/Arrays/Slicer.h>
-#include <casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Slicer.h>
+#include <casacore/casa/Arrays/Cube.h>
 #include <casacore/casa/IO/ArrayIO.h>
-#include <lattices/Lattices/TiledShape.h>
-#include <scimath/Fitting/FitGaussian.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <lattices/LRegions/LatticeRegion.h>
-#include <lattices/LRegions/LCMask.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LEL/LatticeExprNode.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/Utilities/Assert.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/SubImage.h>
+#include <casacore/lattices/Lattices/TiledShape.h>
+#include <casacore/scimath/Fitting/FitGaussian.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/lattices/LRegions/LatticeRegion.h>
+#include <casacore/lattices/LRegions/LCMask.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LEL/LatticeExprNode.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/SubImage.h>
 
 
 namespace casa {

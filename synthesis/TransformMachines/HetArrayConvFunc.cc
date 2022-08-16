@@ -26,41 +26,41 @@
 //#
 //# $Id$
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/MaskedArray.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
-#include <scimath/Mathematics/FFTServer.h>
-#include <measures/Measures/MeasTable.h>
-#include <scimath/Mathematics/MathFunc.h>
-#include <scimath/Mathematics/ConvolveGridder.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/CompositeNumber.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <casacore/scimath/Mathematics/MathFunc.h>
+#include <casacore/scimath/Mathematics/ConvolveGridder.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/CompositeNumber.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <lattices/Lattices/ArrayLattice.h>
-#include <lattices/Lattices/SubLattice.h>
-#include <lattices/LRegions/LCBox.h>
-#include <lattices/Lattices/LatticeConcat.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/Lattices/LatticeCache.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/lattices/LRegions/LCBox.h>
+#include <casacore/lattices/Lattices/LatticeConcat.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/Lattices/LatticeCache.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
 
 
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
@@ -74,7 +74,7 @@
 #include <synthesis/TransformMachines/HetArrayConvFunc.h>
 #include <synthesis/MeasurementEquations/VPManager.h>
 
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -353,7 +353,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     convFuncChanMap.resize(vb.nChannel());
     Vector<Double> beamFreqs;
     findUsefulChannels(convFuncChanMap, beamFreqs, vb, visFreq);
-    //cerr << "SPW " << vb.spectralWindow() << "   beamFreqs "<< beamFreqs <<  " chamMap " << convFuncChanMap << endl;
     Int nBeamChans=beamFreqs.nelements();
     /////For now not doing beam rotation or squints but to be enabled easily 
     convFuncPolMap.resize(vb.nCorr());
@@ -409,6 +408,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //cerr << "ms " << vb.msName() << " spw " <<  vb.spectralWindow() << endl;
       doneMainConv_p[actualConvIndex_p]=false;
       //cerr << "invalidating doneMainConv " << endl; //<<  convFunctions_p[actualConvIndex_p]->shape()[3] << " =? " << nBeamChans << " convsupp " << convSupport_p.nelements() << endl;
+    }
+
+    ////Trap for cases when the selection seem to have changed
+    if(doneMainConv_p[actualConvIndex_p]){
+      if(nBeamChans != (*convFunctions_p[actualConvIndex_p]).shape()[3])
+	doneMainConv_p[actualConvIndex_p]=False;
+
     }
 
     // Get the coordinate system
@@ -748,7 +754,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //cerr << "ms " << vb.msName() << " convFuncRowMap " << convFuncRowMap[0] << endl;
     ndishpair=max(convFuncRowMap)+1;
     
-    convSupportBlock_p.resize(actualConvIndex_p+1);
+    // convSupportBlock_p.resize(actualConvIndex_p+1);
     convSizes_p.resize(actualConvIndex_p+1);
     //convSupportBlock_p[actualConvIndex_p]=new Vector<Int>(ndishpair);
     //(*convSupportBlock_p[actualConvIndex_p])=convSupport_p;
@@ -766,7 +772,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     weightConvFunc_p=(*convWeights_p[actualConvIndex_p]);
 
     //cerr << "convfunc shapes " <<  convFunc_p.shape() <<  "   " << weightConvFunc_p.shape() << "  " << convSize_p << " pol " << nBeamPols << "  chan " << nBeamChans << " ndishpair " << ndishpair << endl;
-
+    /////Due to a bug in buildCoordSysCore...sometimes an image bigger
+    ///than the spw selection chosen  is made
+    if(nBeamChans > convFunc_p.shape()[3])
+      nBeamChans = convFunc_p.shape()[3];
     //convSupport_p.resize();
     //convSupport_p=(*convSupportBlock_p[actualConvIndex_p]);
     Bool delc; Bool delw;

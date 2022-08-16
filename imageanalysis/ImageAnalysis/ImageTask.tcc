@@ -25,17 +25,17 @@
 //# $Id: $
 
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <casa/IO/FilebufIO.h>
-#include <casa/OS/Directory.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/OS/SymLink.h>
-#include <images/Images/FITSImage.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/MIRIADImage.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <tables/Tables/PlainTable.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/IO/FilebufIO.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/OS/SymLink.h>
+#include <casacore/images/Images/FITSImage.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/MIRIADImage.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/tables/Tables/PlainTable.h>
 
 #include <imageanalysis/ImageAnalysis/ImageHistory.h>
 #include <imageanalysis/ImageAnalysis/ImageInputProcessor.h>

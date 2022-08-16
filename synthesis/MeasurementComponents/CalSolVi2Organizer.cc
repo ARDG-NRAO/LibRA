@@ -33,8 +33,8 @@
 #include <msvis/MSVis/SimpleSimVi2.h>
 #include <msvis/MSVis/AveragingTvi2.h>
 #include <synthesis/MeasurementComponents/FiltrationTVI.h>
-#include <casa/aips.h>
-#include <casa/iostream.h>
+#include <casacore/casa/aips.h>
+#include <iostream>
 
 using namespace casacore;
 

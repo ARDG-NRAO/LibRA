@@ -28,9 +28,9 @@
  
 #include <synthesis/TransformMachines/PBMath1DEVLA.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <measures/Measures.h>
-#include <measures/Measures/MeasConvert.h>
-#include <measures/Measures/MDirection.h>
+#include <casacore/measures/Measures.h>
+#include <casacore/measures/Measures/MeasConvert.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 using namespace casacore;
 
@@ -196,7 +196,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   }
 
   void PBMath1DEVLA::init(){
-    wFreqs_p=std::vector<Double>({232., 246., 281., 296., 312., 328., 344., 357., 382., 392., 403., 421., 458., 470., 1040, 1104, 1168, 1232, 1296, 1360, 1424, 1488, 1552, 1680, 1744, 1808, 1872, 1936, 2000});
+    wFreqs_p=Vector<Double>(
+        std::vector<Double>({232., 246., 281., 296., 312., 328., 344., 357., 382., 392., 403., 421., 458., 470., 1040, 1104, 1168, 1232, 1296, 1360, 1424, 1488, 1552, 1680, 1744, 1808, 1872, 1936, 2000})
+    );
     wFreqs_p *=1e6;
     //Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
     feedConf_p["L"] = (-185.9)*C::pi/180.0;    // squint orientation, rads, North of +AZ axis

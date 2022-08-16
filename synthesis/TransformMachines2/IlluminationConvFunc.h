@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_TRANSFORM2_ILLUMINATIONCONVFUNC_H
 #define SYNTHESIS_TRANSFORM2_ILLUMINATIONCONVFUNC_H
 
-#include <casa/Exceptions.h>
+#include <casacore/casa/Exceptions.h>
 #include <synthesis/TransformMachines2/TabulatedConvFunc.h>
 #include <synthesis/MeasurementComponents/ExpCache.h>
 #include <synthesis/MeasurementComponents/CExp.new3.h>

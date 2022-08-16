@@ -37,13 +37,13 @@
 
 //# Includes
 
-#include <casa/OS/Timer.h>
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/OS/File.h>
 
-#include <tables/Tables/Table.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/TableColumn.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/TableColumn.h>
 
 //# FlagVersion Change Log
 //# =======================

@@ -26,30 +26,30 @@
 //#
 //# $Id$
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
 #include <casacore/casa/Utilities/Sort.h>
-#include <casa/OS/Timer.h>
-#include <casa/OS/Path.h>
-#include <measures/Measures/UVWMachine.h>
-#include <measures/Measures/MeasTable.h>
-#include <ms/MSSel/MSSelectionTools.h>
-#include <ms/MeasurementSets/MSPointingColumns.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/measures/Measures/UVWMachine.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MeasurementSets/MSPointingColumns.h>
 #include <msvis/MSVis/VisBufferUtil.h>
 #include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <casa/iostream.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 #ifdef _OPENMP

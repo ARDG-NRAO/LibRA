@@ -2,7 +2,7 @@
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
 #include <casatools/Config/State.h>
 #include <casacore/casa/Logging/LogIO.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <stdcasa/StdCasa/CasacSupport.h>
 #include <string.h>
 #include <stdlib.h>

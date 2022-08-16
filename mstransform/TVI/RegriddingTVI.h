@@ -30,10 +30,10 @@
 #include <stdcasa/StdCasa/CasacSupport.h>
 
 // casacore::MS Access
-#include <ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets.h>
 
 // To get observatory position from observatory name
-#include <measures/Measures/MeasTable.h>
+#include <casacore/measures/Measures/MeasTable.h>
 
 // calcChanFreqs
 #include <mstransform/MSTransform/MSTransformManager.h>

@@ -28,13 +28,13 @@
 
 #include <spectrallines/Splatalogue/SearchEngine.h>
 
-#include <casa/Containers/Record.h>
-#include <casa/IO/FiledesIO.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/IO/FiledesIO.h>
 
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/File.h>
 #include <imageanalysis/ImageAnalysis/ImageInputProcessor.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/TaQL/TableParse.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/TaQL/TableParse.h>
 #include <fcntl.h>
 #include <memory>
 

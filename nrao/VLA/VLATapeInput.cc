@@ -26,9 +26,9 @@
 //# $Id$
 
 #include <nrao/VLA/VLATapeInput.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/IO/MemoryIO.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/IO/MemoryIO.h>
 
 const uInt VLATapeInput::ReadSize = VLAArchiveInput::BlockSize *
                                    VLAArchiveInput::MaxBlocksPerPhysicalRecord;

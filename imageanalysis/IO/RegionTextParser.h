@@ -17,18 +17,18 @@
 #ifndef IMAGES_ASCIIANNOTATIONFILEPARSER_H
 #define IMAGES_ASCIIANNOTATIONFILEPARSER_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Record.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/Utilities/Regex.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/Utilities/Regex.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <imageanalysis/Annotations/AnnotationBase.h>
 #include <imageanalysis/IO/AsciiAnnotationFileLine.h>
 
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 
 namespace casa {
 

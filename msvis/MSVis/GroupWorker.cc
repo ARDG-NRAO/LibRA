@@ -29,7 +29,7 @@
 #include <msvis/MSVis/VisBufferComponents.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VBRemapper.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 //#include <casa/Exceptions/Error.h>
 //#include <casa/Logging/LogIO.h>
 

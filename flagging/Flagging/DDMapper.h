@@ -27,11 +27,11 @@
 #ifndef FLAGGING_DDMAPPER_H
 #define FLAGGING_DDMAPPER_H
 
-#include <casa/Arrays/Vector.h> 
-#include <casa/Arrays/Cube.h> 
-#include <casa/Exceptions/Error.h>
-#include <measures/Measures/Stokes.h> 
-#include <casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Vector.h> 
+#include <casacore/casa/Arrays/Cube.h> 
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/measures/Measures/Stokes.h> 
+#include <casacore/casa/BasicSL/Complex.h>
     
 namespace casa { //# NAMESPACE CASA - BEGIN
 
