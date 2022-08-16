@@ -33,7 +33,7 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/OS/RegularFile.h>
 #include <casacore/tables/Tables.h>
-#include <RPFITS.h>
+#include <atnf/rpfits/RPFITS.h>
 #include <casacore/ms/MeasurementSets/MSTileLayout.h>
 
 using namespace casacore;
