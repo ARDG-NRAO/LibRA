@@ -6,7 +6,7 @@
  */
 
 
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisBufferImpl2.h>
 #include <msvis/MSVis/ViImplementation2.h>

@@ -29,7 +29,7 @@
 
 #include <imageanalysis/ImageAnalysis/ImageMetaDataBase.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <memory>
 
 namespace casa {

@@ -27,7 +27,7 @@
 //# $Id$
 
 #include <synthesis/Utilities/SigHandler.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 //DEDICATED TO HONGLIN YE 
 

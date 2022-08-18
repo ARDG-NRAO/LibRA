@@ -32,14 +32,14 @@
 #include <synthesis/TransformMachines/VisibilityResamplerBase.h>
 #include <synthesis/TransformMachines/VBStore.h>
 #include <synthesis/Utilities/ThreadCoordinator.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <sys/syscall.h>
 
 using namespace casa::async;

@@ -23,6 +23,7 @@
 #include <msvis/MSVis/LayeredVi2Factory.h>
 
 
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/VisBuffer2.h>
@@ -31,8 +32,7 @@
 #include <msvis/MSVis/AveragingVi2Factory.h>
 #include <msvis/MSVis/CalibratingVi2FactoryI.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
-#include <msvis/MSVis/UtilJ.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

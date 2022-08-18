@@ -13,11 +13,11 @@
 #include <msvis/MSVis/TransformingVi2.h>
 
 // Measures
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MeasFrame.h>
-#include <tables/TaQL.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MeasFrame.h>
+#include <casacore/tables/TaQL.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 
 
@@ -25,8 +25,8 @@
 // !!! This include is required and must be after PI_TVI.h
 // due to forward declarations
 // of the MeasurementSet class in files included by PI_TVI.h
-#include <ms/MeasurementSets.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 
 using namespace casa::vi;
 using namespace casacore;

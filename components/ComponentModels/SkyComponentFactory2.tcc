@@ -26,13 +26,13 @@
 #ifndef COMPONENTS_SKYCOMPONENTFACTORY2_TCC
 #define COMPONENTS_SKYCOMPONENTFACTORY2_TCC
 
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <components/ComponentModels/SkyComponentFactory.h>
-#include <casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVAngle.h>
 #include <components/ComponentModels/GaussianDeconvolver.h>
 #include <components/ComponentModels/GaussianShape.h>
 #include <components/ComponentModels/ComponentType.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/images/Images/ImageUtilities.h>
 
 namespace casa { 
 

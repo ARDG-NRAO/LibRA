@@ -31,7 +31,7 @@
 
 // Implementation returned by the factory method
 #include <mstransform/MSTransform/MSTransformIterator.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa {
 

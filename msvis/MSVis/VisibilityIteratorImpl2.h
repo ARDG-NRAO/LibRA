@@ -29,12 +29,12 @@
 #ifndef MSVIS_VISIBILITYITERATORIMPL2_H
 #define MSVIS_VISIBILITYITERATORIMPL2_H
 
-#include <casa/aips.h>
-#include <ms/MSOper/MSDerivedValues.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MSOper/MSDerivedValues.h>
 #include <msvis/MSVis/ViImplementation2.h>
 #include <msvis/MSVis/ViColumns2.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
 #include <msvis/MSVis/VisImagingWeight.h>
 #include <msvis/MSVis/VisBuffer2.h>
 
@@ -218,6 +218,9 @@ public:
 	// Return false if no more 'Chunks' of data left
 	virtual casacore::Bool
 	moreChunks() const override;
+
+	virtual void
+	result(casacore::Record& res) const override;
 
 	// Check if ms has change since last iteration
 

@@ -27,9 +27,9 @@
 
 #include <casacore/casa/Logging/LogFilter.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <images/Images/ImageSummary.h>
+#include <casacore/images/Images/ImageSummary.h>
 
 
 #ifndef IMAGEANALYSIS_IMAGEMETADATA_TCC
@@ -244,7 +244,7 @@ template <class T> Vector<Quantity> ImageMetaData<T>::_getRefValue() const {
             _refVal.push_back(Quantity(vals[i], units[i]));
         }
     }
-    return _refVal;
+    return Vector<Quantity>(_refVal);
 }
 
 template <class T> String ImageMetaData<T>::_getRefFreqType() const {

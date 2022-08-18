@@ -28,7 +28,7 @@
 #ifndef COMPONENTS_POWERLOGPOLY_H
 #define COMPONENTS_POWERLOGPOLY_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <components/ComponentModels/ComponentType.h>
 #include <components/ComponentModels/SpectralModel.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>

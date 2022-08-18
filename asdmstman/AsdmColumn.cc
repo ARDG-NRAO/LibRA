@@ -28,7 +28,7 @@
 //# $Id: AsdmColumn.cc 19324 2011-11-21 07:29:55Z diepen $
 
 #include <asdmstman/AsdmColumn.h>
-#include <casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Array.h>
 
 using namespace casacore;
 using namespace casa;

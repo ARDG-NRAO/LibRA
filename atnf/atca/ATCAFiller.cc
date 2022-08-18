@@ -27,14 +27,14 @@
 
 #include <atnf/atca/ATCAFiller.h>
 #include <atnf/atca/ATAtmosphere.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Utilities/GenSort.h>
-#include <scimath/Mathematics/FFTServer.h>
-#include <casa/OS/DirectoryIterator.h>
-#include <casa/OS/RegularFile.h>
-#include <tables/Tables.h>
-#include <RPFITS.h>
-#include <ms/MeasurementSets/MSTileLayout.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/tables/Tables.h>
+#include <atnf/rpfits/RPFITS.h>
+#include <casacore/ms/MeasurementSets/MSTileLayout.h>
 
 using namespace casacore;
 namespace casa {

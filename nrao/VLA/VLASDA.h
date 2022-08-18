@@ -29,15 +29,15 @@
 #ifndef NRAO_VLASDA_H
 #define NRAO_VLASDA_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAEnum.h>
-#include <casa/IO/ByteSource.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MFrequency.h>
-#include <measures/Measures/MDoppler.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/casa/IO/ByteSource.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/MDoppler.h>
+#include <casacore/measures/Measures/Stokes.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 } //# NAMESPACE CASA - END

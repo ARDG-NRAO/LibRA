@@ -17,7 +17,7 @@
 #ifndef ANNOTATIONS_ANNCIRCLE_H
 #define ANNOTATIONS_ANNCIRCLE_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <imageanalysis/Annotations/AnnRegion.h>
 
 namespace casa {

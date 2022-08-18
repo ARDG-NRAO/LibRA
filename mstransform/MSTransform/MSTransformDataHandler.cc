@@ -21,9 +21,9 @@
 //# $Id: $
 
 #include <mstransform/MSTransform/MSTransformDataHandler.h>
-#include <tables/Tables/TableProxy.h>
-#include <tables/TaQL/TableParse.h>
-#include <ms/MSOper/MSMetaData.h>
+#include <casacore/tables/Tables/TableProxy.h>
+#include <casacore/tables/TaQL/TableParse.h>
+#include <casacore/ms/MSOper/MSMetaData.h>
 #include <asdmstman/AsdmStMan.h>
 
 
@@ -38,8 +38,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 //
 // -----------------------------------------------------------------------
     MSTransformDataHandler::MSTransformDataHandler(const String& theMS, Table::TableOption option,
-                                                   Bool virtualModelCol,Bool virtualCorrectedCol,
-                                                   Bool reindex) :
+                                                   bool virtualModelCol,bool virtualCorrectedCol,
+                                                   bool reindex) :
 		  ms_p(MeasurementSet(theMS, option)),
 		  mssel_p(ms_p),
 		  msc_p(NULL),
@@ -69,8 +69,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 //
 // -----------------------------------------------------------------------
 MSTransformDataHandler::MSTransformDataHandler(const MeasurementSet& ms,
-                                               Bool virtualModelCol,Bool virtualCorrectedCol,
-                                               Bool reindex) :
+                                               bool virtualModelCol,bool virtualCorrectedCol,
+                                               bool reindex) :
 		   ms_p(ms),
 		   mssel_p(ms_p),
 		   msc_p(NULL),
@@ -182,9 +182,10 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(St
 //
 // -----------------------------------------------------------------------
 const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	String col,
+                                                                                bool produceModel,
 																				const MeasurementSet& msref,
-																				Bool virtualModelCol,
-																				Bool virtualCorrectedCol)
+																				bool virtualModelCol,
+																				bool virtualCorrectedCol)
 {
 	// Memorize both for efficiency and so that the info
 	// message at the bottom isn't unnecessarily repeated.
@@ -210,7 +211,7 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
 	// Are we choosy?
-	const Bool doAny = col.contains("ALL") || col.contains("ANY");
+	const bool doAny = col.contains("ALL") || col.contains("ANY");
 
 	uInt nPoss;
 	if (doAny)
@@ -229,6 +230,21 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 		nPoss = dataColStrToEnums(col, wanted);
 	}
 
+        // Add MODEL_DATA separately from 'datacolumn' selection
+        if (produceModel) {
+            const auto nelem = wanted.nelements();
+            wanted.resize(nelem + 1, true);
+            wanted[nelem] = MS::MODEL_DATA;
+            ++nPoss;
+            // When producing output MS with DATA,MODEL from CORRECTED, setupMS will have
+            // to add MS::DATA to the output MS, not MS::CORRECTED_DATA.
+            // An alternative would be to add a special case in setupMS, similar
+            // to mustWriteOnlyToData, when wanted == CORRECTED_DATA, MODEL_DATA.
+            if (MS::CORRECTED_DATA == wanted[0]) {
+                wanted[0] = MS::DATA;
+            }
+        }
+
 	uInt nFound = 0;
 	my_colNameVect.resize(0);
 	for (uInt i = 0; i < nPoss; ++i)
@@ -240,7 +256,8 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 			my_colNameVect[nFound - 1] = wanted[i];
 		}
 		// CAS-5348 (jagonzal): Model parameters check is done at construction time
-		else if (wanted[i] == MS::MODEL_DATA and virtualModelCol)
+                // (produceModel comes from uvcontsub, doesn't require MODEL in input MS)
+		else if ((wanted[i] == MS::MODEL_DATA and virtualModelCol) or produceModel)
 		{
 			++nFound;
 			my_colNameVect.resize(nFound, true);
@@ -255,16 +272,15 @@ const Vector<MS::PredefinedColumns>& MSTransformDataHandler::parseColumnNames(	S
 		else if (!doAny)
 		{
 			ostringstream ostr;
-			ostr 	<< "Desired column (" << MS::columnName(wanted[i])
-					<< ") not found in the input MS (" << msref.tableName()
-					<< ").";
+			ostr << "Desired column (" << MS::columnName(wanted[i])
+                             << ") not found in the input MS (" << msref.tableName()
+                             << ").";
 			throw(AipsError(ostr.str()));
 		}
 	}
 	if (nFound == 0) throw(AipsError("Did not find and select any data columns."));
 
 	my_colNameStr = col;
-
 	return my_colNameVect;
 }
 
@@ -352,7 +368,7 @@ uInt MSTransformDataHandler::dataColStrToEnums(const String& col, Vector<MS::Pre
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::setmsselect(	const String& spw, const String& field,
+bool MSTransformDataHandler::setmsselect(	const String& spw, const String& field,
                         					const String& baseline, const String& scan,
                         					const String& uvrange, const String& taql,
                         					const Vector<Int>& step, const String& subarray,
@@ -360,7 +376,7 @@ Bool MSTransformDataHandler::setmsselect(	const String& spw, const String& field
                         					const String& obs, const String& feed)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
-	Bool ok;
+	bool ok;
 
 	String myspwstr(spw == "" ? "*" : spw);
 	Record selrec = ms_p.msseltoindex(myspwstr, field);
@@ -407,11 +423,11 @@ Bool MSTransformDataHandler::setmsselect(	const String& spw, const String& field
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::selectSource(const Vector<Int>& fieldid)
+bool MSTransformDataHandler::selectSource(const Vector<Int>& fieldid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
-	Bool cando = true;
+	bool cando = true;
 
 	if (fieldid.nelements() < 1)
 	{
@@ -446,7 +462,7 @@ Bool MSTransformDataHandler::selectSource(const Vector<Int>& fieldid)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::selectSpw(const String& spwstr,const Vector<Int>& steps)
+bool MSTransformDataHandler::selectSpw(const String& spwstr,const Vector<Int>& steps)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -657,12 +673,12 @@ void MSTransformDataHandler::selectAntenna(const Vector<Int>& antennaids,const V
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::pickAntennas(	Vector<Int>& selected_antennaids,
+bool MSTransformDataHandler::pickAntennas(	Vector<Int>& selected_antennaids,
 			 	 	 	 	 	 	 	 	Vector<String>& selected_antenna_strs,
 			 	 	 	 	 	 	 	 	const Vector<Int>& antennaids,
 			 	 	 	 	 	 	 	 	const Vector<String>& antennaSel)
 {
-	Bool didSelect = true;
+	bool didSelect = true;
 
 	if ((antennaids.nelements() == 1) && (antennaids[0] == -1))
 	{
@@ -697,12 +713,12 @@ void MSTransformDataHandler::selectArray(const String& subarray)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::selectCorrelations(const String& corrstr)
+bool MSTransformDataHandler::selectCorrelations(const String& corrstr)
 {
     LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
     corrString_p = corrstr;
-    const Bool areSelecting = corrstr != "" && corrstr != "*";
+    const bool areSelecting = corrstr != "" && corrstr != "*";
 
     // Get correlation slices
     MSSelection mssel1;
@@ -720,14 +736,14 @@ Bool MSTransformDataHandler::selectCorrelations(const String& corrstr)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::getCorrMaps(MSSelection& mssel,
+bool MSTransformDataHandler::getCorrMaps(MSSelection& mssel,
                                          const MeasurementSet& ms,
                                          Vector<Vector<Int> >& outToIn,
-                                         const Bool areSelecting)
+                                         const bool areSelecting)
 {
 
     // ?? This always returns true!!!?!!
-    Bool cando = true;
+    bool cando = true;
 
     // The total number of polids
     uInt npol = ms.polarization().nrow();
@@ -745,8 +761,8 @@ Bool MSTransformDataHandler::getCorrMaps(MSSelection& mssel,
         {
             Int pol = mi->first;
             std::vector<int> correlations_idx = mi->second[0].tovector();
-            std::sort(correlations_idx.begin(), correlations_idx.end()); 
-            outToIn[pol] = correlations_idx;
+            std::sort(correlations_idx.begin(), correlations_idx.end());
+            outToIn[pol] = Vector<Int>(correlations_idx);
         }
     }
     else
@@ -779,9 +795,10 @@ void MSTransformDataHandler::selectTime(Double timeBin, String timerng)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
+bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
                                                   String& colname,
-                                                  casacore::Bool createWeightSpectrumCols,
+                                                  bool produceModel,
+                                                  bool createWeightSpectrumCols,
                                                   const Vector<Int>& tileShape,
                                                   const String& combine,
                                                   Table::TableOption option)
@@ -798,7 +815,8 @@ Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
 	}
 
 	// Watch out!  This throws an AipsError if ms_p doesn't have the requested columns.
-	const Vector<MS::PredefinedColumns> colNamesTok = parseColumnNames(colname,ms_p,virtualModelCol_p,virtualCorrectedCol_p);
+	const Vector<MS::PredefinedColumns> colNamesTok =
+            parseColumnNames(colname,produceModel, ms_p,virtualModelCol_p,virtualCorrectedCol_p);
 
 	if (!makeSelection())
 	{
@@ -847,7 +865,7 @@ Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
 	    copyMainTableKeywords(outCol.rwKeywordSet(), inCol.keywordSet());
 	}
 
-	Bool ret = true;
+	bool ret = true;
 	try
 	{
 		if (option == Table::Scratch)
@@ -899,9 +917,9 @@ Bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::isAllColumns(const Vector<MS::PredefinedColumns>& colNames)
+bool MSTransformDataHandler::isAllColumns(const Vector<MS::PredefinedColumns>& colNames)
 {
-	Bool dCol = false, mCol = false, cCol = false;
+	bool dCol = false, mCol = false, cCol = false;
 	for (uInt i = 0; i < colNames.nelements(); i++)
 	{
 		if (colNames[i] == MS::DATA) dCol = true;
@@ -917,7 +935,7 @@ Bool MSTransformDataHandler::isAllColumns(const Vector<MS::PredefinedColumns>& c
 // Modified version of makeSelection that uses the new getter methods
 // MSS::getSPWDDIDList() and MSS::getDDIDList()
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::makeSelection()
+bool MSTransformDataHandler::makeSelection()
 {
 
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
@@ -1002,7 +1020,7 @@ Bool MSTransformDataHandler::makeSelection()
 	Vector<Int> polDDIList = thisSelection.getDDIDList(elms);
 
 	// When polDDIList is empty, do not do an intersection
-	Bool doIntersection = true;
+	bool doIntersection = true;
 
 	if (polDDIList.size() == 0){
 		doIntersection = false;
@@ -1158,8 +1176,8 @@ Bool MSTransformDataHandler::makeSelection()
 MeasurementSet* MSTransformDataHandler::setupMS(const String& MSFileName, const Int nchan,
                                                 const Int nCorr, const String& telescop,
                                                 const Vector<MS::PredefinedColumns>& colNames,
-                                                casacore::Bool createWeightSpectrumCols,
-                                                const Int obstype, const Bool compress,
+                                                bool createWeightSpectrumCols,
+                                                const Int obstype, const bool compress,
                                                 const asdmStManUseAlternatives asdmStManUse,
                                                 Table::TableOption option)
  {
@@ -1176,8 +1194,8 @@ MeasurementSet* MSTransformDataHandler::setupMS(const String& MSFileName, const 
  MeasurementSet* MSTransformDataHandler::setupMS(const String& MSFileName, const Int nchan,
                                                  const Int nCorr,
                                                  const Vector<MS::PredefinedColumns>& colNamesTok,
-                                                 casacore::Bool createWeightSpectrumCols,
-                                                 const Vector<Int>& tshape, const Bool compress,
+                                                 bool createWeightSpectrumCols,
+                                                 const Vector<Int>& tshape, const bool compress,
                                                  const asdmStManUseAlternatives asdmStManUse,
                                                  Table::TableOption option)
  {
@@ -1224,8 +1242,7 @@ MeasurementSet* MSTransformDataHandler::setupMS(const String& MSFileName, const 
 	// still create a column that has a variable shape as this will permit MS's
 	// with other shapes to be appended.
 	uInt ncols = colNamesTok.nelements();
-	const Bool mustWriteOnlyToData = mustConvertToData(ncols, colNamesTok);
-
+	const bool mustWriteOnlyToData = mustConvertToData(ncols, colNamesTok);
 	if (mustWriteOnlyToData)
 	{
 		MS::addColumnToDesc(td, MS::DATA, 2);
@@ -1465,10 +1482,10 @@ void MSTransformDataHandler::createSubtables(MeasurementSet& ms, Table::TableOpt
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillSubTables(const Vector<MS::PredefinedColumns>&)
+bool MSTransformDataHandler::fillSubTables(const Vector<MS::PredefinedColumns>&)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
-	Bool success = true;
+	bool success = true;
 
 	// Copy the sub-tables before doing anything with the main table.
 	// Otherwise MSColumns won't work.
@@ -1548,7 +1565,7 @@ Bool MSTransformDataHandler::fillSubTables(const Vector<MS::PredefinedColumns>&)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillFieldTable()
+bool MSTransformDataHandler::fillFieldTable()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -1559,7 +1576,7 @@ Bool MSTransformDataHandler::fillFieldTable()
 	const MSFieldColumns& fieldIn = mscIn_p->field();
 	ScalarColumn<String> code(fieldIn.code());
 	ArrayColumn<Double> delayDir(fieldIn.delayDir());
-	ScalarColumn<Bool> flagRow(fieldIn.flagRow());
+	ScalarColumn<bool> flagRow(fieldIn.flagRow());
 	ScalarColumn<String> name(fieldIn.name());
 	ScalarColumn<Int> numPoly(fieldIn.numPoly());
 	ArrayColumn<Double> phaseDir(fieldIn.phaseDir());
@@ -1761,7 +1778,7 @@ Bool MSTransformDataHandler::fillFieldTable()
 	return true;
 }
 
-Bool MSTransformDataHandler::copyEphemerisTable(MSFieldColumns & msField)
+bool MSTransformDataHandler::copyEphemerisTable(MSFieldColumns & msField)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 	const MSFieldColumns& fieldIn = mscIn_p->field();
@@ -1827,7 +1844,7 @@ Bool MSTransformDataHandler::copyEphemerisTable(MSFieldColumns & msField)
 // -----------------------------------------------------------------------
 //  Modified version of fillDDTables
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillDDTables()
+bool MSTransformDataHandler::fillDDTables()
 {
 	fillPolTable();
 	fillDDITable();
@@ -1839,7 +1856,7 @@ Bool MSTransformDataHandler::fillDDTables()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillPolTable()
+bool MSTransformDataHandler::fillPolTable()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -1848,7 +1865,7 @@ Bool MSTransformDataHandler::fillPolTable()
 	ScalarColumn<Int> numCorr(poltable,MSPolarization::columnName(MSPolarization::NUM_CORR));
 	ArrayColumn<Int> corrType(poltable,MSPolarization::columnName(MSPolarization::CORR_TYPE));
 	ArrayColumn<Int> corrProd(poltable,MSPolarization::columnName(MSPolarization::CORR_PRODUCT));
-	ScalarColumn<Bool> flagRow(poltable,MSPolarization::columnName(MSPolarization::FLAG_ROW));
+	ScalarColumn<bool> flagRow(poltable,MSPolarization::columnName(MSPolarization::FLAG_ROW));
 
 	// Output polarization table
 	MSPolarizationColumns& msPol(msc_p->polarization());
@@ -1924,7 +1941,7 @@ Bool MSTransformDataHandler::fillPolTable()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillDDITable()
+bool MSTransformDataHandler::fillDDITable()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -1945,7 +1962,7 @@ Bool MSTransformDataHandler::fillDDITable()
 	}
 
 	// Get list of unique selected SPWs
-	Bool option(false);
+	bool option(false);
 	Sort sortSpws(spw_p.getStorage(option), sizeof(Int));
 	sortSpws.sortKey((uInt) 0, TpInt);
 	Vector<uInt> spwsortindex, spwuniqinds;
@@ -2000,7 +2017,7 @@ Bool MSTransformDataHandler::fillDDITable()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::fillSPWTable()
+bool MSTransformDataHandler::fillSPWTable()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -2013,16 +2030,16 @@ Bool MSTransformDataHandler::fillSPWTable()
 	// Detect which optional columns of SPECTRAL_WINDOW are present.
 	// inSpWCols and msSpW should agree because addOptionalColumns() was done for
 	// SPECTRAL_WINDOW in fillAllTables() before making msc_p or calling fillDDTables
-	Bool haveSpwAN = columnOk(inSpWCols.assocNature());
-	Bool haveSpwASI = columnOk(inSpWCols.assocSpwId());
-	Bool haveSpwBN = columnOk(inSpWCols.bbcNo());
-	Bool haveSpwBS = columnOk(inSpWCols.bbcSideband());
-	Bool haveSpwDI = columnOk(inSpWCols.dopplerId());
-	Bool haveSpwSWF = mssel_p.spectralWindow().tableDesc().isColumn("SDM_WINDOW_FUNCTION") &&
+	bool haveSpwAN = columnOk(inSpWCols.assocNature());
+	bool haveSpwASI = columnOk(inSpWCols.assocSpwId());
+	bool haveSpwBN = columnOk(inSpWCols.bbcNo());
+	bool haveSpwBS = columnOk(inSpWCols.bbcSideband());
+	bool haveSpwDI = columnOk(inSpWCols.dopplerId());
+	bool haveSpwSWF = mssel_p.spectralWindow().tableDesc().isColumn("SDM_WINDOW_FUNCTION") &&
                           mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_WINDOW_FUNCTION");
-	Bool haveSpwSNB = mssel_p.spectralWindow().tableDesc().isColumn("SDM_NUM_BIN") &&
+	bool haveSpwSNB = mssel_p.spectralWindow().tableDesc().isColumn("SDM_NUM_BIN") &&
                           mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_NUM_BIN");
-	Bool haveSpwCorrBit = mssel_p.spectralWindow().tableDesc().isColumn("SDM_CORR_BIT") &&
+	bool haveSpwCorrBit = mssel_p.spectralWindow().tableDesc().isColumn("SDM_CORR_BIT") &&
                               mssel_p.spectralWindow().tableDesc().columnDescSet().isDefined("SDM_CORR_BIT");
 
 	uInt nuniqSpws = spw_uniq_p.size();
@@ -2111,7 +2128,7 @@ Bool MSTransformDataHandler::fillSPWTable()
 
 			// The sign of CHAN_WIDTH defaults to +.  Its determination assumes that
 			// chanFreqIn is monotonic, but not that the sign of the chanWidthIn is correct.
-			Bool neginc = chanFreqIn[chanFreqIn.nelements() - 1] < chanFreqIn[0];
+			bool neginc = chanFreqIn[chanFreqIn.nelements() - 1] < chanFreqIn[0];
 
 			effBWOut.set(0.0);
 			Double totalBW = 0.0;
@@ -2292,7 +2309,7 @@ Bool MSTransformDataHandler::fillSPWTable()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-uInt MSTransformDataHandler::addOptionalColumns(const Table& inTab, Table& outTab,const Bool beLazy)
+uInt MSTransformDataHandler::addOptionalColumns(const Table& inTab, Table& outTab,const bool beLazy)
 {
 	uInt nAdded = 0;
 	const TableDesc& inTD = inTab.actualTableDesc();
@@ -2388,7 +2405,7 @@ void MSTransformDataHandler::relabelSources()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformDataHandler::copySubtable(const String& tabName, const Table& inTab,const Bool doFilter)
+void MSTransformDataHandler::copySubtable(const String& tabName, const Table& inTab,const bool doFilter)
 {
 	String outName(msOut_p.tableName() + '/' + tabName);
 
@@ -2427,7 +2444,7 @@ void MSTransformDataHandler::make_map(std::map<Int, Int>& mapper, const Vector<I
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyPointing()
+bool MSTransformDataHandler::copyPointing()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -2484,7 +2501,7 @@ Bool MSTransformDataHandler::copyPointing()
 
 					if (newAntInd > -1)
 					{
-						Bool matchT = false;
+						bool matchT = false;
 						if (nTRanges == 0)
 						{
 							matchT = true;
@@ -2546,7 +2563,7 @@ void MSTransformDataHandler::setupNewPointing()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copySource()
+bool MSTransformDataHandler::copySource()
 {
 	//Source is an optional table, so it may not exist
 	if (Table::isReadable(mssel_p.sourceTableName()))
@@ -2622,13 +2639,13 @@ Bool MSTransformDataHandler::copySource()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyAntenna()
+bool MSTransformDataHandler::copyAntenna()
 {
 	const MSAntenna& oldAnt = mssel_p.antenna();
 	MSAntenna& newAnt = msOut_p.antenna();
 	const MSAntennaColumns incols(oldAnt);
 	MSAntennaColumns outcols(newAnt);
-	Bool retval = false;
+	bool retval = false;
 
 	outcols.setOffsetRef(MPosition::castType(incols.offsetMeas().getMeasRef().getType()));
 	outcols.setPositionRef(MPosition::castType(incols.positionMeas().getMeasRef().getType()));
@@ -2660,7 +2677,7 @@ Bool MSTransformDataHandler::copyAntenna()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyFeed()
+bool MSTransformDataHandler::copyFeed()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -2757,7 +2774,7 @@ Int MSTransformDataHandler::getProcessorId(Int dataDescriptionId, String msname)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyFlag_Cmd()
+bool MSTransformDataHandler::copyFlag_Cmd()
 {
 
 	// Like POINTING, FLAG_CMD is supposed to exist but is allowed not to.
@@ -2792,7 +2809,7 @@ Bool MSTransformDataHandler::copyFlag_Cmd()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyHistory()
+bool MSTransformDataHandler::copyHistory()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -2817,7 +2834,7 @@ Bool MSTransformDataHandler::copyHistory()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyObservation()
+bool MSTransformDataHandler::copyObservation()
 {
 	const MSObservation& oldObs = mssel_p.observation();
 	MSObservation& newObs = msOut_p.observation();
@@ -2845,7 +2862,7 @@ Bool MSTransformDataHandler::copyObservation()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyProcessor()
+bool MSTransformDataHandler::copyProcessor()
 {
 	const MSProcessor& oldProc = mssel_p.processor();
 	MSProcessor& newProc = msOut_p.processor();
@@ -2857,7 +2874,7 @@ Bool MSTransformDataHandler::copyProcessor()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyState()
+bool MSTransformDataHandler::copyState()
 {
 	// STATE is allowed to not exist, even though it is not optional in
 	// the MS def'n.  For one thing, split dropped it for quite a while.
@@ -2926,7 +2943,7 @@ Bool MSTransformDataHandler::copyState()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copySyscal()
+bool MSTransformDataHandler::copySyscal()
 {
 	// SYSCAL is allowed to not exist.
 	if (Table::isReadable(mssel_p.sysCalTableName()))
@@ -2998,7 +3015,7 @@ Bool MSTransformDataHandler::copySyscal()
 	return true;
 }
 
-Bool MSTransformDataHandler::copyWeather()
+bool MSTransformDataHandler::copyWeather()
 {
 	// Weather is allowed to not exist.
 	if (Table::isReadable(mssel_p.weatherTableName()))
@@ -3076,7 +3093,7 @@ Bool MSTransformDataHandler::copyWeather()
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::filterOptSubtable(const String& subtabname)
+bool MSTransformDataHandler::filterOptSubtable(const String& subtabname)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3091,7 +3108,7 @@ Bool MSTransformDataHandler::filterOptSubtable(const String& subtabname)
 		if (intab.nrow() > 0) {
 
 			// Add feed if selecting by it is ever added.
-			Bool doFilter = (antennaSel_p || !allEQ(spwRelabel_p, spw_p)) && reindex_p;
+			bool doFilter = (antennaSel_p || !allEQ(spwRelabel_p, spw_p)) && reindex_p;
 
 			copySubtable(subtabname, intab, doFilter);
 
@@ -3111,7 +3128,7 @@ Bool MSTransformDataHandler::filterOptSubtable(const String& subtabname)
 				// Int for comparison with antIds.
 				Int maxSelAntp1 = antNewIndex_p.nelements();
 
-				Bool haveRemappingProblem = false;
+				bool haveRemappingProblem = false;
 				for (uInt inrow = 0; inrow < totNOuttabs; ++inrow)
 				{
 					// antenna must be selected, and spwId must be -1 (any) or selected.
@@ -3176,7 +3193,7 @@ Bool MSTransformDataHandler::filterOptSubtable(const String& subtabname)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::copyGenericSubtables()
+bool MSTransformDataHandler::copyGenericSubtables()
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3218,7 +3235,7 @@ Bool MSTransformDataHandler::copyGenericSubtables()
 	// msOut_p.rwKeywordSet() (pass a reference, not a copy) will put a lock on msOut_p.
 	TableCopy::copySubTables(msOut_p.rwKeywordSet(), inkws, msOut_p.tableName(), msOut_p.tableType(), mssel_p);
 
-	// TableCopy::copySubTables(Table, Table, Bool) includes this other code,
+	// TableCopy::copySubTables(Table, Table, bool) includes this other code,
 	// which seems to be copying subtables at one level deeper, but not recursively?
 	const TableDesc& inDesc = mssel_p.tableDesc();
 	const TableDesc& outDesc = msOut_p.tableDesc();
@@ -3254,7 +3271,7 @@ Bool MSTransformDataHandler::copyGenericSubtables()
 // -----------------------------------------------------------------------
 // Method to merge SPW sub-tables from SubMSs to create the MMS level SPW sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeSpwSubTables(Vector<String> filenames)
+bool MSTransformDataHandler::mergeSpwSubTables(Vector<String> filenames)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3395,7 +3412,7 @@ Bool MSTransformDataHandler::mergeSpwSubTables(Vector<String> filenames)
 // -----------------------------------------------------------------------
 // Method to merge DDI sub-tables from SubMSs to create the MMS-level DDI sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeDDISubTables(Vector<String> filenames)
+bool MSTransformDataHandler::mergeDDISubTables(Vector<String> filenames)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3468,7 +3485,7 @@ Bool MSTransformDataHandler::mergeDDISubTables(Vector<String> filenames)
 // -----------------------------------------------------------------------
 // Method to merge FEED sub-tables from SubMSs to create the MMS-level FEED sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeFeedSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeFeedSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3566,7 +3583,7 @@ Bool MSTransformDataHandler::mergeFeedSubTables(Vector<String> filenames, Vector
 // -----------------------------------------------------------------------
 // Method to merge Source sub-tables from SubMSs to create the MMS-level FEED sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeSourceSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeSourceSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3680,7 +3697,7 @@ Bool MSTransformDataHandler::mergeSourceSubTables(Vector<String> filenames, Vect
 // -----------------------------------------------------------------------
 // Method to merge Syscal sub-tables from SubMSs to create the MMS-level Syscal sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeSyscalSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeSyscalSubTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3862,7 +3879,7 @@ Bool MSTransformDataHandler::mergeSyscalSubTables(Vector<String> filenames, Vect
 // -----------------------------------------------------------------------
 // Method to merge FreqOffset sub-tables from SubMSs to create the MMS-level FreqOffset sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeFreqOffsetTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeFreqOffsetTables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -3944,7 +3961,7 @@ Bool MSTransformDataHandler::mergeFreqOffsetTables(Vector<String> filenames, Vec
 // -----------------------------------------------------------------------
 // Method to merge CalDevice sub-tables from SubMSs to create the MMS-level CalDevice sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeCalDeviceSubtables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeCalDeviceSubtables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -4143,7 +4160,7 @@ Bool MSTransformDataHandler::mergeCalDeviceSubtables(Vector<String> filenames, V
 // -----------------------------------------------------------------------
 // Method to merge SysPower sub-tables from SubMSs to create the MMS-level SysPower sub-table
 // -----------------------------------------------------------------------
-Bool MSTransformDataHandler::mergeSysPowerSubtables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
+bool MSTransformDataHandler::mergeSysPowerSubtables(Vector<String> filenames, Vector<uInt> mapSubmsSpwid)
 {
 	LogIO os(LogOrigin("MSTransformDataHandler", __FUNCTION__));
 
@@ -4308,9 +4325,9 @@ Bool MSTransformDataHandler::mergeSysPowerSubtables(Vector<String> filenames, Ve
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-// template <class T>  Bool MSTransformDataHandler::columnOk (ArrayColumn<T> column)
+// template <class T>  bool MSTransformDataHandler::columnOk (ArrayColumn<T> column)
 // {
-// 	Bool ret;
+// 	bool ret;
 // 	if (column.isNull()==false and column.hasContent()==true and column.ndimColumn() > 0)
 // 	{
 // 		ret = true;
@@ -4326,9 +4343,9 @@ Bool MSTransformDataHandler::mergeSysPowerSubtables(Vector<String> filenames, Ve
 // // -----------------------------------------------------------------------
 // //
 // // -----------------------------------------------------------------------
-// template <class T>  Bool MSTransformDataHandler::columnOk (ScalarColumn<T> column)
+// template <class T>  bool MSTransformDataHandler::columnOk (ScalarColumn<T> column)
 // {
-// 	Bool ret;
+// 	bool ret;
 // 	if (column.isNull()==false and column.hasContent()==true)
 // 	{
 // 		ret = true;

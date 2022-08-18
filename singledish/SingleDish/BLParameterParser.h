@@ -34,9 +34,10 @@
 #include <climits>
 #include <sstream>
 
-#include <casa/aipstype.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <libsakura/sakura.h>
 #include <singledish/SingleDish/BaselineTable.h>
 
@@ -44,14 +45,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 struct LineFinderParameter {
   LineFinderParameter(bool const use_lf=false, float const thresh=5.0,
-		      std::vector<size_t> const &edges=std::vector<size_t>(2,0),
-		      size_t const chavglim=0)
+                      std::vector<size_t> const &edges=std::vector<size_t>(2,0),
+                      size_t const chavglim=0)
   {
     use_line_finder=use_lf;
     threshold = thresh;
     chan_avg_limit = chavglim;
     for (size_t iedge=0; iedge < 2; ++ iedge) {
-	edge[iedge] = edges[iedge % edges.size()] ;
+      edge[iedge] = edges[iedge % edges.size()] ;
     }
   }
   bool use_line_finder;
@@ -62,13 +63,13 @@ struct LineFinderParameter {
 
 struct BLParameterSet {
   BLParameterSet(string const blmask="", uint16_t const nfit_max=0,
-		 float const clipthres=3.0,
-		 LineFinderParameter lf_param=LineFinderParameter(),
-		 size_t const bl_type = BaselineType_kNumElements,
-		 uint16_t const fit_order = USHRT_MAX, //UINT16_MAX,
-		 size_t const num_piece = USHRT_MAX, //SIZE_MAX,
-		 std::vector<size_t> const &nwaves = std::vector<size_t>()
-		 )
+                 float const clipthres=3.0,
+                 LineFinderParameter lf_param=LineFinderParameter(),
+                 size_t const bl_type = BaselineType_kNumElements,
+                 uint16_t const fit_order = USHRT_MAX, //UINT16_MAX,
+                 size_t const num_piece = USHRT_MAX, //SIZE_MAX,
+                 std::vector<size_t> const &nwaves = std::vector<size_t>()
+                 )
   {
     baseline_mask = blmask;
     num_fitting_max = nfit_max;
@@ -118,7 +119,7 @@ public:
   //Else, returns a baseline fitting parameter of a certain
   //row and pol IDs in MS
   bool GetFitParameter(size_t const rowid,size_t const polid,
-		       BLParameterSet &bl_param);
+                       BLParameterSet &bl_param);
 
   //Returns the name of file that stores 
   inline string get_file_name(){return blparam_file_;};
@@ -135,10 +136,10 @@ protected:
   void parse(string const file_name);
   // split string by separator character
   void SplitLine(string const &linestr, char const separator,
-		 std::vector<string> &strvec);
+                 std::vector<string> &strvec);
   // convert a line of string to a BLParameterSet data structure
   void ConvertLineToParam(string const &linestr, size_t &rowid,
-			  size_t &polid, BLParameterSet &paramset);
+                          size_t &polid, BLParameterSet &paramset);
   //Returns order or npiece in BLParameterSet structure depending on datatype.
   uint16_t GetTypeOrder(BLParameterSet const &bl_param);
 
@@ -149,20 +150,20 @@ protected:
   uint16_t max_orders_[BaselineType_kNumElements];
   // The enum for columns in fitting parameter file
   typedef enum {BLParameters_kRow = 0,
-		BLParameters_kPol,
-		BLParameters_kMask,
-		BLParameters_kNumIteration,
-		BLParameters_kClipThreshold,
-		BLParameters_kLineFinder,
-		BLParameters_kLFThreshold,
-		BLParameters_kLeftEdge,
-		BLParameters_kRightEdge,
-		BLParameters_kChanAverageLim,
-		BLParameters_kBaselineType,
-		BLParameters_kOrder,
-		BLParameters_kNPiece,
-		BLParameters_kNWave,
-		BLParameters_kNumElements
+                BLParameters_kPol,
+                BLParameters_kMask,
+                BLParameters_kNumIteration,
+                BLParameters_kClipThreshold,
+                BLParameters_kLineFinder,
+                BLParameters_kLFThreshold,
+                BLParameters_kLeftEdge,
+                BLParameters_kRightEdge,
+                BLParameters_kChanAverageLim,
+                BLParameters_kBaselineType,
+                BLParameters_kOrder,
+                BLParameters_kNPiece,
+                BLParameters_kNWave,
+                BLParameters_kNumElements
   } BLParameters;
 
   //
@@ -184,18 +185,20 @@ class BLTableParser : public BLParameterParser {
   explicit BLTableParser(string const file_name);
   ~BLTableParser();
   bool GetFitParameterIdx(double const time, double const interval, 
-			  size_t const scanid, size_t const beamid, 
-			  size_t const antid, size_t const spwid, size_t &idx);
+                          size_t const scanid, size_t const beamid, 
+                          size_t const antid, size_t const spwid, size_t &idx);
   void GetFitParameterByIdx(size_t const idx, size_t const ipol, 
-			    bool &apply, std::vector<float> &coeff, 
-			    std::vector<double> &boundary, 
-			    BLParameterSet &bl_param);
+                            bool &apply,
+                            casacore::Vector<double> &coeff,
+                            casacore::Vector<size_t> &boundary,
+                            std::vector<bool> &masklist,
+                            BLParameterSet &bl_param);
  private:
   void initialize();
   void parse();
   //Returns order or npiece in BLParameterSet structure depending on datatype.
   uint16_t GetTypeOrder(size_t const &baseline_type, 
-			casacore::uInt const irow, casacore::uInt const ipol);
+                        casacore::uInt const irow, casacore::uInt const ipol);
   BaselineTable *bt_;
   std::map<string, std::vector<double> > sortedTimes_;
   std::map<string, std::vector<casacore::uInt> > timeSortedIdx_;

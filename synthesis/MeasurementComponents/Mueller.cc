@@ -28,12 +28,12 @@
 #include <synthesis/MeasurementComponents/Mueller.h>
 #include <synthesis/MeasurementComponents/Jones.h>
 #include <synthesis/MeasurementComponents/VisVector.h>
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/iostream.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <iostream>
+#include <casacore/casa/Exceptions/Error.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

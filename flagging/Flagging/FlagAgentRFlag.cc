@@ -725,7 +725,10 @@ FlagReport FlagAgentRFlag::getReportCore(	map< pair<Int,Int>,vector<Double> > &d
         fieldReport.addData("line",threshold_frequency,threshold_up,"",Vector<Float>(),"median_deviation + variance");
         fieldReport.addData("scatter",threshold_frequency,threshold_avg,"",Vector<Float>(),"median_deviation");
         // fieldReport.addData("line", threshold_frequency,threshold_down,"",Vector<Float>(),"median_deviation - variance");
-        fieldReport.addData("scatter", spw_separator_frequency,spw_separator_central,"separator",spw_separator_bar,"SPW separator");
+        Vector<Float> const xData(spw_separator_frequency);
+        Vector<Float> const yData(spw_separator_central);
+        Vector<Float> const error(spw_separator_bar);
+        fieldReport.addData("scatter", xData, yData, "separator", error, "SPW separator");
 
         // Add bars to separate SPWs
         totalReport.addReport(fieldReport);

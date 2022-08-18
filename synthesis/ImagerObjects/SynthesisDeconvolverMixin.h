@@ -29,7 +29,7 @@
 #ifndef SYNTHESIS_DECONVOLVER_MIXIN_H_
 #define SYNTHESIS_DECONVOLVER_MIXIN_H_
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/MPIGlue.h>
 #include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
 #include <memory>
@@ -82,7 +82,8 @@ public:
 		std::vector<casacore::Record> init_records;
 		for (auto sd : deconvolvers)
 			init_records.push_back(sd->initMinorCycle());
-		T::merge_initialization_records(init_records);
+        casacore::Vector<casacore::Record> const init_records_casavec(init_records);
+		T::merge_initialization_records(init_records_casavec);
 		controls = T::get_minor_cycle_controls();
 	};
 
@@ -91,7 +92,8 @@ public:
 		std::vector<casacore::Record> exec_records;
 		for (auto sd : deconvolvers)
 			exec_records.push_back(sd->executeMinorCycle(controls));
-		T::merge_execution_records(exec_records);
+        casacore::Vector<casacore::Record> const exec_records_casavec(exec_records);
+		T::merge_execution_records(exec_records_casavec);
 	};
 
 	void

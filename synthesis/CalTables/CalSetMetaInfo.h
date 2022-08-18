@@ -28,13 +28,13 @@
 #ifndef CALTABLES_CALSETMETAINFO_H
 #define CALTABLES_CALSETMETAINFO_H
 
-#include <casa/aips.h>
-#include <ms/MeasurementSets/MSAntennaColumns.h>
-#include <ms/MeasurementSets/MSAntenna.h>
-#include <ms/MeasurementSets/MSFieldColumns.h>
-#include <ms/MeasurementSets/MSField.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
-#include <ms/MeasurementSets/MSSpectralWindow.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
+#include <casacore/ms/MeasurementSets/MSAntenna.h>
+#include <casacore/ms/MeasurementSets/MSFieldColumns.h>
+#include <casacore/ms/MeasurementSets/MSField.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpectralWindow.h>
 
 // #include <casa/Logging/LogMessage.h>
 // #include <casa/Logging/LogSink.h>

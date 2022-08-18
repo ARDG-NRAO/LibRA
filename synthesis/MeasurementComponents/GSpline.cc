@@ -28,24 +28,24 @@
 #include <synthesis/MeasurementComponents/GSpline.h>
 #include <synthesis/MeasurementEquations/VisEquation.h>
 
-#include <casa/Logging/LogIO.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <scimath/Mathematics/MatrixMathLA.h>
-#include <casa/Quanta/MVTime.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/scimath/Mathematics/MatrixMathLA.h>
+#include <casacore/casa/Quanta/MVTime.h>
 //#include <casa/Containers/SimOrdMap.h>
-#include <casa/Containers/Block.h>
-#include <casa/math.h>
-#include <casa/fstream.h>
+#include <casacore/casa/Containers/Block.h>
+#include <cmath>
+#include <casacore/casa/fstream.h>
 
-#include <casa/System/PGPlotter.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/System/PGPlotter.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/VisBuffAccumulator.h>
 #include <synthesis/CalTables/GJonesMBuf.h>
 #include <synthesis/CalTables/GJonesTable.h>
 #include <synthesis/CalTables/CalIter.h>
-#include <tables/Tables/TableUtil.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

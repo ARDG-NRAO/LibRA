@@ -23,7 +23,7 @@
 #ifndef IteratingParameters_H_
 #define IteratingParameters_H_
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

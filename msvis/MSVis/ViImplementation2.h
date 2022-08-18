@@ -28,12 +28,12 @@
 #if ! defined (MSVIS_ViImplementation2_H_121115_0950)
 #define MSVIS_ViImplementation2_H_121115_0950
 
-#include <casa/aips.h>
-#include <casa/BasicSL.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
-#include <measures/Measures/MFrequency.h>
-#include <measures/Measures/Stokes.h>
-#include <measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/measures/Measures/Stokes.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 #include <casacore/scimath/Mathematics/RigidVector.h>
 #include <casacore/tables/Tables/RowNumbers.h>
@@ -185,6 +185,9 @@ public:
     virtual void originChunks (casacore::Bool forceRewind = false) = 0;
     virtual casacore::Bool moreChunks () const = 0;
     virtual void nextChunk () = 0;
+
+    // Get results accumulated throughout iteration
+    virtual void result(casacore::Record& res) const = 0;
 
     // Report Name of slowest column that changes at end of current iteration
     virtual casacore::String keyChange() const = 0;

@@ -28,21 +28,21 @@
 //# Includes
 #include <components/SpectralComponents/SpectralFit.h>
 
-#include <casa/Utilities/PtrHolder.h>
+#include <casacore/casa/Utilities/PtrHolder.h>
 #include <components/SpectralComponents/CompiledSpectralElement.h>
 #include <components/SpectralComponents/GaussianSpectralElement.h>
 #include <components/SpectralComponents/LogTransformedPolynomialSpectralElement.h>
 #include <components/SpectralComponents/LorentzianSpectralElement.h>
 #include <components/SpectralComponents/PolynomialSpectralElement.h>
 #include <components/SpectralComponents/PowerLogPolynomialSpectralElement.h>
-#include <scimath/Fitting/NonLinearFitLM.h>
-#include <scimath/Functionals/CompiledFunction.h>
-#include <scimath/Functionals/CompoundFunction.h>
-#include <scimath/Functionals/CompoundParam.h>
-#include <scimath/Functionals/Gaussian1D.h>
-#include <scimath/Functionals/Lorentzian1D.h>
-#include <scimath/Functionals/Polynomial.h>
-#include <scimath/Functionals/PowerLogarithmicPolynomial.h>
+#include <casacore/scimath/Fitting/NonLinearFitLM.h>
+#include <casacore/scimath/Functionals/CompiledFunction.h>
+#include <casacore/scimath/Functionals/CompoundFunction.h>
+#include <casacore/scimath/Functionals/CompoundParam.h>
+#include <casacore/scimath/Functionals/Gaussian1D.h>
+#include <casacore/scimath/Functionals/Lorentzian1D.h>
+#include <casacore/scimath/Functionals/Polynomial.h>
+#include <casacore/scimath/Functionals/PowerLogarithmicPolynomial.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

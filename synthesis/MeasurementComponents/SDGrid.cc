@@ -25,55 +25,55 @@
 //#
 //# $Id$
 
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/MaskedArray.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/MatrixIter.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Containers/Block.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/OS/Timer.h>
-#include <casa/Quanta/MVAngle.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/sstream.h>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/MatrixIter.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <sstream>
+#include <casacore/casa/Utilities/Assert.h>
 
 #include <components/ComponentModels/ConstantSpectrum.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/PointShape.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/Projection.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/Projection.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
 
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 
-#include <lattices/Lattices/ArrayLattice.h>
-#include <lattices/Lattices/LatticeCache.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/LatticeStepper.h>
-#include <lattices/Lattices/SubLattice.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/LRegions/LCBox.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/lattices/Lattices/LatticeCache.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
+#include <casacore/lattices/Lattices/SubLattice.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/LRegions/LCBox.h>
 
-#include <measures/Measures/Stokes.h>
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 #include <synthesis/MeasurementComponents/SDGrid.h>
 #include <synthesis/TransformMachines/SkyJones.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
@@ -1603,13 +1603,13 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
     }
   }
 
-  MEpoch epoch(Quantity(vb.time()(row), "s"));
   if (!pointingToImage) {
     // Set the frame
     MPosition pos;
     lastAntID_p = vb.antenna1()(row);
     pos = vb.msColumns().antenna().positionMeas()(lastAntID_p);
-    mFrame_p = MeasFrame(epoch, pos);
+    MEpoch dummyEpoch(Quantity(0, "s"));
+    mFrame_p = MeasFrame(dummyEpoch, pos);
     if (!nullPointingTable) {
       if (dointerp) {
         worldPosMeas = directionMeas(act_mspc, pointIndex, vb.time()(row));
@@ -1629,25 +1629,28 @@ Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
       logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
     }
 
-  } else {
-    mFrame_p.resetEpoch(epoch);
-    if (lastAntID_p != vb.antenna1()(row)) {
-      if (lastAntID_p == -1) {
-        // antenna ID is unset
-        logIO_p << LogIO::DEBUGGING
-          << "update antenna position for conversion: new MS ID " << msId_p
-          << ", antenna ID " << vb.antenna1()(row) << LogIO::POST;
-      } else {
-        logIO_p << LogIO::DEBUGGING
-          << "update antenna position for conversion: MS ID " << msId_p
-          << ", last antenna ID " << lastAntID_p
-          << ", new antenna ID " << vb.antenna1()(row) << LogIO::POST;
-      }
-      MPosition pos;
-      lastAntID_p = vb.antenna1()(row);
-      pos = vb.msColumns().antenna().positionMeas()(lastAntID_p);
-      mFrame_p.resetPosition(pos);
+    // perform direction conversion to clear cache
+    MDirection _dir_tmp = (*pointingToImage)();
+  }
+
+  MEpoch epoch(Quantity(vb.time()(row), "s"));
+  mFrame_p.resetEpoch(epoch);
+  if (lastAntID_p != vb.antenna1()(row)) {
+    if (lastAntID_p == -1) {
+      // antenna ID is unset
+      logIO_p << LogIO::DEBUGGING
+        << "update antenna position for conversion: new MS ID " << msId_p
+        << ", antenna ID " << vb.antenna1()(row) << LogIO::POST;
+    } else {
+      logIO_p << LogIO::DEBUGGING
+        << "update antenna position for conversion: MS ID " << msId_p
+        << ", last antenna ID " << lastAntID_p
+        << ", new antenna ID " << vb.antenna1()(row) << LogIO::POST;
     }
+    MPosition pos;
+    lastAntID_p = vb.antenna1()(row);
+    pos = vb.msColumns().antenna().positionMeas()(lastAntID_p);
+    mFrame_p.resetPosition(pos);
   }
 
   if (!nullPointingTable) {

@@ -1,7 +1,7 @@
 #ifndef IMAGES_IMAGEEDECIMATORDATA_H
 #define IMAGES_IMAGEEDECIMATORDATA_H
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 
 namespace casa {
 

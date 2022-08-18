@@ -4,13 +4,13 @@
  *  Created on: Nov 1, 2010
  *      Author: jjacobs
  */
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 using namespace casacore;
 #include <regex>  // >>>----------------> no compile failure
 using namespace casa::utilj;
 // include <regex>   >>>----------------> causes compile failure
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 #include <msvis/MSVis/VisBufferAsync.h>
 #include <msvis/MSVis/VisBufferAsyncWrapper.h>
@@ -22,7 +22,7 @@ using namespace casa::utilj;
 
 using std::transform;
 
-#include <ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <typeinfo>
 
 #define Log(level, ...) \

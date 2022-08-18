@@ -21,7 +21,7 @@
 //# $Id: $
 
 #include <msvis/MSVis/CalibratingVi2FactoryI.h>
-#include <casa/Exceptions.h>
+#include <casacore/casa/Exceptions.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

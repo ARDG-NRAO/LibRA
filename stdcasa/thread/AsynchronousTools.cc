@@ -24,15 +24,15 @@
 #endif
 #include <sys/time.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
 
 #include <condition_variable>
 #include <mutex>
 #include <thread>
 
 #include "AsynchronousTools.h"
-#include "UtilJ.h"
+#include <stdcasa/UtilJ.h>
 
 using namespace std;
 using namespace casacore;

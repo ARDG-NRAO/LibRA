@@ -28,10 +28,10 @@
 #ifndef SYNTHESIS_TRANSFORM2_SIMPLEPBCONVFUNC_H
 #define SYNTHESIS_TRANSFORM2_SIMPLEPBCONVFUNC_H
 
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Vector.h>
 #include <synthesis/TransformMachines/PBMathInterface.h>
-#include <casa/Containers/Block.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 #include <msvis/MSVis/VisBufferUtil.h>
 #include <synthesis/Utilities/FFT2D.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
@@ -163,7 +163,7 @@ namespace refim{ //namespace for imaging refactor
       casacore::Vector<casacore::Bool> doneMainConv_p;
       casacore::Bool calcFluxScale_p;
       std::map<casacore::String, casacore::Int> vbConvIndex_p;
-      virtual casacore::Int convIndex(const vi::VisBuffer2& vb);
+      virtual casacore::Int convIndex(const vi::VisBuffer2& vb, const casacore::uInt nchan);
       std::map<casacore::String, casacore::Int> ant1PointVal_p;
       casacore::Vector<casacore::MDirection> ant1PointingCache_p;
       const casacore::MDirection& pointingDirAnt1(const vi::VisBuffer2& vb);

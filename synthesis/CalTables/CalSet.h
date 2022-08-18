@@ -27,13 +27,13 @@
 
 #ifndef CALTABLES_CALSET_H
 #define CALTABLES_CALSET_H
-#include <casa/aips.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays.h>
-#include <casa/OS/File.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 #include <synthesis/CalTables/CalTableDesc2.h>
 #include <synthesis/CalTables/CalTable2.h>
 #include <synthesis/CalTables/SolvableCalSetMCol.h>
