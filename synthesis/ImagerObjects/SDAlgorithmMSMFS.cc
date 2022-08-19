@@ -230,6 +230,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     modelflux = sum( itsMatModels[0] ); // Performance hog ?
 
+    /* // Enable in CAS-13872
     // Retrieve residual to be saved to the .residual file in finalizeDeconvolver
     for(uInt tix=0; tix<itsNTerms; tix++)
     {
@@ -237,6 +238,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       itsMTCleaner.getresidual(tix, tmp); // possible room for optimization here -> get residual without extra tmp copy? maybe change getResidual to accept an array?
       itsMatResiduals[tix] = tmp;
     }
+    */
   }	    
 
   void SDAlgorithmMSMFS::finalizeDeconvolver()
