@@ -6,12 +6,12 @@
  */
 
 
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/AveragingVi2Factory.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/AveragingTvi2.h>
 #include <cstdarg>
-#include <msvis/MSVis/UtilJ.h>
 
 using namespace std;
 

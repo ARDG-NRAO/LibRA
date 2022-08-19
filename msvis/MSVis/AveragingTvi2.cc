@@ -1,6 +1,7 @@
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/Arrays/ArrayPartMath.h>
 #include <casacore/casa/BasicMath/Functors.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/AveragingTvi2.h>
 #include <msvis/MSVis/AveragingVi2Factory.h>
 #include <msvis/MSVis/MsRows.h>
@@ -8,7 +9,6 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisBufferImpl2.h>
 #include <msvis/MSVis/Vbi2MsRow.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <tuple>
 #include <set>

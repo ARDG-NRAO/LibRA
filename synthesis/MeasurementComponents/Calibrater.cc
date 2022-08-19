@@ -71,7 +71,7 @@
 #include <casacore/tables/Tables/SetupNewTab.h>
 #include <vector>
 using std::vector;
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 
 #ifdef _OPENMP
  #include <omp.h>

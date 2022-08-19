@@ -34,7 +34,7 @@
 #include <synthesis/TransformMachines/CFStore.h>
 #include <synthesis/TransformMachines/VBStore.h>
 #include <synthesis/MeasurementComponents/MThWorkIDEnum.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Vector.h>

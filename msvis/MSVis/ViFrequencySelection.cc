@@ -1,5 +1,5 @@
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/MSUtil.h>
 #include <casacore/ms/MSSel/MSSelection.h>
 

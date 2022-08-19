@@ -32,7 +32,7 @@
 #include <synthesis/TransformMachines/VisibilityResamplerBase.h>
 #include <synthesis/TransformMachines/VBStore.h>
 #include <synthesis/Utilities/ThreadCoordinator.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Array.h>

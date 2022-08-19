@@ -23,6 +23,7 @@
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/scimath/Mathematics/RigidVector.h>
 #include <casacore/scimath/Mathematics/SquareMatrix.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/AveragingTvi2.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <msvis/MSVis/StokesVector.h>
@@ -31,7 +32,6 @@
 #include <msvis/MSVis/VisImagingWeight.h>
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/VisibilityIteratorImplAsync2.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <casacore/tables/Tables/ArrayColumn.h>
 #include <casacore/tables/Tables/ScalarColumn.h>
 

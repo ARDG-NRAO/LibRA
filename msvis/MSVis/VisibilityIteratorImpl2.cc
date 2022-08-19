@@ -39,10 +39,10 @@
 #include <casacore/ms/MSSel/MSSpwIndex.h>
 #include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 //#include <msvis/MSVis/StokesVector.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/MeasurementSet2.h>
 #include <msvis/MSVis/MSUtil.h>
 #include <msvis/MSVis/MSIter2.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/SpectralWindow.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <msvis/MSVis/VisBuffer2.h>
