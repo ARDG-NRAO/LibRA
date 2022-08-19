@@ -41,22 +41,31 @@ using namespace casa;
 
 int main(int argc, char **argv) {
 
+  std::string copy_input_ms;
   try {
-    std::string input_ms;
+    std::string source_input_ms;
     if (argc < 2)
     {
       String casadata = EnvironmentVariable::get("CASADATA");
       if (casadata.empty()) {
           throw(AipsError("CASADATA env variable not defined and no file given in command line"));
       }
-      input_ms = casadata + "/unittest/hanningsmooth/ngc5921_ut.ms/";
+      source_input_ms = casadata + "/unittest/hanningsmooth/ngc5921_ut.ms/";
     }
     else
     {
-      input_ms = argv[1];
+      source_input_ms = argv[1];
     }
+    copy_input_ms = "ngc5921_ut.ms";
 
-    MS ms(input_ms, Table::Update);
+    // Make a copy of the MS in the working directory
+    // TODO: Use C++17 filesystem copy https://en.cppreference.com/w/cpp/filesystem/copy
+    String cp_command = std::string("cp -r ") + source_input_ms + " .";
+    auto cmd_ecode = system(cp_command.c_str());
+    if (!cmd_ecode)
+        std::cerr << "Failed to copy " << copy_input_ms << " to current directory" <<std::endl;
+
+    MS ms(copy_input_ms, Table::Update);
 
     Block<int> sort(4);
     sort[2] = MS::FIELD_ID;
@@ -109,6 +118,12 @@ int main(int argc, char **argv) {
     return 1;
   }
   
+  //TODO: Use C++ remove_all https://en.cppreference.com/w/cpp/filesystem/remove
+  String rm_command = std::string("rm -rf ") + copy_input_ms;
+  auto cmd_ecode = system(rm_command.c_str());
+  if (!cmd_ecode)
+      std::cerr << "Failed to remove temporary copy " << copy_input_ms <<std::endl;
+
   return 0;
 }
 
