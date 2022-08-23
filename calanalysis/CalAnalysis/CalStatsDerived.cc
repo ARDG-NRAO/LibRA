@@ -514,7 +514,9 @@ void CalStatsAmp::norm( Vector<Double>& oAmp, Vector<Double>& oAmpErr,
 
   if ( uiNumAbsC <= 1 ) {
     LogIO log( LogOrigin( "CalStatsAmp", "norm", WHERE ) );
-    log << LogIO::WARN
+    // An entire scan for a basline being flagged can cause this
+    // This is not entirly uncommon so this was switched from WARN -> NORMAL
+    log << LogIO::NORMAL
         << "Abscissa has a dimension <= 1, no normalization"
         << LogIO::POST;
     return;

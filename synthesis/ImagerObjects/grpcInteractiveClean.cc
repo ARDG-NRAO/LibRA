@@ -633,7 +633,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            return rec; }) );
     }
 
-	int grpcInteractiveCleanManager::cleanComplete( bool lastcyclecheck ){
+	int grpcInteractiveCleanManager::cleanComplete( bool lastcyclecheck, bool reachedMajorLimit ){
         LogIO os( LogOrigin("grpcInteractiveCleanManager",__FUNCTION__,WHERE) );
 
 		int stopCode=0;
@@ -713,6 +713,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		      }
 
 		  }
+
+		if (stopCode == 0 && reachedMajorLimit) {
+		  stopCode = 9;
+		}
 
 		/*
 		if( lastcyclecheck==False)
