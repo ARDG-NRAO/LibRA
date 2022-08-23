@@ -982,7 +982,7 @@ bool SynthesisImager::unlockImages()
     //else {cout << "No lastcycle" << endl;}
 
     os << "----------------------------------------------------------- Run ";
-    if (lastcycle) os << "(Last) " ;
+    //if (lastcycle) os << "(Last) " ;
     os << "Major Cycle " << nMajorCycles << " -------------------------------------" << LogIO::POST;
 
     try

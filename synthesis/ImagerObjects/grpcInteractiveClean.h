@@ -170,7 +170,7 @@ namespace casa {
         casacore::Record getMinorCycleControls( );
         casacore::Record getDetailsRecord( bool includeSummary=true );
         casacore::Record getSummaryRecord( ) { return getDetailsRecord(true); }
-        int cleanComplete( bool lastcyclecheck=false );
+        int cleanComplete( bool lastcyclecheck=false, bool reachedMajorLimit=false );
         /* Note:  Incrementing the Major cycle will reset the cycleIterDone */
         void incrementMajorCycleCount( );
         void resetMinorCycleInitInfo( );
