@@ -148,9 +148,7 @@ namespace casatools {   /** namespace for CASAtools classes within "CASA code" *
             if ( server ) server->Shutdown( );
         }
     };
-    
 #endif
-
 
 
     Registrar::Registrar( ) {

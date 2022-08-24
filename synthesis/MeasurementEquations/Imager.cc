@@ -168,12 +168,7 @@
 #include <components/ComponentModels/PointShape.h>
 #include <components/ComponentModels/DiskShape.h>
 
-#if ! defined(CASATOOLS)
-#include <casadbus/viewer/ViewerProxy.h>
-#include <casadbus/plotserver/PlotServerProxy.h>
-#include <casadbus/utilities/BusAccess.h>
-#include <casadbus/session/DBusSession.h>
-#else
+#ifdef USE_GRPC
 #include <synthesis/ImagerObjects/grpcInteractiveClean.h>
 #endif
 
@@ -200,9 +195,6 @@ Imager::Imager()
      cft_p(0), se_p(0),
      sm_p(0), vp_p(0), gvp_p(0), setimaged_p(false), nullSelect_p(false), 
      mssFreqSel_p(), mssChanSel_p(),
-#if ! defined(CASATOOLS)
-     viewer_p(0),
-#endif
      clean_panel_p(0), image_id_p(0), mask_id_p(0), 
       prev_image_id_p(0), prev_mask_id_p(0), projection_p("SIN")
 {
@@ -319,9 +311,6 @@ Imager::Imager(MeasurementSet& theMS,  Bool compress, Bool useModel)
     ft_p(0), cft_p(0), se_p(0),
     sm_p(0), vp_p(0), gvp_p(0), setimaged_p(false), nullSelect_p(false), 
     mssFreqSel_p(), mssChanSel_p(),
-#if ! defined(CASATOOLS)
-    viewer_p(0),
-#endif
     clean_panel_p(0), image_id_p(0), mask_id_p(0), prev_image_id_p(0), prev_mask_id_p(0),
     projection_p("SIN")
 
@@ -346,9 +335,6 @@ Imager::Imager(MeasurementSet& theMS, Bool compress)
   :  msname_p(""),  vs_p(0), rvi_p(0), wvi_p(0), ft_p(0), cft_p(0), se_p(0),
      sm_p(0), vp_p(0), gvp_p(0), setimaged_p(false), nullSelect_p(false), 
      mssFreqSel_p(), mssChanSel_p(),
-#if ! defined(CASATOOLS)
-     viewer_p(0),
-#endif
      clean_panel_p(0), image_id_p(0), mask_id_p(0),
      prev_image_id_p(0), prev_mask_id_p(0), projection_p("SIN")
 {
@@ -370,9 +356,6 @@ Imager::Imager(const Imager & other)
   :  msname_p(""), vs_p(0), rvi_p(0), wvi_p(0), 
      ft_p(0), cft_p(0), se_p(0),
      sm_p(0), vp_p(0), gvp_p(0), setimaged_p(false), nullSelect_p(false), 
-#if ! defined(CASATOOLS)
-     viewer_p(0),
-#endif
      clean_panel_p(0), image_id_p(0), mask_id_p(0), prev_image_id_p(0), prev_mask_id_p(0)
 {
   mssel_p=0;
@@ -477,14 +460,6 @@ Imager::~Imager()
       delete cft_p;
     }
     cft_p = 0;
-
-#if ! defined(CASATOOLS)
-    if ( viewer_p ) {
-      // viewer_p->close( clean_panel_p );
-      viewer_p->done();
-      delete viewer_p;
-    }
-#endif
 
   }
   catch (AipsError x){
@@ -6346,48 +6321,8 @@ Bool Imager::plotuv(const Bool rotate)
     }
     
    
-    if(rotate) {
-    
-#if ! defined(CASATOOLS)
-      PlotServerProxy *plotter = dbus::launch<PlotServerProxy>( );
-      dbus::variant panel_id = plotter->panel( "UV-Coverage for "+imageName(), "U (wavelengths)", "V (wavelengths)", "UV-Plot",
-					       std::vector<int>( ), "right");
+    return false;
 
-      if ( panel_id.type( ) != dbus::variant::INT ) {
-	os << LogIO::SEVERE << "failed to start plotter" << LogIO::POST;
-	return false;
-      }
-
-      
-      plotter->scatter(dbus::af(u),dbus::af(v),"blue","unrotated","hexagon",6,-1,panel_id.getInt( ));
-      plotter->scatter(dbus::af(uRotated),dbus::af(vRotated),"red","rotated","ellipse",6,-1,panel_id.getInt( ));
-      plotter->release( panel_id.getInt( ) );
-#else
-      return false;
-#endif
-    }
-    else {
-#if ! defined(CASATOOLS)
-      PlotServerProxy *plotter = dbus::launch<PlotServerProxy>( );
-      dbus::variant panel_id = plotter->panel( "UV-Coverage for "+imageName(), "U (wavelengths)", "V (wavelengths)", "UV-Plot" ,
-					       std::vector<int>( ), "right");
-
-      if ( panel_id.type( ) != dbus::variant::INT ) {
-	os << LogIO::SEVERE << "failed to start plotter" << LogIO::POST;
-	return false;
-      }
-
-      
-      plotter->scatter(dbus::af(u),dbus::af(v),"blue","uv in data","rect",6,-1,panel_id.getInt( ));
-      u=u*Float(-1.0);
-      v=v*Float(-1.0);
-      plotter->scatter(dbus::af(u),dbus::af(v),"red","conjugate","ellipse",6,-1,panel_id.getInt( ));
-      plotter->release( panel_id.getInt( ) );
-#else
-      return false;
-#endif
-    }
-    
     this->unlock();
   
   } 
@@ -6609,36 +6544,7 @@ Bool Imager::plotvis(const String& type, const Int increment)
       }
    
 
-#if ! defined(CASATOOLS)
-    PlotServerProxy *plotter = dbus::launch<PlotServerProxy>( );
-    dbus::variant panel_id = plotter->panel( "Stokes I Visibility for "+imageName(),"UVDistance (wavelengths)" , "Amplitude", "Vis-Plot",
-					     std::vector<int>( ), "right", "bottom", 0, false, false);
-    
-    if ( panel_id.type( ) != dbus::variant::INT ) {
-      os << LogIO::SEVERE << "failed to start plotter" << LogIO::POST;
-      return false;
-    }
-
-    
-
-    if(type=="all"||type==""||type.contains("observed")) {
-      plotter->scatter(dbus::af(uvDistance),dbus::af(amp),"blue","observed","rect",6,-1,panel_id.getInt( ));
-      //plotter->scatter(dbus::af(u),dbus::af(v),"blue","uv in data","rect",6,-1,panel_id.getInt( ));
-      
-    }
-    if((type=="all"||type==""||type.contains("corrected")) && hasCorrected) {
-      plotter->scatter(dbus::af(uvDistance),dbus::af(correctedAmp),"red","corrected","ellipse",6,-1,panel_id.getInt( ));
-    }
-    if((type=="all"||type==""||type.contains("model")) && hasModel) {
-      plotter->scatter(dbus::af(uvDistance),dbus::af(modelAmp),"green","model","rect",6,-1,panel_id.getInt( ));
-    }
-    if((type=="all"||type==""||type.contains("residual")) && (hasCorrected && hasModel)) {
-      plotter->scatter(dbus::af(uvDistance),dbus::af(residualAmp),"yellow","residual","cross",6,-1,panel_id.getInt( ));
-    }
-    plotter->release( panel_id.getInt( ) );
-#else
     return false;
-#endif
 
     
     this->unlock();
@@ -6733,32 +6639,7 @@ Bool Imager::plotweights(const Bool gridded, const Int increment)
       //Float vmax=Float(ny_p/2)/vscale;
 
 
-#if ! defined(CASATOOLS)
-      PlotServerProxy *plotter = dbus::launch<PlotServerProxy>( );
-      dbus::variant panel_id = plotter->panel( "Gridded weights for "+imageName(), "U (wavelengths)", "V (wavelengths)", "ImagingWeight-plot" );
-      if ( panel_id.type() != dbus::variant::INT ) {
-	  os << "failed to create plot panel" << LogIO::WARN << LogIO::POST;
-	  return false;
-      }
-
-      
-
-      gwt=Float(0xFFFFFF)-gwt*(Float(0xFFFFFF)/maxWeight);
-      IPosition shape = gwt.shape( );
-      //bool deleteit = false;
-      std::vector<double> data(shape[0] * shape[1]);
-      int off = 0;
-      for ( int column=0; column < shape[1]; ++column ) {
-	for ( int row=0; row < shape[0]; ++row ) {
-	  data[off++] = gwt(row,column);
-	}
-      }
-
-      plotter->raster( data, (int) shape[1], (int) shape[0] );
-      //  plotter->release( panel_id.getInt( ) );
-#else
       return false;
-#endif
     }
     else {
       
@@ -6837,21 +6718,7 @@ Bool Imager::plotweights(const Bool gridded, const Int increment)
       }
 
 
-#if ! defined(CASATOOLS)
-      PlotServerProxy *plotter = dbus::launch<PlotServerProxy>( );
-      dbus::variant panel_id = plotter->panel( "Weights for "+imageName(), "UVDistance (wavelengths)", "Weights", "ImagingWeight-plot" );
-
-      if ( panel_id.type( ) != dbus::variant::INT ) {
-	os << LogIO::SEVERE << "failed to start plotter" << LogIO::POST;
-	return false;
-      }
-
-      
-      plotter->scatter(dbus::af(uvDistance),dbus::af(weights),"blue","","hexagon",4,-1,panel_id.getInt( ));
-      //plotter->release( panel_id.getInt( ) );
-#else
       return false;
-#endif
     }
     
 
@@ -7226,25 +7093,6 @@ Bool Imager::makemodelfromsd(const String& sdImage, const String& modelImage,
 }
 
 
-#if ! defined(CASATOOLS)
-class interactive_clean_callback {
-    public:
-	interactive_clean_callback( ) { }
-	casa::dbus::variant result( ) { return casa::dbus::toVariant(result_); }
-	bool callback( const DBus::Message & msg );
-    private:
-	DBus::Variant result_;
-};
-
-bool interactive_clean_callback::callback( const DBus::Message &msg ) {
-    if (msg.is_signal("edu.nrao.casa.viewer","interact")) {
-	DBus::MessageIter ri = msg.reader( );
-	::operator >>(ri,result_);
-	casa::DBusSession::instance( ).dispatcher( ).leave( );
-    }
-    return true;
-}
-#endif
 Int Imager::interactivemask(const String& image, const String& mask, 
 			    Int& niter, Int& ncycles, String& thresh, const Bool forceReload){
 
@@ -7259,162 +7107,13 @@ Int Imager::interactivemask(const String& image, const String& mask,
    else{
      clone(image, mask);
    }
-#if ! defined(CASATOOLS)
-   if ( viewer_p == 0 ) {
-     std::list<std::string> args;
-     args.push_back("--oldregions");
-     viewer_p = dbus::launch<ViewerProxy>(args);
-     if ( viewer_p == 0 ) {
-       os << LogIO::WARN << "failed to launch viewer gui" << LogIO::POST;
-       return false;
-     }
-   }
-   if ( clean_panel_p == 0) {
-     dbus::variant panel_id = viewer_p->panel( "clean" );
-     if ( panel_id.type() != dbus::variant::INT ) {
-       os << LogIO::WARN << "failed to create clean panel" << LogIO::POST;
-       return false;
-     }
-     clean_panel_p = panel_id.getInt( );
-   }
-
-   if ( image_id_p == 0 || mask_id_p == 0 || forceReload ) {
-     //Make sure image left after a "no more" is pressed is cleared
-     if(forceReload && image_id_p !=0)
-       prev_image_id_p=image_id_p;
-     if(forceReload && mask_id_p !=0)
-       prev_mask_id_p=mask_id_p;
-     if(prev_image_id_p){
-       viewer_p->unload( prev_image_id_p );
-     }
-     if(prev_mask_id_p)
-       viewer_p->unload( prev_mask_id_p );
-     prev_image_id_p=0;
-     prev_mask_id_p=0;
-     dbus::variant image_id = viewer_p->load(image, "raster", clean_panel_p);
-     if ( image_id.type() != dbus::variant::INT ) {
-       os << LogIO::WARN << "failed to load image" << LogIO::POST;
-       return false;
-     }
-     image_id_p = image_id.getInt( );
-     
-     dbus::variant mask_id = viewer_p->load(mask, "contour", clean_panel_p);
-      if ( mask_id.type() != dbus::variant::INT ) {
-	os << "failed to load mask" << LogIO::WARN << LogIO::POST;
-	return false;
-      }
-      mask_id_p = mask_id.getInt( );
-   } else {
-     //viewer_p->reload( clean_panel_p );
-     viewer_p->reload(image_id_p);
-     viewer_p->reload(mask_id_p);
-   }
-
-   
-   casa::dbus::record options;
-   options.insert("niter", niter);
-   options.insert("ncycle", ncycles);
-   options.insert("threshold", thresh);  
-   viewer_p->setoptions(options, clean_panel_p);
-   
-    interactive_clean_callback *mycb = new interactive_clean_callback( );
-    DBus::MessageSlot filter;
-    filter = new DBus::Callback<interactive_clean_callback,bool,const DBus::Message &>( mycb, &interactive_clean_callback::callback );
-    casa::DBusSession::instance( ).connection( ).add_filter( filter );
-    casa::dbus::variant res = viewer_p->start_interact( dbus::variant(), clean_panel_p);
-
-    //casa::DBusSession::instance( ).dispatcher( ).set_responsiveness(10000.0, 10.0);
-    casa::DBusSession::instance( ).dispatcher( ).enter( );
-    casa::DBusSession::instance( ).connection( ).remove_filter( filter );
-    casa::dbus::variant interact_result = mycb->result( );
-    delete mycb;
-
-
-    int result = 0;
-    if ( interact_result.type() == dbus::variant::RECORD ) {
-      const dbus::record  &rec = interact_result.getRecord( );
-      for ( dbus::record::const_iterator iter = rec.begin(); iter != rec.end(); ++iter ) {
-	if ( iter->first == "action" ) {
-	  if ( iter->second.type( ) != dbus::variant::STRING ) {
-	    os << "ill-formed action result" << LogIO::WARN << LogIO::POST;
-	    return false;
-	  } else {
-	    const std::string &action = iter->second.getString( );
-	    if ( action == "stop" )
-	      result = 2;
-	    else if ( action == "no more" )
-	      result = 1;
-	    else if ( action == "continue" )
-	      result = 0;
-	    else {
-	      os << "ill-formed action result" << LogIO::WARN << LogIO::POST;
-	      return false;
-	    }
-	  }
-	} else if ( iter->first == "ncycle" ) {
-	  if ( iter->second.type( ) != dbus::variant::INT ) {
-	    os << "ill-formed ncycle result" << LogIO::WARN << LogIO::POST;
-	    return false;
-	  } else {
-	    ncycles = iter->second.getInt( );
-	  }
-	} else if ( iter->first == "niter" ) {
-	  if ( iter->second.type( ) != dbus::variant::INT ) {
-	    os << "ill-formed niter result" << LogIO::WARN << LogIO::POST;
-	    return false;
-	  } else {
-	    niter = iter->second.getInt( );
-	  }
-	} else if ( iter->first == "threshold" ) {
-	  if ( iter->second.type( ) != dbus::variant::STRING ) {
-	    os << "ill-formed threshold result" << LogIO::WARN << LogIO::POST;
-	    return false;
-	  } else {
-	    thresh = iter->second.getString( );
-	  }
-	}
-      }
-    } else {
-      os << "failed to get a vaild result for viewer" << LogIO::WARN << LogIO::POST;
-      return false;
-    }
-    prev_image_id_p=image_id_p;
-    prev_mask_id_p=mask_id_p;
-
-    if(result==1){
-      //Keep the image up but clear the next time called
-      image_id_p=0;
-      mask_id_p=0;
-    }
-    if(result==2){
-      //clean up
-      //viewer_p->close(clean_panel_p);
-      //viewer_p->done();
-      //delete viewer_p;
-      //viewer_p=0;
-      //viewer_p->unload(image_id_p);
-      //viewer_p->unload(mask_id_p);
-      //Setting clean_panel_p to 0 seems to do the trick...the above stuff 
-      // like done causes a crash after a call again...have to understand that
-      viewer_p->unload(image_id_p);
-      viewer_p->unload(mask_id_p);
-      viewer_p->close(clean_panel_p);
-      clean_panel_p=0;
-      image_id_p=0;
-      mask_id_p=0;
-    }
-
-    // return 0 if "continue"
-    // return 1 if "no more interaction"
-    // return 2 if "stop"
-    return result;
-#else
+#ifdef USE_GRPC
    Quantity thr;
    if ( ! Quantity::read(thr,thresh) ) thr = Quantity(0,"Jy");
    float thold = (float) thr.get("Jy").getValue( );
    grpcInteractiveClean::getManager( ).setControls( niter, ncycles, thold);
-   return false;
 #endif
+   return false;
 }
 
   Record Imager::iClean(const String& algorithm, const Int niter, const Double gain, 
@@ -7570,19 +7269,6 @@ Int Imager::interactivemask(const String& image, const String& mask,
 	      }
 	    }
 	  }
-#if ! defined(CASATOOLS)
-	  ///guess we are done with the viewer
-	  if((viewer_p !=0) && (clean_panel_p != 0)){
-	    if(image_id_p !=0)
-	      viewer_p->unload(image_id_p);
-	    if(mask_id_p !=0)
-	      viewer_p->unload(mask_id_p);
-	    viewer_p->close(clean_panel_p);
-	    clean_panel_p=0;
-	    image_id_p=0;
-	    mask_id_p=0;
-	  }
-#endif
 	  
 	}
 

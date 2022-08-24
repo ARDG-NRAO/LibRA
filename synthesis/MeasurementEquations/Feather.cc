@@ -59,11 +59,6 @@
 #include <casacore/coordinates/Coordinates/CoordinateUtil.h>
 #include <casacore/coordinates/Coordinates/Projection.h>
 #include <casacore/coordinates/Coordinates/ObsInfo.h>
-#if ! defined(CASATOOLS)
-#include <casadbus/plotserver/PlotServerProxy.h>
-#include <casadbus/utilities/BusAccess.h>
-#include <casadbus/session/DBusSession.h>
-#endif
 
 #include <components/ComponentModels/GaussianDeconvolver.h>
 
