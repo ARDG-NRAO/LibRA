@@ -87,7 +87,7 @@ macro(declare_casacpp_component name)
   # Install the header and template header files
   # Note that this preserves the directory structure of the files
   # That's why ${name}_public_headers is not reused
-  install(DIRECTORY ${CMAKE_SOURCE_DIR}/{name}
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/${name}
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/casacpp
       FILES_MATCHING
       REGEX "/.*(h|tcc)$")
