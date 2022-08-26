@@ -4160,6 +4160,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                err+= "nsigma must be an int, float or double";
             }
           }
+        if( inrec.isDefined("noRequireSumwt") )
+          {
+            if (inrec.dataType("noRequireSumwt")==TpBool) {
+              err+= readVal(inrec, String("noRequireSumwt"), noRequireSumwt);
+            }
+            else {
+              err+= "noRequireSumwt must be a bool";
+            }
+          }
         if( inrec.isDefined("restoringbeam") )     
 	  {
 	    String errinfo("");
@@ -4344,6 +4353,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("fastnoise", fastnoise);
     decpar.define("interactive",interactive);
     decpar.define("nsigma",nsigma);
+    decpar.define("noRequireSumwt",noRequireSumwt);
 
     return decpar;
   }

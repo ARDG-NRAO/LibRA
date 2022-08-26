@@ -226,6 +226,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     // Retrieve residual before major cycle
     itsImages->residual()->copyData( cleaner.getResidual() );
+    itsImages->residual()->get( itsMatResidual, true );
 
     // Add delta model to old model
     //Bool ret2 = 

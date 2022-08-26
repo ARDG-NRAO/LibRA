@@ -170,6 +170,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     	itsMTCleaner.setmodel( tix, tempMat2 );
     	//	itsMTCleaner.setmodel( tix, itsMatModels[tix] );
     }
+
+    // Print some useful info about the frequency setup for this MTMFS run
+    itsImages->calcFractionalBandwidth();
   }
 
   Long SDAlgorithmMSMFS::estimateRAM(const vector<int>& imsize){
@@ -226,7 +229,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     peakresidual = itsMTCleaner.getpeakresidual();
 
     modelflux = sum( itsMatModels[0] ); // Performance hog ?
-  }
+
+    /* // Enable in CAS-13872
+    // Retrieve residual to be saved to the .residual file in finalizeDeconvolver
+    for(uInt tix=0; tix<itsNTerms; tix++)
+    {
+      casacore::Matrix<Float> tmp;
+      itsMTCleaner.getresidual(tix, tmp); // possible room for optimization here -> get residual without extra tmp copy? maybe change getResidual to accept an array?
+      itsMatResiduals[tix] = tmp;
+    }
+    */
+  }	    
 
   void SDAlgorithmMSMFS::finalizeDeconvolver()
   {
