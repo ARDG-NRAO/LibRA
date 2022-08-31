@@ -30,8 +30,8 @@
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <stdcasa/thread/AsynchronousTools.h>
-#include <casacore/casa/Quanta/MVTime.h>
+#include <msvis/MSVis/AsynchronousTools.h>
+#include <casacore/ycasa/Quanta/MVTime.h>
 #include <fstream>
 
 using namespace casacore;
@@ -228,6 +228,18 @@ namespace casa{
   //     }
   //   return statusCode;
   // }
+
+  std::shared_ptr<std::complex<double>> VisibilityResamplerBase::getGridPtr(size_t& size) const
+  {
+    size = 0;
+    return std::shared_ptr<std::complex<double>>();
+  }
+
+  std::shared_ptr<double> VisibilityResamplerBase::getSumWeightsPtr(size_t& size) const
+  {
+    size = 0;
+    return std::shared_ptr<double>();
+  }
 
 using namespace casacore;
 };// end namespace casa

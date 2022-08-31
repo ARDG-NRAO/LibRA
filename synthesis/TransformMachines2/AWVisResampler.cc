@@ -37,7 +37,10 @@
 #include <iostream>
 #include <typeinfo>
 #include <iomanip>
-#include <synthesis/TransformMachines2/FortranizedLoops.h>
+#include <cfenv>
+//#include <synthesis/TransformMachines2/FortranizedLoops.h>
+//#include <synthesis/TransformMachines2/hpg.hpp>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -46,6 +49,7 @@ extern "C" {
 };
 //#include <casa/BasicMath/Functors.h>
 using namespace casacore;
+//using namespace hpg;
 namespace casa{
   using namespace refim;
   //
@@ -86,79 +90,6 @@ namespace casa{
 					Matrix<Double>& sumwt,const Bool& dopsf,
 					Bool useConjFreqCF); // __restrict__;
 
-  template
-  Complex AWVisResampler::accumulateOnGrid(Array<DComplex>& grid, Complex* __restrict__& convFuncV, 
-					  Complex& nvalue, Double& wVal, 
-					  Vector<Int>& scaledSupport, Vector<Float>& scaledSampling, 
-					  Vector<Double>& off, Vector<Int>& convOrigin, 
-					  Vector<Int>& /*cfShape*/, Vector<Int>& loc, Vector<Int>& igrdpos,
-					   Double& /*sinDPA*/, Double& /*cosDPA*/,
-					  Bool& pointingOffset, Bool dopsf);
-  template
-  Complex AWVisResampler::accumulateOnGrid(Array<Complex>& grid, Complex* __restrict__& convFuncV, 
-					  Complex& nvalue, Double& wVal, 
-					  Vector<Int>& scaledSupport, Vector<Float>& scaledSampling, 
-					  Vector<Double>& off, Vector<Int>& convOrigin, 
-					  Vector<Int>& /*cfShape*/, Vector<Int>& loc, Vector<Int>& igrdpos,
-					   Double& /*sinDPA*/, Double& /*cosDPA*/,
-					  Bool& pointingOffset, Bool dopsf);
-  // template
-  // void AWVisResampler::accumulateFromGrid(Complex& nvalue, const DComplex* __restrict__& grid, 
-  // 					  Vector<Int>& iGrdPos,
-  // 					  Complex* __restrict__& convFuncV, 
-  // 					  Double& wVal, Vector<Int>& scaledSupport, 
-  // 					  Vector<Float>& scaledSampling, Vector<Double>& off,
-  // 					  Vector<Int>& convOrigin, Vector<Int>& cfShape,
-  // 					  Vector<Int>& loc, 
-  // 					  Complex& phasor, 
-  // 					  Double& sinDPA, Double& cosDPA,
-  // 					  Bool& finitePointingOffset, 
-  // 					  Matrix<Complex>& cached_phaseGrad_p,
-  // 					  Bool dopsf);
-  template
-  void AWVisResampler::accumulateFromGrid(Complex& nvalue, Complex& norm, const Complex* __restrict__&  grid, 
-					  Vector<Int>& iGrdPos,
-					  Complex* __restrict__& convFuncV, 
-					  Double& wVal, Vector<Int>& scaledSupport, 
-					  Vector<Float>& scaledSampling, Vector<Double>& off,
-					  Vector<Int>& convOrigin, Vector<Int>& cfShape,
-					  Vector<Int>& loc, 
-					  Complex& phasor, 
-					  Double& sinDPA, Double& cosDPA,
-					  Bool& finitePointingOffset, 
-					  Matrix<Complex>& cached_phaseGrad_p);
-  
-  template 
-  void AWVisResampler::XInnerLoop(const Int *scaledSupport, const Float* scaledSampling,
-  				  const Double* off,
-  				  const Int* loc, Complex& cfArea,  
-  				  const Int * __restrict__ iGrdPosPtr,
-  				  Complex *__restrict__& convFuncV,
-				  const Int* convOrigin,
-  				  Complex& nvalue,
-				  Double& wVal,
-  				  Bool& /*finitePointingOffset*/,
-  				  Bool& /*doPSFOnly*/,
-  				  Complex* __restrict__ gridStore,
-  				  Int* iloc,
-  				  Complex& norm,
-  				  Int* igrdpos);
-  template 
-  void AWVisResampler::XInnerLoop(const Int *scaledSupport, const Float* scaledSampling,
-  				  const Double* off,
-  				  const Int* loc, Complex& cfArea,  
-  				  const Int * __restrict__ iGrdPosPtr,
-  				  Complex *__restrict__& convFuncV,
-				  const Int* convOrigin,
-  				  Complex& nvalue,
-				  Double& wVal,
-  				  Bool& /*finitePointingOffset*/,
-  				  Bool& /*doPSFOnly*/,
-  				  DComplex* __restrict__ gridStore,
-  				  Int* iloc,
-  				  Complex& norm,
-  				  Int* igrdpos);
-
   Complex* AWVisResampler::getConvFunc_p(const double& vbPA, Vector<Int>& cfShape,
 					 Vector<int>& support,
 					 int& muellerElement,
@@ -179,21 +110,29 @@ namespace casa{
     //
     //timer_p.mark();
 
+    int pndx;
     if (wVal > 0.0) 
       {
-	cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,mNdx[ipol][mRow])));
+	pndx=mNdx[ipol][mRow];
+	// cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,mNdx[ipol][mRow])));
         // CFCell& cfO=cfb(fndx,wndx,mNdx[ipol][mRow]);
 	// convFuncV = &(*cfO.getStorage());
 	// support(0)=support(1)=cfO.xSupport_p;
       }
     else
       {
-	cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,conjMNdx[ipol][mRow])));
+	pndx=conjMNdx[ipol][mRow];
+	// cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,conjMNdx[ipol][mRow])));
 	// CFCell& cfO=cfb(fndx,wndx,conjMNdx[ipol][mRow]);
 	// convFuncV = &(*cfO.getStorage());
 	// support(0)=support(1)=cfO.xSupport_p;
       }
-   
+    //pndx=1;
+    //    cerr << "CFC indexes(w,f,p),ipol: " << wndx << " " << fndx << " " << pndx << " " << ipol << endl;
+    cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,pndx)));
+
+    //cerr << "CF Name: " << cfcell->fileName_p << endl;
+
     convFuncV = &(*cfcell->getStorage());
     support(0)=support(1)=cfcell->xSupport_p;
 
@@ -238,119 +177,6 @@ namespace casa{
     return convFuncV->getStorage(Dummy);
   };
 
-  template <class T>
-  void AWVisResampler::XInnerLoop(const Int *scaledSupport, const Float* scaledSampling,
-  				  const Double* off,
-  				  const Int* loc,  Complex& cfArea,  
-  				  const Int * __restrict__ iGrdPosPtr,
-  				  Complex *__restrict__& convFuncV,
-				  const Int* convOrigin,
-  				  Complex& nvalue,
-				  Double& wVal,
-  				  Bool& /*finitePointingOffset*/,
-  				  Bool& /*doPSFOnly*/,
-  				  T* __restrict__ gridStore,
-  				  Int* iloc,
-  				  Complex& norm,
-  				  Int* igrdpos)
-  {
-    Complex wt;
-    const Int *tt=iloc;
-    Bool Dummy;
-    const Int *cfInc_ptr=cfInc_p.getStorage(Dummy);
-    for(Int ix=-scaledSupport[0]; ix <= scaledSupport[0]; ix++) 
-      {
-  	iloc[0]=(Int)((scaledSampling[0]*ix+off[0])-1)+convOrigin[0];
-  	igrdpos[0]=loc[0]+ix;
-
-  	{
-  	  wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
-  			      tt,cfInc_ptr)/cfArea;
-  	  if (wVal > 0.0) {wt = conj(wt);}
-  	    norm += (wt);
-  	    // if (finitePointingOffset && !doPSFOnly) 
-  	    //   wt *= cached_phaseGrad_p(iloc[0]+phaseGradOrigin_l[0],
-  	    // 			       iloc[1]+phaseGradOrigin_l[1]);
-
-  	    // The following uses raw index on the 4D grid
-  	    addTo4DArray(gridStore,iGrdPosPtr,gridInc_p, nvalue,wt);
-  	}
-      }
-  }
-
-  template <class T>
-  Complex AWVisResampler::accumulateOnGrid(Array<T>& grid,Complex* __restrict__& convFuncV, 
-					   Complex& nvalue,Double& wVal, 
-					   Vector<Int>& scaledSupport, Vector<Float>& scaledSampling, 
-					   Vector<Double>& off, Vector<Int>& convOrigin, 
-					   Vector<Int>& /*cfShape*/, Vector<Int>& loc, Vector<Int>& igrdpos,
-					   Double& /*sinDPA*/, Double& /*cosDPA*/,
-					   Bool& finitePointingOffset,
-					   Bool /*doPSFOnly*/)
-  {
-    Vector<Int> iloc(4,0);
-    Bool Dummy;
-    Complex wt;//, cfArea=1.0; 
-    Complex norm=0.0;
-
-    Vector<Int> iCFPos(4,0);
-    const Int * __restrict__ gridInc_p_ptr= gridInc_p.getStorage(Dummy);
-    const Int * __restrict__ iGrdPosPtr = igrdpos.getStorage(Dummy);
-    T* __restrict__ gridStore = grid.getStorage(Dummy);
-//     Int Nth = 1;
-// #ifdef _OPENMP
-//     Nth=max(omp_get_max_threads()-2,1);
-// #endif
-//     Nth = Nth;
-
-    const Int* scaledSupport_ptr=scaledSupport.getStorage(Dummy);
-    const Float *scaledSampling_ptr=scaledSampling.getStorage(Dummy);
-    const Double *off_ptr=off.getStorage(Dummy);
-    const Int *loc_ptr = loc.getStorage(Dummy);
-    Int *iCFPos_ptr = iCFPos.getStorage(Dummy);
-    const Int* convOrigin_ptr=convOrigin.getStorage(Dummy);
-    Int *iloc_ptr=iloc.getStorage(Dummy);
-    Int *igrdpos_ptr=igrdpos.getStorage(Dummy);
-    Int *cfInc_p_ptr = cfInc_p.getStorage(Dummy);
-    
-    //Bool finitePointingOffset_l=finitePointingOffset;
-    //Bool doPSFOnly_l=doPSFOnly;
-    //Double wVal_l=wVal;
-    //Complex nvalue_l=nvalue;
-    //Complex *convFuncV_l=convFuncV;
-    Int phaseGradOrigin_l[2]; 
-    phaseGradOrigin_l[0] = cached_phaseGrad_p.shape()(0)/2;
-    phaseGradOrigin_l[1] = cached_phaseGrad_p.shape()(1)/2;
-
-    for(Int iy=-scaledSupport_ptr[1]; iy <= scaledSupport_ptr[1]; iy++) 
-      {
-	iloc_ptr[1]=SynthesisUtils::nint((scaledSampling_ptr[1]*iy+off_ptr[1])-1);
-	igrdpos_ptr[1]=loc_ptr[1]+iy;
-        iCFPos_ptr[1] =iloc_ptr[1]+convOrigin_ptr[1];
-
-	for(Int ix=-scaledSupport_ptr[0]; ix <= scaledSupport_ptr[0]; ix++) 
-	  {
-	    iloc_ptr[0]=SynthesisUtils::nint((scaledSampling_ptr[0]*ix+off_ptr[0])-1);
-	    igrdpos_ptr[0]=loc_ptr[0]+ix;
-	    iCFPos_ptr[0] =iloc_ptr[0]+convOrigin_ptr[0];
-	    wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
-				iCFPos_ptr,cfInc_p_ptr);//cfArea;
-	    if (wVal > 0.0) {wt = conj(wt);}
-	    norm += (wt);
-	    if (finitePointingOffset)// && !doPSFOnly) 
-	      {
-		wt *= cached_phaseGrad_p(iloc_ptr[0]+phaseGradOrigin_l[0],
-					 iloc_ptr[1]+phaseGradOrigin_l[1]);
-	      }
-	    addTo4DArray_ptr(gridStore,iGrdPosPtr,gridInc_p_ptr, nvalue,wt);
-	  }
-      }
-    return norm;
-  }
-  // Moved the accumulateFromGrid() method to file to play with
-  // multi-threading it to not clutter this file.  Both versions
-  // (threaded and non-threaded) are in this file.
-#include "accumulateFromGrid2.inc"
   //
   //-----------------------------------------------------------------------------------
   //
@@ -361,9 +187,6 @@ namespace casa{
                                         const Double& /*imRefFreq*/,
 					const Int& spwID, const Int& fieldId)
   {
-    //cout << "# " << cfRefFreq << " " << imRefFreq << endl;
-    //cerr << pointingOffset << " " << cached_PointingOffset_p << endl;
-
     if (
     	((fabs(pointingOffset[0]-cached_PointingOffset_p[0])) > 1e-6) ||
     	((fabs(pointingOffset[1]-cached_PointingOffset_p[1])) > 1e-6) ||
@@ -389,43 +212,19 @@ namespace casa{
 	    grad = (ix-convOrigin[0])*pointingOffset[0];
 	    Double sx,cx;
 	    SINCOS(grad,sx,cx);
-	    //	    phx = Complex(cos(grad),sin(grad));
+
 	    phx = Complex(cx,sx);
 	    for(Int iy=0;iy<ny;iy++)
 	      {
 		grad = (iy-convOrigin[1])*pointingOffset[1];
 		Double sy,cy;
 		SINCOS(grad,sy,cy);
-		//		phy = Complex(cos(grad),sin(grad));
 		phy = Complex(cy,sy);
 		cached_phaseGrad_p(ix,iy)=phx*phy;
 	      }
 	  }
       }
   }
-  //
-  //-----------------------------------------------------------------------------------
-  //
-  // AWVisResampler& AWVisResampler::operator=(const AWVisResampler& other)
-  // {
-  //   SETVEC(uvwScale_p, other.uvwScale_p);
-  //   SETVEC(offset_p, other.offset_p);
-  //   SETVEC(dphase_p, other.dphase_p);
-  //   SETVEC(chanMap_p, other.chanMap_p);
-  //   SETVEC(polMap_p, other.polMap_p);
-
-  //   convFuncStore_p = other.convFuncStore_p;
-
-  //   return *this;
-  // }
-
-  // CFB::initPolMaps(polMap,conjPolMap) sets the internal maps of CFB
-  //
-  // AWP::findCF() --> cfCache->initPolMap(...,...) --> cfb->initPolMaps(...,...)
-  //
-  // AWVR extracts polMap from CFB.
-  // Same CF is extracted for gridding and de-gridding.  CF* used in the gridding loops.
-  // getConvFunc_p() ensures the jugglery needed for AW CFs
 
   //
   //-----------------------------------------------------------------------------------
@@ -440,18 +239,21 @@ namespace casa{
     Int targetIMChan, targetIMPol, rbeg, rend;//, PolnPlane, ConjPlane;
     Int startChan, endChan;
     
+
     Vector<Float> sampling(2),scaledSampling(2);
     Vector<Int> support(2),loc(3), iloc(4),scaledSupport(2);
     Vector<Double> pos(3), off(3);
     Vector<Int> igrdpos(4);
 
     Complex phasor, nvalue /*, wt */;
-    Complex norm;
+    DComplex norm;
     Vector<Int> cfShape;
     // cfShape=(*vb2CFBMap_p)[0]->getStorage()(0,0,0)->getStorage()->shape().asVector();
 
     Vector<Int> convOrigin;// = (cfShape)/2;
     Double cfRefFreq;
+    const Matrix<Double> UVW=vbs.uvw_p;
+
     //    Double cfScale=1.0;
 
     //timer_p.mark();
@@ -466,7 +268,7 @@ namespace casa{
     nDataChan = vbs.flagCube_p.shape()[1];
 
     Bool Dummy, gDummy, 
-      accumCFs=((vbs.uvw_p.nelements() == 0) && dopsf);
+      accumCFs=((UVW.nelements() == 0) && dopsf);
 
     T* __restrict__ gridStore = grid.getStorage(gDummy);
       
@@ -483,45 +285,15 @@ namespace casa{
     Double fIncr, wIncr;
     CountedPtr<CFBuffer> cfb = (*vb2CFBMap_p)[0];
     bool finitePointingOffsets=cfb->finitePointingOffsets();
-    // CFBStruct cfbst;
-    // cfb.getAsStruct(cfbst);
-    // for(int ii=0;ii<vbs.cfBSt_p.shape[0];ii++)
-    //   for(int jj=0;jj<vbs.cfBSt_p.shape[1];jj++)
-    // 	for(int kk=0;kk<vbs.cfBSt_p.shape[2];kk++)
-    // 	  {
-    // 	    CFCStruct cfcst=vbs.cfBSt_p.getCFB(ii,jj,kk);
-    // 	    cerr << "[" << ii << "," << jj << "," << kk << "]:" 
-    // 		 << cfcst.sampling << " "
-    // 		 << cfcst.xSupport << " "
-    // 		 << cfcst.ySupport 
-    // 		 << endl;
-    // 	  }
-
-
 
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
-    //    Vector<Vector<Double> > pointingOffset(cfb.getPointingOffset());
-    //    runTimeG1_p += timer_p.real();
 
     nw = wVals.nelements();
-    //nCFFreq = fVals.nelements()-1;
     iloc = 0;
 
-    // timer.mark();
     IPosition shp=vbs.flagCube_p.shape();
-    Cube<Bool> allPolNChanDone_l(shp(0),shp(1),1);
    if (accumCFs)
      {
-       for (Int ipol=0;ipol<nDataPol;ipol++)
-         {
-           if (polMap_p(ipol) < 0)
-             {
-               for (Int ichan=0;ichan<nDataChan;ichan++)
-                 //for (Int irow=rbeg;irow<rend;irow++)
-                   allPolNChanDone_l(ipol,ichan,0)=true;
-             }
-         }
-
 	startChan = vbs.startChan_p;
 	endChan = vbs.endChan_p;
      }
@@ -533,19 +305,14 @@ namespace casa{
 
    Int vbSpw = (vbs.vb_p)->spectralWindows()(0);
    Double vbPA = vbs.paQuant_p.getValue("rad");
-   //Int vbFieldID = -1;//((const Int)((vbs.vb_p)->fieldId()(0)));
-   
 
    for(Int irow=rbeg; irow< rend; irow++){   
-      //      if ((vbs.uvw_p.nelements() == 0)) 
-      //if (accumCFs) if (allTrue(allPolNChanDone_l)) break;
       
       if(!(*(rowFlag_ptr+irow)))
 	{   
-	  //	  setFieldPhaseGrad(vb2CFBMap_p->phaseGradCalculator_p->getFieldPointingGrad());
 	  setFieldPhaseGrad((vb2CFBMap_p->vectorPhaseGradCalculator_p[vb2CFBMap_p->vbRow2BLMap_p[irow]])->field_phaseGrad_p);
-	  //setFieldPhaseGrad(vb2CFBMap_p->getCFPhaseGrad(irow));
 	  cfb = (*vb2CFBMap_p)[irow];
+
 	  for(Int ichan=startChan; ichan< endChan; ichan++)
 	    {
 	      if (*(imgWts_ptr + ichan+irow*nDataChan)!=0.0) 
@@ -554,57 +321,28 @@ namespace casa{
 		  
 		  if((targetIMChan>=0) && (targetIMChan<nGridChan)) 
 		    {
-		      //timer_p.mark();
-		      Double dataWVal = vbs.vb_p->uvw()(2,irow);
-		      Int wndx = cfb->nearestWNdx(abs(dataWVal)*freq[ichan]/C::c);
-		      // Double conjFreq=sqrt(2*conjRefFreq*conjRefFreq - freq[ichan]*freq[ichan]);
-		      // Int fndx = cfb.nearestFreqNdx(freq[ichan]),
-		      // 	conjFNdx =cfb.nearestFreqNdx(conjFreq);
 
-		      // Int fndx=cfb.nearestFreqNdx(vbSpw,ichan), conjFNdx=cfb.nearestFreqNdx(vbSpw,ichan,true);
-		      // Int cfFreqNdx;
-		      // if (vbs.conjBeams_p) cfFreqNdx = cfb.nearestFreqNdx(vbSpw,ichan,true);// Get the conj. freq. index
-		      // else  cfFreqNdx = cfb.nearestFreqNdx(vbSpw,ichan);
+		      Double dataWVal = (UVW.nelements() > 0) ? dataWVal = UVW(2,irow) : 0.0;
+		      Int wndx = cfb->nearestWNdx(dataWVal*freq[ichan]/C::c);
 		      Int cfFreqNdx = cfb->nearestFreqNdx(vbSpw,ichan,vbs.conjBeams_p);
-
-		      //runTimeG3_p += timer_p.real();
-		      
 		      Float s;
 		      //
 		      //------------------------------------------------------------------------------
 		      //
 		      // Using the int-index version for Freq, W and Muellerelements
-		      //	      cfb.getParams(cfRefFreq, s, support(0), support(1),0,wndx,0);
 		      //
 		      //------------------------------------------------------------------------------
 		      //
-		      // if (vbs.conjBeams_p)
-		      // 	{
-		      // 	  timer_p.mark();
-		      // 	  cfb.getParams(cfRefFreq, s, support(0), support(1),conjFNdx,wndx,0);
-		      // 	  runTimeG4_p += timer_p.real();
-		      // 	}
-		      // else
-		      // 	cfb.getParams(cfRefFreq, s, support(0), support(1),fndx,wndx,0);
 
-		      //timer_p.mark();
 		      cfb->getParams(cfRefFreq, s, support(0), support(1),cfFreqNdx,wndx,0);
-		      //runTimeG4_p += timer_p.real();
 
 		      sampling(0) = sampling(1) = SynthesisUtils::nint(s);
-		      // sampling[0] = SynthesisUtils::nint(sampling[0]*cfScale);
-		      // sampling[1] = SynthesisUtils::nint(sampling[1]*cfScale);
-		      // support[0]  = SynthesisUtils::nint(support[0]/cfScale);
-		      // support[1]  = SynthesisUtils::nint(support[1]/cfScale);
-
-		      //timer_p.mark();
-		      sgrid(pos,loc,off, phasor, irow, vbs.uvw_p, dphase_p[irow], freq[ichan], 
-			    uvwScale_p, offset_p, sampling);
-		      //runTimeG5_p += timer_p.real();
 		      
-		      //  if (onGrid(nx, ny, nw, loc, support)) 
+		      sgrid(pos,loc,off, phasor, irow, UVW, dphase_p[irow], freq[ichan], 
+			    uvwScale_p, offset_p, sampling);
 			{
 			  // Loop over all image-plane polarization planes.
+
 			  for(Int ipol=0; ipol< nDataPol; ipol++) 
 			    { 
 			      if((!(*(flagCube_ptr + ipol + ichan*nDataPol + irow*nDataPol*nDataChan))))
@@ -614,23 +352,10 @@ namespace casa{
 				    {
 				      igrdpos[2]=targetIMPol; igrdpos[3]=targetIMChan;
 				      
-				      if(accumCFs)     allPolNChanDone_l(ipol,ichan,0)=true;
-				      
-				      // ConjPlane = cfMap_p[ipol];
-				      // PolnPlane = conjCFMap_p[ipol];
-				      
-				      //	      if(dopsf) nvalue=Complex(*(imgWts_ptr + ichan + irow*nDataChan));
-				      // else      nvalue= *(imgWts_ptr+ichan+irow*nDataChan)*
-				      //	  (*(visCube_ptr+ipol+ichan*nDataPol+irow*nDataChan*nDataPol)*phasor);
-				      
 				      norm = 0.0;
 				      // Loop over all relevant elements of the Mueller matrix for the polarization
 				      // ipol.
 				      Vector<int> conjMRow = conjMNdx[ipol];
-				      //for (uInt mCols=0;mCols<conjMNdx[ipol].nelements(); mCols++)
-
-				      // ipol determines the targetIMPol.  Each targetIMPol gets a row of CFs (mRow).
-				      // visVecElements is gridded using the convFuncV and added to the target grid.
 
 				      for (uInt mCols=0;mCols<conjMRow.nelements(); mCols++) 
 					{
@@ -656,42 +381,19 @@ namespace casa{
 					  // If the vis. vector element is flagged, don't grid it.
 					  if(((*(flagCube_ptr + visVecElement + ichan*nDataPol + irow*nDataPol*nDataChan)))) break;
 
-					  //cerr << "G: " << mCols << "-->" << visVecElement << "-->" << ipol << " " << polMap_p[ipol] << endl;
-
 					  if(dopsf) nvalue=Complex(*(imgWts_ptr + ichan + irow*nDataChan));
 					  else      nvalue=Complex(*(imgWts_ptr+ichan+irow*nDataChan))*
 					   	      (*(visCube_ptr+visVecElement+ichan*nDataPol+irow*nDataChan*nDataPol)*phasor);
 
-			
-
 					  if (!onGrid(nx, ny, nw, loc, support)) break;
-					  //runTimeG6_p += timer_p.real();
-					  
-					  
-					  convOrigin=cfShape/2;
-					  //Bool psfOnly=((dopsf==true) && (accumCFs==false));
-					  // if (finitePointingOffsets )
-					  //   cachePhaseGrad_p(pointingOffset, cfShape, convOrigin, cfRefFreq, vbs.imRefFreq(),
-					  // 		     vbSpw, vbFieldID);
 
+					  convOrigin=cfShape/2;
 					  
 					  cacheAxisIncrements(cfShape, cfInc_p);
-					  
-					  // accumulateOnGrid() is a local C++ method with the inner loops.  The include
-					  // file (FortanizedLoopsToGrid.cc) has the interface code to call the inner 
-					  // loops re-written in FORTRAN (in synthesis/fortran/faccumulateOnGrid.f)
-
-					  //timer_p.mark();
-					  // norm += accumulateOnGrid(grid,convFuncV,nvalue,dataWVal,
-					  // 			   support,sampling,
-					  // 			   off, convOrigin, cfShape, loc, igrdpos,
-					  // 			   sinDPA, cosDPA,finitePointingOffsets,psfOnly);
+					  nVisGridded_p++;
 #include <synthesis/TransformMachines2/accumulateToGrid.inc>
-//#include <synthesis/TransformMachines2/FortranizedLoopsToGrid.cc>
-//clLoopsToGrid();
-//runTimeG7_p += timer_p.real();
 					}
-				      sumwt(targetIMPol,targetIMChan) += vbs.imagingWeight_p(ichan, irow)*abs(norm);
+				      sumwt(targetIMPol,targetIMChan) += vbs.imagingWeight_p(ichan, irow)*fabs(norm);
 				      //		      *(sumWt_ptr+apol+achan*nGridChan)+= *(imgWts_ptr+ichan+irow*nDataChan);
 				    }
 				}
@@ -702,8 +404,7 @@ namespace casa{
 	    } // End chan-loop
 	}
     } // End row-loop
-    // exit(0);
-   //runTimeG_p = timer_p.real() + runTimeG1_p + runTimeG2_p + runTimeG3_p + runTimeG4_p + runTimeG5_p + runTimeG6_p + runTimeG7_p;
+
     T *tt=(T *)gridStore;
     grid.putStorage(tt,gDummy);
   }
@@ -726,8 +427,7 @@ namespace casa{
     CountedPtr<CFBuffer> cfb=(*vb2CFBMap_p)[0];
     Vector<Int> cfShape=cfb->getStorage()(0,0,0)->getStorage()->shape().asVector();
     Bool finitePointingOffset=cfb->finitePointingOffsets();
-    
-    //    Vector<Int> convOrigin = (cfShape-1)/2;
+
     Vector<Int> convOrigin = (cfShape)/2;
     Double cfRefFreq;//cfScale=1.0
     
@@ -769,18 +469,15 @@ namespace casa{
     iloc = 0;
     Int vbSpw = (vbs.vb_p)->spectralWindows()(0);
     Double vbPA = vbs.paQuant_p.getValue("rad");
-    //    Int vbFieldID = -1;//((const Int)((vbs.vb_p)->fieldId()(0)));
 
     Vector<Double> wVals, fVals; PolMapType mVals, mNdx, conjMVals, conjMNdx;
     Double fIncr, wIncr;
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
     nw = wVals.nelements();
-    //	nCFFreq = fVals.nelements()-1;
 
     for(Int irow=rbeg; irow<rend; irow++) {
       if(!rowFlag[irow]) {
-	//setFieldPhaseGrad(vb2CFBMap_p->phaseGradCalculator_p->getFieldPointingGrad());
-	// setFieldPhaseGrad(vb2CFBMap_p->getCFPhaseGrad(irow));
+
 	setFieldPhaseGrad((vb2CFBMap_p->vectorPhaseGradCalculator_p[vb2CFBMap_p->vbRow2BLMap_p[irow]])->field_phaseGrad_p);
 	cfb = (*vb2CFBMap_p)[irow];
 	
@@ -800,7 +497,7 @@ namespace casa{
 		  uvwScale_p,offset_p,sampling);
 	    
 	    Bool isOnGrid;
-	    //  if ((isOnGrid=onGrid(nx, ny, nw, loc, support)))
+
 	    {
 	      for(Int ipol=0; ipol < nDataPol; ipol++)
 		{
@@ -813,7 +510,7 @@ namespace casa{
 			  igrdpos[2]=apol; igrdpos[3]=achan;
 			  nvalue=0.0;      norm(ipol)=0.0;
 		    
-		    // With VBRow2CFMap in use, CF for each pol. plane is a separate 2D Array.  
+			  // With VBRow2CFMap in use, CF for each pol. plane is a separate 2D Array.  
 			  for (uInt mCol=0; mCol<conjMNdx[ipol].nelements(); mCol++)
 			    {
 			      //
@@ -843,23 +540,8 @@ namespace casa{
 			      if ((isOnGrid=onGrid(nx, ny, nw, loc, support))==false) break;
 			      cacheAxisIncrements(cfShape, cfInc_p);
 			      convOrigin = (cfShape)/2;
-			      // if (finitePointingOffset)
-			      // 	cachePhaseGrad_p(pointingOffset, cfShape, convOrigin, cfRefFreq, vbs.imRefFreq(),
-			      // 			 vbSpw, vbFieldID);
 
-			      // accumulateFromGrid() is a local C++ method with the inner loops.  The include
-			      // file (FortanizedLoopsFromGrid.cc) has the interface code to call the inner 
-			      // loops re-written in FORTRAN (in synthesis/fortran/faccumulateOnGrid.f)
-// Timer timer;
-			      // accumulateFromGrid(nvalue, norm[ipol], gridStore, igrdpos, convFuncV, dataWVal,
-			      // 		   support, sampling, off, convOrigin,
-			      // 			 cfShape, loc, phasor, dummy, dummy,
-			      // 		   finitePointingOffset, cached_phaseGrad_p);
 #include <synthesis/TransformMachines2/accumulateFromGrid.inc>
-//#include <synthesis/TransformMachines2/FortranizedLoopsFromGrid.cc>
-
-// runTimeDG_p += timer.real();
-
 			    }
 			  if (norm[ipol] != Complex(0.0)) visCube(ipol,ichan,irow)=nvalue/norm[ipol]; // Goes with FortranizedLoopsFromGrid.cc
 			}
@@ -878,25 +560,28 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
 			   Vector<Double>& off, Complex& phasor, 
 			   const Int& irow, const Matrix<Double>& uvw, 
 			   const Double& dphase, const Double& freq, 
-			   const Vector<Double>& scale, 
+			   const Vector<Double>& scale, //float in HPG
 			   const Vector<Double>& offset,
 			   const Vector<Float>& sampling)
 {
+  // inv_lambda float in HPG Double here
   Double phase;
   Vector<Double> uvw_l(3,0); // This allows gridding of weights
   // centered on the uv-origin
   if (uvw.nelements() > 0) for(Int i=0;i<3;i++) uvw_l[i]=uvw(i,irow);
   
   pos(2)=sqrt(abs(scale[2]*uvw_l(2)*freq/C::c))+offset[2];
-  loc(2)=SynthesisUtils::nint(pos[2]);
+  //loc(2)=SynthesisUtils::nint(pos[2]);
+  loc(2)=std::lrint(pos[2]);
   off(2)=0;
   
   for(Int idim=0;idim<2;idim++)
     {
       pos[idim]=scale[idim]*uvw_l(idim)*freq/C::c+(offset[idim]);
-      loc[idim]=SynthesisUtils::nint(pos[idim]);
-      //	off[idim]=SynthesisUtils::nint((loc[idim]-pos[idim])*sampling[idim]+1);
-      off[idim]=SynthesisUtils::nint((loc[idim]-pos[idim])*sampling[idim]);
+
+      loc[idim]=std::lrint(pos[idim]);
+
+      off[idim]=std::lrint((loc[idim]-pos[idim])*sampling[idim]);
     }
   
   if (dphase != 0.0)
@@ -904,114 +589,10 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
       phase=-2.0*C::pi*dphase*freq/C::c;
       Double sp,cp;
       SINCOS(phase,sp,cp);
-      //      phasor=Complex(cos(phase), sin(phase));
       phasor=Complex(cp,sp);
     }
   else
     phasor=Complex(1.0);
-  // cerr << "### " << pos[0] << " " << offset[0] << " " << loc[0] << " " << off[0] << " " << uvw_l(0) << endl;
-  // exit(0);
-}
-//
-//-----------------------------------------------------------------------------------
-//
-Bool AWVisResampler::reindex(const Vector<Int>& in, Vector<Int>& out,
-			     const Double& sinDPA, const Double& cosDPA,
-			     const Vector<Int>& Origin, const Vector<Int>& size)
-{
-  
-  Bool onGrid=false;
-  Int ix=in[0], iy=in[1];
-  if (sinDPA != 0.0)
-    {
-      ix = SynthesisUtils::nint(cosDPA*in[0] + sinDPA*in[1]);
-      iy = SynthesisUtils::nint(-sinDPA*in[0] + cosDPA*in[1]);
-    }
-  out[0]=ix+Origin[0];
-  out[1]=iy+Origin[1];
-  
-  onGrid = ((out[0] >= 0) && (out[0] < size[0]) &&
-	    (out[1] >= 0) && (out[1] < size[1]));
-  if (!onGrid)
-    cerr << "CF index out of range: " << out << " " << size << endl;
-  return onGrid;
-}
-
-
-// void lineCFArea(const Int& th,
-// 		  const Double& sinDPA,
-// 		  const Double& cosDPA,
-// 		  const Complex*__restrict__& convFuncV,
-// 		  const Vector<Int>& cfShape,
-// 		  const Vector<Int>& convOrigin,
-// 		  const Int& cfInc,
-// 		  Vector<Int>& iloc,
-// 		  Vector<Int>& tiloc,
-// 		  const Int* supportPtr,
-// 		  const Float* samplingPtr,
-// 		  const Double* offPtr,
-// 		  Complex *cfAreaArrPtr)
-// {
-//   cfAreaArrPtr[th]=0.0;
-//   for(Int ix=-supportPtr[0]; ix <= supportPtr[0]; ix++) 
-//     {
-// 	iloc[0]=(Int)((samplingPtr[0]*ix+offPtr[0])-1);//+convOrigin[0];
-// 	tiloc=iloc;
-// 	if (reindex(iloc,tiloc,sinDPA, cosDPA, 
-// 		    convOrigin, cfShape))
-// 	  {
-// 	    wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
-// 				tiloc,cfInc);
-// 	    if (dataWVal > 0.0) wt = conj(wt);
-// 	    cfAreaArrPtr[th] += wt;
-// 	  }
-//     }
-// }
-
-Complex AWVisResampler::getCFArea(Complex* __restrict__& convFuncV, 
-				  Double& wVal, 
-				  Vector<Int>& scaledSupport, 
-				  Vector<Float>& scaledSampling,
-				  Vector<Double>& off,
-				  Vector<Int>& convOrigin, 
-				  Vector<Int>& cfShape,
-				  Double& sinDPA, 
-				  Double& cosDPA)
-{
-  Vector<Int> iloc(4,0),tiloc(4);
-  Complex cfArea=0, wt;
-  Bool dummy;
-  Int *supportPtr=scaledSupport.getStorage(dummy);
-  Double *offPtr=off.getStorage(dummy);
-  Float *samplingPtr=scaledSampling.getStorage(dummy);
-  Int Nth=1;
-  Vector<Complex> cfAreaArr(Nth);
-  Complex *cfAreaArrPtr=cfAreaArr.getStorage(dummy);
-  
-  for(Int iy=-supportPtr[1]; iy <= supportPtr[1]; iy++) 
-    {
-      iloc(1)=(Int)((samplingPtr[1]*iy+offPtr[1])-1);//+convOrigin[1];
-      for (Int th=0;th<Nth;th++)
-	{
-	  cfAreaArr[th]=0.0;
-	  for(Int ix=-supportPtr[0]; ix <= supportPtr[0]; ix++) 
-	    {
-	      iloc[0]=(Int)((samplingPtr[0]*ix+offPtr[0])-1);//+convOrigin[0];
-	      tiloc=iloc;
-	      if (reindex(iloc,tiloc,sinDPA, cosDPA, 
-			  convOrigin, cfShape))
-		{
-		  wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
-				      tiloc,cfInc_p);
-		  if (wVal > 0.0) wt = conj(wt);
-		  cfAreaArrPtr[th] += wt;
-		}
-	    }
-	}
-      cfArea += sum(cfAreaArr);
-    }
-  //    cerr << "cfArea: " << scaledSupport << " " << scaledSampling << " " << cfShape << " " << convOrigin << " " << cfArea << endl;
-  return cfArea;
 }
 using namespace casacore;
 };// end namespace casa

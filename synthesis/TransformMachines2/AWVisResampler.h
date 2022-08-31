@@ -63,11 +63,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual void copy(const VisibilityResamplerBase& other) 
     {
       VisibilityResampler::copy(other);
-      // const casacore::Vector<casacore::Int> cfmap=other.getCFMap();
-      // const casacore::Vector<casacore::Int> conjcfmap = other.getConjCFMap();
-
-      // setCFMaps(cfmap,conjcfmap);
     }
+    virtual Bool needCFPhaseScreen() {return true;};
 
     virtual void copy(const AWVisResampler& other) 
     {
@@ -86,8 +83,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap)
     {SETVEC(cfMap_p,cfMap);SETVEC(conjCFMap_p,conjCFMap);}
-
-    // virtual void setConvFunc(const CFStore& cfs) {convFuncStore_p = cfs;};
     //
     //------------------------------------------------------------------------------
     //
@@ -97,22 +92,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // The first variant grids onto a double precision grid while the
     // second one does it on a single precision grid.
     //
-    // Note that the following calls allow using any CFStore object
-    // for gridding while de-gridding uses the internal
-    // convFuncStore_p object.
-    // virtual void DataToGrid(casacore::Array<casacore::DComplex>& griddedData, VBStore& vbs, casacore::Matrix<casacore::Double>& sumwt,
-    // 			    const casacore::Bool& dopsf, CFStore& cfs)
-    // {DataToGridImpl_p(griddedData, vbs, sumwt,dopsf,cfs);}
-
-    // virtual void DataToGrid(casacore::Array<casacore::Complex>& griddedData, VBStore& vbs, casacore::Matrix<casacore::Double>& sumwt,
-    // 			    const casacore::Bool& dopsf, CFStore& cfs)
-    // {DataToGridImpl_p(griddedData, vbs, sumwt,dopsf,cfs);}
-    //
-    // Simulating defaulting CFStore arguemnt in the above calls to convFuncStore_p
-    //
-
-    //***TEMP REMOVAL OF casacore::DComplex gridder*****
-
     virtual void DataToGrid(casacore::Array<casacore::DComplex>& griddedData, VBStore& vbs, casacore::Matrix<casacore::Double>& sumwt,
     			    const casacore::Bool& dopsf,casacore::Bool useConjFreqCF=false)
     {DataToGridImpl_p(griddedData, vbs, sumwt,dopsf,useConjFreqCF);}
@@ -127,71 +106,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // Re-sample VisBuffer to a regular grid (griddedData) (a.k.a. de-gridding)
     //
     virtual void GridToData(VBStore& vbs,const casacore::Array<casacore::Complex>& griddedData); 
-    //    virtual void GridToData(VBStore& vbs, casacore::Array<casacore::Complex>& griddedData); 
   protected:
-    virtual casacore::Complex getConvFuncVal(const casacore::Cube<casacore::Double>& convFunc, const casacore::Matrix<casacore::Double>& uvw, 
-				   const casacore::Int& irow, const casacore::Vector<casacore::Int>& pixel)
-    {
-      (void)uvw; (void)irow;return convFunc(pixel[0],pixel[1],pixel[2]);
-    }
-    casacore::Complex getCFArea(casacore::Complex* __restrict__& convFuncV, casacore::Double& wVal,
-		      casacore::Vector<casacore::Int>& scaledSupport, casacore::Vector<casacore::Float>& scaledSampling,
-		      casacore::Vector<casacore::Double>& off,
-		      casacore::Vector<casacore::Int>& convOrigin, casacore::Vector<casacore::Int>& cfShape,
-		      casacore::Double& sinDPA, casacore::Double& cosDPA);
-
-  template <class T>
-  casacore::Complex accumulateOnGrid(casacore::Array<T>& grid, casacore::Complex* __restrict__& convFuncV, 
-			   casacore::Complex& nvalue,
-			   casacore::Double& wVal, casacore::Vector<casacore::Int>& scaledSupport, 
-			   casacore::Vector<casacore::Float>& scaledSampling, casacore::Vector<casacore::Double>& off,
-			   casacore::Vector<casacore::Int>& convOrigin, casacore::Vector<casacore::Int>& /*cfShape*/,
-			   casacore::Vector<casacore::Int>& loc, casacore::Vector<casacore::Int>& igrdpos, 
-			   casacore::Double& /*sinDPA*/, casacore::Double& /*cosDPA*/,
-			   casacore::Bool& finitePointingOffset, casacore::Bool dopsf);
-  template <class T>
-  void XInnerLoop(const casacore::Int *scaleSupport, const casacore::Float* scaledSampling,
-		  const casacore::Double* off,
-		  const casacore::Int* loc, casacore::Complex& cfArea,  
-		  const casacore::Int * __restrict__ iGrdPosPtr,
-		  casacore::Complex *__restrict__& convFuncV,
-		  const casacore::Int* convOrigin,
-		  casacore::Complex& nvalue,
-		  casacore::Double& wVal,
-		  casacore::Bool& /*finitePointingOffset*/,
-		  casacore::Bool& /*doPSFOnly*/,
-		  T* __restrict__ gridStore,
-		  casacore::Int* iloc,
-		  casacore::Complex& norm,
-		  casacore::Int* igrdpos);
-
-  template <class T>
-  void accumulateFromGrid(T& nvalue, casacore::Complex& norm, const T* __restrict__& grid, 
-			  casacore::Vector<casacore::Int>& iGrdPos,
-			  casacore::Complex* __restrict__& convFuncV, 
-			  casacore::Double& wVal, casacore::Vector<casacore::Int>& scaledSupport, 
-			  casacore::Vector<casacore::Float>& scaledSampling, casacore::Vector<casacore::Double>& off,
-			  casacore::Vector<casacore::Int>& convOrigin, casacore::Vector<casacore::Int>& cfShape,
-			  casacore::Vector<casacore::Int>& loc, 
-			  casacore::Complex& phasor, 
-			  casacore::Double& sinDPA, casacore::Double& cosDPA,
-			  casacore::Bool& finitePointingOffset, 
-			  casacore::Matrix<casacore::Complex>& cached_phaseGrad_p);
-
     //
     //------------------------------------------------------------------------------
     //----------------------------Private parts-------------------------------------
     //------------------------------------------------------------------------------
     //
-  private:
-    // casacore::Vector<casacore::Double> uvwScale_p, offset_p, dphase_p;
-    // casacore::Vector<casacore::Int> chanMap_p, polMap_p;
-    // CFStore convFuncStore_p;
-    // //    casacore::Int inc0_p, inc1_p, inc2_p, inc3_p;
-    // casacore::Vector<casacore::Int> inc_p;
-    //    casacore::Vector<casacore::Int> cfMap_p, conjCFMap_p;
+
+    //  private:
+
     casacore::Vector<casacore::Int> gridInc_p, cfInc_p;
-    //    casacore::Matrix<casacore::Complex> cached_phaseGrad_p;
     casacore::Vector<casacore::Double> cached_PointingOffset_p;
     //
     // Re-sample the griddedData on the VisBuffer (a.k.a de-gridding).
@@ -283,9 +207,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // co-ordinate system.  For the accuracies already required for
     // EVLA and ALMA, this is not useful.  Leaving it hear for now....
     //
-    casacore::Bool reindex(const casacore::Vector<casacore::Int>& in, casacore::Vector<casacore::Int>& out,
-			   const casacore::Double& sinDPA, const casacore::Double& cosDPA,
-			   const casacore::Vector<casacore::Int>& Origin, const casacore::Vector<casacore::Int>& size);
+    // casacore::Bool reindex(const casacore::Vector<casacore::Int>& in, casacore::Vector<casacore::Int>& out,
+    // 			   const casacore::Double& sinDPA, const casacore::Double& cosDPA,
+    // 			   const casacore::Vector<casacore::Int>& Origin, const casacore::Vector<casacore::Int>& size);
 
     casacore::Complex* getConvFunc_p(const double& vbPA,
 				     casacore::Vector<casacore::Int>& cfShape,

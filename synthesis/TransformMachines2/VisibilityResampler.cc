@@ -29,7 +29,7 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/VisibilityResampler.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <stdcasa/thread/AsynchronousTools.h>
+#include <msvis/MSVis/AsynchronousTools.h>
 #include <fstream>
 
 using namespace casacore;
@@ -690,7 +690,6 @@ if (! beenThereDoneThat){
     T *tt=(T *)gridStore;
     grid.putStorage(tt,gDummy);
   }
-
 
 using namespace casacore;
 };// end namespace casa

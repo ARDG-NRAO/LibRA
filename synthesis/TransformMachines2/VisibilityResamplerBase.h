@@ -37,12 +37,15 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Vector.h>
-#include <stdcasa/thread/AsynchronousTools.h>
+#include <msvis/MSVis/AsynchronousTools.h>
 
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Logging/LogMessage.h>
 #include <casacore/casa/OS/Timer.h>
+//#include <hpg.hpp>
+
+using sumofweight_fp = std::vector<std::vector<double>>;
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   using namespace vi;
@@ -50,8 +53,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class VisibilityResamplerBase
   {
   public: 
+
+
     VisibilityResamplerBase(): 
       runTimeG_p(0.0), runTimeDG_p(0.0),runTimeG1_p(0.0), runTimeG2_p(0.0), runTimeG3_p(0.0), runTimeG4_p(0.0), runTimeG5_p(0.0), runTimeG6_p(0.0), runTimeG7_p(0.0),
+      griddingTime(0.0),
       timer_p(),
       uvwScale_p(), offset_p(), chanMap_p(), polMap_p(), spwChanFreq_p(), spwChanConjFreq_p (), convFuncStore_p(), inc_p(),
       cfMap_p(), conjCFMap_p(), paTolerance_p(360.0), cached_phaseGrad_p(),vb2CFBMap_p()
@@ -67,6 +73,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       cfMap_p(), conjCFMap_p(), paTolerance_p(360.0),vb2CFBMap_p()
     {copy(other);}
 
+    virtual String name() {return String("CPUResampler");}
+    virtual Bool needCFPhaseScreen()=0;
     virtual ~VisibilityResamplerBase() {};
 
     VisibilityResamplerBase& operator=(const VisibilityResamplerBase& other);
@@ -120,12 +128,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual void initializePutBuffers(const casacore::Array<casacore::Complex>& griddedData,
 				      const casacore::Matrix<casacore::Double>& sumwt) = 0;
     virtual void initializeDataBuffers(VBStore& vbs)=0;
+    virtual void initGridder(const uInt& /*NProcs*/,
+			     const std::array<unsigned, 4>& /*grid_size*/,
+			     const std::array<float, 2>& /*grid_scale*/) {};
+    virtual sumofweight_fp resetGridder(casacore::Array<casacore::DComplex>& /*griddedData2*/) {sumofweight_fp tt; return tt;};
     //
     // Aliases for more readable code at the FTMachine layer.
     //
-    inline void finalizeToSky(casacore::Array<casacore::DComplex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) 
+    virtual inline void finalizeToSky(casacore::Array<casacore::DComplex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) 
     {GatherGrids(griddedData, sumwt);};
-    inline void finalizeToSky(casacore::Array<casacore::Complex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) 
+    virtual inline void finalizeToSky(casacore::Array<casacore::Complex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) 
     {GatherGrids(griddedData, sumwt);};
     inline void initializeToSky(const casacore::Array<casacore::DComplex>& griddedData,const casacore::Matrix<casacore::Double>& sumwt) 
     {initializePutBuffers(griddedData, sumwt);};
@@ -134,7 +146,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     const casacore::Vector<casacore::Int> getCFMap() {return cfMap_p;};
     const casacore::Vector<casacore::Int> getConjCFMap() {return conjCFMap_p;};
 
-    
+    // get pointers to storage for gridded visibilities or weight;
+    // size to number of elements in storage; may not be implemented
+    // by all sub-classes, if not, will return empty shared_ptr and
+    // size equal to 0
+    virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const;
+    virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const;
+
     virtual void releaseBuffers() = 0;
 //    VBRow2CFMapType& getVBRow2CFMap() {return vbRow2CFMap_p;};
     VB2CFBMap& getVBRow2CFBMap() {return *vb2CFBMap_p;};
@@ -147,8 +165,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     void setFieldPhaseGrad(const casacore::Matrix<casacore::Complex>& phaseGrad) {cached_phaseGrad_p.reference(phaseGrad);};
     void setVB2CFMap(const casacore::CountedPtr<refim::VB2CFBMap>& thisMap);
-
-    casacore::Double runTimeG_p, runTimeDG_p, runTimeG1_p, runTimeG2_p, runTimeG3_p, runTimeG4_p, runTimeG5_p, runTimeG6_p, runTimeG7_p;
+    //    virtual void setModelImage(const std::unique_ptr<hpg::GridValueArray> /*HPGModelImage*/) {};
+    virtual void setModelImage(const std::string& /*HPGModelImage*/) {};
+    virtual void setModelImage(std::shared_ptr<casacore::ImageInterface<casacore::Complex> > /*HPGModelImage*/) {};
+    casacore::Double runTimeG_p, runTimeDG_p, runTimeG1_p, runTimeG2_p, runTimeG3_p, runTimeG4_p, runTimeG5_p, runTimeG6_p, runTimeG7_p,griddingTime;
     casacore::Timer timer_p;
     //
     //------------------------------------------------------------------------------
