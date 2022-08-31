@@ -25,47 +25,47 @@
 //#
 //# $Id$
 #include <stack>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/ComponentList.h>
-#include <images/Images/ImageRegrid.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <images/Regions/RegionManager.h>
-#include <images/Regions/RegionHandler.h>
-#include <images/Regions/WCBox.h>
-#include <images/Regions/WCUnion.h>
+#include <casacore/images/Images/ImageRegrid.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/images/Regions/RegionManager.h>
+#include <casacore/images/Regions/RegionHandler.h>
+#include <casacore/images/Regions/WCBox.h>
+#include <casacore/images/Regions/WCUnion.h>
 #include <imageanalysis/ImageAnalysis/CasaImageBeamSet.h>
 #include <imageanalysis/ImageAnalysis/ImageDecomposer.h>
 #include <imageanalysis/ImageAnalysis/ImageStatsCalculator.h>
 #include <imageanalysis/ImageAnalysis/Image2DConvolver.h>
 #include <imageanalysis/ImageAnalysis/ImageRegridder.h>
-#include <casa/OS/File.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/Lattices/TiledLineStepper.h>
-#include <lattices/Lattices/LatticeStepper.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/LatticeUtilities.h>
-#include <lattices/LRegions/LCEllipsoid.h>
-#include <lattices/LRegions/LCUnion.h>
-#include <lattices/LRegions/LCExtension.h>
-#include <lattices/LRegions/LCPagedMask.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/Lattices/TiledLineStepper.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/LRegions/LCEllipsoid.h>
+#include <casacore/lattices/LRegions/LCUnion.h>
+#include <casacore/lattices/LRegions/LCExtension.h>
+#include <casacore/lattices/LRegions/LCPagedMask.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
-#include <coordinates/Coordinates/CoordinateUtil.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/OS/Directory.h>
-#include <tables/Tables/TableLock.h>
+#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/tables/Tables/TableLock.h>
 
-#include <casa/sstream.h>
+#include <sstream>
 
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 #include <imageanalysis/Annotations/RegionTextList.h>
 #include <synthesis/ImagerObjects/SDMaskHandler.h>
@@ -76,9 +76,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   SDMaskHandler::SDMaskHandler()
   {
-#if ! defined(CASATOOLS)
-    interactiveMasker_p = new InteractiveMasking();
-#endif
     itsMax = DBL_MAX;
     itsRms = DBL_MAX;
     itsSidelobeLevel = 0.0;
@@ -97,10 +94,6 @@ itsTooLongForFname = false;
 
   SDMaskHandler::~SDMaskHandler()
   {
-#if ! defined(CASATOOLS)
-    if (interactiveMasker_p != 0)
-      delete interactiveMasker_p;
-#endif
   }
   
   void SDMaskHandler::resetMask(std::shared_ptr<SIImageStore> imstore)
@@ -936,11 +929,6 @@ itsTooLongForFname = false;
     cout << "Before interaction : niter : " << niter << " cycleniter : " << cycleniter << " thresh : " << threshold << "  cyclethresh : " << cyclethreshold << endl;
     //    ret = interactiveMasker_p->interactivemask(imageName, maskName,
     //                                            niter, ncycles, threshold);
-#if ! defined(CASATOOLS)
-    ret = interactiveMasker_p->interactivemask(imageName, maskName,
-                                               niter, cycleniter, threshold, cyclethreshold);
-    cout << "After interaction : niter : " << niter << " cycleniter : " << cycleniter << " thresh : " << threshold << " cyclethresh : " << cyclethreshold << "  ------ ret : " << ret << endl;
-#endif
     return ret;
   }
 

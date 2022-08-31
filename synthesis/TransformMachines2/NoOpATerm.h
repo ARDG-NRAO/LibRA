@@ -30,12 +30,12 @@
 #define SYNTHESIS_TRANSFORM2_NOOPATERM_H
 
 
-#include <casa/Arrays/Vector.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/Containers/Block.h>
 #include <synthesis/TransformMachines2/CFTerms.h>
 #include <synthesis/TransformMachines2/CFStore.h>
 #include <synthesis/TransformMachines2/CFStore2.h>

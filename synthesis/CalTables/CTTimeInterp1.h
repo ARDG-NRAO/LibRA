@@ -28,14 +28,14 @@
 #ifndef CALTABLES_CTTIMEINTERP1_H
 #define CALTABLES_CTTIMEINTERP1_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/RIorAParray.h>
-#include <casa/Arrays/Cube.h>
-#include <scimath/Functionals/Interpolate1D.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/scimath/Functionals/Interpolate1D.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

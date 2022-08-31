@@ -24,23 +24,23 @@
 #define MSTransformDataHandler_H_
 
 // Measurement Set
-#include <ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets.h>
 
 // Measurement Set Selection
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 
 // Needed by setupMS
-#include <tables/Tables.h>
-#include <ms/MeasurementSets/MSTileLayout.h>
+#include <casacore/tables/Tables.h>
+#include <casacore/ms/MeasurementSets/MSTileLayout.h>
 
 // Needed by copyTable
-#include <tables/Tables/PlainTable.h>
+#include <casacore/tables/Tables/PlainTable.h>
 
 // OS methods needed by fillSubTables
-#include <casa/OS/Timer.h>
-#include <casa/OS/Path.h>
-#include <casa/OS/Directory.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/OS/Directory.h>
 
 
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -59,11 +59,11 @@ public:
 	};
 
 	MSTransformDataHandler(const casacore::String& theMS, casacore::Table::TableOption option,
-                               casacore::Bool virtualModelCol=false, casacore::Bool virtualCorrectedCol=false,
-                               casacore::Bool reindex=true);
+                               bool virtualModelCol=false, bool virtualCorrectedCol=false,
+                               bool reindex=true);
 	MSTransformDataHandler(const casacore::MeasurementSet& ms,
-                               casacore::Bool virtualModelCol=false, casacore::Bool virtualCorrectedCol=false,
-                               casacore::Bool reindex=true);
+                               bool virtualModelCol=false, bool virtualCorrectedCol=false,
+                               bool reindex=true);
 	~MSTransformDataHandler();
 
 	// Declared static because it's used in setupMS().
@@ -75,8 +75,10 @@ public:
 	// verifyColumns() after calling this.  Unlike the other version, it knows
 	// about FLOAT_DATA and LAG_DATA.  It throws an exception if a
 	// _specifically_ requested column is absent.
-	static const casacore::Vector<casacore::MS::PredefinedColumns>& parseColumnNames(	casacore::String colNameList, const casacore::MeasurementSet& ms,
-																	casacore::Bool virtualModelCol=false,casacore::Bool virtualCorrectedCol=false);
+	static const casacore::Vector<casacore::MS::PredefinedColumns>& parseColumnNames(
+                     casacore::String colNameList, bool produceModel,
+                     const casacore::MeasurementSet& ms, bool virtualModelCol=false,
+                     bool virtualCorrectedCol=false);
 
 	// Helper function for parseColumnNames().  Converts col to a list of
 	// casacore::MS::PredefinedColumnss, and returns the # of recognized data columns.
@@ -84,7 +86,7 @@ public:
 	static casacore::uInt dataColStrToEnums(const casacore::String& col,casacore::Vector<casacore::MS::PredefinedColumns>& colvec);
 
 	// Selection method using msselection syntax. casacore::Time is not handled by this method.
-	casacore::Bool setmsselect(	const casacore::String& spw = "", const casacore::String& field = "",
+	bool setmsselect(	const casacore::String& spw = "", const casacore::String& field = "",
 						const casacore::String& baseline = "", const casacore::String& scan = "",
 						const casacore::String& uvrange = "", const casacore::String& taql = "",
 						const casacore::Vector<casacore::Int>& step = casacore::Vector<casacore::Int> (1, 1),
@@ -93,10 +95,10 @@ public:
                         const casacore::String& feed = "");
 
 	// Select source or field
-	casacore::Bool selectSource(const casacore::Vector<casacore::Int>& fieldid);
+	bool selectSource(const casacore::Vector<casacore::Int>& fieldid);
 
 	// Select spw and channels for each spw.
-	casacore::Bool selectSpw(const casacore::String& spwstr, const casacore::Vector<casacore::Int>& steps);
+	bool selectSpw(const casacore::String& spwstr, const casacore::Vector<casacore::Int>& steps);
 
 	// Returns the set (possibly empty) of spectral windows that are
 	// in SPW but not listed in ms's DATA_DESCRIPTION sub-table.
@@ -107,7 +109,7 @@ public:
 	void selectAntenna(const casacore::Vector<casacore::Int>& antennaids,const casacore::Vector<casacore::String>& antennaSel);
 
 	// Helper function for selectAntenna()
-	static casacore::Bool pickAntennas(	casacore::Vector<casacore::Int>& selected_antennaids,
+	static bool pickAntennas(	casacore::Vector<casacore::Int>& selected_antennaids,
 								casacore::Vector<casacore::String>& selected_antenna_strs,
 								const casacore::Vector<casacore::Int>& antennaids,
 								const casacore::Vector<casacore::String>& antennaSel);
@@ -116,7 +118,7 @@ public:
 	void selectArray(const casacore::String& subarray);
 
 	// Setup polarization selection (for now, only from available correlations - no casacore::Stokes transformations.)
-	casacore::Bool selectCorrelations(const casacore::String& corrstr);
+	bool selectCorrelations(const casacore::String& corrstr);
 
 	// Fills outToIn[pol] with a map from output correlation index to input
 	// correlation index, for each input polID pol.
@@ -124,10 +126,10 @@ public:
 	// string, so ignore the return value for now.  outToIn[pol] defaults to
 	// an empty casacore::Vector if no correlations are selected for pol.
 	// That is not the same as the default "select everything in ms".
-	static casacore::Bool getCorrMaps(	casacore::MSSelection& mssel,
+	static bool getCorrMaps(	casacore::MSSelection& mssel,
 								const casacore::MeasurementSet& ms,
 								casacore::Vector<casacore::Vector<casacore::Int> >& outToIn,
-								const casacore::Bool areSelecting = false);
+								const bool areSelecting = false);
 
 	// Select time parameters
 	void selectTime(casacore::Double timeBin=-1.0, casacore::String timerng="");
@@ -142,17 +144,18 @@ public:
 	// combine sets combine_p.  (Columns to ignore while time averaging.)
 	//
         // createWeightSpectrumCols: add WEIGHT/SIGMA_SPECTRUM columns
-	casacore::Bool makeMSBasicStructure(casacore::String& msname,
+	bool makeMSBasicStructure(casacore::String& msname,
                                             casacore::String& whichDataCol,
-                                            casacore::Bool createWeightSpectrumCols,
+                                            bool produceModel,
+                                            bool createWeightSpectrumCols,
                                             const casacore::Vector<casacore::Int>& tileShape = casacore::Vector<casacore::Int> (1, 0),
                                             const casacore::String& combine = "",
                                             casacore::Table::TableOption option=casacore::Table::New);
 
-	casacore::Bool isAllColumns(const casacore::Vector<casacore::MS::PredefinedColumns>& colNames);
+	bool isAllColumns(const casacore::Vector<casacore::MS::PredefinedColumns>& colNames);
 
-	// Method that returns the selected ms (?! - but it's Boolean - RR)
-	casacore::Bool makeSelection();
+	// Method that returns the selected ms (?! - but it's boolean - RR)
+	bool makeSelection();
 
 	// This sets up a default new ms
 	// Declared static as it can be (and is) called directly from outside
@@ -160,17 +163,17 @@ public:
         static casacore::MeasurementSet* setupMS(const casacore::String& msname, const casacore::Int nchan,
                                                  const casacore::Int npol, const casacore::String& telescop,
                                                  const casacore::Vector<casacore::MS::PredefinedColumns>& colNamesTok,
-                                                 casacore::Bool createWeightSpectrumCols,
-                                                 const casacore::Int obstype = 0, const casacore::Bool compress = false,
+                                                 bool createWeightSpectrumCols,
+                                                 const casacore::Int obstype = 0, const bool compress = false,
                                                  const asdmStManUseAlternatives asdmStManUse = DONT,
                                                  casacore::Table::TableOption option=casacore::Table::New);
 
 	// Same as above except allowing manual tileshapes
         static casacore::MeasurementSet* setupMS(const casacore::String& msname, const casacore::Int nchan,
                                                  const casacore::Int npol, const casacore::Vector<casacore::MS::PredefinedColumns>& colNamesTok,
-                                                 casacore::Bool createWeightSpectrumCols,
+                                                 bool createWeightSpectrumCols,
                                                  const casacore::Vector<casacore::Int>& tileShape = casacore::Vector<casacore::Int> (1, 0),
-                                                 const casacore::Bool compress = false,
+                                                 const bool compress = false,
                                                  const asdmStManUseAlternatives asdmStManUse = DONT,
                                                  casacore::Table::TableOption option=casacore::Table::New);
 
@@ -178,7 +181,7 @@ public:
 	// The output casacore::MS must have (at least?) 1 of DATA, FLOAT_DATA, or LAG_DATA.
 	// MODEL_DATA or CORRECTED_DATA will be converted to DATA if necessary.
 	// jagonzal (CAS-5327): The implementation has to go here because a member function cannot have static linkage
-	static casacore::Bool mustConvertToData(	const casacore::uInt nTok,const casacore::Vector<casacore::MS::PredefinedColumns>& datacols)
+	static bool mustConvertToData(	const casacore::uInt nTok,const casacore::Vector<casacore::MS::PredefinedColumns>& datacols)
 	{
 		return (nTok == 1) && (datacols[0] != casacore::MS::FLOAT_DATA) && (datacols[0] != casacore::MS::LAG_DATA);
 	}
@@ -187,18 +190,18 @@ public:
 	static void createSubtables(casacore::MeasurementSet& ms, casacore::Table::TableOption option);
 
 	// Sub-table fillers.
-	casacore::Bool fillSubTables(const casacore::Vector<casacore::MS::PredefinedColumns>& colNames);
-	casacore::Bool fillFieldTable();
-	casacore::Bool fillDDTables(); // Includes spw and pol
+	bool fillSubTables(const casacore::Vector<casacore::MS::PredefinedColumns>& colNames);
+	bool fillFieldTable();
+	bool fillDDTables(); // Includes spw and pol
 
-	casacore::Bool fillPolTable();
-	casacore::Bool fillDDITable();
-	casacore::Bool fillSPWTable();
+	bool fillPolTable();
+	bool fillDDITable();
+	bool fillSPWTable();
 
 	// Add optional columns to outTab if present in inTab and possColNames.
 	// beLazy should only be true if outTab is in its default state.
 	// Returns the number of added columns.
-	static casacore::uInt addOptionalColumns(const casacore::Table& inTab, casacore::Table& outTab,const casacore::Bool beLazy=false);
+	static casacore::uInt addOptionalColumns(const casacore::Table& inTab, casacore::Table& outTab,const bool beLazy=false);
 
 	// Sets up sourceRelabel_p for mapping input SourceIDs (if any) to output
 	// ones.  Must be called after fieldid_p is set and before calling
@@ -211,26 +214,26 @@ public:
 	//
 	// If noRows is true, the structure will be setup but no
 	// rows will be copied  (useful for filtering).
-	void copySubtable(const casacore::String& tabName, const casacore::Table& inTab,const casacore::Bool noRows = false);
+	void copySubtable(const casacore::String& tabName, const casacore::Table& inTab,const bool noRows = false);
 
 	// Sets mapper to to a map from the distinct values of inv,
 	// in increasing order, to 0, 1, 2, ..., mapper.size() - 1.
 	static void make_map(std::map<casacore::Int, casacore::Int>& mapper, const casacore::Vector<casacore::Int>& inv);
 
-	casacore::Bool copyPointing();
+	bool copyPointing();
 	// Sets up the stub of a POINTING, enough to create an MSColumns.
 	void setupNewPointing();
 
-	casacore::Bool copySource();
-	casacore::Bool copyAntenna();
-	casacore::Bool copyFeed();
-	casacore::Bool copyFlag_Cmd();
-	casacore::Bool copyHistory();
-	casacore::Bool copyObservation();
-	casacore::Bool copyProcessor();
-	casacore::Bool copyState();
-	casacore::Bool copySyscal();
-	casacore::Bool copyWeather();
+	bool copySource();
+	bool copyAntenna();
+	bool copyFeed();
+	bool copyFlag_Cmd();
+	bool copyHistory();
+	bool copyObservation();
+	bool copyProcessor();
+	bool copyState();
+	bool copySyscal();
+	bool copyWeather();
 	void copyMainTableKeywords (casacore::TableRecord& outKeys,
 			const casacore::TableRecord& inKeys);
 
@@ -244,26 +247,26 @@ public:
 	//
 	// It must be called BEFORE copyGenericSubtables()!
 	//
-	casacore::Bool filterOptSubtable(const casacore::String& subtabname);
+	bool filterOptSubtable(const casacore::String& subtabname);
 
-	casacore::Bool copyGenericSubtables();
+	bool copyGenericSubtables();
 
 	// To consolidate several sub-tables when dealing with MMS
-	static casacore::Bool mergeSpwSubTables(casacore::Vector<casacore::String> filenames);
-	static casacore::Bool mergeDDISubTables(casacore::Vector<casacore::String> filenames);
-	static casacore::Bool mergeFeedSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
-	static casacore::Bool mergeSourceSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
-	static casacore::Bool mergeSyscalSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
-	static casacore::Bool mergeFreqOffsetTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
-	static casacore::Bool mergeCalDeviceSubtables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
-	static casacore::Bool mergeSysPowerSubtables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeSpwSubTables(casacore::Vector<casacore::String> filenames);
+	static bool mergeDDISubTables(casacore::Vector<casacore::String> filenames);
+	static bool mergeFeedSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeSourceSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeSyscalSubTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeFreqOffsetTables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeCalDeviceSubtables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
+	static bool mergeSysPowerSubtables(casacore::Vector<casacore::String> filenames, casacore::Vector<casacore::uInt> mapSubmsSpwid);
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-	//template <class T>  casacore::Bool MSTransformDataHandler::columnOk (casacore::ArrayColumn<T> column)
-	template <class T>  static casacore::Bool columnOk(casacore::ArrayColumn<T> column)
+	//template <class T>  bool MSTransformDataHandler::columnOk (casacore::ArrayColumn<T> column)
+	template <class T>  static bool columnOk(casacore::ArrayColumn<T> column)
         {
-	     casacore::Bool ret;
+	     bool ret;
 	     // jagonzal (CAS-6206): ndimColumn only returns >0 is there is the array column has fixed size
 	     if (column.isNull()==false and column.hasContent()==true and column.ndim(0) > 0)
 	       {
@@ -280,10 +283,10 @@ public:
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-	//  template <class T>  casacore::Bool MSTransformDataHandler::columnOk (casacore::ScalarColumn<T> column)
-	template <class T>  static casacore::Bool columnOk(casacore::ScalarColumn<T> column)
+	//  template <class T>  bool MSTransformDataHandler::columnOk (casacore::ScalarColumn<T> column)
+	template <class T>  static bool columnOk(casacore::ScalarColumn<T> column)
         {
-	      casacore::Bool ret;
+	      bool ret;
 	      if (column.isNull()==false and column.hasContent()==true)
 		{
 		  ret = true;
@@ -312,20 +315,20 @@ public:
 	std::map<casacore::Int,std::map < casacore::Int, std::vector<casacore::Int> > > & getSelectedChannelsMap() {return spwSelectedChannelMap_p;};
 
 	// Accesors for additional parameters
-	void setVirtualModelCol(casacore::Bool virtualModelCol) {virtualModelCol_p = virtualModelCol;};
-	void setVirtualCorrectedCol(casacore::Bool virtualCorrectedCol) {virtualCorrectedCol_p = virtualCorrectedCol;};
-	void setReindex(casacore::Bool reindex) {reindex_p = reindex;};
+	void setVirtualModelCol(bool virtualModelCol) {virtualModelCol_p = virtualModelCol;};
+	void setVirtualCorrectedCol(bool virtualCorrectedCol) {virtualCorrectedCol_p = virtualCorrectedCol;};
+	void setReindex(bool reindex) {reindex_p = reindex;};
 
 protected:
 	// copy ephemeris table and reindex field table if requested
-	casacore::Bool copyEphemerisTable(casacore::MSFieldColumns & msField);
+	bool copyEphemerisTable(casacore::MSFieldColumns & msField);
 
 	// Initialized* by ctors.  (Maintain order both here and in ctors.)
 	//  * not necessarily to anything useful.
 	casacore::MeasurementSet ms_p, mssel_p;
 	casacore::MSColumns * msc_p; // columns of msOut_p
 	casacore::MSColumns * mscIn_p;
-	casacore::Bool keepShape_p, // Iff true, each output array has the
+	bool keepShape_p, // Iff true, each output array has the
 			// same shape as the corresponding input one.
 			// sameShape_p,             // Iff true, the shapes of the arrays do not
 			//  			// vary with row number.
@@ -386,9 +389,9 @@ protected:
 	casacore::Vector<casacore::Vector<casacore::Slice> > corrSlices_p; // Used by VisIterator::selectCorrelation()
 	casacore::Matrix<casacore::Double> selTimeRanges_p;
 
-	casacore::Bool virtualModelCol_p; // CAS-5348 (jagonzal): Make virtual MODEL data column real
-	casacore::Bool virtualCorrectedCol_p; //CAS-7286 (jagonzal): Make virtual CORRECTED data column real
-	casacore::Bool reindex_p; // jagonzal: In order not to re-index asub-tables
+	bool virtualModelCol_p; // CAS-5348 (jagonzal): Make virtual MODEL data column real
+	bool virtualCorrectedCol_p; //CAS-7286 (jagonzal): Make virtual CORRECTED data column real
+	bool reindex_p; // jagonzal: In order not to re-index asub-tables
 
 };
 

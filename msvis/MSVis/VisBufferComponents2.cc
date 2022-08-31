@@ -5,7 +5,7 @@
  *      Author: jjacobs
  */
 
-#include <msvis/MSVis/UtilJ.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <map>
 

@@ -24,18 +24,18 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays/Matrix.h>
-#include <measures/Measures/MeasConvert.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/measures/Measures/MeasConvert.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
 #include <synthesis/TransformMachines/SkyJones.h>
 #include <synthesis/TransformMachines/FTMachine.h>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/PointShape.h>
@@ -49,28 +49,28 @@
 #include <msvis/MSVis/StokesVector.h>
 #include <msvis/MSVis/VisBufferUtil.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MatrixMath.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
-#include <lattices/Lattices/Lattice.h>
-#include <measures/Measures/UVWMachine.h>
-#include <lattices/Lattices/ArrayLattice.h>
-#include <lattices/LatticeMath/LatticeFFT.h>
-#include <lattices/LEL/LatticeExpr.h>
-#include <lattices/Lattices/TiledLineStepper.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/LatticeStepper.h>
-#include <lattices/LRegions/LCRegion.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/lattices/Lattices/Lattice.h>
+#include <casacore/measures/Measures/UVWMachine.h>
+#include <casacore/lattices/Lattices/ArrayLattice.h>
+#include <casacore/lattices/LatticeMath/LatticeFFT.h>
+#include <casacore/lattices/LEL/LatticeExpr.h>
+#include <casacore/lattices/Lattices/TiledLineStepper.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
+#include <casacore/lattices/LRegions/LCRegion.h>
+#include <casacore/casa/Containers/Block.h>
 
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
 ///////////////#include <msvis/MSVis/VisBufferAsync.h>
-#include <casa/iostream.h>
+#include <iostream>
 
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
 #include <memory>
 

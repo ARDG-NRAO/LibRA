@@ -27,31 +27,31 @@
 
 #include <imageanalysis/ImageAnalysis/ComponentImager.h>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Containers/Block.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/Constants.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MFrequency.h>
-#include <measures/Measures/MeasRef.h>
-#include <measures/Measures/Stokes.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogOrigin.h>
-#include <casa/Quanta/Unit.h>
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/Quanta/MVAngle.h>
-#include <casa/Quanta/MVDirection.h>
-#include <casa/Quanta/MVFrequency.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Quanta/QMath.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/measures/Measures/MeasRef.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogOrigin.h>
+#include <casacore/casa/Quanta/Unit.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Quanta/MVFrequency.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/QMath.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
 #include <components/ComponentModels/ComponentList.h>
 #include <components/ComponentModels/SpectralModel.h>
@@ -61,16 +61,16 @@
 #include <components/ComponentModels/C11Timer.h>
 #include <components/ComponentModels/SkyCompRep.h>
 
-#include <coordinates/Coordinates/Coordinate.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/ImageInfo.h>
-#include <lattices/Lattices/LatticeIterator.h>
-#include <lattices/Lattices/LatticeStepper.h>
+#include <casacore/coordinates/Coordinates/Coordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageInfo.h>
+#include <casacore/lattices/Lattices/LatticeIterator.h>
+#include <casacore/lattices/Lattices/LatticeStepper.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 #include <iomanip>
 

@@ -27,7 +27,7 @@
 #ifndef IMAGEANALYSIS_CASACREGIONMANAGER_H
 #define IMAGEANALYSIS_CASACREGIONMANAGER_H
 
-#include <images/Regions/RegionManager.h>
+#include <casacore/images/Regions/RegionManager.h>
 
 #include <imageanalysis/IO/RegionTextParser.h>
 

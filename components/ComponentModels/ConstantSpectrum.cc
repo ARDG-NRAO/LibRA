@@ -26,12 +26,12 @@
 //# $Id: ConstantSpectrum.cc 20652 2009-07-06 05:04:32Z Malte.Marquarding $
 
 #include <components/ComponentModels/ConstantSpectrum.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Containers/RecordInterface.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Containers/RecordInterface.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/BasicSL/String.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

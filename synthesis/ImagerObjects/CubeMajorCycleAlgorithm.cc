@@ -28,10 +28,10 @@
 #include <synthesis/ImagerObjects/CubeMajorCycleAlgorithm.h>
 #include <synthesis/ImagerObjects/SynthesisImagerVi2.h>
 #include <synthesis/ImagerObjects/SynthesisNormalizer.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
-#include <casa/OS/Timer.h>
+#include <casacore/casa/OS/Timer.h>
 #include <chrono>
 #include <thread>
 using namespace casacore;
@@ -193,7 +193,8 @@ void CubeMajorCycleAlgorithm::task(){
           }
           subImgr.setCubeGridding(False);
           // TO DO get weight param and set weight
-          if(!weightParams_p.isDefined("type") || weightParams_p.asString("type")=="natural"){
+          // Modified to fix CAS-13660 bug for natural weight setting with uvtaper
+          if(!weightParams_p.isDefined("type") ){
             subImgr.weight("natural");
           }
           else{

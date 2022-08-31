@@ -34,8 +34,8 @@
 #include <list>
 #include <sstream>
 
-#include <casa/aipstype.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/aipstype.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

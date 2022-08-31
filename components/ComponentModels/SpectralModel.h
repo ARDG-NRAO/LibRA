@@ -28,12 +28,12 @@
 #ifndef COMPONENTS_SPECTRALMODEL_H
 #define COMPONENTS_SPECTRALMODEL_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <components/ComponentModels/ComponentType.h>
-#include <casa/Utilities/RecordTransformable.h>
-#include <measures/Measures/MFrequency.h>
-#include <casa/Quanta/Unit.h>
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/Utilities/RecordTransformable.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/casa/Quanta/Unit.h>
+#include <casacore/casa/Quanta/Quantum.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 
 namespace casacore{

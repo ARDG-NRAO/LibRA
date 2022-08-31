@@ -28,8 +28,8 @@
 
 #ifndef MSVIS_MSCHECKER_H
 #define MSVIS_MSCHECKER_H
-#include <casa/aips.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 namespace casa {
 
 	// putting checks here, since Ger objected to them going in casacore

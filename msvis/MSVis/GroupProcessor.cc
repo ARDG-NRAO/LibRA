@@ -25,9 +25,9 @@
 
 #include <msvis/MSVis/GroupProcessor.h>
 #include <msvis/MSVis/VisBuffGroup.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/System/ProgressMeter.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/System/ProgressMeter.h>
 
 using namespace casacore;
 namespace casa {

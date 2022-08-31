@@ -26,9 +26,9 @@
 
 #include <imageanalysis/Annotations/RegionTextList.h>
 
-#include <casa/OS/File.h>
+#include <casacore/casa/OS/File.h>
 #include <imageanalysis/Annotations/AnnRegion.h>
-#include <images/Regions/WCDifference.h>
+#include <casacore/images/Regions/WCDifference.h>
 #include <casacore/casa/BasicSL/STLIO.h>
 
 using namespace casacore;

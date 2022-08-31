@@ -5,13 +5,13 @@
 
 #include <casacore/casa/aips.h>
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <msvis/MSVis/ViImplementation2.h>
 #include <msvis/MSVis/TransformingVi2.h>
 
-#include <measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MDirection.h>
 
 
 namespace casa {

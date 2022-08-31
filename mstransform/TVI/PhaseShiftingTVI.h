@@ -34,7 +34,7 @@
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 
 // CAS-12706 UVWMachine for wide-field phase shifting algorithm
-#include <measures/Measures/UVWMachine.h>
+#include <casacore/measures/Measures/UVWMachine.h>
 #include <casacore/measures/Measures/MeasFrame.h>
 
 

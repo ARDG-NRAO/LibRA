@@ -1,8 +1,8 @@
 #include "VisibilityIterator.h"
 #include "VisibilityIteratorImpl.h"
 #include "VisibilityIteratorImplAsync.h"
-#include "UtilJ.h"
-#include <casa/System/AipsrcValue.h>
+#include <stdcasa/UtilJ.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 //#include <measures/Measures/MDoppler.h>
 //#include <measures/Measures/MRadialVelocity.h>

@@ -2,7 +2,7 @@
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
 #include <casatools/Config/State.h>
 #include <casacore/casa/Logging/LogIO.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <stdcasa/StdCasa/CasacSupport.h>
 #include <string.h>
 #include <stdlib.h>
@@ -151,9 +151,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
 
 	void grpcInteractiveCleanManager::pushDetails() {
-#ifdef INTERACTIVE_ITERATION
-        /*FIXME    detailUpdate(fromRecord(getDetailsRecord())); */
-#endif
 	}
 
     grpcInteractiveCleanState::grpcInteractiveCleanState( ) : SummaryMinor(casacore::IPosition(2, 
@@ -173,6 +170,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         CycleThreshold = 0;
         InteractiveThreshold = 0.0;
         IsCycleThresholdAuto = true;
+        IsCycleThresholdMutable = true;
         IsThresholdAuto = false;
         CycleFactor = 1.0;
         LoopGain = 0.1;
@@ -305,6 +303,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            }
                            auto newCycleThreshold = state.CycleThreshold;
 
+                           auto cyclethresholdismutable = iterpars.find("cyclethresholdismutable");
+                           if ( cyclethresholdismutable != iterpars.end( ) ) {
+                               state.IsCycleThresholdMutable = cyclethresholdismutable->second.toBool( );
+                               state.IsCycleThresholdAuto = state.IsCycleThresholdAuto && state.IsCycleThresholdMutable;
+                               if ( debug ) {
+                                   std::cerr << " iscyclethresholdmutable=" << (state.IsCycleThresholdMutable ? "true" : "false");
+                                   std::cerr << " iscyclethresholdauto=" << (state.IsCycleThresholdAuto ? "true" : "false");
+                                   fflush(stderr);
+                               }
+                           }
+
                            auto interactivethreshold = iterpars.find("interactivethreshold");
                            if ( interactivethreshold != iterpars.end( ) ) {
                                state.InteractiveThreshold = casaQuantity(interactivethreshold->second).getValue(Unit("Jy"));
@@ -349,7 +358,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            if ( debug ) std::cerr << std::endl;
 
                            if ( debug ) {
-                               std::cerr << "-------------------------------------------" << std::endl;
+                               std::cerr << "-------------------------------------------" << this << " / " << &state << std::endl;
                                std::cerr << "  exported python state: " << std::endl;
                                std::cerr << "-------------------------------------------" << std::endl;
                                std::cerr << "    Niter            " << oldNiter <<
@@ -360,6 +369,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                                    " ---> " << newThreshold << std::endl;
                                std::cerr << "    CycleThreshold   " << oldCycleThreshold <<
                                    " ---> " << newCycleThreshold << std::endl;
+                               std::cerr << "    IsCycleThresholdAuto " << state.IsCycleThresholdAuto << std::endl;
                                std::cerr << "-------------------------------------------" << std::endl;
                            
 
@@ -464,10 +474,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		psffraction = min(psffraction, state.MaxPsfFraction);
 
 		if ( debug ) {
-			std::cerr << "-------------------------------------------" << std::endl;
+			std::cerr << "------------------------------------------- " << this << " / " << &state << std::endl;
 			std::cerr << "  algorithmic update of cycle threshold: " << std::endl;
 			std::cerr << "    CycleThreshold   " << state.CycleThreshold <<
 			    " ---> " << (state.PeakResidual * psffraction) << std::endl;
+			std::cerr << "    IsCycleThresholdAuto " << state.IsCycleThresholdAuto << std::endl;
 			std::cerr << "-------------------------------------------" << std::endl;
 		}
 
@@ -505,7 +516,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            rec.define( RecordFieldId("nsigma"),  state.Nsigma );
 
                            if( state.IsCycleThresholdAuto == true ) updateCycleThreshold(state);
-                           state.IsCycleThresholdAuto = true;        // Reset this, for the next round
+                           state.IsCycleThresholdAuto = true && state.IsCycleThresholdMutable;        // Reset this, for the next round
 
                            rec.define( RecordFieldId("cyclethreshold"), state.CycleThreshold );
                            rec.define( RecordFieldId("interactivethreshold"), state.InteractiveThreshold );
@@ -552,7 +563,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            rec.define( RecordFieldId("threshold"),  state.Threshold );
                            rec.define( RecordFieldId("nsigma"),  state.Nsigma );
                            if( state.IsCycleThresholdAuto == true ) updateCycleThreshold(state);
-                           state.IsCycleThresholdAuto = true;        // Reset this, for the next round
+                           state.IsCycleThresholdAuto = true && state.IsCycleThresholdMutable;        // Reset this, for the next round
 
                            rec.define( RecordFieldId("cyclethreshold"), state.CycleThreshold );
                            rec.define( RecordFieldId("interactivethreshold"), state.InteractiveThreshold );
@@ -601,7 +612,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            /* If autocalc, compute cyclethresh from peak res, cyclefactor and psf sidelobe
                               Otherwise, the user has explicitly set it (interactively) for this minor cycle */
                            if( state.IsCycleThresholdAuto == true ) { updateCycleThreshold(state); }
-                           state.IsCycleThresholdAuto = true; /* Reset this, for the next round */
+                           state.IsCycleThresholdAuto = true && state.IsCycleThresholdMutable; /* Reset this, for the next round */
 
                            /* The minor cycle will stop based on the cycle parameters. */
                            int maxCycleIterations = state.CycleNiter;
@@ -619,7 +630,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                            return rec; }) );
     }
 
-	int grpcInteractiveCleanManager::cleanComplete( bool lastcyclecheck ){
+	int grpcInteractiveCleanManager::cleanComplete( bool lastcyclecheck, bool reachedMajorLimit ){
         LogIO os( LogOrigin("grpcInteractiveCleanManager",__FUNCTION__,WHERE) );
 
 		int stopCode=0;
@@ -699,6 +710,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		      }
 
 		  }
+
+		if (stopCode == 0 && reachedMajorLimit) {
+		  stopCode = 9;
+		}
 
 		/*
 		if( lastcyclecheck==False)

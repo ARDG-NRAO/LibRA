@@ -24,10 +24,10 @@
 #define SYNTHESIS_MINORCYCLECONTROLLER
 
 // .casarc interface
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 // System utilities (for profiling macros)
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <sys/time.h>
 
 

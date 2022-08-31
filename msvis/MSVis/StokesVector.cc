@@ -30,7 +30,7 @@
 // #include <tables/DataMan/RetypedArrayEngine.h>
 // #include <tables/DataMan/RetypedArraySetGet.h>
 // #include <tables/DataMan/DataManError.h>
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 
 
 using namespace casacore;

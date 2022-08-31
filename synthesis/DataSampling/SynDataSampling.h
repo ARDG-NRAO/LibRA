@@ -29,12 +29,12 @@
 #ifndef SYNTHESIS_SYNDATASAMPLING_H
 #define SYNTHESIS_SYNDATASAMPLING_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <synthesis/DataSampling/DataSampling.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

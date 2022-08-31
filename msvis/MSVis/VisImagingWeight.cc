@@ -29,13 +29,13 @@
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisImagingWeight.h>
-#include <casa/Quanta/MVAngle.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <lattices/Lattices/TempLattice.h>
-#include <images/Images/ImageInterface.h>
-#include<coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/lattices/Lattices/TempLattice.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 
 
 using namespace casacore;

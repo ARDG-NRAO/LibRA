@@ -38,20 +38,20 @@ Modification history:
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
 
-#include <casa/Arrays/IPosition.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/ArrayIter.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/ArrayIter.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
 #include <calanalysis/CalAnalysis/CalStatsFitter.h>
 
@@ -512,7 +512,7 @@ casacore::Matrix<CalStats::OUT<T>> CalStats::stats( const CalStats::ARG<T>& oArg
 
     catch ( casacore::AipsError oAE ) {
       casacore::LogIO log( casacore::LogOrigin( "CalStats", "stats<T>()", WHERE ) );
-      log << casacore::LogIO::WARN << oAE.getMesg() << ", iteration: "
+      log << casacore::LogIO::NORMAL << oAE.getMesg() << ", iteration: "
           << oPos.asVector() << ", continuing ..." << casacore::LogIO::POST;
       oOut.oT = T();
     }

@@ -27,7 +27,7 @@
 #ifndef FLAGGING_RFAFLAGCUBEBASE_H
 #define FLAGGING_RFAFLAGCUBEBASE_H
 
-#include <casa/Containers/RecordInterface.h>
+#include <casacore/casa/Containers/RecordInterface.h>
 #include <flagging/Flagging/RFABase.h> 
 #include <flagging/Flagging/RFFlagCube.h>
 

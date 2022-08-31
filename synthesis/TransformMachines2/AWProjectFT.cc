@@ -26,17 +26,17 @@
 //#
 //# $Id$
 
-#include <casa/Quanta/UnitMap.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/Quanta/UnitVal.h>
-#include <casa/Containers/Block.h>
-#include <casa/Containers/Record.h>
-#include <casa/Arrays/Array.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/sstream.h>
+#include <casacore/casa/Quanta/UnitMap.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/UnitVal.h>
+#include <casacore/casa/Containers/Block.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <sstream>
 
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <images/Images/ImageInterface.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
@@ -47,11 +47,11 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 #include <synthesis/TransformMachines2/VBStore.h>
 
-#include <scimath/Mathematics/FFTServer.h>
-#include <scimath/Mathematics/MathFunc.h>
-#include <measures/Measures/MeasTable.h>
-#include <casa/iostream.h>
-#include <casa/OS/Timer.h>
+#include <casacore/scimath/Mathematics/FFTServer.h>
+#include <casacore/scimath/Mathematics/MathFunc.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <iostream>
+#include <casacore/casa/OS/Timer.h>
 
 #include <synthesis/TransformMachines2/ATerm.h>
 #include <synthesis/TransformMachines2/NoOpATerm.h>

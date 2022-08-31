@@ -44,8 +44,8 @@ Modification history:
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/MaskedArray.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/MaskedArray.h>
 
 #include <calanalysis/CalAnalysis/CalStats.h>
 

@@ -37,33 +37,33 @@ Modification history:
 // Includes
 // -----------------------------------------------------------------------------
 
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 #include <iostream>
 #include <sstream>
 using namespace std;
 
-#include <casa/Exceptions/Error.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Logging/LogIO.h>
 
-#include <casa/Containers/Block.h>
+#include <casacore/casa/Containers/Block.h>
 
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/ArrayIter.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Slicer.h>
-#include <casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/ArrayIter.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Slicer.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
 
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableProxy.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableProxy.h>
 
-#include <casa/Containers/Record.h>
-#include <casa/Containers/RecordField.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Containers/RecordField.h>
 
-#include <casa/Utilities/GenSort.h>
+#include <casacore/casa/Utilities/GenSort.h>
 
-#include <ms/MeasurementSets/MSSpectralWindow.h>
-#include <ms/MeasurementSets/MSSpWindowColumns.h>
+#include <casacore/ms/MeasurementSets/MSSpectralWindow.h>
+#include <casacore/ms/MeasurementSets/MSSpWindowColumns.h>
 
 #include <synthesis/CalTables/NewCalTable.h>
 #include <synthesis/CalTables/CTIter.h>

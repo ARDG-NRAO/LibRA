@@ -30,13 +30,13 @@
 #define SYNTHESIS_ATERM_H
 
 
-#include <casa/Arrays/Vector.h>
-#include <casa/System/Casarc.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/System/Casarc.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/Containers/Block.h>
 #include <synthesis/TransformMachines/CFTerms.h>
 #include <synthesis/TransformMachines/CFStore.h>
 #include <synthesis/TransformMachines/CFStore2.h>

@@ -29,8 +29,8 @@
 #ifndef VLAT_H_
 #define VLAT_H_
 
-#include "AsynchronousTools.h"
-#include "UtilJ.h"
+#include <stdcasa/thread/AsynchronousTools.h>
+#include <stdcasa/UtilJ.h>
 
 #include <tuple>
 #include <msvis/MSVis/AsynchronousInterface.h>

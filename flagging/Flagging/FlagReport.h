@@ -24,13 +24,13 @@
 #define FLAGREPORT_H_
 
 // .casarc interface
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 // Records interface
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 // System utilities (for profiling macros)
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/OS/HostInfo.h>
 #include <sys/time.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

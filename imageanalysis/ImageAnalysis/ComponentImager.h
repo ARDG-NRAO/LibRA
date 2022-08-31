@@ -62,7 +62,7 @@
 #ifndef IMAGES_COMPONENTIMAGER_H
 #define IMAGES_COMPONENTIMAGER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 #include <imageanalysis/ImageAnalysis/ImageTask.h>
 #include <components/ComponentModels/ComponentList.h>

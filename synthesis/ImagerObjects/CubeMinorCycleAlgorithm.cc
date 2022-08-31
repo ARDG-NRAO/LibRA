@@ -27,7 +27,7 @@
 #include <casacore/lattices/Lattices/LatticeLocker.h>
 #include <synthesis/ImagerObjects/CubeMinorCycleAlgorithm.h>
 #include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include <synthesis/ImagerObjects/SimpleSIImageStore.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 
@@ -189,7 +189,8 @@ void CubeMinorCycleAlgorithm::task(){
 	  statsRec_p=Record();
 	  statsRec_p=subDeconv.getRobustStats();
 	  if(doDeconv){
-	    writeBackToFullImage(modelName_p, chanRange_p[0], chanRange_p[1], (subimstor->model()));
+            writeBackToFullImage(modelName_p, chanRange_p[0], chanRange_p[1], (subimstor->model()));
+            writeBackToFullImage(residualName_p, chanRange_p[0], chanRange_p[1], (subimstor->residual()));
 
 	  }
           if(autoMaskOn_p && writeBackAutomask){

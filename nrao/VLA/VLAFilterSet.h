@@ -29,10 +29,10 @@
 #ifndef NRAO_VLAFILTERSET_H
 #define NRAO_VLAFILTERSET_H
 
-#include <casa/aips.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Block.h>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 class VLAFilter;
 

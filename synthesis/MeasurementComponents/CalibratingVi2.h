@@ -28,7 +28,7 @@
 #include <synthesis/MeasurementComponents/Calibrater.h>
 #include <synthesis/MeasurementEquations/VisEquation.h>
 
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 namespace vi { //# NAMESPACE VI - BEGIN

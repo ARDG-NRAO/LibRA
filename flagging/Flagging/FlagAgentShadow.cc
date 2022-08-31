@@ -22,13 +22,13 @@
 
 #include <flagging/Flagging/FlagAgentShadow.h>
 
-#include <measures/Measures/MBaseline.h>
-#include <measures/Measures/MCBaseline.h>
-#include <measures/Measures/MCDirection.h>
-#include <measures/Measures/MCuvw.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/MEpoch.h>
-#include <measures/Measures/Muvw.h>
+#include <casacore/measures/Measures/MBaseline.h>
+#include <casacore/measures/Measures/MCBaseline.h>
+#include <casacore/measures/Measures/MCDirection.h>
+#include <casacore/measures/Measures/MCuvw.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/MEpoch.h>
+#include <casacore/measures/Measures/Muvw.h>
 #include <casacore/measures/TableMeasures/ScalarMeasColumn.h>
 
 using namespace casacore;

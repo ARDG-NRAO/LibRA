@@ -20,7 +20,7 @@
 
 #include <mstransform/TVI/StatWtFloatingWindowDataAggregator.h>
 
-#include <scimath/StatsFramework/ClassicalStatistics.h>
+#include <casacore/scimath/StatsFramework/ClassicalStatistics.h>
 
 #include <msvis/MSVis/ViImplementation2.h>
 #include <mstransform/TVI/StatWtTypes.h>

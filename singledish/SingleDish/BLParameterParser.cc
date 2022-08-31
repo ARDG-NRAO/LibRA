@@ -27,7 +27,7 @@
 #include <fstream>
 #include <iostream>
 
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 #include <singledish/SingleDish/BLParameterParser.h>
 
 using namespace std;
@@ -134,8 +134,8 @@ void BLParameterParser::parse(string const file_name)
 }
 
 void BLParameterParser::SplitLine(string const &linestr,
-				  char const separator,
-				  vector<string> &strvec)
+                                  char const separator,
+                                  vector<string> &strvec)
 {
   istringstream iss(linestr);
   string selem;
@@ -150,8 +150,8 @@ void BLParameterParser::SplitLine(string const &linestr,
 }
 
 void BLParameterParser::ConvertLineToParam(string const &linestr,
-					   size_t &rowid, size_t &polid,
-					   BLParameterSet &paramset){
+                                           size_t &rowid, size_t &polid,
+                                           BLParameterSet &paramset){
   //split a line by ',' and make a vector of strings
   std::vector<string> svec(BLParameters_kNumElements,"");
   SplitLine(linestr,',', svec);
@@ -276,7 +276,7 @@ void BLTableParser::initialize()
 }
 
 uint16_t BLTableParser::GetTypeOrder(size_t const &baseline_type, 
-				     uInt const irow, uInt const ipol)
+                                     uInt const irow, uInt const ipol)
 {
   switch (baseline_type)
   {
@@ -347,9 +347,9 @@ void BLTableParser::parse()
 }
 
 bool BLTableParser::GetFitParameterIdx(double const time, double const interval, 
-				       size_t const scanid, size_t const beamid, 
-				       size_t const antid, size_t const spwid, 
-				       size_t &idx)
+                                       size_t const scanid, size_t const beamid, 
+                                       size_t const antid, size_t const spwid, 
+                                       size_t &idx)
 {
   bool found = false;
   stringstream ss;
@@ -446,9 +446,11 @@ bool BLTableParser::GetFitParameterIdx(double const time, double const interval,
 */
 
 void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol, 
-					 bool &apply, std::vector<float> &coeff, 
-					 std::vector<double> &boundary, 
-					 BLParameterSet &bl_param)
+                                         bool &apply,
+                                         Vector<double> &coeff,
+                                         Vector<size_t> &boundary,
+                                         std::vector<bool> &masklist,
+                                         BLParameterSet &bl_param)
 {
   apply = bt_->getApply(idx, ipol);
   if (!apply) return;
@@ -461,26 +463,24 @@ void BLTableParser::GetFitParameterByIdx(size_t const idx, size_t const ipol,
     bl_param.order = fpar[ipol];
     coeff.resize(bl_param.order + 1);
     for (size_t i = 0; i < coeff.size(); ++i) {
-      Vector<Float> res(bt_->getResult(idx)[i]);
-      coeff[i] = res[ipol];
+      coeff[i] = bt_->getResult(idx).row(ipol)[i];
     }
     break;
   case BaselineType_kCubicSpline:
     bl_param.npiece = fpar[ipol];
     boundary.resize(bl_param.npiece + 1);
     for (size_t i = 0; i < boundary.size(); ++i) {
-      Vector<Float> ffpar(bt_->getFuncFParam(idx)[i]);
-      boundary[i] = ffpar[ipol];
+      boundary[i] = bt_->getFuncFParam(idx).row(ipol)[i];
     }
     coeff.resize(bl_param.npiece * 4);
     for (size_t i = 0; i < coeff.size(); ++i) {
-      Vector<Float> res(bt_->getResult(idx)[i]);
-      coeff[i] = res[ipol];
+      coeff[i] = bt_->getResult(idx).row(ipol)[i];
     }
     break;
   default:
     throw(AipsError("Unsupported baseline type."));
   }
+  masklist = bt_->getMask(idx, ipol);
 }
 
 

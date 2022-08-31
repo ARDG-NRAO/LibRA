@@ -55,7 +55,7 @@ public:
 	{
 		ndata_p = ndata;
 		ncomponents_p = ncomponents;
-		model_p.resize(ncomponents_p,ndata_p,False);
+		model_p.resize(ncomponents_p,ndata_p, false);
 	}
 
 	size_t ndata() {return ndata_p;}
@@ -170,29 +170,29 @@ public:
 
 	void setDebug(Bool debug) {debug_p = debug;};
 
-	Vector<Complex> calcFitCoeff(Vector<Complex> &data);
-	template<class T> Vector<T> calcFitCoeff(Vector<T> &data)
+	std::pair<std::vector<Complex>, Complex> calcFitCoeff(Vector<Complex> &data);
+	template<class T> std::pair<std::vector<T>, double> calcFitCoeff(Vector<T> &data)
 	{
 		// Set data
 		setData(data);
 
 		// Call fit method to calculate coefficients
-		calcFitCoeffCore(data_p.column(0),gsl_coeff_real_p);
+		double chisq = calcFitCoeffCore(data_p.column(0),gsl_coeff_real_p);
 
-		// Convert GSL vector into CASA vector
-		Vector<T> coeffCASA(ncomponents_p);
+		// Convert GSL vector into vector
+                std::vector<T> coeffCASA(ncomponents_p);
 		for (size_t coeff_idx=0;coeff_idx<ncomponents_p;coeff_idx++)
 		{
-			coeffCASA(coeff_idx) = gsl_vector_get(gsl_coeff_real_p,coeff_idx);
+			coeffCASA[coeff_idx] = gsl_vector_get(gsl_coeff_real_p, coeff_idx);
 		}
 
-		return coeffCASA;
+		return std::make_pair(coeffCASA, chisq);
 	}
 
 	void getFitCoeff(Vector<Complex> &coeff);
 	template<class T> void getFitCoeff(Vector<T> &coeff)
 	{
-		coeff.resize(ncomponents_p,False);
+		coeff.resize(ncomponents_p, false);
 		for (size_t model_idx=0;model_idx<ncomponents_p;model_idx++)
 		{
 			coeff(model_idx) = gsl_vector_get(gsl_coeff_real_p,model_idx);
@@ -229,7 +229,7 @@ protected:
 	void setData(Vector<Double> &data);
 	void setData(Vector<Complex> &data);
 
-	virtual void calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
+	virtual double calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
 
 	template<class T> void calcFitModelStdCore(	Vector<T> &model, Vector<T> &std, gsl_vector *coeff)
 	{
@@ -320,7 +320,7 @@ public:
 protected:
 
 	void setModel(GslLinearModelBase<Double> &model);
-	virtual void calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
+	virtual double calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
 
 	// Weights
 	Vector<Double> weights_p;
@@ -342,7 +342,7 @@ public:
 
 	void setNIter(size_t nIter) {nIter_p = nIter;};
 
-	virtual void calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
+	virtual double calcFitCoeffCore(Vector<Double> data, gsl_vector* coeff);
 	virtual void updateWeights(Vector<Double> &data, Vector<Double> &model,  Vector<Double> &weights);
 
 protected:

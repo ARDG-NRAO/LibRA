@@ -22,10 +22,10 @@
 
 #include <flagging/Flagging/FlagDataHandler.h>
 
-#include <ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelection.h>
 
 // .casarc (or .casa/rc) interface
-#include <casa/System/AipsrcValue.h>
+#include <casacore/casa/System/AipsrcValue.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

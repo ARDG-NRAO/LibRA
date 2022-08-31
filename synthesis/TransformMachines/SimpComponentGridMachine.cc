@@ -26,20 +26,20 @@
 //# $Id$
 
 #include <synthesis/TransformMachines/SimpComponentGridMachine.h>
-#include <scimath/Mathematics/RigidVector.h>
+#include <casacore/scimath/Mathematics/RigidVector.h>
 #include <components/ComponentModels/ComponentShape.h>
 #include <components/ComponentModels/ComponentType.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/SpectralModel.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicSL/Constants.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/Constants.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

@@ -29,8 +29,8 @@
 
 #include <graphics/GenericPlotter/PlotOptions.h>
 
-#include <casa/Logging/LogSinkInterface.h>
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Logging/LogSinkInterface.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #include <map>
 #include <time.h>

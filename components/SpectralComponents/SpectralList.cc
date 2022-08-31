@@ -28,14 +28,14 @@
 //# Includes
 #include <components/SpectralComponents/SpectralList.h>
 
-#include <casa/Exceptions/Error.h>
-#include <casa/Containers/RecordInterface.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Containers/RecordInterface.h>
+#include <casacore/casa/Containers/Record.h>
 #include <components/SpectralComponents/GaussianSpectralElement.h>
-#include <casa/Utilities/PtrHolder.h>
+#include <casacore/casa/Utilities/PtrHolder.h>
 #include <components/SpectralComponents/SpectralElementFactory.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
