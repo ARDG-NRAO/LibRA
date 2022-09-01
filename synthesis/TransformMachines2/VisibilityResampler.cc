@@ -29,7 +29,7 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/VisibilityResampler.h>
 #include <synthesis/TransformMachines2/Utils.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <fstream>
 
 using namespace casacore;

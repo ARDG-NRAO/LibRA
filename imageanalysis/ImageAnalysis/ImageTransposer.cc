@@ -7,9 +7,9 @@
 
 #include <imageanalysis/ImageAnalysis/ImageTransposer.h>
 
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
 

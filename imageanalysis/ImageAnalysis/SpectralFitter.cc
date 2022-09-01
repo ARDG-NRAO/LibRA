@@ -26,24 +26,24 @@
 //# $Id: $
 
 #include <imageanalysis/ImageAnalysis/SpectralFitter.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/OS/Directory.h>
-#include <casa/OS/RegularFile.h>
-#include <casa/OS/SymLink.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/OS/Directory.h>
+#include <casacore/casa/OS/RegularFile.h>
+#include <casacore/casa/OS/SymLink.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 //#include <imageanalysis/ImageAnalysis/ImageFit1D.h>
-#include <images/Images/ImageUtilities.h>
+#include <casacore/images/Images/ImageUtilities.h>
 #include <imageanalysis/ImageAnalysis/ImageMoments.h>
-#include <images/Images/FITSImage.h>
-#include <images/Images/FITSQualityImage.h>
-#include <images/Images/MIRIADImage.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Images/TempImage.h>
+#include <casacore/images/Images/FITSImage.h>
+#include <casacore/images/Images/FITSQualityImage.h>
+#include <casacore/images/Images/MIRIADImage.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <components/SpectralComponents/SpectralList.h>
 #include <components/SpectralComponents/SpectralElement.h>
 #include <components/SpectralComponents/ProfileFit1D.h>
-#include <lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
 
 using namespace casacore;
 namespace casa {

@@ -185,6 +185,9 @@ private:
   std::vector<casacore::Vector<casacore::Double> > correctionFactorList_;
   std::vector<casacore::Int> indexForCorrection_;
 
+  // OpenMP related stuff
+  int numThreads_;
+
   friend SDAtmosphereCorrectionVi2Factory;
 };
 

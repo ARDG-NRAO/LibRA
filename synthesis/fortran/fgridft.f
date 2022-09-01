@@ -255,7 +255,7 @@ C rotate but we do want to reproject uvw
       integer :: posx, posy
       integer :: msupporty, psupporty
       integer :: msupportx, psupportx
-      
+      double precision :: cfnow(-support:support, -support:support)
 
 
       do irow=rbeg, rend
@@ -286,6 +286,22 @@ C rotate but we do want to reproject uvw
                         psupporty=support
                         psupportx=support
                         msupportx=-support
+                        do iy=-support, support
+                           iloc(2)=abs(sampling*iy+off(2,ichan,irow))+1
+                           wty=convFunc(iloc(2))
+                           do ix=-support, support
+                              iloc(1)=abs(sampling*ix+off(1,ichan, 
+     $                             irow))+1
+                              wtx=convFunc(iloc(1))
+                              cfnow(ix, iy)=wtx*wty
+                              norm=norm+cfnow(ix,iy)
+                           end do
+                        end do
+                        do iy=-support, support
+                           do ix=-support, support
+                              cfnow(ix, iy)=cfnow(ix, iy)/norm
+                           end do
+                        end do 
                         if((loc(1, ichan, irow)-support) .lt. x0) 
      $                       msupportx=  -(loc(1, ichan, irow)-x0)
                         if((loc(1, ichan, irow)+support).ge.(x0+nxsub)) 
@@ -294,26 +310,27 @@ C rotate but we do want to reproject uvw
      $                       msupporty=  -(loc(2, ichan, irow)-y0)
                         if((loc(2, ichan, irow)+support).ge.(y0+nysub)) 
      $                       psupporty=  y0+nysub-loc(2, ichan, irow)-1   
-C         write(*,*) msupportx, psupportx, msupporty, psupporty            
+C     write(*,*) msupportx, psupportx, msupporty, psupporty
+                        norm=0.0
                         do iy=msupporty,psupporty
                            posy=loc(2, ichan, irow)+iy
 C           if( (posy .lt. (y0+nysub)) .and. 
 C     $        (posy.ge. y0)) then
-                            iloc(2)=abs(sampling*iy+off(2,ichan,irow))+1
-                            wty=convFunc(iloc(2))
+C                            iloc(2)=abs(sampling*iy+off(2,ichan,irow))+1
+C                            wty=convFunc(iloc(2))
                             do ix=msupportx,psupportx
                                posx=loc(1, ichan, irow)+ix
 C           if( (posx .lt. (x0+nxsub)) .and. 
 C     $       (posx .ge. x0)) then
 C            write(*,*) posx, posy, loc(1), loc(2), x0, y0, nxsub, nysub
-                                iloc(1)=abs(sampling*ix+off(1,ichan, 
-     $                                 irow))+1
-                                  wtx=convFunc(iloc(1))
-                                  wt=wtx*wty
+C                                iloc(1)=abs(sampling*ix+off(1,ichan, 
+C     $                                 irow))+1
+C                                  wtx=convFunc(iloc(1))
+C                                  wt=wtx*wty
                                   grid(posx,posy,apol,achan)=
      $                             grid(posx, posy,apol,achan)+
-     $                                   nvalue*wt
-                                    norm=norm+wt
+     $                                   nvalue*cfnow(ix,iy)
+                                    norm=norm+cfnow(ix,iy)
 C              write(*,*) iloc(1), iloc(2), posx, posy
 C               end if
                               end do
@@ -378,7 +395,7 @@ C     $     y0, nxsub, nysub, rbeg, rend)
       integer :: posx, posy
       integer :: msupporty, psupporty
       integer :: msupportx, psupportx
-        
+      double precision :: cfnow(-support:support, -support:support)
 
 
       do irow=rbeg, rend
@@ -404,6 +421,23 @@ C rotate but we do want to reproject uvw
      $                    (values(ipol,ichan,irow)*phasor(ichan, irow))
                         end if
                         norm=0.0
+                        do iy=-support, support
+                           iloc(2)=abs(sampling*iy+off(2,ichan,irow))+1
+                           wty=convFunc(iloc(2))
+                           do ix=-support, support
+                              iloc(1)=abs(sampling*ix+off(1,ichan, 
+     $                             irow))+1
+                              wtx=convFunc(iloc(1))
+                              cfnow(ix, iy)=wtx*wty
+                              norm=norm+cfnow(ix,iy)
+                           end do
+                        end do
+                        do iy=-support, support
+                           do ix=-support, support
+                              cfnow(ix, iy)=cfnow(ix, iy)/norm
+                           end do
+                        end do
+                        norm=0.0
                         msupporty=-support
                         psupporty=support
                         psupportx=support
@@ -418,18 +452,12 @@ C rotate but we do want to reproject uvw
      $                       psupporty=  y0+nysub-loc(2, ichan, irow)-1   
                         do iy=msupporty,psupporty
                            posy=loc(2, ichan, irow)+iy
-                           iloc(2)=abs(sampling*iy+off(2,ichan,irow))+1
-                           wty=convFunc(iloc(2))
                            do ix=msupportx,psupportx
                               posx=loc(1, ichan, irow)+ix
-                              iloc(1)=abs(sampling*ix+off(1,ichan, 
-     $                             irow))+1
-                              wtx=convFunc(iloc(1))
-                              wt=wtx*wty
                               grid(posx,posy,apol,achan)=
      $                             grid(posx, posy,apol,achan)+
-     $                             nvalue*wt
-                              norm=norm+wt
+     $                             nvalue*cfnow(ix, iy)
+                              norm=norm+cfnow(ix,iy)
                            end do
                         end do
                         sumwt(apol,achan)=sumwt(apol,achan)+

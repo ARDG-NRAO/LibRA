@@ -32,7 +32,7 @@
 #define SYNTHESIS_TRANSFORM2_BRIGGSCUBEWEIGHTOR_H
 
 #include <synthesis/TransformMachines2/GridFT.h>
-#include <scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 
 namespace casacore{
   class RecordInterface;

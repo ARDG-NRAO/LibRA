@@ -31,7 +31,7 @@
 #include <mutex>
 #include <thread>
 #include <stdcasa/record.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/Containers/Record.h>
 #include "img.grpc.pb.h"
 
 namespace casa {
@@ -50,6 +50,9 @@ namespace casa {
 	  
         bool IsCycleThresholdAuto;
         bool IsThresholdAuto;
+        // Determines if IsCycleThresholdAuto can ever be true.
+        // Necessary because tclean implicitly updates IsCycleThresholdAuto during certain grpcInteractiveClean functions, but for deconvolve we don't want this value to change.
+        bool IsCycleThresholdMutable;
 
         float CycleFactor;
         float LoopGain;
@@ -90,9 +93,6 @@ namespace casa {
 
         //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         float MadRMS;
-
-        //--- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-        int NSummaryFields;
 
     };
 
@@ -160,7 +160,7 @@ namespace casa {
         void pushDetails( );
         void updateCycleThreshold( grpcInteractiveCleanState & );
         void resetMinorCycleInitInfo( grpcInteractiveCleanState & );
-        void mergeMinorCycleSummary( const casacore::Array<casacore::Double>&, grpcInteractiveCleanState & );
+        void mergeMinorCycleSummary( const casacore::Array<casacore::Double>&, grpcInteractiveCleanState &, casacore::Int immod );
 
         /**********
         casacore::Int interactivemask(const casacore::String& image, const casacore::String& mask, 
@@ -173,14 +173,14 @@ namespace casa {
         casacore::Record getMinorCycleControls( );
         casacore::Record getDetailsRecord( bool includeSummary=true );
         casacore::Record getSummaryRecord( ) { return getDetailsRecord(true); }
-        int cleanComplete( bool lastcyclecheck=false );
+        int cleanComplete( bool lastcyclecheck=false, bool reachedMajorLimit=false );
         /* Note:  Incrementing the Major cycle will reset the cycleIterDone */
         void incrementMajorCycleCount( );
         void resetMinorCycleInitInfo( );
         void addSummaryMajor( );
 
         void mergeCycleInitializationRecord( casacore::Record &initRecord );
-        void mergeCycleExecutionRecord( casacore::Record& );
+        void mergeCycleExecutionRecord( casacore::Record&, casacore::Int immod );
 
         void changeStopFlag( bool stopEnabled );
 

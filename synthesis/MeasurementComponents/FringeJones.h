@@ -28,7 +28,7 @@
 #ifndef SYNTHESIS_FRINGEJONES_H
 #define SYNTHESIS_FRINGEJONES_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementComponents/StandardVisCal.h>
 #include <synthesis/MeasurementComponents/SolvableVisCal.h> 
 #include <synthesis/CalTables/CTTimeInterp1.h>

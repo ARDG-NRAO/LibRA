@@ -16,9 +16,9 @@
 
 #include <imageanalysis/IO/RegionTextParser.h>
 
-#include <casa/IO/RegularFileIO.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/casa/IO/RegularFileIO.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <imageanalysis/Annotations/AnnAnnulus.h>
 #include <imageanalysis/Annotations/AnnCenterBox.h>
 #include <imageanalysis/Annotations/AnnCircle.h>
@@ -32,12 +32,12 @@
 #include <imageanalysis/Annotations/AnnVector.h>
 #include <imageanalysis/IO/ParameterParser.h>
 
-#include <measures/Measures/MCDirection.h>
-#include <measures/Measures/MDirection.h>
-#include <measures/Measures/VelocityMachine.h>
+#include <casacore/measures/Measures/MCDirection.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/measures/Measures/VelocityMachine.h>
 
 #include <iomanip>
-#include <casa/BasicSL/STLIO.h>
+#include <casacore/casa/BasicSL/STLIO.h>
 
 #define _ORIGIN "RegionTextParser::" + String(__FUNCTION__) + ": "
 

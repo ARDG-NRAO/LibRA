@@ -27,8 +27,8 @@
 #ifndef MSVIS_VIILAYERFACTORY2_H
 #define MSVIS_VIILAYERFACTORY2_H
 
-#include <casa/aips.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Arrays/Vector.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

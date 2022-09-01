@@ -30,8 +30,8 @@
 #define COMPONENTS_SPECTRALLIST_H
 
 //# Includes
-#include <casa/aips.h>
-#include <casa/Containers/Block.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/Containers/Block.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 
 namespace casacore{

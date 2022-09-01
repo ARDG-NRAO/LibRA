@@ -27,23 +27,23 @@
 #ifndef SYNTHESIS_SYNTHESISUTILS_H
 #define SYNTHESIS_SYNTHESISUTILS_H
 
-#include <casa/aips.h>
-#include <casa/OS/Timer.h>
-#include <casa/Containers/Record.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Quanta/Quantum.h>
-#include <casa/Quanta/QuantumHolder.h>
-#include <measures/Measures/MDirection.h>
-#include <casa/Quanta/MVAngle.h>
-#include <measures/Measures/MFrequency.h>
-#include <casa/Utilities/DataType.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/casa/Quanta/QuantumHolder.h>
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/casa/Utilities/DataType.h>
 #include <stdcasa/StdCasa/CasacSupport.h>
-#include <coordinates/Coordinates/Projection.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <scimath/Mathematics/GaussianBeam.h>
+#include <casacore/coordinates/Coordinates/Projection.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/scimath/Mathematics/GaussianBeam.h>
 
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
@@ -181,6 +181,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
                                  casacore::Quantity& filterbmaj,
                                  casacore::Quantity& filterbmin,
                                  casacore::Quantity& filterbpa, casacore::Double& fracBW, const casacore::Record& inrec);
+
+    static casacore::uLong getAllocatedMemoryInBytes();
     
 
   protected:
@@ -456,6 +458,8 @@ public:
   casacore::Float fusedThreshold;
   casacore::String specmode;
   casacore::Int largestscale;
+  // task deconvolve needs to tell siimagestore that we don't need to check for the sumwt image
+  casacore::Bool noRequireSumwt = casacore::False;
 
  
   casacore::Bool interactive;

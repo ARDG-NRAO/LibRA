@@ -22,49 +22,49 @@
 //#  Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 //#  MA 02111-1307  USA
 //# $Id: $
-#include <tables/TaQL/ExprNode.h>
-#include <tables/Tables/RefRows.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <casa/Quanta/MVBaseline.h>
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/Cube.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayOpsDiffShapes.h>
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Arrays/ArrayUtil.h>
-#include <casa/Arrays/IPosition.h>
-#include <casa/Arrays/Slice.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/OS/File.h>
-#include <casa/OS/HostInfo.h>
-#include <casa/Containers/Record.h>
-#include <casa/BasicMath/Math.h>
-#include <casa/BasicSL/String.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Utilities/GenSort.h>
-#include <casa/System/AppInfo.h>
-#include <tables/DataMan/IncrementalStMan.h>
-#include <tables/Tables/ScalarColumn.h>
-#include <tables/Tables/ScaColDesc.h>
-#include <tables/Tables/SetupNewTab.h>
-#include <tables/DataMan/StandardStMan.h>
-#include <tables/Tables/Table.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableInfo.h>
-#include <tables/Tables/TableLock.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/Tables/TableCopy.h>
-#include <tables/Tables/TableRow.h>
-#include <tables/DataMan/TiledColumnStMan.h>
-#include <tables/DataMan/TiledShapeStMan.h>
-#include <tables/DataMan/TiledDataStMan.h>
-#include <tables/DataMan/TiledStManAccessor.h>
-#include <measures/Measures/MeasTable.h>
-#include <casa/sstream.h>
-#include <casa/iomanip.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/tables/Tables/RefRows.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/casa/Quanta/MVBaseline.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Cube.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayOpsDiffShapes.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/ArrayUtil.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/casa/Arrays/Slice.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/HostInfo.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/BasicMath/Math.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/GenSort.h>
+#include <casacore/casa/System/AppInfo.h>
+#include <casacore/tables/DataMan/IncrementalStMan.h>
+#include <casacore/tables/Tables/ScalarColumn.h>
+#include <casacore/tables/Tables/ScaColDesc.h>
+#include <casacore/tables/Tables/SetupNewTab.h>
+#include <casacore/tables/DataMan/StandardStMan.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableInfo.h>
+#include <casacore/tables/Tables/TableLock.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/Tables/TableCopy.h>
+#include <casacore/tables/Tables/TableRow.h>
+#include <casacore/tables/DataMan/TiledColumnStMan.h>
+#include <casacore/tables/DataMan/TiledShapeStMan.h>
+#include <casacore/tables/DataMan/TiledDataStMan.h>
+#include <casacore/tables/DataMan/TiledStManAccessor.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <sstream>
+#include <iomanip>
 
 #include <algorithm>
-#include <casa/OS/Directory.h>
+#include <casacore/casa/OS/Directory.h>
 #include <alma/ASDM/ASDMAll.h>
 #include <alma/ASDMBinaries/SDMDataObjectWriter.h>
 #include <alma/ASDMBinaries/SDMDataObject.h>
@@ -3498,8 +3498,8 @@ namespace casa {
 	  asdmExecBlockId_p[execBlockStartTime[sBSummaryTag]] = tER->getExecBlockId();
 
 	  if(verbosity_p>2){
-	    cout << "eblock id defined in loop 1 for start time " << setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
-	    cout << "                                  end time " << setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
+	    std::cout << "eblock id defined in loop 1 for start time " << std::setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
+	    std::cout << "                                  end time " << std::setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
 	  }
 
 	  // undefine the mapping for this Tag since the ExecBlock was completed
@@ -3544,7 +3544,7 @@ namespace casa {
 	execBlockNumber[sBSummaryTag] = oldNum + 1; // sequential numbering starting at 1
 
 	if(verbosity_p>2){
-	  cout << "eblock number " << oldNum + 1 << " defined for start time " << setprecision (9) << timestampStartSecs(mainTabRow) << endl;
+	  std::cout << "eblock number " << oldNum + 1 << " defined for start time " << std::setprecision (9) << timestampStartSecs(mainTabRow) << endl;
 	}
 
 	obsIdFromSBSum[sBSummaryTag] = obsId; // remember the obsId for this exec block
@@ -3653,8 +3653,8 @@ namespace casa {
       asdmExecBlockId_p[execBlockStartTime[sBSummaryTag]] = tER->getExecBlockId();
 
       if(verbosity_p>2){
-	cout << "eblock id defined in loop 2 for start time " << setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
-	cout << "                                  end time " << setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
+	std::cout << "eblock id defined in loop 2 for start time " << std::setprecision(13) << execBlockStartTime[sBSummaryTag] << endl;
+	std::cout << "                                  end time " << std::setprecision(13) << execBlockEndTime[sBSummaryTag] << endl;
       }
 
       // undefine the mapping for this Tag since the ExecBlock was completed

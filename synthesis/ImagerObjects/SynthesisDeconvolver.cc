@@ -25,33 +25,34 @@
 //#
 //# $Id$
 
-#include <casa/Exceptions/Error.h>
-#include <casa/iostream.h>
-#include <casa/sstream.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <iostream>
+#include <sstream>
 
-#include <casa/Arrays/Matrix.h>
-#include <casa/Arrays/ArrayMath.h>
-#include <casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/ArrayMath.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
 
-#include <casa/Logging.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 
-#include <casa/OS/DirectoryIterator.h>
-#include <casa/OS/File.h>
-#include <casa/OS/Path.h>
+#include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Path.h>
 
-#include <casa/OS/HostInfo.h>
+#include <casacore/casa/OS/HostInfo.h>
 
-#include <images/Images/TempImage.h>
-#include <images/Images/SubImage.h>
-#include <images/Regions/ImageRegion.h>
-#include <lattices/Lattices/LatticeLocker.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Regions/ImageRegion.h>
+#include <casacore/lattices/Lattices/LatticeLocker.h>
 #include <synthesis/ImagerObjects/CubeMinorCycleAlgorithm.h>
 #include <imageanalysis/ImageAnalysis/CasaImageBeamSet.h>
 #include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
+#include <synthesis/ImagerObjects/SIMinorCycleController.h>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -219,6 +220,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         itsFastNoise = decpars.fastnoise;
 	      itsIsInteractive = decpars.interactive;
         itsNsigma = decpars.nsigma;
+        itsNoRequireSumwt = decpars.noRequireSumwt;
       }
     catch(AipsError &x)
       {
@@ -246,7 +248,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     /////IMPORTANT initMinorCycle has to be called before setupMask...that order has to be kept !
 
     if(!itsImages)
-      itsImages=makeImageStore(itsImageName);
+      itsImages=makeImageStore(itsImageName, itsNoRequireSumwt);
     //For cubes as we are not doing a post major cycle residual automasking
     //Force recalculation of robust stats to update nsigmathreshold with
     //most recent residual
@@ -506,9 +508,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  iterRec.get("iterdone",iterdone);
 	}
       else throw(AipsError("SD::interactiveGui() needs valid niter, cycleniter, threshold to start up."));
-
-      if( ! itsImages ) itsImages = makeImageStore( itsImageName );
-
+      
+      if( ! itsImages ) itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
+      
       //      SDMaskHandler masker;
       String strthresh = String::toString(threshold)+"Jy";
       String strcycthresh = String::toString(cyclethreshold)+"Jy";
@@ -839,7 +841,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     if( ! itsImages )
       {
-	itsImages = makeImageStore( itsImageName );
+	itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
       }
 
     SynthesisUtilMethods::getResource("Restoration");
@@ -852,7 +854,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void SynthesisDeconvolver::mergeReturnRecord(const Record& inRec, Record& outRec, const Int chan){
 
     ///Something has to be done about what is done in SIIterBot_state::mergeMinorCycleSummary if it is needed
-    Matrix<Double> summaryminor(6,0);
+    int nSummaryFields = SIMinorCycleController::useSmallSummaryminor() ? 6 : SIMinorCycleController::nSummaryFields; // temporary CAS-13683 workaround
+    Matrix<Double> summaryminor(nSummaryFields,0);
     if(outRec.isDefined("summaryminor"))
       summaryminor=Matrix<Double>(outRec.asArrayDouble("summaryminor"));
     Matrix<Double> subsummaryminor;
@@ -861,7 +864,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if(subsummaryminor.nelements() !=0){
       ///The 6th element is supposed to be the subimage id
       subsummaryminor.row(5)= subsummaryminor.row(5)+(Double(chan));
-      Matrix<Double> newsummary(6, summaryminor.shape()[1]+subsummaryminor.shape()[1]);
+      Matrix<Double> newsummary(nSummaryFields, summaryminor.shape()[1]+subsummaryminor.shape()[1]);
       Int ocol=0;
       for (Int col=0; col< summaryminor.shape()[1]; ++col, ++ocol)
         newsummary.column(ocol)=summaryminor.column(col);
@@ -930,7 +933,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     if( ! itsImages )
       {
-	itsImages = makeImageStore( itsImageName );
+	itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
       }
 
     itsDeconvolver->pbcor(itsImages);
@@ -944,13 +947,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   ////    Internal Functions start here.  These are not visible to the tool layer.
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  std::shared_ptr<SIImageStore> SynthesisDeconvolver::makeImageStore( String imagename )
+  std::shared_ptr<SIImageStore> SynthesisDeconvolver::makeImageStore( String imagename, Bool noRequireSumwt )
   {
     std::shared_ptr<SIImageStore> imstore;
     if( itsDeconvolver->getAlgorithmName() == "mtmfs" )
-      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true ) ); }
+      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true, noRequireSumwt ) ); }
     else
-      {  imstore.reset( new SIImageStore( imagename, true ) ); }
+      {  imstore.reset( new SIImageStore( imagename, true, noRequireSumwt ) ); }
 
     return imstore;
 
@@ -1124,8 +1127,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     LogIO os( LogOrigin("SynthesisDeconvolver","checkRestoringBeam",WHERE) );
     //check for a bad restoring beam
     GaussianBeam beam;
-
-    if( ! itsImages ) itsImages = makeImageStore( itsImageName );
+    
+    if( ! itsImages ) itsImages = makeImageStore( itsImageName, itsNoRequireSumwt );
     ImageInfo psfInfo = itsImages->psf()->imageInfo();
     if (psfInfo.hasSingleBeam()) {
       beam = psfInfo.restoringBeam();
@@ -1221,6 +1224,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	outRec.define(*it, tmp(IPosition(2, 0, chanBeg), IPosition(2, tmp.shape()[0]-1, chanEnd)));
       }
     }
+
+    // When itsImages->residual() is called, it (sometimes) creates a read-lock. Release that lock.
+    shared_ptr<ImageInterface<Float> > resimg = itsImages->residual();
+    itsImages->releaseImage( resimg );
+
     //cerr <<"chanbeg " << chanBeg << " chanend " << chanEnd << endl;
     //cerr << "GETSUB " << outRec << endl;
     return outRec;
@@ -1250,6 +1258,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	itsRobustStats.define(*it, outvec);
       }
     }
+
+    // When itsImages->residual() is called, it (sometimes) creates a read-lock. Release that lock.
+    shared_ptr<ImageInterface<Float> > resimg = itsImages->residual();
+    itsImages->releaseImage( resimg );
 
     //cerr << "SETT " << itsRobustStats << endl;
     //cerr << "SETT::ItsRobustStats " << Vector<Double>(itsRobustStats.asArrayDouble("min")) << endl;

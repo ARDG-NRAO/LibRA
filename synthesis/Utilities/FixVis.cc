@@ -1,25 +1,25 @@
 #include <synthesis/Utilities/FixVis.h>
 #include <msvis/MSVis/MSUVWGenerator.h>
 #include <msvis/MSVis/SubMS.h>
-#include <measures/Measures/MeasTable.h>
-#include <measures/Measures/UVWMachine.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/Quanta/MVAngle.h>
-#include <coordinates/Coordinates/Projection.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/ObsInfo.h>
-#include <images/Images/PagedImage.h>           // Used to pass coords
-#include <images/Images/ImageInfo.h>            // to FTMachine.
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MeasurementSets/MSDopplerUtil.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionTools.h>
+#include <casacore/measures/Measures/MeasTable.h>
+#include <casacore/measures/Measures/UVWMachine.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/Quanta/MVAngle.h>
+#include <casacore/coordinates/Coordinates/Projection.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/ObsInfo.h>
+#include <casacore/images/Images/PagedImage.h>           // Used to pass coords
+#include <casacore/images/Images/ImageInfo.h>            // to FTMachine.
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MeasurementSets/MSDopplerUtil.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSelectionTools.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <msvis/MSVis/VisBuffer.h>
-#include <casa/BasicSL/String.h>	// for parseColumnNames()
+#include <casacore/casa/BasicSL/String.h>	// for parseColumnNames()
 
-#include <casa/iostream.h>
+#include <iostream>
 
 using namespace casacore;
 namespace casa {

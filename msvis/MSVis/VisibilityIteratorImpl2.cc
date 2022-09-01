@@ -26,23 +26,23 @@
 //# $Id: VisibilityIterator2.cc,v 19.15 2006/02/01 01:25:14 kgolap Exp $
 
 #include <tuple>
-#include <casa/Arrays.h>
-#include <casa/BasicSL/Constants.h>
-#include <casa/Containers/Record.h>
-#include <casa/Exceptions.h>
-#include <casa/Quanta/MVTime.h>
-#include <casa/System/AipsrcValue.h>
-#include <casa/Utilities.h>
-#include <ms/MeasurementSets.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSpwIndex.h>
-#include <scimath/Mathematics/InterpolateArray1D.h>
+#include <casacore/casa/Arrays.h>
+#include <casacore/casa/BasicSL/Constants.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Exceptions.h>
+#include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/System/AipsrcValue.h>
+#include <casacore/casa/Utilities.h>
+#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <casacore/ms/MSSel/MSSelection.h>
+#include <casacore/ms/MSSel/MSSpwIndex.h>
+#include <casacore/scimath/Mathematics/InterpolateArray1D.h>
 //#include <msvis/MSVis/StokesVector.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/MeasurementSet2.h>
 #include <msvis/MSVis/MSUtil.h>
 #include <msvis/MSVis/MSIter2.h>
-#include <msvis/MSVis/UtilJ.h>
 #include <msvis/MSVis/SpectralWindow.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <msvis/MSVis/VisBuffer2.h>
@@ -51,13 +51,13 @@
 #include <msvis/MSVis/VisibilityIteratorImpl2.h>
 #include <msvis/MSVis/PointingDirectionCache.h>
 #include <msvis/MSVis/VisModelDataI.h>
-#include <tables/Tables/ColDescSet.h>
-#include <tables/Tables/ArrayColumn.h>
-#include <tables/DataMan/IncrStManAccessor.h>
-#include <tables/DataMan/StandardStManAccessor.h>
-#include <tables/Tables/TableDesc.h>
-#include <tables/Tables/TableRecord.h>
-#include <tables/DataMan/TiledStManAccessor.h>
+#include <casacore/tables/Tables/ColDescSet.h>
+#include <casacore/tables/Tables/ArrayColumn.h>
+#include <casacore/tables/DataMan/IncrStManAccessor.h>
+#include <casacore/tables/DataMan/StandardStManAccessor.h>
+#include <casacore/tables/Tables/TableDesc.h>
+#include <casacore/tables/Tables/TableRecord.h>
+#include <casacore/tables/DataMan/TiledStManAccessor.h>
 
 #include <cassert>
 #include <algorithm>
@@ -148,7 +148,7 @@ public:
 	Vector<Slice>
 	getSlices() const
 		{
-			return subslicer_p;
+			return Vector<Slice>(subslicer_p);
 		}
 
 	size_t nelements() const
@@ -1928,6 +1928,17 @@ VisibilityIteratorImpl2::moreChunks() const
 	return msIter_p->more();
 }
 
+void
+VisibilityIteratorImpl2::result(casacore::Record& res) const
+{
+    if (moreChunks()) {
+        throw AipsError("TransformingVi2::result(Record&) can only be called at the end of "
+                        "the iteration. It has been called while there are still "
+                        "moreChunks(). Please check and/or revisit this condition.");
+    }
+    // For now nothing to add to result record from here
+}
+
 const MSColumns *
 VisibilityIteratorImpl2::msColumnsKluge() const
 {
@@ -2565,7 +2576,7 @@ VisibilityIteratorImpl2::configureNewSubchunk()
     String msName = ms().tableName();
 
     auto nShapes = channelSelectors_p.size();
-    nRowsPerShape_p = channelSelectorsNrows_p;
+    nRowsPerShape_p = Vector<uInt64>(channelSelectorsNrows_p);
     nChannPerShape_p.resize(nShapes);
     nCorrsPerShape_p.resize(nShapes);
 

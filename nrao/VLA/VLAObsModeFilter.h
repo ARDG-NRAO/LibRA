@@ -29,7 +29,7 @@
 #ifndef NRAO_VLAOBSMODEFILTER_H
 #define NRAO_VLAOBSMODEFILTER_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <nrao/VLA/VLAFilter.h>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/BasicSL/String.h>
@@ -37,7 +37,7 @@
 #include <unordered_map>
 #include <string>
 
-#include <casa/namespace.h>
+#include <casacore/casa/namespace.h>
 class VLALogicalRecord;
 
 // used in error reporting: mode description string and a boolean indicating whether the warning has been done

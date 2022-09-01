@@ -27,9 +27,9 @@
 
 #include <components/SpectralComponents/PowerLogPolynomialSpectralElement.h>
 
-#include <scimath/Functionals/PowerLogarithmicPolynomial.h>
+#include <casacore/scimath/Functionals/PowerLogarithmicPolynomial.h>
 
-#include <casa/iostream.h>
+#include <iostream>
 
 #define _ORIGIN  String("PowerLogPolynomialSpectralElement::") + __FUNCTION__ + ":" + String::toString(__LINE__) + ": "
 

@@ -25,16 +25,16 @@
 
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
 
-#include <casa/BasicSL/String.h>
-#include <tables/LogTables/NewFile.h>
-#include <images/Images/ExtendImage.h>
-#include <images/Images/ImageExpr.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/SubImage.h>
-#include <images/Images/PagedImage.h>
-#include <images/Regions/WCLELMask.h>
-#include <lattices/LRegions/LCMask.h>
-#include <lattices/Lattices/LatticeUtilities.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/tables/LogTables/NewFile.h>
+#include <casacore/images/Images/ExtendImage.h>
+#include <casacore/images/Images/ImageExpr.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/SubImage.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Regions/WCLELMask.h>
+#include <casacore/lattices/LRegions/LCMask.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
 
 #include <imageanalysis/ImageAnalysis/ImageMask.h>
 #include <imageanalysis/ImageAnalysis/ImageMaskAttacher.h>

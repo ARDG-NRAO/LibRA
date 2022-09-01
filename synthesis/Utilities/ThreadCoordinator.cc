@@ -27,7 +27,7 @@
 //# $Id$
 
 #include <synthesis/Utilities/ThreadCoordinator.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 #include <cassert>
 #include <stdcasa/thread/Barrier.h>
 

@@ -1,7 +1,7 @@
 #ifndef PAGEHEADERDATAMODEL_H_
 #define PAGEHEADERDATAMODEL_H_
 
-#include <casa/Utilities/CountedPtr.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 
 namespace casa {

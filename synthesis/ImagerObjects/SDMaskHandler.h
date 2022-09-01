@@ -29,19 +29,16 @@
 #ifndef SYNTHESIS_SDMASKHANDLER_H
 #define SYNTHESIS_SDMASKHANDLER_H
 
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Arrays/Matrix.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/PagedImage.h>
-#include <images/Images/TempImage.h>
-#include <casa/Logging/LogMessage.h>
-#include <casa/Logging/LogSink.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogSink.h>
 
 #include<synthesis/ImagerObjects/SIImageStore.h>
 #include<synthesis/ImagerObjects/SIImageStoreMultiTerm.h>
-#if ! defined(CASATOOLS)
-#include <synthesis/ImagerObjects/InteractiveMasking.h>
-#endif
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -415,11 +412,6 @@ public:
   // Store pbmask level (a.k.a pblimit for mask)
   void setPBMaskLevel(const casacore::Float pbmasklevel);
   casacore::Float getPBMaskLevel();
-
-protected:
-#if ! defined(CASATOOLS)
-  InteractiveMasking *interactiveMasker_p;
-#endif
 
 private:
   double itsRms;

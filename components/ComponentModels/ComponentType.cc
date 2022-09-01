@@ -26,7 +26,7 @@
 //# $Id: ComponentType.cc 21130 2011-10-18 07:39:05Z gervandiepen $
 
 #include <components/ComponentModels/ComponentType.h>
-#include <casa/BasicSL/String.h>
+#include <casacore/casa/BasicSL/String.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

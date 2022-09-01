@@ -26,14 +26,14 @@
 
 #include <imageanalysis/IO/ImageProfileFitterResults.h>
 
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/Utilities/Precision.h>
-#include <coordinates/Coordinates/DirectionCoordinate.h>
-#include <coordinates/Coordinates/LinearCoordinate.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/StokesCoordinate.h>
-#include <images/Images/PagedImage.h>
-#include <scimath/Mathematics/Combinatorics.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/Utilities/Precision.h>
+#include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#include <casacore/coordinates/Coordinates/LinearCoordinate.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/StokesCoordinate.h>
+#include <casacore/images/Images/PagedImage.h>
+#include <casacore/scimath/Mathematics/Combinatorics.h>
 
 #include <imageanalysis/ImageAnalysis/ImageCollapser.h>
 #include <imageanalysis/ImageAnalysis/ProfileFitResults.h>
@@ -319,7 +319,7 @@ void ImageProfileFitterResults::_processSolutions(
             const GaussianMultipletSpectralElement *gm = dynamic_cast<
                 const GaussianMultipletSpectralElement*
             >(solutions[i]);
-            const Vector<GaussianSpectralElement> g = gm->getGaussians();
+            const Vector<GaussianSpectralElement> g(gm->getGaussians());
             for (uInt k=0; k<g.size(); k++) {
                 _insertPCF(
                     *pcfArrays, pixel, g[k], gmCount+2,
@@ -1157,7 +1157,7 @@ String ImageProfileFitterResults::_gaussianMultipletToString(
     const CoordinateSystem& csys,
     const Vector<Double>& world, const IPosition& imPos
 ) const {
-    Vector<GaussianSpectralElement> g = gm.getGaussians();
+    Vector<GaussianSpectralElement> g(gm.getGaussians());
     ostringstream summary;
     summary << "        Type     : GAUSSIAN MULTIPLET" << endl;
     for (uInt i=0; i<g.size(); i++) {

@@ -26,12 +26,12 @@
 //# $Id: VLAOnlineInput.cc,v 19.1.20.4 2006/02/17 23:46:40 wyoung Exp $
 
 #include <nrao/VLA/VLAOnlineInput.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <casa/IO/MemoryIO.h>
-#include <casa/IO/ByteIO.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/casa/IO/MemoryIO.h>
+#include <casacore/casa/IO/ByteIO.h>
 #include <nrao/VLA/nreal.h>
-#include <casa/stdlib.h>
+#include <cstdlib>
 
 
 // this is an expediant, we should get it from the IERS table

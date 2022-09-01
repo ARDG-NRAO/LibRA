@@ -41,7 +41,7 @@
 #include <casacore/measures/Measures/MeasTable.h>
 #include <casacore/measures/Measures/MPosition.h>
 #include <casacore/measures/Measures/MEpoch.h>
-#include <casa/Quanta/MVTime.h>
+#include <casacore/casa/Quanta/MVTime.h>
 #include <casacore/measures/Measures/Stokes.h>
 #include <casacore/tables/Tables/TableRecord.h>
 #include <casacore/casa/Logging/LogIO.h>

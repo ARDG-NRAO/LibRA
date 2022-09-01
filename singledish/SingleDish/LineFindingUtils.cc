@@ -27,7 +27,7 @@
 //#
 //# $Id$
 #include <algorithm>
-#include <casa/Utilities/Assert.h>
+#include <casacore/casa/Utilities/Assert.h>
 #include <cmath>
 
 #include <libsakura/sakura.h>

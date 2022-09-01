@@ -28,9 +28,9 @@
 #ifndef SYNTHESIS_READMSALGORITHM_H
 #define SYNTHESIS_READMSALGORITHM_H
 
-#include <casa/BasicSL/String.h>
-#include <casa/Arrays/Array.h>
-#include <lattices/Lattices/PagedArray.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/lattices/Lattices/PagedArray.h>
 #include <synthesis/Parallel/Algorithm.h>
 #include <msvis/MSVis/VisSet.h>
 #include <msvis/MSVis/VisSetUtil.h>

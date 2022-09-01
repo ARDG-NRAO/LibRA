@@ -22,7 +22,7 @@
 
 #include <mstransform/MSTransform/MSTransformManager.h>
 
-#include <tables/Tables/TableUtil.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <mstransform/TVI/PolAverageTVI.h>
 #include <mstransform/TVI/PointingInterpolationTVI.h>
@@ -1210,31 +1210,41 @@ void MSTransformManager::parseCalParams(Record &configuration)
 // -----------------------------------------------------------------------
 void MSTransformManager::parseUVContSubParams(Record &configuration)
 {
-	int exists = -1;
+    int exists = -1;
 
-	exists = -1;
-	exists = configuration.fieldNumber("uvcontsub");
-	if (exists >= 0)
-	{
-		configuration.get (exists, uvcontsub_p);
+    exists = -1;
+    exists = configuration.fieldNumber("uvcontsub");
+    if (exists >= 0)
+    {
+        configuration.get (exists, uvcontsub_p);
 
-		if (uvcontsub_p)
-		{
-			// Extract the callib Record
-			exists = -1;
-			exists = configuration.fieldNumber("uvcontsublib");
-			if (configuration.type(exists) == TpRecord)
-			{
-				uvcontsubRec_p = configuration.subRecord(exists);
-			}
+        if (uvcontsub_p)
+        {
+            // Extract the callib Record
+            exists = -1;
+            exists = configuration.fieldNumber("uvcontsublib");
+            if (configuration.type(exists) == TpRecord)
+            {
+                uvcontsubRec_p = configuration.subRecord(exists);
+            }
 
-			logger_p 	<< LogIO::NORMAL << LogOrigin("MSTransformManager",__FUNCTION__)
-						<< "Continuum subtraction is activated "
-						<< LogIO::POST;
-		}
-	}
+            logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager",
+                                                   __FUNCTION__)
+                     << "Continuum subtraction is activated "
+                     << LogIO::POST;
 
-	return;
+            // not nice going into the subRec, perhaps a writemodel var
+            // could be put in the top level record
+            int writemodel = uvcontsubRec_p.fieldNumber("writemodel");
+            if (writemodel >= 0) {
+                bool dowrite = false;
+                uvcontsubRec_p.get(writemodel, dowrite);
+                if (dowrite) {
+                    produceModel_p = true;
+                }
+            }
+        }
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -1264,7 +1274,7 @@ void MSTransformManager::setSpwAvg(Record &configuration)
 void MSTransformManager::parsePolAvgParams(Record &configuration)
 {
   String key("polaverage");
-  Bool exists = configuration.isDefined(key);
+  bool exists = configuration.isDefined(key);
   if (exists) {
     polAverage_p = configuration.asBool(key);
   }
@@ -1281,7 +1291,7 @@ void MSTransformManager::parsePolAvgParams(Record &configuration)
 
 void MSTransformManager::parsePointingsInterpolationParams(casacore::Record &configuration){
 	String key("pointingsinterpolation");
-	Bool exists = configuration.isDefined(key);
+	bool exists = configuration.isDefined(key);
 	if (exists) {
 		pointingsInterpolation_p = configuration.asBool(key);
 	}
@@ -1344,7 +1354,7 @@ void MSTransformManager::open()
 
 	// Determine channel specification for output MS
 	Vector<Int> chanSpec;
-	Bool spectralRegridding = combinespws_p or regridding_p;
+	bool spectralRegridding = combinespws_p or regridding_p;
 	if (channelAverage_p and !spectralRegridding)
 	{
 		chanSpec =  freqbin_p;
@@ -1424,7 +1434,7 @@ void MSTransformManager::open()
  *
  * @return whether WEIGHT/SIGMA_SPECTRUM columns should be created in the output MS.
  */
-Bool MSTransformManager::shouldCreateOutputWtSpectrum(Bool usewtspectrum)
+bool MSTransformManager::shouldCreateOutputWtSpectrum(bool usewtspectrum)
 {
     if (nullptr == inputMs_p) {
         throw AipsError("When trying to guess if WEIGHT/SIGMA_SPECTRUM should be created "
@@ -1458,7 +1468,7 @@ void MSTransformManager::createOutputMSStructure()
 
 
 	//jagonzal (CAS-5174)
-	Bool outputMSStructureCreated = false;
+	bool outputMSStructureCreated = false;
 	try
 	{
             Table::TableOption option = Table::New;
@@ -1467,9 +1477,11 @@ void MSTransformManager::createOutputMSStructure()
                          << "Create output MS structure" << LogIO::POST;
                 option = Table::Scratch;
             }
+
             auto createWeightSpectrum = shouldCreateOutputWtSpectrum(usewtspectrum_p);
             outputMSStructureCreated = dataHandler_p->makeMSBasicStructure(outMsName_p,
                                                                            datacolumn_p,
+                                                                           produceModel_p,
                                                                            createWeightSpectrum,
                                                                            tileShape_p,
                                                                            timespan_p,
@@ -1616,7 +1628,7 @@ void MSTransformManager::setup()
 		transformCubeOfDataFloat_p = &MSTransformManager::copyCubeOfData;
 	}
 
-	Bool spectralRegridding = combinespws_p or regridding_p;
+	bool spectralRegridding = combinespws_p or regridding_p;
 
 	// Vector level
 	if (channelAverage_p and !hanningSmooth_p and !spectralRegridding)
@@ -1850,7 +1862,7 @@ IPosition MSTransformManager::getTransformedShape(vi::VisBuffer2 *visBuffer)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::propagateWeights(Bool on)
+void MSTransformManager::propagateWeights(bool on)
 {
 
 	if (on)
@@ -1880,7 +1892,7 @@ void MSTransformManager::propagateWeights(Bool on)
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::setBufferMode(Bool on)
+void MSTransformManager::setBufferMode(bool on)
 {
 	bufferMode_p = on;
 
@@ -2291,7 +2303,7 @@ void MSTransformManager::initDataSelectionParams()
 
         //spwList.resize(noDupSpwList.size());
         //for (uInt idx=0;idx < noDupSpwList.size(); idx++) spwList(idx) = noDupSpwList[idx];
-        Vector<Int> spwList = noDupSpwList;
+        Vector<Int> spwList(noDupSpwList);
 
         if (freqbin_p.size() == 1)
         {
@@ -2896,7 +2908,7 @@ void MSTransformManager::regridSpwAux(Int spwId, MFrequency::Types spwInputRefFr
 	   << "Calculate frequencies in output reference frame " << LogIO::POST;
 
   Double weightScale;
-  Bool ret = MSTransformRegridder::calcChanFreqs(logger_p,
+  bool ret = MSTransformRegridder::calcChanFreqs(logger_p,
 						 regriddedCHAN_FREQ, regriddedCHAN_WIDTH,
 						 weightScale, inputCHAN_FREQ,
 						 inputCHAN_WIDTH, phaseCenter_p,
@@ -3422,7 +3434,7 @@ void MSTransformManager::separateSyscalSubtable()
 				phaseDiff = syscalCols.phaseDiff().getColumn();
 			}
 
-			Array<Bool> phaseDiffFlag;
+			Array<bool> phaseDiffFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.phaseDiffFlag()))
 			{
 				phaseDiffFlag = syscalCols.phaseDiffFlag().getColumn();
@@ -3434,7 +3446,7 @@ void MSTransformManager::separateSyscalSubtable()
 				tant = syscalCols.tant().getColumn();
 			}
 
-			Array<Bool> tantFlag;
+			Array<bool> tantFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.tantFlag()))
 			{
 				tantFlag = syscalCols.tantFlag().getColumn();
@@ -3452,7 +3464,7 @@ void MSTransformManager::separateSyscalSubtable()
 				tantTsys = syscalCols.tantTsys().getColumn();
 			}
 
-			Array<Bool> tantTsysFlag;
+			Array<bool> tantTsysFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.tantTsysFlag()))
 			{
 				tantTsysFlag = syscalCols.tantTsysFlag().getColumn();
@@ -3470,7 +3482,7 @@ void MSTransformManager::separateSyscalSubtable()
 				tcal = syscalCols.tcal().getColumn();
 			}
 
-			Array<Bool> tcalFlag;
+			Array<bool> tcalFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.tcalFlag()))
 			{
 				tcalFlag = syscalCols.tcalFlag().getColumn();
@@ -3488,7 +3500,7 @@ void MSTransformManager::separateSyscalSubtable()
 				trx = syscalCols.trx().getColumn();
 			}
 
-			Array<Bool> trxFlag;
+			Array<bool> trxFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.trxFlag()))
 			{
 				trxFlag = syscalCols.trxFlag().getColumn();
@@ -3506,7 +3518,7 @@ void MSTransformManager::separateSyscalSubtable()
 				tsky = syscalCols.tsky().getColumn();
 			}
 
-			Array<Bool> tskyFlag;
+			Array<bool> tskyFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.tskyFlag()))
 			{
 				tskyFlag = syscalCols.tskyFlag().getColumn();
@@ -3524,7 +3536,7 @@ void MSTransformManager::separateSyscalSubtable()
 				tsys = syscalCols.tsys().getColumn();
 			}
 
-			Array<Bool> tsysFlag;
+			Array<bool> tsysFlag;
 			if (MSTransformDataHandler::columnOk(syscalCols.tsysFlag()))
 			{
 				tsysFlag = syscalCols.tsysFlag().getColumn();
@@ -4027,8 +4039,8 @@ void MSTransformManager::reindexPolarizationIdInDataDesc(Int newPolarizationId) 
     Int const polarizationId = ddcols.polarizationId()(i);
     Int nCorr = pcols.numCorr()(polarizationId);
     Vector<Int> corrType = pcols.corrType()(polarizationId);
-    Bool flagRow = pcols.flagRow()(polarizationId);
-    Bool needReindex = (polarizationId != newPolarizationId) &&
+    bool flagRow = pcols.flagRow()(polarizationId);
+    bool needReindex = (polarizationId != newPolarizationId) &&
         (nCorr > 1) && (flagRow == False) && __isValidType(corrType);
     if (needReindex) {
       logger_p << "ddid " << i << " polid " << polarizationId << " needs reindex" << LogIO::POST;
@@ -5099,7 +5111,7 @@ void MSTransformManager::checkDataColumnsAvailable()
 void MSTransformManager::checkDataColumnsToFill()
 {
 	dataColMap_p.clear();
-	Bool mainColSet=false;
+	bool mainColSet=false;
 	timeAvgOptions_p = vi::AveragingOptions(vi::AveragingOptions::Nothing);
 
 	if (datacolumn_p.contains("ALL"))
@@ -5446,6 +5458,15 @@ void MSTransformManager::checkDataColumnsToFill()
 					<< LogIO::POST;
 	}
 
+        if (produceModel_p) {
+            const auto colname = (MS::DATA == mainColumn_p) ? "DATA" : "CORRECTED_DATA";
+            logger_p << LogIO::NORMAL << LogOrigin("MSTransformManager", __FUNCTION__)
+                     << "Will produce a MODEL_DATA column in the output MS, "
+                     << "with the fit calculated for input " << colname
+                     << LogIO::POST;
+            dataColMap_p[MS::MODEL_DATA] = mainColumn_p;
+        }
+
 	// Add shortcuts to be used in the context of WeightSpectrum related transformations
 	dataColMap::iterator iter;
 
@@ -5581,7 +5602,7 @@ void MSTransformManager::setIterationApproach()
 // -----------------------------------------------------------------------
 void MSTransformManager::generateIterator()
 {
-	Bool isWritable = false;
+	bool isWritable = false;
 	if (interactive_p) isWritable = true;
 
 	// Prepare time average parameters (common for all cases)
@@ -5629,6 +5650,8 @@ void MSTransformManager::generateIterator()
 		std::unique_ptr<vi::UVContSubTVILayerFactory> uvContSubTVIFactory;
 		if (uvcontsub_p)
 		{
+			// needed for warning to prevent confusion with old uvcontsub!
+			uvcontsubRec_p.define("allowed_spws", spwSelection_p);
 			uvContSubTVIFactory.reset(new vi::UVContSubTVILayerFactory (uvcontsubRec_p));
 			TVIFactories[TVIFactoryIdx]=uvContSubTVIFactory.get();
 			TVIFactoryIdx++;
@@ -5916,7 +5939,7 @@ void MSTransformManager::initFrequencyTransGrid(vi::VisBuffer2 *vb)
 	// CAS-6778: Support for new ref. frame SOURCE that requires radial velocity correction
 	MDoppler radVelCorr;
 	MDirection inputFieldDirection;
-	Bool radVelSignificant = false;
+	bool radVelSignificant = false;
 	if (radialVelocityCorrection_p && inputMSFieldCols_p->needInterTime(vb->fieldId()(0)))
 	{
 		MRadialVelocity mRV = inputMSFieldCols_p->radVelMeas(vb->fieldId()(0),vb->time()(0));
@@ -6038,7 +6061,7 @@ void MSTransformManager::fillIdCols(vi::VisBuffer2 *vb,RefRows &rowRef)
     RefRows absoluteRefRows(rowRef.firstRow(),rowRef.firstRow()+nRowsToAdd_p-1);
     Vector<Int> tmpVectorInt(nRowsToAdd_p,0);
     Vector<Double> tmpVectorDouble(nRowsToAdd_p,0.0);
-    Vector<Bool> tmpVectorBool(nRowsToAdd_p,false);
+    Vector<bool> tmpVectorbool(nRowsToAdd_p,false);
 
     // Special case for Data description Id
     if (transformDDIVector(vb->dataDescriptionIds(),tmpVectorInt))
@@ -6082,8 +6105,8 @@ void MSTransformManager::fillIdCols(vi::VisBuffer2 *vb,RefRows &rowRef)
     // Special case for vectors that have to be averaged
     if (combinespws_p)
     {
-        mapAndAverageVector(vb->flagRow(),tmpVectorBool);
-        outputMsCols_p->flagRow().putColumnCells(absoluteRefRows, tmpVectorBool);
+        mapAndAverageVector(vb->flagRow(),tmpVectorbool);
+        outputMsCols_p->flagRow().putColumnCells(absoluteRefRows, tmpVectorbool);
 
         // jagonzal: We average exposures by default, if they are the same we obtain the same results
         mapAndAverageVector(vb->exposure(),tmpVectorDouble);
@@ -6091,7 +6114,7 @@ void MSTransformManager::fillIdCols(vi::VisBuffer2 *vb,RefRows &rowRef)
     }
     else
     {
-        transformAndWriteNotReindexableVector(vb->flagRow(),tmpVectorBool,false,outputMsCols_p->flagRow(),absoluteRefRows);
+        transformAndWriteNotReindexableVector(vb->flagRow(),tmpVectorbool,false,outputMsCols_p->flagRow(),absoluteRefRows);
         transformAndWriteNotReindexableVector(vb->exposure(),tmpVectorDouble,false,outputMsCols_p->exposure(),absoluteRefRows);
     }
 
@@ -6236,11 +6259,11 @@ void MSTransformManager::fillIdCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 // ------------------------------------------------------------------------------------
 template <class T> void MSTransformManager::transformAndWriteNotReindexableVector(	const Vector<T> &inputVector,
 																					Vector<T> &outputVector,
-																					Bool constant,
+																					bool constant,
 																					ScalarColumn<T> &outputCol,
 																					RefRows &rowReference)
 {
-	Bool transformed = transformNotReindexableVector(inputVector,outputVector,constant);
+	bool transformed = transformNotReindexableVector(inputVector,outputVector,constant);
 
 	if (transformed)
 	{
@@ -6259,12 +6282,12 @@ template <class T> void MSTransformManager::transformAndWriteNotReindexableVecto
 // ------------------------------------------------------------------------------------
 template <class T> void MSTransformManager::transformAndWriteReindexableVector(	const Vector<T> &inputVector,
 															Vector<T> &outputVector,
-															Bool constant,
+															bool constant,
 															map<uInt,uInt> &inputOutputIndexMap,
 															ScalarColumn<T> &outputCol,
 															RefRows &rowReference)
 {
-	Bool transformed = transformReindexableVector(inputVector,outputVector,constant,inputOutputIndexMap);
+	bool transformed = transformReindexableVector(inputVector,outputVector,constant,inputOutputIndexMap);
 
 	if (transformed)
 	{
@@ -6281,9 +6304,9 @@ template <class T> void MSTransformManager::transformAndWriteReindexableVector(	
 // ------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------
-Bool MSTransformManager::transformDDIVector(const Vector<Int> &inputVector,Vector<Int> &outputVector)
+bool MSTransformManager::transformDDIVector(const Vector<Int> &inputVector,Vector<Int> &outputVector)
 {
-	Bool transformed = true;
+	bool transformed = true;
 
 	if ((combinespws_p) or (nspws_p > 1))
 	{
@@ -6361,10 +6384,10 @@ void MSTransformManager::mapAndAverageVector(	const Vector<Double> &inputVector,
 // ------------------------------------------------------------------------------------
 //
 // ------------------------------------------------------------------------------------
-void MSTransformManager::mapAndAverageVector(	const Vector<Bool> &inputVector,
-												Vector<Bool> &outputVector)
+void MSTransformManager::mapAndAverageVector(	const Vector<bool> &inputVector,
+												Vector<bool> &outputVector)
 {
-	Bool vec_average = false;
+	bool vec_average = false;
 	vector<uInt> baselineRows;
 	uInt row, counts, absoluteIndex = 0;
 	for (baselineMap::iterator iter = baselineMap_p.begin(); iter != baselineMap_p.end(); iter++)
@@ -6406,14 +6429,14 @@ void MSTransformManager::mapAndAverageVector(	const Vector<Bool> &inputVector,
 // -----------------------------------------------------------------------------------
 template <class T> void MSTransformManager::mapAndAverageMatrix(	const Matrix<T> &inputMatrix,
 																		Matrix<T> &outputMatrix,
-																		Bool convolveFlags,
+																		bool convolveFlags,
 																		vi::VisBuffer2 *vb)
 {
 	// Get number of columns
 	uInt nCols = outputMatrix.shape()(0);
 
     // Access FLAG_ROW in case we need to convolute the average
-	Vector<Bool> flags;
+	Vector<bool> flags;
 	if (convolveFlags) flags = vb->flagRow();
 
     // Fill output array with the combined data from each SPW
@@ -6522,7 +6545,7 @@ template <class T> void MSTransformManager::mapAndScaleMatrix(	const Matrix<T> &
 // ----------------------------------------------------------------------------------------
 void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 {
-	ArrayColumn<Bool> *outputFlagCol=NULL;
+	ArrayColumn<bool> *outputFlagCol=NULL;
 	for (dataColMap::iterator iter = dataColMap_p.begin();iter != dataColMap_p.end();iter++)
 	{
 		// Get applicable *_SPECTRUM (copy constructor uses reference semantics)
@@ -6586,11 +6609,16 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 					outputFlagCol = NULL;
 				}
 
-				if (iter->second == MS::DATA)
+				if (produceModel_p)
 				{
-					setTileShape(rowRef,outputMsCols_p->data());
-					transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->data(), outputFlagCol,applicableSpectrum);
-				}
+                                    // irrespective of wheter iter->second == MS::DATA
+                                    // or iter->second == MS::CORRECTED_DATA
+                                    setTileShape(rowRef,outputMsCols_p->modelData());
+                                    transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->modelData(), outputFlagCol,applicableSpectrum);
+                                } else if (iter->second == MS::DATA) {
+                                        setTileShape(rowRef,outputMsCols_p->data());
+                                        transformCubeOfData(vb,rowRef,vb->visCubeModel(),outputMsCols_p->data(), outputFlagCol,applicableSpectrum);
+                                }
 				else
 				{
 					setTileShape(rowRef,outputMsCols_p->modelData());
@@ -6639,7 +6667,7 @@ void MSTransformManager::fillDataCols(vi::VisBuffer2 *vb,RefRows &rowRef)
     										transformedCubeShape(2),
     										inputFlagCategoryShape(2),
     										transformedCubeShape(2));
-    		Array<Bool> flagCategory(flagCategoryShape,false);
+    		Array<bool> flagCategory(flagCategoryShape,false);
 
         	outputMsCols_p->flagCategory().putColumnCells(rowRef, flagCategory);
     	}
@@ -6681,7 +6709,7 @@ void MSTransformManager::fillWeightCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 
 			// Switch on buffer mode
 			Cube<Float> transformedSpectrum;
-			Cube<Bool> transformedFlag;
+			Cube<bool> transformedFlag;
 			if (not userBufferMode_p)
 			{
 				setBufferMode(true);
@@ -6879,13 +6907,13 @@ void MSTransformManager::fillWeightCols(vi::VisBuffer2 *vb,RefRows &rowRef)
 template <class T> void MSTransformManager::setTileShape(	RefRows &rowRef,
 															ArrayColumn<T> &outputDataCol)
 {
-
 	IPosition outputCubeShape = getShape();
 	size_t nCorr = outputCubeShape(0);
 	size_t nChan = outputCubeShape(1);
 	ssize_t nRows = 1048576 / (sizeof(T)*nCorr*nChan);
 	IPosition outputPlaneShape(2,nCorr,nChan);
 	IPosition tileShape(3,nCorr,nChan,nRows);
+
 	outputDataCol.setShape(rowRef.firstRow(),outputPlaneShape,tileShape);
 
 	return;
@@ -6893,10 +6921,8 @@ template <class T> void MSTransformManager::setTileShape(	RefRows &rowRef,
 
 // explicit instatiation for the use from SDMSManager
 template void MSTransformManager::setTileShape<Float>(RefRows &, ArrayColumn<Float> &);
-template void MSTransformManager::setTileShape<Bool>(RefRows &, ArrayColumn<Bool> &);
+template void MSTransformManager::setTileShape<bool>(RefRows &, ArrayColumn<bool> &);
 template void MSTransformManager::setTileShape<Complex>(RefRows &, ArrayColumn<Complex> &);
-
-
 
 // ----------------------------------------------------------------------------------------
 //
@@ -6907,7 +6933,7 @@ void MSTransformManager::transformAndWriteSpectrum(	vi::VisBuffer2 *vb,
 													ArrayColumn<Float> &outputCubeCol,
 													ArrayColumn<Float> &outputMatrixCol,
 													MSTransformations::weightTransformation weightTransformation,
-													Bool  /* flushSpectrumCube */)
+													bool  /* flushSpectrumCube */)
 {
 	// Dummy auxiliary weightSpectrum
 	const Cube<Float> applicableSpectrum;
@@ -7220,7 +7246,7 @@ template <class T> void MSTransformManager::writeCube(	const Cube<T> &inputCube,
 {
 	IPosition shape = inputCube.shape();
 	shape(2) = rowRef.nrows();
-	Bool deleteIt;
+	bool deleteIt;
     Array<T> outputArray(shape,const_cast<T*>(inputCube.getStorage(deleteIt)),SHARE);
     outputCol.putColumnCells(rowRef, outputArray);
 
@@ -7228,7 +7254,7 @@ template <class T> void MSTransformManager::writeCube(	const Cube<T> &inputCube,
 }
 
 // explicit instatiation for the use from SDMSManager
-template void MSTransformManager::writeCube<Bool>(const Cube<Bool> &, ArrayColumn<Bool> &, RefRows &);
+template void MSTransformManager::writeCube<bool>(const Cube<bool> &, ArrayColumn<bool> &, RefRows &);
 
 // -----------------------------------------------------------------------
 //
@@ -7237,7 +7263,7 @@ void MSTransformManager::transformCubeOfData(	vi::VisBuffer2 *vb,
 													RefRows &rowRef,
 													const Cube<Complex> &inputDataCube,
 													ArrayColumn<Complex> &outputDataCol,
-													ArrayColumn<Bool> *outputFlagCol,
+													ArrayColumn<bool> *outputFlagCol,
 													const Cube<Float> &inputWeightCube)
 {
 	(*this.*transformCubeOfDataComplex_p)(vb,rowRef,inputDataCube,outputDataCol,outputFlagCol,inputWeightCube);
@@ -7251,7 +7277,7 @@ void MSTransformManager::transformCubeOfData(	vi::VisBuffer2 *vb,
 													RefRows &rowRef,
 													const Cube<Float> &inputDataCube,
 													ArrayColumn<Float> &outputDataCol,
-													ArrayColumn<Bool> *outputFlagCol,
+													ArrayColumn<bool> *outputFlagCol,
 													const Cube<Float> &inputWeightCube)
 {
 	(*this.*transformCubeOfDataFloat_p)(vb,rowRef,inputDataCube,outputDataCol,outputFlagCol,inputWeightCube);
@@ -7265,7 +7291,7 @@ template <class T> void MSTransformManager::copyCubeOfData(	vi::VisBuffer2 *vb,
 																RefRows &rowRef,
 																const Cube<T> &inputDataCube,
 																ArrayColumn<T> &outputDataCol,
-																ArrayColumn<Bool> *outputFlagCol,
+																ArrayColumn<bool> *outputFlagCol,
 																const Cube<Float> & /* inputWeightCube */)
 {
 	writeCube(inputDataCube,outputDataCol,rowRef);
@@ -7284,7 +7310,7 @@ template <class T> void MSTransformManager::combineCubeOfData(	vi::VisBuffer2 *v
 																	RefRows &rowRef,
 																	const Cube<T> &inputDataCube,
 																	ArrayColumn<T> &outputDataCol,
-																	ArrayColumn<Bool> *outputFlagCol,
+																	ArrayColumn<bool> *outputFlagCol,
 																	const Cube<Float> &inputWeightCube)
 {
 	// Write flag column too?
@@ -7302,7 +7328,7 @@ template <class T> void MSTransformManager::combineCubeOfData(	vi::VisBuffer2 *v
 	}
 
 	// Get input flag cube
-	const Cube<Bool> inputFlagCube = vb->flagCube();
+	const Cube<bool> inputFlagCube = vb->flagCube();
 
 	// Get input SPWs and exposures
 	Vector<Int> spws = vb->spectralWindows();
@@ -7316,30 +7342,30 @@ template <class T> void MSTransformManager::combineCubeOfData(	vi::VisBuffer2 *v
 	IPosition inputPlaneShape(2,nInputCorrelations, numOfCombInputChanMap_p[0]);
 	Matrix<Double> normalizingFactorPlane(inputPlaneShape);
 	Matrix<T> inputPlaneData(inputPlaneShape);
-	Matrix<Bool> inputPlaneFlags(inputPlaneShape,false);
+	Matrix<bool> inputPlaneFlags(inputPlaneShape,false);
 	Matrix<Float> inputPlaneWeights(inputPlaneShape);
 
 	// Initialize output planes
 	IPosition outputPlaneShape(2,nInputCorrelations, inputOutputSpwMap_p[0].second.NUM_CHAN);
 	Matrix<T> outputPlaneData(outputPlaneShape);
-	Matrix<Bool> outputPlaneFlags(outputPlaneShape);
+	Matrix<bool> outputPlaneFlags(outputPlaneShape);
 
 	Int spw = 0;
 	Double weight;
 	uInt inputChannel;
-	Bool inputChanelFlag;
+	bool inputChanelFlag;
 	Double normalizingFactor;
 	uInt row = 0, baseline_index = 0;
 	vector<uInt> baselineRows;
 	map<Int, uInt> spwRowMap;
 	map<Int, uInt>::iterator spwRowMapIter;
 	map<Int, uInt> spwFractionCountsMap;
-	Bool unityContributors = false;
+	bool unityContributors = false;
 	vector< channelContribution > contributions;
 	vector< channelContribution >::iterator contributionsIter;
-	map < Int , map < uInt, Bool > > removeContributionsMap;
+	map < Int , map < uInt, bool > > removeContributionsMap;
 
-	Bool combinationOfSPWsWithDifferentExposure = false;
+	bool combinationOfSPWsWithDifferentExposure = false;
 	Double exposure = 0;
 
 	relativeRow_p = 0; // Initialize relative row for buffer mode
@@ -7589,12 +7615,12 @@ template <class T> void MSTransformManager::averageCubeOfData(	vi::VisBuffer2 *v
 																	RefRows &rowRef,
 																	const Cube<T> &inputDataCube,
 																	ArrayColumn<T> &outputDataCol,
-																	ArrayColumn<Bool> *outputFlagCol,
+																	ArrayColumn<bool> *outputFlagCol,
 																	const Cube<Float> &inputWeightCube)
 {
 	// Get input spw and flag and weight cubes
 	Int inputSpw = vb->spectralWindows()(0);
-	const Cube<Bool> inputFlagsCube = vb->flagCube();
+	const Cube<bool> inputFlagsCube = vb->flagCube();
 
 	// Define output plane shape
 	IPosition outputPlaneShape = IPosition(2,inputDataCube.shape()(0), numOfOutChanMap_p[inputSpw]);
@@ -7613,12 +7639,12 @@ template <class T> void MSTransformManager::smoothCubeOfData(	vi::VisBuffer2 *vb
 																	RefRows &rowRef,
 																	const Cube<T> &inputDataCube,
 																	ArrayColumn<T> &outputDataCol,
-																	ArrayColumn<Bool> *outputFlagCol,
+																	ArrayColumn<bool> *outputFlagCol,
 																	const Cube<Float> &inputWeightCube)
 {
 	// Get input spw and flag cube
 	Int inputSpw = vb->spectralWindows()(0);
-	const Cube<Bool> inputFlagsCube = vb->flagCube();
+	const Cube<bool> inputFlagsCube = vb->flagCube();
 
 	// Define output plane shape
 	IPosition outputPlaneShape = IPosition(2,inputDataCube.shape()(0), inputDataCube.shape()(1));
@@ -7638,12 +7664,12 @@ template <class T> void MSTransformManager::regridCubeOfData(	vi::VisBuffer2 *vb
 																	RefRows &rowRef,
 																	const Cube<T> &inputDataCube,
 																	ArrayColumn<T> &outputDataCol,
-																	ArrayColumn<Bool> *outputFlagCol,
+																	ArrayColumn<bool> *outputFlagCol,
 																	const Cube<Float> &inputWeightCube)
 {
 	// Get input spw and flag cube
 	Int inputSpw = vb->spectralWindows()(0);
-	const Cube<Bool> inputFlagsCube = vb->flagCube();
+	const Cube<bool> inputFlagsCube = vb->flagCube();
 
 	// Define output plane shape
 	IPosition outputPlaneShape = IPosition(2,inputDataCube.shape()(0), inputOutputSpwMap_p[inputSpw].second.NUM_CHAN);
@@ -7662,11 +7688,11 @@ template <class T> void MSTransformManager::regridCubeOfData(	vi::VisBuffer2 *vb
 template <class T> void MSTransformManager::transformAndWriteCubeOfData(	Int inputSpw,
 																				RefRows &rowRef,
 																				const Cube<T> &inputDataCube,
-																				const Cube<Bool> &inputFlagsCube,
+																				const Cube<bool> &inputFlagsCube,
 																				const Cube<Float> &inputWeightsCube,
 																				IPosition &outputPlaneShape,
 																				ArrayColumn<T> &outputDataCol,
-																				ArrayColumn<Bool> *outputFlagCol)
+																				ArrayColumn<bool> *outputFlagCol)
 {
         logger_p << LogIO::DEBUG1 << LogOrigin("MSTransformManager",__FUNCTION__)
                  << "Shape of input data cube: " << inputDataCube.shape()
@@ -7692,12 +7718,12 @@ template <class T> void MSTransformManager::transformAndWriteCubeOfData(	Int inp
 
 	// Initialize input planes
 	Matrix<T> inputPlaneData;
-	Matrix<Bool> inputPlaneFlags;
+	Matrix<bool> inputPlaneFlags;
 	Matrix<Float> inputPlaneWeights;
 
 	// Initialize output planes
 	Matrix<T> outputPlaneData(outputPlaneShape);
-	Matrix<Bool> outputPlaneFlags(outputPlaneShape);
+	Matrix<bool> outputPlaneFlags(outputPlaneShape);
 
 	// Iterate row by row in order to extract a plane
 	relativeRow_p = 0; // Initialize relative row for buffer mode
@@ -7729,7 +7755,7 @@ template <class T> void MSTransformManager::separateCubeOfData(	vi::VisBuffer2 *
 																	RefRows &rowRef,
 																	const Cube<T> &inputDataCube,
 																	ArrayColumn<T> &outputDataCol,
-																	ArrayColumn<Bool> *outputFlagCol,
+																	ArrayColumn<bool> *outputFlagCol,
 																	const Cube<Float> & /* inputWeightCube */)
 {
 	// Write flag column too?
@@ -7748,11 +7774,11 @@ template <class T> void MSTransformManager::separateCubeOfData(	vi::VisBuffer2 *
 
 	// Get input flags, spw and number of rows
 	uInt nInputRows = inputDataCube.shape()(2);
-	const Cube<Bool> inputFlagsCube = vb->flagCube();
+	const Cube<bool> inputFlagsCube = vb->flagCube();
 
 	// Initialize input planes
 	Matrix<T> inputPlaneData;
-	Matrix<Bool> inputPlaneFlags;
+	Matrix<bool> inputPlaneFlags;
 
 	// Iterate row by row in order to extract a plane
 	relativeRow_p = 0; // Initialize relative row for buffer mode
@@ -7789,12 +7815,12 @@ void MSTransformManager::setWeightsPlaneByReference(	uInt inputRow,
 template <class T> void MSTransformManager::transformAndWritePlaneOfData(	Int inputSpw,
 																				uInt row,
 																				Matrix<T> &inputDataPlane,
-																				Matrix<Bool> &inputFlagsPlane,
+																				Matrix<bool> &inputFlagsPlane,
 																				Matrix<Float> &inputWeightsPlane,
 																				Matrix<T> &outputDataPlane,
-																				Matrix<Bool> &outputFlagsPlane,
+																				Matrix<bool> &outputFlagsPlane,
 																				ArrayColumn<T> &outputDataCol,
-																				ArrayColumn<Bool> *outputFlagCol)
+																				ArrayColumn<bool> *outputFlagCol)
 {
 	// Get input number of correlations
 	uInt nCorrs = inputDataPlane.shape()(0);
@@ -7804,10 +7830,10 @@ template <class T> void MSTransformManager::transformAndWritePlaneOfData(	Int in
 
 	// Initialize vectors
 	Vector<T> inputDataStripe;
-	Vector<Bool> inputFlagsStripe;
+	Vector<bool> inputFlagsStripe;
 	Vector<Float> inputWeightsStripe;
 	Vector<T> outputDataStripe;
-	Vector<Bool> outputFlagsStripe;
+	Vector<bool> outputFlagsStripe;
 
 	// Iterate correlation by correlation in order to extract a vector
 	for (uInt corrIndex=0; corrIndex < nCorrs; corrIndex++)
@@ -7834,9 +7860,9 @@ template <class T> void MSTransformManager::transformAndWritePlaneOfData(	Int in
 // -----------------------------------------------------------------------
 void MSTransformManager::writeOutputPlanes(	uInt row,
 											Matrix<Complex> &outputDataPlane,
-											Matrix<Bool> &outputFlagsPlane,
+											Matrix<bool> &outputFlagsPlane,
 											ArrayColumn<Complex> &outputDataCol,
-											ArrayColumn<Bool> &outputFlagCol)
+											ArrayColumn<bool> &outputFlagCol)
 {
 	(*this.*writeOutputPlanesComplex_p)(row,outputDataPlane,outputFlagsPlane,outputDataCol,outputFlagCol);
 }
@@ -7846,9 +7872,9 @@ void MSTransformManager::writeOutputPlanes(	uInt row,
 // -----------------------------------------------------------------------
 void MSTransformManager::writeOutputPlanes(	uInt row,
 											Matrix<Float> &outputDataPlane,
-											Matrix<Bool> &outputFlagsPlane,
+											Matrix<bool> &outputFlagsPlane,
 											ArrayColumn<Float> &outputDataCol,
-											ArrayColumn<Bool> &outputFlagCol)
+											ArrayColumn<bool> &outputFlagCol)
 {
 	(*this.*writeOutputPlanesFloat_p)(row,outputDataPlane,outputFlagsPlane,outputDataCol,outputFlagCol);
 }
@@ -7856,7 +7882,7 @@ void MSTransformManager::writeOutputPlanes(	uInt row,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::setOutputbuffer(Cube<Complex> *& dataBufferPointer,Cube<Bool> *& flagBufferPointer)
+void MSTransformManager::setOutputbuffer(Cube<Complex> *& dataBufferPointer,Cube<bool> *& flagBufferPointer)
 {
 	switch (dataBuffer_p)
 	{
@@ -7916,7 +7942,7 @@ void MSTransformManager::setOutputbuffer(Cube<Complex> *& dataBufferPointer,Cube
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::setOutputbuffer(Cube<Float> *& dataBufferPointer,Cube<Bool> *& flagBufferPointer)
+void MSTransformManager::setOutputbuffer(Cube<Float> *& dataBufferPointer,Cube<bool> *& flagBufferPointer)
 {
 	switch (dataBuffer_p)
 	{
@@ -7982,13 +8008,13 @@ void MSTransformManager::setOutputbuffer(Cube<Float> *& dataBufferPointer,Cube<B
 // -----------------------------------------------------------------------
 template <class T> void  MSTransformManager::bufferOutputPlanes(	uInt ,
 																	Matrix<T> &outputDataPlane,
-																	Matrix<Bool> &outputFlagsPlane,
+																	Matrix<bool> &outputFlagsPlane,
 																	ArrayColumn<T> &,
-																	ArrayColumn<Bool> &)
+																	ArrayColumn<bool> &)
 {
 	// Get buffer pointers
 	Cube<T> *dataBufferPointer;
-	Cube<Bool> *flagBufferPointer;
+	Cube<bool> *flagBufferPointer;
 	setOutputbuffer(dataBufferPointer,flagBufferPointer);
 
 	// Copy data to buffer
@@ -8008,13 +8034,13 @@ template <class T> void  MSTransformManager::bufferOutputPlanes(	uInt ,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::bufferOutputPlanesInSlices(	uInt,
 																		Matrix<T> &outputDataPlane,
-																		Matrix<Bool> &outputFlagsPlane,
+																		Matrix<bool> &outputFlagsPlane,
 																		ArrayColumn<T> & /* outputDataCol */,
-																		ArrayColumn<Bool> & /* outputFlagCol */)
+																		ArrayColumn<bool> & /* outputFlagCol */)
 {
 	// Get buffer pointers
 	Cube<T> *dataBufferPointer;
-	Cube<Bool> *flagBufferPointer;
+	Cube<bool> *flagBufferPointer;
 	setOutputbuffer(dataBufferPointer,flagBufferPointer);
 
 	// Copy data to buffer
@@ -8034,7 +8060,7 @@ template <class T> void MSTransformManager::bufferOutputPlanesInSlices(	uInt,
 
 		if (flagBufferPointer != NULL)
 		{
-			Matrix<Bool> outputFlagPlane_i = outputFlagsPlane(sliceX,sliceY);
+			Matrix<bool> outputFlagPlane_i = outputFlagsPlane(sliceX,sliceY);
 			flagBufferPointer->xyPlane(outRow) = outputFlagPlane_i;
 		}
 	}
@@ -8050,7 +8076,7 @@ template <class T> void MSTransformManager::bufferOutputPlanesInSlices(	uInt,
 
 	if (flagBufferPointer != NULL)
 	{
-		Matrix<Bool> outputFlagPlane_i = outputFlagsPlane(sliceX,sliceY);
+		Matrix<bool> outputFlagPlane_i = outputFlagsPlane(sliceX,sliceY);
 		outputFlagPlane_i.resize(outputPlaneShape_i,true); // Resize uses a new storage and copies the old values to it
 		// jagonzal (CAS-7435): We have to set the new values to 0
 		outputFlagPlane_i(sliceX,sliceTail) = true; // Slices use reference semantics.
@@ -8065,9 +8091,9 @@ template <class T> void MSTransformManager::bufferOutputPlanesInSlices(	uInt,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::writeOutputPlanesInBlock(	uInt row,
 																			Matrix<T> &outputDataPlane,
-																			Matrix<Bool> &outputFlagsPlane,
+																			Matrix<bool> &outputFlagsPlane,
 																			ArrayColumn<T> &outputDataCol,
-																			ArrayColumn<Bool> &outputFlagCol)
+																			ArrayColumn<bool> &outputFlagCol)
 {
 	IPosition outputPlaneShape = outputDataPlane.shape();
 	outputDataCol.setShape(row,outputPlaneShape);
@@ -8079,8 +8105,8 @@ template <class T> void MSTransformManager::writeOutputPlanesInBlock(	uInt row,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::writeOutputFlagsPlane(	Matrix<Bool> &outputPlane,
-													ArrayColumn<Bool> &outputCol,
+void MSTransformManager::writeOutputFlagsPlane(	Matrix<bool> &outputPlane,
+													ArrayColumn<bool> &outputCol,
 													IPosition &outputPlaneShape,
 													uInt &outputRow)
 {
@@ -8093,9 +8119,9 @@ void MSTransformManager::writeOutputFlagsPlane(	Matrix<Bool> &outputPlane,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::writeOutputPlanesInSlices(	uInt row,
 																			Matrix<T> &outputDataPlane,
-																			Matrix<Bool> &outputFlagsPlane,
+																			Matrix<bool> &outputFlagsPlane,
 																			ArrayColumn<T> &outputDataCol,
-																			ArrayColumn<Bool> &outputFlagCol)
+																			ArrayColumn<bool> &outputFlagCol)
 {
 	IPosition outputPlaneShape = outputDataPlane.shape();
 	uInt nCorrs = outputPlaneShape(0);
@@ -8124,8 +8150,8 @@ template <class T> void MSTransformManager::writeOutputPlanesInSlices(	uInt row,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::writeOutputFlagsPlaneSlices(	Matrix<Bool> &outputPlane,
-															ArrayColumn<Bool> &outputCol,
+void MSTransformManager::writeOutputFlagsPlaneSlices(	Matrix<bool> &outputPlane,
+															ArrayColumn<bool> &outputCol,
 															Slice &sliceX,
 															Slice &sliceY,
 															IPosition &outputPlaneShape,
@@ -8137,8 +8163,8 @@ void MSTransformManager::writeOutputFlagsPlaneSlices(	Matrix<Bool> &outputPlane,
 // -----------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------
-void MSTransformManager::writeOutputFlagsPlaneReshapedSlices(	Matrix<Bool> &outputPlane,
-																	ArrayColumn<Bool> &outputCol,
+void MSTransformManager::writeOutputFlagsPlaneReshapedSlices(	Matrix<bool> &outputPlane,
+																	ArrayColumn<bool> &outputCol,
 																	Slice &sliceX,
 																	Slice &sliceY,
 																	IPosition &outputPlaneShape,
@@ -8193,10 +8219,10 @@ void MSTransformManager::setWeightStripeByReference(	uInt corrIndex,
 // -----------------------------------------------------------------------
 void MSTransformManager::transformStripeOfData(Int inputSpw,
 					       const Vector<Complex> &inputDataStripe,
-					       const Vector<Bool> &inputFlagsStripe,
+					       const Vector<bool> &inputFlagsStripe,
 					       const Vector<Float> &inputWeightsStripe,
 					       Vector<Complex> &outputDataStripe,
-					       Vector<Bool> &outputFlagsStripe)
+					       Vector<bool> &outputFlagsStripe)
 {
     auto shapeBefore = outputDataStripe.shape();
     (*this.*transformStripeOfDataComplex_p)(inputSpw, inputDataStripe, inputFlagsStripe,
@@ -8220,10 +8246,10 @@ void MSTransformManager::transformStripeOfData(Int inputSpw,
 // -----------------------------------------------------------------------
 void MSTransformManager::transformStripeOfData(Int inputSpw,
 					       const Vector<Float> &inputDataStripe,
-					       const Vector<Bool> &inputFlagsStripe,
+					       const Vector<bool> &inputFlagsStripe,
 					       const Vector<Float> &inputWeightsStripe,
 					       Vector<Float> &outputDataStripe,
-					       Vector<Bool> &outputFlagsStripe)
+					       Vector<bool> &outputFlagsStripe)
 {
 	(*this.*transformStripeOfDataFloat_p)(	inputSpw,inputDataStripe,inputFlagsStripe,inputWeightsStripe,
 											outputDataStripe,outputFlagsStripe);
@@ -8234,10 +8260,10 @@ void MSTransformManager::transformStripeOfData(Int inputSpw,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::average(Int inputSpw,
 						    const Vector<T> &inputDataStripe,
-						    const Vector<Bool> &inputFlagsStripe,
+						    const Vector<bool> &inputFlagsStripe,
 						    const Vector<Float> &inputWeightsStripe,
 						    Vector<T> &outputDataStripe,
-						    Vector<Bool> &outputFlagsStripe)
+						    Vector<bool> &outputFlagsStripe)
 {
 	uInt width = freqbinMap_p[inputSpw];
 	uInt startChan = 0;
@@ -8270,7 +8296,7 @@ template <class T> void  MSTransformManager::simpleAverage(uInt width,
 							   Vector<T> &outputData)
 {
 	// Dummy variables
-	Vector<Bool> inputFlags,outputFlags;
+	Vector<bool> inputFlags,outputFlags;
 	Vector<Float> inputWeights;
 
 	uInt startChan = 0;
@@ -8298,10 +8324,10 @@ template <class T> void  MSTransformManager::simpleAverage(uInt width,
 //
 // -----------------------------------------------------------------------
 void MSTransformManager::averageKernel(const Vector<Complex> &inputData,
-				       const Vector<Bool> &inputFlags,
+				       const Vector<bool> &inputFlags,
 				       const Vector<Float> &inputWeights,
 				       Vector<Complex> &outputData,
-				       Vector<Bool> &outputFlags,
+				       Vector<bool> &outputFlags,
 				       uInt startInputPos,
 				       uInt outputPos,
 				       uInt width)
@@ -8315,10 +8341,10 @@ void MSTransformManager::averageKernel(const Vector<Complex> &inputData,
 //
 // -----------------------------------------------------------------------
 void MSTransformManager::averageKernel(const Vector<Float> &inputData,
-				       const Vector<Bool> &inputFlags,
+				       const Vector<bool> &inputFlags,
 				       const Vector<Float> &inputWeights,
 				       Vector<Float> &outputData,
-				       Vector<Bool> &outputFlags,
+				       Vector<bool> &outputFlags,
 				       uInt startInputPos,
 				       uInt outputPos,
 											uInt width)
@@ -8332,10 +8358,10 @@ void MSTransformManager::averageKernel(const Vector<Float> &inputData,
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::simpleAverageKernel(const Vector<T> &inputData,
-								const Vector<Bool> &,
+								const Vector<bool> &,
 								const Vector<Float> &,
 								Vector<T> &outputData,
-								Vector<Bool> &,
+								Vector<bool> &,
 								uInt startInputPos,
 								uInt outputPos,
 																	uInt width)
@@ -8364,10 +8390,10 @@ template <class T> void MSTransformManager::simpleAverageKernel(const Vector<T> 
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagAverageKernel(const Vector<T> &inputData,
-							      const Vector<Bool> &inputFlags,
+							      const Vector<bool> &inputFlags,
 							      const Vector<Float> &,
 							      Vector<T> &outputData,
-							      Vector<Bool> &outputFlags,
+							      Vector<bool> &outputFlags,
 							      uInt startInputPos,
 							      uInt outputPos,
 							      uInt width)
@@ -8402,10 +8428,10 @@ template <class T> void MSTransformManager::flagAverageKernel(const Vector<T> &i
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::weightAverageKernel(const Vector<T> &inputData,
-								const Vector<Bool> &,
+								const Vector<bool> &,
 								const Vector<Float> &inputWeights,
 								Vector<T> &outputData,
-								Vector<Bool> &outputFlags,
+								Vector<bool> &outputFlags,
 								uInt startInputPos,
 								uInt outputPos,
 								uInt width)
@@ -8440,10 +8466,10 @@ template <class T> void MSTransformManager::weightAverageKernel(const Vector<T> 
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::cumSumKernel(const Vector<T> &inputData,
-							 const Vector<Bool> &,
+							 const Vector<bool> &,
 							 const Vector<Float> &,
 							 Vector<T> &outputData,
-							 Vector<Bool> &,
+							 Vector<bool> &,
 							 uInt startInputPos,
 							 uInt outputPos,
 							 uInt width)
@@ -8467,10 +8493,10 @@ template <class T> void MSTransformManager::cumSumKernel(const Vector<T> &inputD
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagWeightAverageKernel(const Vector<T> &inputData,
-								    const Vector<Bool> &inputFlags,
+								    const Vector<bool> &inputFlags,
 								    const Vector<Float> &inputWeights,
 								    Vector<T> &outputData,
-								    Vector<Bool> &outputFlags,
+								    Vector<bool> &outputFlags,
 								    uInt startInputPos,
 								    uInt outputPos,
 								    uInt width)
@@ -8507,10 +8533,10 @@ template <class T> void MSTransformManager::flagWeightAverageKernel(const Vector
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagCumSumKernel(const Vector<T> &inputData,
-							     const Vector<Bool> &inputFlags,
+							     const Vector<bool> &inputFlags,
 							     const Vector<Float> &,
 							     Vector<T> &outputData,
-							     Vector<Bool> &,
+							     Vector<bool> &,
 							     uInt startInputPos,
 							     uInt outputPos,
 							     uInt width)
@@ -8534,10 +8560,10 @@ template <class T> void MSTransformManager::flagCumSumKernel(const Vector<T> &in
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagNonZeroAverageKernel(const Vector<T> &inputData,
-								     const Vector<Bool> &inputFlags,
+								     const Vector<bool> &inputFlags,
 								     const Vector<Float> & /* inputWeights */,
 								     Vector<T> &outputData,
-								     Vector<Bool> &outputFlags,
+								     Vector<bool> &outputFlags,
 								     uInt startInputPos,
 								     uInt outputPos,
 								     uInt width)
@@ -8545,7 +8571,7 @@ template <class T> void MSTransformManager::flagNonZeroAverageKernel(const Vecto
 	T avg = 0;
 	uInt samples = 0;
 	uInt inputPos = 0;
-	Bool accumulatorFlag = inputFlags(startInputPos);
+	bool accumulatorFlag = inputFlags(startInputPos);
 
 	for (uInt sample_i=0;sample_i<width;sample_i++)
 	{
@@ -8596,10 +8622,10 @@ template <class T> void MSTransformManager::flagNonZeroAverageKernel(const Vecto
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagWeightNonZeroAverageKernel(const Vector<T> &inputData,
-									   const Vector<Bool> &inputFlags,
+									   const Vector<bool> &inputFlags,
 									   const Vector<Float> &inputWeights,
 									   Vector<T> &outputData,
-									   Vector<Bool> &outputFlags,
+									   Vector<bool> &outputFlags,
 									   uInt startInputPos,
 									   uInt outputPos,
 									   uInt width)
@@ -8607,7 +8633,7 @@ template <class T> void MSTransformManager::flagWeightNonZeroAverageKernel(const
 	T avg = 0;
 	T normalization = 0;
 	uInt inputPos = 0;
-	Bool accumulatorFlag = inputFlags(startInputPos);
+	bool accumulatorFlag = inputFlags(startInputPos);
 
 	for (uInt sample_i=0;sample_i<width;sample_i++)
 	{
@@ -8657,17 +8683,17 @@ template <class T> void MSTransformManager::flagWeightNonZeroAverageKernel(const
 //
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::flagCumSumNonZeroKernel(const Vector<T> &inputData,
-								    const Vector<Bool> &inputFlags,
+								    const Vector<bool> &inputFlags,
 								    const Vector<Float> & /* inputWeights */,
 								    Vector<T> &outputData,
-								    Vector<Bool> &outputFlags,
+								    Vector<bool> &outputFlags,
 								    uInt startInputPos,
 								    uInt outputPos,
 								    uInt width)
 {
 	T avg = 0;
 	uInt inputPos = 0;
-	Bool accumulatorFlag = inputFlags(startInputPos);
+	bool accumulatorFlag = inputFlags(startInputPos);
 
 	for (uInt sample_i=0;sample_i<width;sample_i++)
 	{
@@ -8704,10 +8730,10 @@ template <class T> void MSTransformManager::flagCumSumNonZeroKernel(const Vector
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::smooth(Int ,
 						   const Vector<T> &inputDataStripe,
-						   const Vector<Bool> &inputFlagsStripe,
+						   const Vector<bool> &inputFlagsStripe,
 						   const Vector<Float> &inputWeightsStripe,
 						   Vector<T> &outputDataStripe,
-						   Vector<Bool> &outputFlagsStripe)
+						   Vector<bool> &outputFlagsStripe)
 {
 	// Calculate limits
 	uInt width = smoothBin_p;
@@ -8743,10 +8769,10 @@ template <class T> void MSTransformManager::smooth(Int ,
 //
 // -----------------------------------------------------------------------
 void MSTransformManager::smoothKernel(const Vector<Complex> &inputData,
-				      const Vector<Bool> &inputFlags,
+				      const Vector<bool> &inputFlags,
 				      const Vector<Float> &inputWeights,
 				      Vector<Complex> &outputData,
-				      Vector<Bool> &outputFlags,
+				      Vector<bool> &outputFlags,
 				      uInt outputPos)
 {
 	(*this.*smoothKernelComplex_p)(	inputData,inputFlags,inputWeights,
@@ -8758,10 +8784,10 @@ void MSTransformManager::smoothKernel(const Vector<Complex> &inputData,
 //
 // -----------------------------------------------------------------------
 void MSTransformManager::smoothKernel(const Vector<Float> &inputData,
-				      const Vector<Bool> &inputFlags,
+				      const Vector<bool> &inputFlags,
 				      const Vector<Float> &inputWeights,
 				      Vector<Float> &outputData,
-				      Vector<Bool> &outputFlags,
+				      Vector<bool> &outputFlags,
 				      uInt outputPos)
 {
 	(*this.*smoothKernelFloat_p)(	inputData,inputFlags,inputWeights,
@@ -8773,10 +8799,10 @@ void MSTransformManager::smoothKernel(const Vector<Float> &inputData,
 //
 // -----------------------------------------------------------------------
 template <class T> void  MSTransformManager::plainSmooth(const Vector<T> &inputData,
-							 const Vector<Bool> &inputFlags,
+							 const Vector<bool> &inputFlags,
 							 const Vector<Float> &,
 							 Vector<T> &outputData,
-							 Vector<Bool> &outputFlags,
+							 Vector<bool> &outputFlags,
 							 uInt outputPos)
 {
 	uInt halfWidth = smoothBin_p / 2;
@@ -8801,10 +8827,10 @@ template <class T> void  MSTransformManager::plainSmooth(const Vector<T> &inputD
 //
 // -----------------------------------------------------------------------
 template <class T> void  MSTransformManager::plainSmoothSpectrum(const Vector<T> &inputData,
-								 const Vector<Bool> &inputFlags,
+								 const Vector<bool> &inputFlags,
 								 const Vector<Float> &,
 								 Vector<T> &outputData,
-								 Vector<Bool> &outputFlags,
+								 Vector<bool> &outputFlags,
 								 uInt outputPos)
 {
 	uInt halfWidth = smoothBin_p / 2;
@@ -8852,10 +8878,10 @@ template <class T> void  MSTransformManager::plainSmoothSpectrum(const Vector<T>
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::regrid(Int inputSpw,
 						   const Vector<T> &inputDataStripe,
-						   const Vector<Bool> &inputFlagsStripe,
+						   const Vector<bool> &inputFlagsStripe,
 						   const Vector<Float> &inputWeightsStripe,
 						   Vector<T> &outputDataStripe,
-						   Vector<Bool> &outputFlagsStripe)
+						   Vector<bool> &outputFlagsStripe)
 {
 
 	regridCore(	inputSpw,
@@ -8872,10 +8898,10 @@ template <class T> void MSTransformManager::regrid(Int inputSpw,
 // -----------------------------------------------------------------------
 void MSTransformManager::regridCore(Int inputSpw,
 				    const Vector<Complex> &inputDataStripe,
-				    const Vector<Bool> &inputFlagsStripe,
+				    const Vector<bool> &inputFlagsStripe,
 				    const Vector<Float> &inputWeightsStripe,
 				    Vector<Complex> &outputDataStripe,
-				    Vector<Bool> &outputFlagsStripe)
+				    Vector<bool> &outputFlagsStripe)
 {
 
 	(*this.*regridCoreComplex_p)(	inputSpw,
@@ -8891,10 +8917,10 @@ void MSTransformManager::regridCore(Int inputSpw,
 // -----------------------------------------------------------------------
   void MSTransformManager::regridCore(Int inputSpw,
 				      const Vector<Float> &inputDataStripe,
-				      const Vector<Bool> &inputFlagsStripe,
+				      const Vector<bool> &inputFlagsStripe,
 				      const Vector<Float> &inputWeightsStripe,
 				      Vector<Float> &outputDataStripe,
-				      Vector<Bool> &outputFlagsStripe)
+				      Vector<bool> &outputFlagsStripe)
 {
 	(*this.*regridCoreFloat_p)(	inputSpw,
 								inputDataStripe,
@@ -8909,15 +8935,15 @@ void MSTransformManager::regridCore(Int inputSpw,
 // -----------------------------------------------------------------------
 void MSTransformManager::fftshift(Int ,
 				  const Vector<Complex> &inputDataStripe,
-				  const Vector<Bool> &inputFlagsStripe,
+				  const Vector<bool> &inputFlagsStripe,
 				  const Vector<Float> &,
 				  Vector<Complex> &outputDataStripe,
-				  Vector<Bool> &outputFlagsStripe)
+				  Vector<bool> &outputFlagsStripe)
 {
 	fFFTServer_p.fftshift(outputDataStripe,
     					outputFlagsStripe,
     					(const Vector<Complex>)inputDataStripe,
-    					(const Vector<Bool>)inputFlagsStripe,
+    					(const Vector<bool>)inputFlagsStripe,
     					(const uInt)0, // In vectors axis 0 is the only dimension
     					(const Double)fftShift_p,
     					false, // A good data point has its flag set to false
@@ -8929,15 +8955,15 @@ void MSTransformManager::fftshift(Int ,
 // -----------------------------------------------------------------------
 void MSTransformManager::fftshift(Int ,
 				  const Vector<Float> &inputDataStripe,
-				  const Vector<Bool> &inputFlagsStripe,
+				  const Vector<bool> &inputFlagsStripe,
 				  const Vector<Float> &,
 				  Vector<Float> &outputDataStripe,
-				  Vector<Bool> &outputFlagsStripe)
+				  Vector<bool> &outputFlagsStripe)
 {
     fFFTServer_p.fftshift(outputDataStripe,
     					outputFlagsStripe,
     					(const Vector<Float>)inputDataStripe,
-    					(const Vector<Bool>)inputFlagsStripe,
+    					(const Vector<bool>)inputFlagsStripe,
     					(const uInt)0, // In vectors axis 0 is the only dimension
     					(const Double)fftShift_p,
     					false); // A good data point has its flag set to false
@@ -8948,10 +8974,10 @@ void MSTransformManager::fftshift(Int ,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::interpol1D(Int inputSpw,
 						       const Vector<T> &inputDataStripe,
-						       const Vector<Bool> &inputFlagsStripe,
+						       const Vector<bool> &inputFlagsStripe,
 						       const Vector<Float> &,
 						       Vector<T> &outputDataStripe,
-						       Vector<Bool> &outputFlagsStripe)
+						       Vector<bool> &outputFlagsStripe)
 {
   if (inputDataStripe.size() < 2) {
     outputDataStripe = inputDataStripe(0);
@@ -8999,12 +9025,12 @@ template <class T> void MSTransformManager::interpol1D(Int inputSpw,
  */
 template <class T> void MSTransformManager::interpolateByChannelMap(Int spw,
 								    const Vector<T> &inputDataStripe,
-								    const Vector<Bool> &inputFlagsStripe,
+								    const Vector<bool> &inputFlagsStripe,
 								    Vector<T> &outputDataStripe,
-								    Vector<Bool> &outputFlagsStripe)
+								    Vector<bool> &outputFlagsStripe)
 {
   Vector<T> intermDataStripe;
-  Vector<Bool> intermFlagsStripe;
+  Vector<bool> intermFlagsStripe;
   // Bring frequencies from input grid to fake output grid ( the
   // one with same widths as the original input channels).
   InterpolateArray1D<Double,T>::interpolate(intermDataStripe,
@@ -9042,13 +9068,13 @@ template <class T> void MSTransformManager::interpolateByChannelMap(Int spw,
 // ------------------------------------------------------------------------
 template <class T> void MSTransformManager::interpol1Dfftshift(Int inputSpw,
 							       const Vector<T> &inputDataStripe,
-							       const Vector<Bool> &inputFlagsStripe,
+							       const Vector<bool> &inputFlagsStripe,
 							       const Vector<Float> &inputWeightsStripe,
 							       Vector<T> &outputDataStripe,
-							       Vector<Bool> &outputFlagsStripe)
+							       Vector<bool> &outputFlagsStripe)
 {
     Vector<T> regriddedDataStripe(outputDataStripe.shape(),T());
-    Vector<Bool> regriddedFlagsStripe(outputFlagsStripe.shape(),false);
+    Vector<bool> regriddedFlagsStripe(outputFlagsStripe.shape(),false);
 
     // This linear interpolation provides a uniform grid (pre-condition to apply fftshift)
     interpol1D(inputSpw,inputDataStripe,inputFlagsStripe,inputWeightsStripe,regriddedDataStripe,regriddedFlagsStripe);
@@ -9062,13 +9088,13 @@ template <class T> void MSTransformManager::interpol1Dfftshift(Int inputSpw,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::averageRegrid(Int inputSpw,
 							  const Vector<T> &inputDataStripe,
-							  const Vector<Bool> &inputFlagsStripe,
+							  const Vector<bool> &inputFlagsStripe,
 							  const Vector<Float> &inputWeightsStripe,
 							  Vector<T> &outputDataStripe,
-							  Vector<Bool> &outputFlagsStripe)
+							  Vector<bool> &outputFlagsStripe)
 {
 	Vector<T> averagedDataStripe(numOfCombInterChanMap_p[inputSpw],T());
-	Vector<Bool> averagedFlagsStripe(numOfCombInterChanMap_p[inputSpw],false);
+	Vector<bool> averagedFlagsStripe(numOfCombInterChanMap_p[inputSpw],false);
 
 	average(inputSpw,inputDataStripe,inputFlagsStripe,inputWeightsStripe, averagedDataStripe,averagedFlagsStripe);
 
@@ -9082,13 +9108,13 @@ template <class T> void MSTransformManager::averageRegrid(Int inputSpw,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::smoothRegrid(Int inputSpw,
 							 const Vector<T> &inputDataStripe,
-							 const Vector<Bool> &inputFlagsStripe,
+							 const Vector<bool> &inputFlagsStripe,
 							 const Vector<Float> &inputWeightsStripe,
 							 Vector<T> &outputDataStripe,
-							 Vector<Bool> &outputFlagsStripe)
+							 Vector<bool> &outputFlagsStripe)
 {
 	Vector<T> smoothedDataStripe(inputDataStripe.shape(),T());
-	Vector<Bool> smoothedFlagsStripe(inputFlagsStripe.shape(),false);
+	Vector<bool> smoothedFlagsStripe(inputFlagsStripe.shape(),false);
 
 	smooth(inputSpw,inputDataStripe,inputFlagsStripe,inputWeightsStripe,smoothedDataStripe,smoothedFlagsStripe);
 
@@ -9102,13 +9128,13 @@ template <class T> void MSTransformManager::smoothRegrid(Int inputSpw,
 // -----------------------------------------------------------------------
 template <class T> void MSTransformManager::averageSmooth(Int inputSpw,
 							  const Vector<T> &inputDataStripe,
-							  const Vector<Bool> &inputFlagsStripe,
+							  const Vector<bool> &inputFlagsStripe,
 							  const Vector<Float> &inputWeightsStripe,
 							  Vector<T> &outputDataStripe,
-							  Vector<Bool> &outputFlagsStripe)
+							  Vector<bool> &outputFlagsStripe)
 {
 	Vector<T> averagedDataStripe(outputDataStripe.shape(),T());
-	Vector<Bool> averagedFlagsStripe(outputFlagsStripe.shape(),false);
+	Vector<bool> averagedFlagsStripe(outputFlagsStripe.shape(),false);
 
 	average(inputSpw,inputDataStripe,inputFlagsStripe,inputWeightsStripe, averagedDataStripe,averagedFlagsStripe);
 
@@ -9122,13 +9148,13 @@ template <class T> void MSTransformManager::averageSmooth(Int inputSpw,
 // -----------------------------------------------------------------------
   template <class T> void MSTransformManager::averageSmoothRegrid(Int inputSpw,
 								  const Vector<T> &inputDataStripe,
-								  const Vector<Bool> &inputFlagsStripe,
+								  const Vector<bool> &inputFlagsStripe,
 								  const Vector<Float> &inputWeightsStripe,
 								  Vector<T> &outputDataStripe,
-								  Vector<Bool> &outputFlagsStripe)
+								  Vector<bool> &outputFlagsStripe)
 {
 	Vector<T> averageSmoothedDataStripe(numOfCombInterChanMap_p[inputSpw],T());
-	Vector<Bool> averageSmoothedFlagsStripe(numOfCombInterChanMap_p[inputSpw],false);
+	Vector<bool> averageSmoothedFlagsStripe(numOfCombInterChanMap_p[inputSpw],false);
 
 	averageSmooth(	inputSpw,inputDataStripe,inputFlagsStripe,
 					inputWeightsStripe,averageSmoothedDataStripe,averageSmoothedFlagsStripe);
@@ -9144,10 +9170,10 @@ template <class T> void MSTransformManager::averageSmooth(Int inputSpw,
 // -----------------------------------------------------------------------
 void MSTransformManager::smoothFourierFloat(Int,
 					    const Vector<Float> &inputDataStripe,
-					    const Vector<Bool> &inputFlagStripe,
+					    const Vector<bool> &inputFlagStripe,
 					    const Vector<Float> &,
 					    Vector<Float> &outputDataStripe,
-					    Vector<Bool> &outputFlagStripe)
+					    Vector<bool> &outputFlagStripe)
 {
     // replace flagged channel data with zero
     auto mutableInputDataStripe = inputDataStripe;
@@ -9171,9 +9197,9 @@ void MSTransformManager::smoothFourierFloat(Int,
 // -----------------------------------------------------------------------
 void MSTransformManager::smoothFourierComplex(Int n,
 					      const Vector<Complex> &inputDataStripe,
-					      const Vector<Bool> &inputFlagStripe,
+					      const Vector<bool> &inputFlagStripe,
 					      const Vector<Float> &inputWeightStripe,
-					      Vector<Complex> &outputDataStripe, Vector<Bool> &outputFlagStripe)
+					      Vector<Complex> &outputDataStripe, Vector<bool> &outputFlagStripe)
 {
     Vector<Float> inputDataStripeFloat = real(inputDataStripe);
     Vector<Float> outputDataStripeFloat(inputDataStripeFloat.nelements());

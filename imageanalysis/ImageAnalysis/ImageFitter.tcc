@@ -28,8 +28,8 @@
 
 #include <imageanalysis/ImageAnalysis/ImageFitter.h>
 
-#include <casa/BasicSL/STLIO.h>
-#include <casa/Utilities/Precision.h>
+#include <casacore/casa/BasicSL/STLIO.h>
+#include <casacore/casa/Utilities/Precision.h>
 #include <components/ComponentModels/ComponentShape.h>
 #include <components/ComponentModels/Flux.h>
 #include <components/ComponentModels/GaussianDeconvolver.h>
@@ -38,7 +38,7 @@
 #include <components/ComponentModels/SkyComponentFactory.h>
 #include <components/ComponentModels/SpectralModel.h>
 
-#include <lattices/LRegions/LCPixelSet.h>
+#include <casacore/lattices/LRegions/LCPixelSet.h>
 
 #include <imageanalysis/Annotations/AnnEllipse.h>
 #include <imageanalysis/ImageAnalysis/ImageStatsCalculator.h>
@@ -948,13 +948,13 @@ template <class T> void ImageFitter<T>::_finishConstruction(const String& estima
 
     CasacRegionManager rm(this->_getImage()->coordinates());
     uInt nSelectedChannels;
-    _chanVec = this->_getChans().empty()
+    _chanVec = Vector<uInt>(this->_getChans().empty()
         ? rm.setSpectralRanges(
             nSelectedChannels, this->_getRegion(), this->_getImage()->shape()
         )
         : rm.setSpectralRanges(
             this->_getChans(), nSelectedChannels, this->_getImage()->shape()
-        );
+        ));
     if (_chanVec.size() == 0) {
         _chanVec.resize(2);
         _chanVec.set(0);

@@ -24,10 +24,10 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
-#include <casa/Exceptions/Error.h>
+#include <casacore/casa/Exceptions/Error.h>
 #include <flagging/Flagging/DDMapper.h>
 #include <flagging/Flagging/RFChunkStats.h>
-#include <casa/Utilities/Regex.h>
+#include <casacore/casa/Utilities/Regex.h>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

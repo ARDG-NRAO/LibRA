@@ -27,8 +27,8 @@
 
 #include <components/ComponentModels/FluxStdsQS2.h>
 #include <components/ComponentModels/FluxStdSrcs.h>
-#include <casa/OS/Path.h>
-#include <casa/System/Aipsrc.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/System/Aipsrc.h>
 #include <casatools/Config/State.h>
 
 //#include <casa/Logging/LogIO.h>

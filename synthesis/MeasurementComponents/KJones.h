@@ -28,7 +28,7 @@
 #ifndef SYNTHESIS_KJONES_H
 #define SYNTHESIS_KJONES_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <synthesis/MeasurementComponents/StandardVisCal.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN

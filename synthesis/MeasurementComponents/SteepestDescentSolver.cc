@@ -28,7 +28,7 @@
 
 #include <synthesis/MeasurementComponents/SteepestDescentSolver.h>
 #include <synthesis/TransformMachines/Utils.h>
-#include <casa/Arrays/MatrixMath.h>
+#include <casacore/casa/Arrays/MatrixMath.h>
 #include <limits>
 
 using namespace casacore;

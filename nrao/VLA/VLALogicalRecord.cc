@@ -26,11 +26,11 @@
 //# $Id$
 
 #include <nrao/VLA/VLALogicalRecord.h>
-#include <casa/Utilities/Assert.h>
-#include <casa/Exceptions/Error.h>
-#include <measures/Measures/Stokes.h>
-#include <casa/Arrays/Vector.h>
-#include <casa/Arrays/Matrix.h>
+#include <casacore/casa/Utilities/Assert.h>
+#include <casacore/casa/Exceptions/Error.h>
+#include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 VLALogicalRecord::VLALogicalRecord() 
   :itsRecordPtr( ),

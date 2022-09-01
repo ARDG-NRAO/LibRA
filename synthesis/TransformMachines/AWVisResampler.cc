@@ -30,9 +30,9 @@
 #include <synthesis/TransformMachines/AWVisResampler.h>
 #include <synthesis/TransformMachines/Utils.h>
 #include <synthesis/TransformMachines/SynthesisMath.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/OS/Timer.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/OS/Timer.h>
 #include <fstream>
 #include <iostream>
 #include <typeinfo>
@@ -376,7 +376,7 @@ namespace casa{
   // Moved the accumulateFromGrid() method to file to play with
   // multi-threading it to not clutter this file.  Both versions
   // (threaded and non-threaded) are in this file.
-#include "accumulateFromGrid.cc"
+#include "accumulateFromGrid.inc"
   //
   //-----------------------------------------------------------------------------------
   //
@@ -673,7 +673,7 @@ namespace casa{
 					  // accumulateOnGrid() is a local C++ method with the inner loops.  The include
 					  // file (FortanizedLoopsToGrid.cc) has the interface code to call the inner 
 					  // loops re-written in FORTRAN (in synthesis/fortran/faccumulateOnGrid.f)
-#include <synthesis/TransformMachines/FortranizedLoopsToGrid.cc>
+#include <synthesis/TransformMachines/FortranizedLoopsToGrid.inc>
 					}
 				      sumwt(targetIMPol,targetIMChan) += vbs.imagingWeight_p(ichan, irow)*abs(norm);
 				      //		      *(sumWt_ptr+apol+achan*nGridChan)+= *(imgWts_ptr+ichan+irow*nDataChan);
@@ -862,7 +862,7 @@ namespace casa{
 			// 		   scaledSupport, scaledSampling, off, convOrigin, 
 			// 		   cfShape, loc, phasor, sinDPA, cosDPA, 
 			// 		   finitePointingOffset, cached_phaseGrad_p);
-#include <synthesis/TransformMachines/FortranizedLoopsFromGrid.cc>
+#include <synthesis/TransformMachines/FortranizedLoopsFromGrid.inc>
 
 		      }
 		    // Zero divided by zero is NaN (IEEE standard)

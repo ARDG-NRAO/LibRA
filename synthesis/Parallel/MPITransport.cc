@@ -27,9 +27,9 @@
 
 #ifdef HAVE_MPI
 
-#include <casa/Containers/Record.h>
-#include <casa/IO/AipsIO.h>
-#include <casa/IO/MemoryIO.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/IO/AipsIO.h>
+#include <casacore/casa/IO/MemoryIO.h>
 
 #include <synthesis/Parallel/MPITransport.h>
 #include <synthesis/Parallel/MPIError.h>

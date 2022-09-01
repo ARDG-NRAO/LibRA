@@ -29,11 +29,11 @@
 #ifndef CALIBRATION_CALTABLE2_H
 #define CALIBRATION_CALTABLE2_H
 
-#include <casa/aips.h>
-#include <tables/Tables/Table.h>
-#include <tables/TaQL/ExprNode.h>
-#include <casa/Containers/Record.h>
-#include <casa/Utilities/Sort.h>
+#include <casacore/casa/aips.h>
+#include <casacore/tables/Tables/Table.h>
+#include <casacore/tables/TaQL/ExprNode.h>
+#include <casacore/casa/Containers/Record.h>
+#include <casacore/casa/Utilities/Sort.h>
 #include <synthesis/CalTables/CalTableDesc2.h>
 #include <synthesis/CalTables/CalMainRecord.h>
 #include <synthesis/CalTables/CalDescRecord.h>

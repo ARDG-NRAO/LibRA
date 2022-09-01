@@ -25,7 +25,7 @@
 #include <spectrallines/Splatalogue/Searcher.h>
 #include <spectrallines/Splatalogue/SQLiteSearch/SearcherSQLite.h>
 #include <casatools/Config/State.h>
-#include <casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogIO.h>
 #include <iostream>
 using namespace std;
 

@@ -25,17 +25,17 @@
 
 #include <imageanalysis/ImageAnalysis/ImageCollapser.h>
 
-#include <casa/Arrays/ArrayLogical.h>
-#include <casa/BasicSL/STLIO.h>
+#include <casacore/casa/Arrays/ArrayLogical.h>
+#include <casacore/casa/BasicSL/STLIO.h>
 #include <casacore/scimath/StatsFramework/ClassicalStatistics.h>
 #include <casacore/scimath/Mathematics/NumericTraits.h>
-#include <images/Images/ImageStatistics.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/PagedImage.h>
+#include <casacore/images/Images/ImageStatistics.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <imageanalysis/ImageAnalysis/SubImageFactory.h>
-#include <images/Images/TempImage.h>
-#include <lattices/Lattices/LatticeUtilities.h>
-#include <lattices/LatticeMath/LatticeMathUtil.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/lattices/Lattices/LatticeUtilities.h>
+#include <casacore/lattices/LatticeMath/LatticeMathUtil.h>
 
 #include <imageanalysis/ImageAnalysis/ImageMaskedPixelReplacer.h>
 

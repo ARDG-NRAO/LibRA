@@ -20,7 +20,7 @@
 #include <imageanalysis/Annotations/AnnRegion.h>
 
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 
 namespace casa {
 

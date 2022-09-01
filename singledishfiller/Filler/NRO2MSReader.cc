@@ -853,7 +853,9 @@ Bool NRO2MSReader::getData(size_t irow, DataRecord &record) {
 //  std::cout << "set data size to " << num_chan_map_[record.spw_id] << " shape "
 //      << record.data.shape() << std::endl;
   record.setDataSize(obs_header_.NCH0);
-  record.data = getSpectrum(irow, scan_data);
+  auto const spectrum = getSpectrum(irow, scan_data);
+  record.data.resize(spectrum.size());
+  std::copy(spectrum.cbegin(), spectrum.cend(), record.data.begin());
   size_t flag_len = obs_header_.NCH0;
   for (size_t i = 0; i < flag_len; ++i) {
     record.flag(i) = false;

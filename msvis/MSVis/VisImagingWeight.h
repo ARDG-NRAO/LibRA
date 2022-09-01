@@ -28,9 +28,9 @@
 
 #ifndef VISIMAGINGWEIGHT_H
 #define VISIMAGINGWEIGHT_H
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Quanta/Quantum.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Quanta/Quantum.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
 

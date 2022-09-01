@@ -28,10 +28,10 @@
 #ifndef SYNTHESIS_VISEQUATION_H
 #define SYNTHESIS_VISEQUATION_H
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Cube.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Cube.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <synthesis/MeasurementComponents/VisCal.h>

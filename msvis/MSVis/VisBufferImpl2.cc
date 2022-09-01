@@ -11,14 +11,14 @@
 //#include <casa/Arrays/ArrayUtil.h>
 //#include <casa/Arrays/MaskArrMath.h>
 //#include <casa/Arrays/MaskedArray.h>
-#include <casa/OS/Path.h>
-#include <casa/OS/Timer.h>
-#include <casa/Utilities.h>
-#include <casa/aipstype.h>
+#include <casacore/casa/OS/Path.h>
+#include <casacore/casa/OS/Timer.h>
+#include <casacore/casa/Utilities.h>
+#include <casacore/casa/aipstype.h>
 #include <typeinfo>
 #include <components/ComponentModels/ComponentList.h>
-#include <ms/MeasurementSets/MSColumns.h>
-#include <msvis/MSVis/UtilJ.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+#include <stdcasa/UtilJ.h>
 #include <msvis/MSVis/VisBufferAsyncWrapper2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
@@ -28,7 +28,6 @@
 #include <msvis/MSVis/Vbi2MsRow.h>
 #include <msvis/MSVis/VisModelDataI.h>
 #include <msvis/MSVis/VisBufferImpl2Internal.h>
-#include <msvis/MSVis/UtilJ.h>
 
 
 #define CheckVisIter() checkVisIter (__func__, __FILE__, __LINE__)
