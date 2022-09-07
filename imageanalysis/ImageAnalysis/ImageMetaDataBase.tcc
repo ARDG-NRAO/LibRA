@@ -398,7 +398,10 @@ template <class T> ValueHolder ImageMetaDataBase<T>::getFITSValue(const String& 
         }
     }
     ThrowCc(
-        "Unknown keyword " + c
+        "Unknown keyword " + key + ". If you are trying to use a key name from "
+        "the imhead summary dictionary, note that some keys in "
+        "mode='put'/'get' are different from mode='summary'. Please see imhead "
+        "description in the CASA online documentation for complete details."
     );
     return ValueHolder();
 }

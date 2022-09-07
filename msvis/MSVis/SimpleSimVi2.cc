@@ -31,6 +31,7 @@
 #include <casacore/casa/Arrays.h>
 #include <casacore/casa/BasicMath/Random.h>
 #include <casacore/casa/Quanta/MVTime.h>
+#include <casacore/casa/Containers/Record.h>
 #include <casacore/ms/MeasurementSets/MSAntennaColumns.h>
 #include <casacore/tables/Tables/SetupNewTab.h>
 
@@ -543,6 +544,11 @@ void SimpleSimVi2::nextChunk ()
   // Ensure subchunks initialized
   //  this->origin();
 
+}
+
+void SimpleSimVi2::result(casacore::Record& res) const
+{
+    res.define("comment", "SimpleSimVi2");
 }
 
   // Methods to control and monitor subchunk iteration

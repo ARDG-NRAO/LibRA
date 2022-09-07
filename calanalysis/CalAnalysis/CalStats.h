@@ -512,7 +512,7 @@ casacore::Matrix<CalStats::OUT<T>> CalStats::stats( const CalStats::ARG<T>& oArg
 
     catch ( casacore::AipsError oAE ) {
       casacore::LogIO log( casacore::LogOrigin( "CalStats", "stats<T>()", WHERE ) );
-      log << casacore::LogIO::WARN << oAE.getMesg() << ", iteration: "
+      log << casacore::LogIO::NORMAL << oAE.getMesg() << ", iteration: "
           << oPos.asVector() << ", continuing ..." << casacore::LogIO::POST;
       oOut.oT = T();
     }

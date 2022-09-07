@@ -265,12 +265,13 @@ class Imager
 
   // Set the single dish processing options
   casacore::Bool setsdoptions(const casacore::Float scale, const casacore::Float weight, 
-		    const casacore::Int convsupport=-1, casacore::String pointingColToUse="DIRECTION",
-		    const casacore::Quantity truncate=casacore::Quantity(),
-		    const casacore::Quantity gwidth=casacore::Quantity(),
-		    const casacore::Quantity jwidth=casacore::Quantity(),
-		    const casacore::Float minweight=0.,
-		    const casacore::Bool clipminmax=false);
+                   const casacore::Int convsupport=-1, casacore::String pointingColToUse="DIRECTION",
+                   const casacore::Quantity truncate=casacore::Quantity(),
+                   const casacore::Quantity gwidth=casacore::Quantity(),
+                   const casacore::Quantity jwidth=casacore::Quantity(),
+                   const casacore::Float minweight=0.,
+                   const casacore::Bool clipminmax=false,
+                   const casacore::Bool enablecache=false);
 
   // Set the voltage pattern
   casacore::Bool setvp(const casacore::Bool dovp,
@@ -750,6 +751,8 @@ protected:
   casacore::Float minWeight_p;
 
   casacore::Bool clipminmax_p;
+
+  casacore::Bool enablecache_p;
 
   // special mf control parms, etc
   casacore::Float cyclefactor_p;
