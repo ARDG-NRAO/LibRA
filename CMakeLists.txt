@@ -38,6 +38,7 @@ include(DeclareCasacppComponent)
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 include(FindPkgConfig)
+include(CTest)
 
 # Set a default build type if none was specified
 set(default_build_type RelWithDebInfo)
