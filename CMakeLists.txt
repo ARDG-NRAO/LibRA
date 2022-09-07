@@ -94,6 +94,9 @@ find_package(OpenMP REQUIRED)
 # SAKURA dependency
 pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
 
+# HPG dependency
+find_package(hpg CONFIG)
+
 # Create a list with all the components
 set(casacpp_all_components
   alma
