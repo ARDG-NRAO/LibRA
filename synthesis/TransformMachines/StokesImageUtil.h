@@ -31,12 +31,12 @@
 
 #include <array>
 
-#include <casa/aips.h>
-#include <casa/BasicSL/Complex.h>
-#include <casa/BasicSL/String.h>
-#include <images/Images/ImageInterface.h>
-#include <casa/Quanta/Quantum.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/aips.h>
+#include <casacore/casa/BasicSL/Complex.h>
+#include <casacore/casa/BasicSL/String.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/casa/Quanta/Quantum.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

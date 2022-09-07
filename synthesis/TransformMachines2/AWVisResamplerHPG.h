@@ -44,11 +44,11 @@
 //#include <synthesis/TransformMachines2/VBStoreHPG.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
 //#include <synthesis/TransformMachines2/hpg.hpp>
-//#include <hpg/hpg.hpp>
-//#include <hpg/hpg_indexing.hpp>
+#include <hpg/hpg.hpp>
+#include <hpg/hpg_indexing.hpp>
 ///I am tired with cmake not finding the include putting the path directly for now
-#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
-#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
+//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
+//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
 #include <tuple>
 #define HPGNPOL 2
 

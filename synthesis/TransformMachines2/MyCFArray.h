@@ -1,5 +1,5 @@
-//#include <hpg/hpg.hpp>
-#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
+#include <hpg/hpg.hpp>
+//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{

@@ -5,10 +5,10 @@
 #include <synthesis/TransformMachines2/CFDefs.h>
 #include <synthesis/TransformMachines2/FTMachine.h>
 
-//#include <hpg/hpg.hpp>
-//#include <hpg/hpg_indexing.hpp>
-#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
-#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
+#include <hpg/hpg.hpp>
+#include <hpg/hpg_indexing.hpp>
+//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
+//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
 using namespace hpg;
 //
 // -------------------------------------------------------------------------------
