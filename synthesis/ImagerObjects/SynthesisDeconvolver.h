@@ -121,7 +121,7 @@ class SynthesisDeconvolver
   void setMinorCycleControl(const casacore::Record& minorCycleControlRec);
 protected:
 
-  std::shared_ptr<SIImageStore> makeImageStore( casacore::String imagename );
+  std::shared_ptr<SIImageStore> makeImageStore( casacore::String imagename, casacore::Bool noRequireSumwt );
   //Merge the outputRecord from channels into one that looks like the cube one
   void mergeReturnRecord(const casacore::Record& chanRec, casacore::Record& outRec, const casacore::Int chan);
   casacore::Record getSubsetRobustStats(const casacore::Int chanBeg, const casacore::Int chanEnd);
@@ -212,6 +212,7 @@ protected:
   casacore::Float itsMaskSum;
 
   casacore::Float itsNsigma;
+  casacore::Bool itsNoRequireSumwt;
   SynthesisParamsDeconv itsDecPars;
   casacore::Float itsPreviousFutureRes;
   casacore::Record itsPreviousIterBotRec_p;

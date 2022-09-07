@@ -1871,10 +1871,11 @@ Bool Imager::setoptions(const String& ftmachine, const Long cache, const Int til
 }
 
 Bool Imager::setsdoptions(const Float scale, const Float weight, 
-			  const Int convsupport, String pointCol,
-			  const Quantity truncate,
-			  const Quantity gwidth, const Quantity jwidth,
-			  const Float minweight, const Bool clipminmax)
+                          const Int convsupport, String pointCol,
+                          const Quantity truncate,
+                          const Quantity gwidth, const Quantity jwidth,
+                          const Float minweight, const Bool clipminmax,
+                          const Bool enablecache)
 {
   LogIO os(LogOrigin("imager", "setsdoptions()", WHERE));
   
@@ -1897,6 +1898,7 @@ Bool Imager::setsdoptions(const Float scale, const Float weight,
   qjwidth_p=jwidth;
   minWeight_p = minweight;
   clipminmax_p = clipminmax;
+  enablecache_p = enablecache;
 
   // Destroy the FTMachine
   if(ft_p) {delete ft_p; ft_p=0;}
@@ -3079,6 +3081,10 @@ Bool Imager::makeimage(const String& type, const String& image,
     String ftmachine(ftmachine_p);
     if (!ft_p)
       createFTMachine();
+    
+    os << LogIO::DEBUG1 << "FTMachine is : " << ftmachine 
+       << " (" << ft_p << ")" << LogIO::POST;
+    
     
     // Now make the required image
     Matrix<Float> weight;

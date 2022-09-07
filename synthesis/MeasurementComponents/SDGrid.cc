@@ -78,78 +78,240 @@
 #include <synthesis/TransformMachines/SkyJones.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 
+#if defined(SDGRID_PERFS)
+#include <iomanip>
+#include <exception>
+#include <sstream>
+#endif
+
 using namespace casacore;
 namespace casa {
+
+#if defined(SDGRID_PERFS)
+namespace sdgrid_perfs {
+ChronoStat::ChronoStat(const string & name)
+    : name_ {name},
+      started_ {false},
+      n_laps_ {0},
+      n_overflows_ {0},
+      n_underflows_ {0},
+      laps_sum_ {Duration::zero()},
+      laps_min_ {Duration::max()},
+      laps_max_ {Duration::min()}
+  {}
+
+const std::string& ChronoStat::name() const {
+  return name_;
+}
+
+void ChronoStat::setName(const std::string& name) {
+  name_ = name;
+}
+
+void ChronoStat::start() {
+  if (not started_) {
+    started_ = true;
+    ++n_laps_;
+    lap_start_time_ = Clock::now();
+  } else {
+    ++n_overflows_;
+  }
+}
+void ChronoStat::stop() {
+  if (started_) {
+    auto lap_duration = Clock::now() - lap_start_time_;
+    laps_sum_ += lap_duration;
+    started_ = false;
+    if (lap_duration < laps_min_) laps_min_ = lap_duration;
+    if (lap_duration > laps_max_) laps_max_ = lap_duration;
+  } else {
+    ++n_underflows_;
+  }
+}
+
+ChronoStat::Duration ChronoStat::lapsSum() const {
+  return laps_sum_;
+}
+
+ChronoStat::Duration ChronoStat::lapsMin() const {
+  return n_laps_ > 0 ? laps_min_ : Duration::zero();
+}
+
+ChronoStat::Duration ChronoStat::lapsMax() const {
+  return  n_laps_ > 0 ? laps_max_ : Duration::zero();
+}
+
+ChronoStat::Duration ChronoStat::lapsMean() const {
+  return n_laps_ > 0 ? laps_sum_ / n_laps_ : Duration::zero();
+}
+
+unsigned int ChronoStat::lapsCount() const {
+  return n_laps_;
+}
+
+bool ChronoStat::isEmpty() const {
+  return n_laps_ == 0;
+}
+
+unsigned int ChronoStat::nOverflows() const {
+  return n_overflows_;
+}
+
+unsigned int ChronoStat::nUnderflows() const {
+  return n_underflows_;
+}
+
+std::string ChronoStat::quote(const std::string& s) const {
+  return "\"" + s + "\"";
+}
+
+std::string ChronoStat::json() const {
+  std::ostringstream os;
+  os << quote(name()) << ": {"
+         << quote("sum") << ": " << lapsSum().count()
+         << " ," <<  quote("count") << ": " << lapsCount()
+         << " ," <<  quote("min") << ": " << lapsMin().count()
+         << " ," <<  quote("mean") << ": " << lapsMean().count()
+         << " ," <<  quote("max") << ": " << lapsMax().count()
+         << " ," <<  quote("overflows") << ": " << nOverflows()
+         << " ," <<  quote("underflows") << ": " << nUnderflows()
+         << "}";
+  return os.str();
+}
+
+std::ostream& operator<<(std::ostream &os, const ChronoStat &c) {
+  constexpr auto eol = '\n';
+  os  << "name: " << c.name() << eol
+    << "sum:        " << std::setw(20) << std::right << c.lapsSum().count() << eol
+    << "count:      " << std::setw(20) << std::right << c.lapsCount() << eol
+    << "min:        " << std::setw(20) << std::right << c.lapsMin().count() << eol
+    << "mean:       " << std::setw(20) << std::right << c.lapsMean().count() << eol
+    << "max:        " << std::setw(20) << std::right << c.lapsMax().count() << eol
+    << "overflows:  " << std::setw(20) << std::right << c.nOverflows() << eol
+    << "underflows: " << std::setw(20) << std::right << c.nUnderflows();
+  return os;
+}
+
+StartStop::StartStop(ChronoStat &c) 
+  : c_ {c} {
+    c_.start();
+}
+
+StartStop::~StartStop() {
+  c_.stop();
+}
+
+} // namespace sdgrid_perfs
+
+using namespace sdgrid_perfs;
+
+#endif
 
 SDGrid::SDGrid(SkyJones& sj, Int icachesize, Int itilesize,
 	       String iconvType, Int userSupport, Bool useImagingWeight)
   : FTMachine(), sj_p(&sj), imageCache(0), wImageCache(0),
-  cachesize(icachesize), tilesize(itilesize),
-  isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    cachesize(icachesize), tilesize(itilesize),
+    isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(0.), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
-    isSplineInterpolationReady(false), interpolator(0), clipminmax_(false)
+    isSplineInterpolationReady(false), interpolator(0), clipminmax_(false),
+    cache {Cache(*(const_cast<SDGrid *>(this)))},
+    cacheIsEnabled {false}
 {
   lastIndex_p=0;
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition& mLocation, SkyJones& sj, Int icachesize, Int itilesize,
 	       String iconvType, Int userSupport, Float minweight, Bool clipminmax, Bool useImagingWeight)
   : FTMachine(),  sj_p(&sj), imageCache(0), wImageCache(0),
-  cachesize(icachesize), tilesize(itilesize),
-  isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    cachesize(icachesize), tilesize(itilesize),
+    isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0),  jwidth_p(0.0),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
-    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax)
+    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
+    cache {Cache(*(const_cast<SDGrid *>(this)))},
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  initPerfs();
 }
 
 SDGrid::SDGrid(Int icachesize, Int itilesize,
 	       String iconvType, Int userSupport, Bool useImagingWeight)
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
-  cachesize(icachesize), tilesize(itilesize),
-  isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    cachesize(icachesize), tilesize(itilesize),
+    isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(0.), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
-    isSplineInterpolationReady(false), interpolator(0), clipminmax_(false)
+    isSplineInterpolationReady(false), interpolator(0), clipminmax_(false),
+    cache {Cache(*(const_cast<SDGrid *>(this)))},
+    cacheIsEnabled {false}
 {
   lastIndex_p=0;
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 	       String iconvType, Int userSupport, Float minweight, Bool clipminmax, Bool useImagingWeight)
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
-  cachesize(icachesize), tilesize(itilesize),
-  isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(userSupport),
+    cachesize(icachesize), tilesize(itilesize),
+    isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(userSupport),
     truncate_p(-1.0), gwidth_p(0.0), jwidth_p(0.0),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1),
     msId_p(-1),
-    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax)
+    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
+    cache {Cache(*(const_cast<SDGrid *>(this)))},
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  initPerfs();
 }
 
 SDGrid::SDGrid(MPosition &mLocation, Int icachesize, Int itilesize,
 	       String iconvType, Float truncate, Float gwidth, Float jwidth,
 	       Float minweight, Bool clipminmax, Bool useImagingWeight)
   : FTMachine(), sj_p(0), imageCache(0), wImageCache(0),
-  cachesize(icachesize), tilesize(itilesize),
-  isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
-    pointingToImage(0), userSetSupport_p(-1),
+    cachesize(icachesize), tilesize(itilesize),
+    isTiled(false), wImage(0), arrayLattice(0),  wArrayLattice(0), lattice(0), wLattice(0), convType(iconvType),
+    pointingToImage(0), rowPixel {xyPos, false}, userSetSupport_p(-1),
     truncate_p(truncate), gwidth_p(gwidth), jwidth_p(jwidth),
     minWeight_p(minweight), lastIndexPerAnt_p(), useImagingWeight_p(useImagingWeight), lastAntID_p(-1), msId_p(-1),
-    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax)
+    isSplineInterpolationReady(false), interpolator(0), clipminmax_(clipminmax),
+    cache {Cache(*(const_cast<SDGrid *>(this)))},
+    cacheIsEnabled {false}
 {
   mLocation_p=mLocation;
   lastIndex_p=0;
+  initPerfs();
 }
+
+//----------------------------------------------------------------------
+
+void SDGrid::initPerfs() {
+#if defined(SDGRID_PERFS)
+  cNextChunk.setName("iterateNextChunk");
+  cMatchAllSpwChans.setName("matchAllSpwChans");
+  cMatchChannel.setName("matchChannel");
+  cPickWeights.setName("pickWeights");
+  cInterpolateFrequencyToGrid.setName("interpolateFrequencyToGrid");
+  cSearchValidPointing.setName("searchValidPointing");
+  cComputeSplines.setName("computeSplines");
+  cResetFrame.setName("resetFrame");
+  cInterpolateDirection.setName("interpolateDirection");
+  cConvertDirection.setName("convertDirection");
+  cComputeDirectionPixel.setName("computeDirectionPixel");
+  cHandleMovingSource.setName("handleMovingSource");
+  cGridData.setName("gridData");
+#endif
+}
+
 
 
 //----------------------------------------------------------------------
@@ -178,6 +340,7 @@ SDGrid& SDGrid::operator=(const SDGrid& other)
     pointingToImage=0;
     xyPos.resize();
     xyPos=other.xyPos;
+    rowPixel = MaskedPixelRef(xyPos, false);
     xyPosMovingOrig_p=other.xyPosMovingOrig_p;
     convFunc.resize();
     convFunc=other.convFunc;
@@ -191,12 +354,19 @@ SDGrid& SDGrid::operator=(const SDGrid& other)
     msId_p=-1;
     useImagingWeight_p=other.useImagingWeight_p;
     clipminmax_=other.clipminmax_;
+    cacheIsEnabled=false;
+    cache=Cache(*(const_cast<SDGrid *>(this)));
   };
   return *this;
 };
 
 String SDGrid::name() const{
     return String("SDGrid");
+}
+
+void
+SDGrid::setEnableCache(Bool doEnable) {
+    cacheIsEnabled = doEnable;
 }
 
 //----------------------------------------------------------------------
@@ -206,7 +376,10 @@ Bool SDGrid::changed(const VisBuffer& /*vb*/) {
 }
 
 //----------------------------------------------------------------------
-SDGrid::SDGrid(const SDGrid& other):FTMachine()
+SDGrid::SDGrid(const SDGrid& other)
+  : FTMachine(),
+    rowPixel {MaskedPixelRef(xyPos)},
+    cache {Cache(*const_cast<SDGrid *>(this))}
 {
   operator=(other);
 }
@@ -224,178 +397,177 @@ extern "C" {
    void grdjinc1(Double*, Double*, Int*, Double*);
 }
 
+void SDGrid::dumpConvolutionFunction(const casacore::String &outfile,
+        const casacore::Vector<casacore::Float> &f) const {
+
+    ofstream ofs(outfile.c_str());
+    for (size_t i = 0 ; i < f.nelements() ; i++) {
+        ofs << i << " " << f[i] << endl;
+    }
+    ofs.close();
+}
+
 //----------------------------------------------------------------------
 void SDGrid::init() {
 
-  logIO() << LogOrigin("SDGrid", "init")  << LogIO::NORMAL;
+    logIO() << LogOrigin("SDGrid", "init")  << LogIO::NORMAL;
 
-  //pfile = fopen("ptdata.txt","w");
+    ok();
 
-  ok();
+    isTiled = false;
+    nx    = image->shape()(0);
+    ny    = image->shape()(1);
+    npol  = image->shape()(2);
+    nchan = image->shape()(3);
 
-  /*if((image->shape().product())>cachesize) {
-    isTiled=true;
-  }
-  else {
-    isTiled=false;
-    }*/
-  isTiled=false;
-  nx    = image->shape()(0);
-  ny    = image->shape()(1);
-  npol  = image->shape()(2);
-  nchan = image->shape()(3);
+    sumWeight.resize(npol, nchan);
 
-  sumWeight.resize(npol, nchan);
+    // Set up image cache needed for gridding. For BOX-car convolution
+    // we can use non-overlapped tiles. Otherwise we need to use
+    // overlapped tiles and additive gridding so that only increments
+    // to a tile are written.
+    if (imageCache) delete imageCache;
+    imageCache = nullptr;
 
-  // Set up image cache needed for gridding. For BOX-car convolution
-  // we can use non-overlapped tiles. Otherwise we need to use
-  // overlapped tiles and additive gridding so that only increments
-  // to a tile are written.
-  if(imageCache) delete imageCache; imageCache=0;
+    convType = downcase(convType);
+    logIO() << "Convolution function : " << convType << LogIO::DEBUG1 << LogIO::POST;
 
-  convType=downcase(convType);
-  logIO() << "Convolution function : " << convType << LogIO::DEBUG1 << LogIO::POST;
-  if(convType=="pb") {
-    //cerr << "CNVFunc " << convFunc << endl;
-
-  }
-  else if(convType=="box") {
-    convSupport=(userSetSupport_p >= 0) ? userSetSupport_p : 0;
-    logIO() << "Support : " << convSupport << " pixels" << LogIO::POST;
-    convSampling=100;
-    convSize=convSampling*(2*convSupport+2);
-    convFunc.resize(convSize);
-    convFunc=0.0;
-    for (Int i=0;i<convSize/2;i++) {
-      convFunc(i)=1.0;
+    // Compute convolution function
+    if (convType=="pb") {
+        // Do nothing
     }
-  }
-  else if(convType=="sf") {
-    // SF
-    convSupport=(userSetSupport_p >= 0) ? userSetSupport_p : 3;
-    logIO() << "Support : " << convSupport << " pixels" << LogIO::POST;
-    convSampling=100;
-    convSize=convSampling*(2*convSupport+2);
-    convFunc.resize(convSize);
-    convFunc=0.0;
-    for (Int i=0;i<convSampling*convSupport;i++) {
-      Double nu=Double(i)/Double(convSupport*convSampling);
-      Double val;
-      grdsf(&nu, &val);
-      convFunc(i)=(1.0-nu*nu)*val;
-    }
-  }
-  else if(convType=="gauss") {
-    // default is b=1.0 (Mangum et al. 2007)
-    Double hwhm=(gwidth_p > 0.0) ? Double(gwidth_p) : sqrt(log(2.0));
-    Float truncate=(truncate_p >= 0.0) ? truncate_p : 3.0*hwhm;
-    convSampling=100;
-    Int itruncate=(Int)(truncate*Double(convSampling)+0.5);
-    logIO() << LogIO::DEBUG1 << "hwhm=" << hwhm << LogIO::POST;
-    logIO() << LogIO::DEBUG1 << "itruncate=" << itruncate << LogIO::POST;
-    //convSupport=(Int)(truncate+0.5);
-    convSupport = (Int)(truncate);
-    convSupport += (((truncate-(Float)convSupport) > 0.0) ? 1 : 0);
-    convSize=convSampling*(2*convSupport+2);
-    convFunc.resize(convSize);
-    convFunc=0.0;
-    Double val, x;
-    for (Int i = 0 ; i <= itruncate ; i++) {
-      x = Double(i)/Double(convSampling);
-      grdgauss(&hwhm, &x, &val);
-      convFunc(i)=val;
-    }
-
-//     String outfile = convType + ".dat";
-//     ofstream ofs(outfile.c_str());
-//     for (Int i = 0 ; i < convSize ; i++) {
-//       ofs << i << " " << convFunc[i] << endl;
-//     }
-//     ofs.close();
-  }
-  else if (convType=="gjinc") {
-    // default is b=2.52, c=1.55 (Mangum et al. 2007)
-    Double hwhm = (gwidth_p > 0.0) ? Double(gwidth_p) : sqrt(log(2.0))*2.52;
-    Double c = (jwidth_p > 0.0) ? Double(jwidth_p) : 1.55;
-    //Float truncate = truncate_p;
-    convSampling = 100;
-    Int itruncate=(Int)(truncate_p*Double(convSampling)+0.5);
-    logIO() << LogIO::DEBUG1 << "hwhm=" << hwhm << LogIO::POST;
-    logIO() << LogIO::DEBUG1 << "c=" << c << LogIO::POST;
-    logIO() << LogIO::DEBUG1 << "itruncate=" << itruncate << LogIO::POST;
-    //convSupport=(truncate_p >= 0.0) ? (Int)(truncate_p+0.5) : (Int)(2*c+0.5);
-    Float convSupportF = (truncate_p >= 0.0) ? truncate_p : (2*c);
-    convSupport = (Int)convSupportF;
-    convSupport += (((convSupportF-(Float)convSupport) > 0.0) ? 1 : 0);
-    convSize=convSampling*(2*convSupport+2);
-    convFunc.resize(convSize);
-    convFunc=0.0;
-    //UNUSED: Double r;
-    Double x, val1, val2;
-    Int normalize = 1;
-    if (itruncate >= 0) {
-      for (Int i = 0 ; i < itruncate ; i++) {
-        x = Double(i) / Double(convSampling);
-        //r = Double(i) / (Double(hwhm)*Double(convSampling));
-        grdgauss(&hwhm, &x, &val1);
-        grdjinc1(&c, &x, &normalize, &val2);
-        convFunc(i) = val1 * val2;
-      }
-    }
-    else {
-      // default is to truncate at first null
-      for (Int i=0;i<convSize;i++) {
-        x = Double(i) / Double(convSampling);
-        //r = Double(i) / (Double(hwhm)*Double(convSampling));
-        grdjinc1(&c, &x, &normalize, &val2);
-        if (val2 <= 0.0) {
-          logIO() << LogIO::DEBUG1 << "convFunc is automatically truncated at radius " << x << LogIO::POST;
-          break;
+    else if (convType=="box") {
+        convSupport=(userSetSupport_p >= 0) ? userSetSupport_p : 0;
+        logIO() << "Support : " << convSupport << " pixels" << LogIO::POST;
+        convSampling=100;
+        convSize=convSampling*(2*convSupport+2);
+        convFunc.resize(convSize);
+        convFunc=0.0;
+        for (Int i=0;i<convSize/2;i++) {
+            convFunc(i)=1.0;
         }
-        grdgauss(&hwhm, &x, &val1);
-        convFunc(i) = val1 * val2;
-      }
     }
-
-//    String outfile = convType + ".dat";
-//    ofstream ofs(outfile.c_str());
-//    for (Int i = 0 ; i < convSize ; i++) {
-//      ofs << i << " " << convFunc[i] << endl;
-//    }
-//    ofs.close();
-  }
-  else {
-    logIO_p << "Unknown convolution function " << convType << LogIO::EXCEPTION;
-  }
-
-  if(wImage) delete wImage; wImage=0;
-  wImage = new TempImage<Float>(image->shape(), image->coordinates());
-
-  /*if(isTiled) {
-    Float tileOverlap=0.5;
-    if(convType=="box") {
-      tileOverlap=0.0;
+    else if (convType=="sf") {
+        convSupport=(userSetSupport_p >= 0) ? userSetSupport_p : 3;
+        logIO() << "Support : " << convSupport << " pixels" << LogIO::POST;
+        convSampling=100;
+        convSize=convSampling*(2*convSupport+2);
+        convFunc.resize(convSize);
+        convFunc=0.0;
+        for (Int i=0;i<convSampling*convSupport;i++) {
+            Double nu=Double(i)/Double(convSupport*convSampling);
+            Double val;
+            grdsf(&nu, &val);
+            convFunc(i)=(1.0-nu*nu)*val;
+        }
+    }
+    else if (convType=="gauss") {
+        // default is b=1.0 (Mangum et al. 2007)
+        Double hwhm=(gwidth_p > 0.0) ? Double(gwidth_p) : sqrt(log(2.0));
+        Float truncate=(truncate_p >= 0.0) ? truncate_p : 3.0*hwhm;
+        convSampling=100;
+        Int itruncate=(Int)(truncate*Double(convSampling)+0.5);
+        logIO() << LogIO::DEBUG1 << "hwhm=" << hwhm << LogIO::POST;
+        logIO() << LogIO::DEBUG1 << "itruncate=" << itruncate << LogIO::POST;
+        //convSupport=(Int)(truncate+0.5);
+        convSupport = (Int)(truncate);
+        convSupport += (((truncate-(Float)convSupport) > 0.0) ? 1 : 0);
+        convSize=convSampling*(2*convSupport+2);
+        convFunc.resize(convSize);
+        convFunc=0.0;
+        Double val, x;
+        for (Int i = 0 ; i <= itruncate ; i++) {
+            x = Double(i)/Double(convSampling);
+            grdgauss(&hwhm, &x, &val);
+            convFunc(i)=val;
+        }
+    }
+    else if (convType=="gjinc") {
+        // default is b=2.52, c=1.55 (Mangum et al. 2007)
+        Double hwhm = (gwidth_p > 0.0) ? Double(gwidth_p) : sqrt(log(2.0))*2.52;
+        Double c = (jwidth_p > 0.0) ? Double(jwidth_p) : 1.55;
+        //Float truncate = truncate_p;
+        convSampling = 100;
+        Int itruncate=(Int)(truncate_p*Double(convSampling)+0.5);
+        logIO() << LogIO::DEBUG1 << "hwhm=" << hwhm << LogIO::POST;
+        logIO() << LogIO::DEBUG1 << "c=" << c << LogIO::POST;
+        logIO() << LogIO::DEBUG1 << "itruncate=" << itruncate << LogIO::POST;
+        //convSupport=(truncate_p >= 0.0) ? (Int)(truncate_p+0.5) : (Int)(2*c+0.5);
+        Float convSupportF = (truncate_p >= 0.0) ? truncate_p : (2*c);
+        convSupport = (Int)convSupportF;
+        convSupport += (((convSupportF-(Float)convSupport) > 0.0) ? 1 : 0);
+        convSize=convSampling*(2*convSupport+2);
+        convFunc.resize(convSize);
+        convFunc=0.0;
+        //UNUSED: Double r;
+        Double x, val1, val2;
+        Int normalize = 1;
+        if (itruncate >= 0) {
+            for (Int i = 0 ; i < itruncate ; i++) {
+                x = Double(i) / Double(convSampling);
+                //r = Double(i) / (Double(hwhm)*Double(convSampling));
+                grdgauss(&hwhm, &x, &val1);
+                grdjinc1(&c, &x, &normalize, &val2);
+                convFunc(i) = val1 * val2;
+            }
+        }
+        else {
+            // default is to truncate at first null
+            for (Int i=0;i<convSize;i++) {
+                x = Double(i) / Double(convSampling);
+                //r = Double(i) / (Double(hwhm)*Double(convSampling));
+                grdjinc1(&c, &x, &normalize, &val2);
+                if (val2 <= 0.0) {
+                    logIO() << LogIO::DEBUG1 
+                        << "convFunc is automatically truncated at radius "
+                        << x << LogIO::POST;
+                    break;
+                }
+                grdgauss(&hwhm, &x, &val1);
+                convFunc(i) = val1 * val2;
+            }
+        }
     }
     else {
-      tileOverlap=0.5;
-      tilesize=max(12,tilesize);
+        logIO_p << "Unknown convolution function " << convType << LogIO::EXCEPTION;
     }
-    IPosition tileShape=IPosition(4,tilesize,tilesize,npol,nchan);
-    Vector<Float> tileOverlapVec(4);
-    tileOverlapVec=0.0;
-    tileOverlapVec(0)=tileOverlap;
-    tileOverlapVec(1)=tileOverlap;
-    imageCache=new LatticeCache <Complex> (*image, cachesize, tileShape,
-					   tileOverlapVec,
-					   (tileOverlap>0.0));
 
-    wImageCache=new LatticeCache <Float> (*wImage, cachesize, tileShape,
-					   tileOverlapVec,
-					   (tileOverlap>0.0));
+    // Convolution function debug
+    // String outfile = convType + ".dat";
+    // dumpConvolutionFunction(outfile,convFunc);
 
-  }
-  */
+    if (wImage) delete wImage;
+    wImage = new TempImage<Float>(image->shape(), image->coordinates());
+
 }
+
+void SDGrid::collectPerfs(){
+#if defined(SDGRID_PERFS)
+  LogIO os(LogOrigin(name(), "collectPerfs"));
+  std::vector<std::string> probes_json {
+      cNextChunk.json()
+    , cMatchAllSpwChans.json()
+    , cMatchChannel.json()
+    , cPickWeights.json()
+    , cInterpolateFrequencyToGrid.json()
+    , cSearchValidPointing.json()
+    , cComputeSplines.json()
+    , cResetFrame.json()
+    , cInterpolateDirection.json()
+    , cConvertDirection.json()
+    , cComputeDirectionPixel.json()
+    , cHandleMovingSource.json()
+    , cGridData.json()
+  };
+  os << "PERFS<SDGRID> "
+     << "{ \"note\": \"sum, min, mean, max are in units of nanoseconds.\""
+     << ", \"probes\": "
+     <<        "{ " << join(probes_json.data(), probes_json.size(), ", " ) << " }"
+     << " }"
+     << LogIO::POST;
+#endif
+}
+
 
 // This is nasty, we should use CountedPointers here.
 SDGrid::~SDGrid() {
@@ -406,6 +578,8 @@ SDGrid::~SDGrid() {
   if (wImageCache) delete wImageCache; wImageCache = 0;
   if (wArrayLattice) delete wArrayLattice; wArrayLattice = 0;
   if (interpolator) delete interpolator; interpolator = 0;
+
+  collectPerfs();
 }
 
 void SDGrid::findPBAsConvFunction(const ImageInterface<Complex>& image,
@@ -666,117 +840,99 @@ void SDGrid::finalizeToVis()
 }
 
 
-// Initialize the FFT to the Sky. Here we have to setup and initialize the
-// grid.
+// Initialize the FFT to the Sky.
+// Here we have to setup and initialize the grid.
 void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
-			     Matrix<Float>& weight, const VisBuffer& vb)
+        Matrix<Float>& weight, const VisBuffer& vb)
 {
-  // image always points to the image
-  image=&iimage;
+    // image always points to the image
+    image=&iimage;
 
-  ok();
+    ok();
 
-  init();
+    init();
 
-  if(convType=="pb") {
-    findPBAsConvFunction(*image, vb);
-  }
+    if (convType == "pb") findPBAsConvFunction(*image, vb);
 
-  // reset msId_p and lastAntID_p to -1
-  // this is to ensure correct antenna position in getXYPos
-  msId_p = -1;
-  lastAntID_p = -1;
+    // reset msId_p and lastAntID_p to -1
+    // this is to ensure correct antenna position in getXYPos
+    msId_p = -1;
+    lastAntID_p = -1;
 
-  // Initialize the maps for polarization and channel. These maps
-  // translate visibility indices into image indices
-  initMaps(vb);
-  //cerr << "ToSky cachesize " << cachesize << " im shape " << (image->shape().product()) << endl;
-  /*if((image->shape().product())>cachesize) {
-    isTiled=true;
-  }
-  else {
+    // Initialize the maps for polarization and channel.
+    // These maps translate visibility indices into image indices
+    initMaps(vb);
+
+    // No longer using isTiled
     isTiled=false;
-  }
-  */
-  //////////////No longer using isTiled
-  isTiled=false;
-  nx    = image->shape()(0);
-  ny    = image->shape()(1);
-  npol  = image->shape()(2);
-  nchan = image->shape()(3);
+    nx    = image->shape()(0);
+    ny    = image->shape()(1);
+    npol  = image->shape()(2);
+    nchan = image->shape()(3);
 
-  sumWeight=0.0;
-  weight.resize(sumWeight.shape());
-  weight=0.0;
+    sumWeight = 0.0;
+    weight.resize(sumWeight.shape());
+    weight = 0.0;
 
-  // First get the CoordinateSystem for the image and then find
-  // the DirectionCoordinate
-  CoordinateSystem coords=image->coordinates();
-  Int directionIndex=coords.findCoordinate(Coordinate::DIRECTION);
-  AlwaysAssert(directionIndex>=0, AipsError);
-  directionCoord=coords.directionCoordinate(directionIndex);
+    // First get the CoordinateSystem for the image
+    // and then find the DirectionCoordinate
+    CoordinateSystem coords = image->coordinates();
+    Int directionIndex = coords.findCoordinate(Coordinate::DIRECTION);
+    AlwaysAssert(directionIndex >= 0, AipsError);
+    directionCoord = coords.directionCoordinate(directionIndex);
 
-  // Initialize for in memory or to disk gridding. lattice will
-  // point to the appropriate Lattice, either the ArrayLattice for
-  // in memory gridding or to the image for to disk gridding.
-  /*if(isTiled) {
-    imageCache->flush();
-    image->set(Complex(0.0));
-    lattice=image;
-    wLattice=wImage;
-  }
-  else*/
-  {
+    // Initialize for in memory gridding.
+    // lattice will point to the ArrayLattice
     IPosition gridShape(4, nx, ny, npol, nchan);
     logIO() << LogOrigin("SDGrid", "initializeToSky", WHERE) << LogIO::DEBUGGING
         << "gridShape = " << gridShape << LogIO::POST;
+
     griddedData.resize(gridShape);
-    griddedData=Complex(0.0);
-    if(arrayLattice) delete arrayLattice; arrayLattice=0;
+    griddedData = Complex(0.0);
+    if (arrayLattice) delete arrayLattice;
     arrayLattice = new ArrayLattice<Complex>(griddedData);
-    lattice=arrayLattice;
+    lattice = arrayLattice;
+    AlwaysAssert(lattice, AipsError);
+
     wGriddedData.resize(gridShape);
     wGriddedData=0.0;
-    if(wArrayLattice) delete wArrayLattice; wArrayLattice=0;
+    if (wArrayLattice) delete wArrayLattice;
     wArrayLattice = new ArrayLattice<Float>(wGriddedData);
-    wLattice=wArrayLattice;
+    wLattice = wArrayLattice;
+    AlwaysAssert(wLattice, AipsError);
 
     // clipping related stuff
     if (clipminmax_) {
-      gmin_.resize(gridShape);
-      gmin_ = Complex(FLT_MAX);
-      gmax_.resize(gridShape);
-      gmax_ = Complex(-FLT_MAX);
-      wmin_.resize(gridShape);
-      wmin_ = 0.0f;
-      wmax_.resize(gridShape);
-      wmax_ = 0.0f;
-      npoints_.resize(gridShape);
-      npoints_ = 0;
+        gmin_.resize(gridShape);
+        gmin_ = Complex(FLT_MAX);
+        gmax_.resize(gridShape);
+        gmax_ = Complex(-FLT_MAX);
+        wmin_.resize(gridShape);
+        wmin_ = 0.0f;
+        wmax_.resize(gridShape);
+        wmax_ = 0.0f;
+        npoints_.resize(gridShape);
+        npoints_ = 0;
     }
-  }
-  AlwaysAssert(lattice, AipsError);
-  AlwaysAssert(wLattice, AipsError);
+
+    // debug messages
+    LogOrigin msgOrigin("SDGrid", "initializeToSky", WHERE);
+    auto & logger = logIO();
+    logger << msgOrigin << LogIO::DEBUGGING;
+    logger.output() << "clipminmax_ = " << std::boolalpha << clipminmax_
+                    << " (" << std::noboolalpha << clipminmax_ << ")";
+    logger << LogIO::POST;
+    if (clipminmax_) {
+        logger << msgOrigin << LogIO::DEBUGGING
+               << "will use clipping-capable Fortran gridder ggridsd2 for imaging"
+               << LogIO::POST;
+    }
 }
 
 void SDGrid::finalizeToSky()
 {
-
-  // Now we flush the cache and report statistics
-  // For memory based, we don't write anything out yet.
-  /*if(isTiled) {
-    logIO() << LogOrigin("SDGrid", "finalizeToSky")  << LogIO::NORMAL;
-
-    AlwaysAssert(image, AipsError);
-    AlwaysAssert(imageCache, AipsError);
-    imageCache->flush();
-    ostringstream o;
-    imageCache->showCacheStatistics(o);
-    logIO() << o.str() << LogIO::POST;
-  }
-  */
-
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if (pointingToImage) delete pointingToImage;
+    pointingToImage = nullptr;
 }
 
 Array<Complex>* SDGrid::getDataPointer(const IPosition& centerLoc2D,
@@ -876,228 +1032,192 @@ extern "C" {
 }
 
 void SDGrid::put(const VisBuffer& vb, Int row, Bool dopsf,
-		 FTMachine::Type type)
+        FTMachine::Type type)
 {
-  LogIO os(LogOrigin("SDGrid", "put"));
+    LogIO os(LogOrigin("SDGrid", "put"));
 
-  gridOk(convSupport);
+    gridOk(convSupport);
 
-  //Check if ms has changed then cache new spw and chan selection
-  if(vb.newMS()){
-    matchAllSpwChans(vb);
-    lastIndex_p=0;
-    if (lastIndexPerAnt_p.nelements() < (size_t)vb.numberAnt()) {
-      lastIndexPerAnt_p.resize(vb.numberAnt());
+    // Check if ms has changed then cache new spw and chan selection
+    if (vb.newMS()) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cMatchAllSpwChans);
+        #endif
+        matchAllSpwChans(vb);
+        lastIndex_p = 0;
+        if (lastIndexPerAnt_p.nelements() < (size_t)vb.numberAnt()) {
+            lastIndexPerAnt_p.resize(vb.numberAnt());
+        }
+        lastIndexPerAnt_p = 0;
     }
-    lastIndexPerAnt_p=0;
-  }
-  //Here we redo the match or use previous match
 
-  //Channel matching for the actual spectral window of buffer
-  if(doConversion_p[vb.spectralWindow()]){
-    matchChannel(vb.spectralWindow(), vb);
-  }
-  else{
-    chanMap.resize();
-    chanMap=multiChanMap_p[vb.spectralWindow()];
-  }
-  //No point in reading data if its not matching in frequency
-  if(max(chanMap)==-1)
-    return;
-
-  Matrix<Float> imagingweight;
-  //imagingweight=&(vb.imagingWeight());
-  pickWeights(vb, imagingweight);
-
-  if(type==FTMachine::PSF || type==FTMachine::COVERAGE)
-    dopsf=true;
-  if(dopsf) type=FTMachine::PSF;
-  Cube<Complex> data;
-  //Fortran gridder need the flag as ints
-  Cube<Int> flags;
-  Matrix<Float> elWeight;
-  interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
-  //cerr << "number of rows " << vb.nRow() << " data shape " << data.shape() << endl;
-  Bool iswgtCopy;
-  const Float *wgtStorage;
-  wgtStorage=elWeight.getStorage(iswgtCopy);
-  Bool isCopy;
-  const Complex *datStorage=0;
-  if(!dopsf)
-    datStorage=data.getStorage(isCopy);
-
-  // If row is -1 then we pass through all rows
-  Int startRow, endRow, nRow;
-  if (row==-1) {
-    nRow=vb.nRow();
-    startRow=0;
-    endRow=nRow-1;
-  } else {
-    nRow=1;
-    startRow=row;
-    endRow=row;
-  }
-
-
-  Vector<Int> rowFlags(vb.flagRow().nelements());
-  rowFlags=0;
-  for (Int rownr=startRow; rownr<=endRow; rownr++) {
-    if(vb.flagRow()(rownr)) rowFlags(rownr)=1;
-  }
-
-  // Take care of translation of Bools to Integer
-  Int idopsf=0;
-  if(dopsf) idopsf=1;
-
-  /*if(isTiled) {
-    for (Int rownr=startRow; rownr<=endRow; rownr++) {
-
-      if(getXYPos(vb, rownr)) {
-
-	IPosition centerLoc2D(2, Int(xyPos(0)), Int(xyPos(1)));
-	Array<Complex>* dataPtr=getDataPointer(centerLoc2D, false);
-	Array<Float>*  wDataPtr=getWDataPointer(centerLoc2D, false);
-	Int aNx=dataPtr->shape()(0);
-	Int aNy=dataPtr->shape()(1);
-	Vector<Double> actualPos(2);
-	for (Int i=0;i<2;i++) {
-	  actualPos(i)=xyPos(i)-Double(offsetLoc(i));
-	}
-	// Now use FORTRAN to do the gridding. Remember to
-	// ensure that the shape and offsets of the tile are
-	// accounted for.
-	{
-	  Bool del;
-	  //	  IPosition s(data.shape());
-	  const IPosition& fs=flags.shape();
-	  std::vector<Int> s(fs.begin(), fs.end());
-
-	  ggridsd(actualPos.getStorage(del),
-		  datStorage,
-		  &s[0],
-		  &s[1],
-		  &idopsf,
-		  flags.getStorage(del),
-		  rowFlags.getStorage(del),
-		  wgtStorage,
-		  &s[2],
-		  &rownr,
-		  dataPtr->getStorage(del),
-		  wDataPtr->getStorage(del),
-		  &aNx,
-		  &aNy,
-		  &npol,
-		  &nchan,
-		  &convSupport,
-		  &convSampling,
-		  convFunc.getStorage(del),
-		  chanMap.getStorage(del),
-		  polMap.getStorage(del),
-		  sumWeight.getStorage(del));
-	}
-      }
+    // Here we redo the match or use previous match
+    // Channel matching for the actual spectral window of buffer
+    if (doConversion_p[vb.spectralWindow()]) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cMatchChannel);
+        #endif
+        matchChannel(vb.spectralWindow(), vb);
     }
-  }
-  else*/
-  {
-    Matrix<Double> xyPositions(2, endRow-startRow+1);
-    xyPositions=-1e9; // make sure failed getXYPos does not fall on grid
-    for (Int rownr=startRow; rownr<=endRow; rownr++) {
-      if(getXYPos(vb, rownr)) {
-	xyPositions(0, rownr)=xyPos(0);
-	xyPositions(1, rownr)=xyPos(1);
-      }
+    else {
+        chanMap.resize();
+        chanMap = multiChanMap_p[vb.spectralWindow()];
     }
+
+    // No point in reading data if its not matching in frequency
+    if (max(chanMap)==-1)
+      return;
+
+    Matrix<Float> imagingweight;
+    pickWeights(vb, imagingweight);
+
+    if (type==FTMachine::PSF || type==FTMachine::COVERAGE)
+        dopsf = true;
+    if (dopsf) type=FTMachine::PSF;
+
+    Cube<Complex> data;
+    //Fortran gridder need the flag as ints
+    Cube<Int> flags;
+    Matrix<Float> elWeight;
     {
-      Bool del;
-      //      IPosition s(data.shape());
-      const IPosition& fs=flags.shape();
-      std::vector<Int> s(fs.begin(), fs.end());
-      Bool datCopy, wgtCopy;
-      Complex * datStor=griddedData.getStorage(datCopy);
-      Float * wgtStor=wGriddedData.getStorage(wgtCopy);
-
-      Bool call_ggridsd = !clipminmax_ || dopsf;
-
-      if (call_ggridsd) {
-
-      ggridsd(xyPositions.getStorage(del),
-	      datStorage,
-	      &s[0],
-	      &s[1],
-	      &idopsf,
-	      flags.getStorage(del),
-	      rowFlags.getStorage(del),
-	      wgtStorage,
-	      &s[2],
-	      &row,
-	      datStor,
-	      wgtStor,
-	      &nx,
-	      &ny,
-	      &npol,
-	      &nchan,
-	      &convSupport,
-	      &convSampling,
-	      convFunc.getStorage(del),
-	      chanMap.getStorage(del),
-	      polMap.getStorage(del),
-	      sumWeight.getStorage(del));
-
-      } else {
-        Bool gminCopy;
-        Complex *gminStor = gmin_.getStorage(gminCopy);
-        Bool gmaxCopy;
-        Complex *gmaxStor = gmax_.getStorage(gmaxCopy);
-        Bool wminCopy;
-        Float *wminStor = wmin_.getStorage(wminCopy);
-        Bool wmaxCopy;
-        Float *wmaxStor = wmax_.getStorage(wmaxCopy);
-        Bool npCopy;
-        Int *npStor = npoints_.getStorage(npCopy);
-
-        ggridsdclip(xyPositions.getStorage(del),
-          datStorage,
-          &s[0],
-          &s[1],
-          &idopsf,
-          flags.getStorage(del),
-          rowFlags.getStorage(del),
-          wgtStorage,
-          &s[2],
-          &row,
-          datStor,
-          wgtStor,
-          npStor,
-          gminStor,
-          wminStor,
-          gmaxStor,
-          wmaxStor,
-          &nx,
-          &ny,
-          &npol,
-          &nchan,
-          &convSupport,
-          &convSampling,
-          convFunc.getStorage(del),
-          chanMap.getStorage(del),
-          polMap.getStorage(del),
-          sumWeight.getStorage(del));
-
-        gmin_.putStorage(gminStor, gminCopy);
-        gmax_.putStorage(gmaxStor, gmaxCopy);
-        wmin_.putStorage(wminStor, wminCopy);
-        wmax_.putStorage(wmaxStor, wmaxCopy);
-        npoints_.putStorage(npStor, npCopy);
-      }
-      griddedData.putStorage(datStor, datCopy);
-      wGriddedData.putStorage(wgtStor, wgtCopy);
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cInterpolateFrequencyToGrid);
+        #endif
+        interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
     }
-  }
-  if(!dopsf)
-    data.freeStorage(datStorage, isCopy);
-  elWeight.freeStorage(wgtStorage,iswgtCopy);
 
+    Bool iswgtCopy;
+    const Float *wgtStorage;
+    wgtStorage=elWeight.getStorage(iswgtCopy);
+    Bool isCopy;
+    const Complex *datStorage = nullptr;
+    if (!dopsf)
+        datStorage = data.getStorage(isCopy);
+
+    // If row is -1 then we pass through all rows
+    Int startRow, endRow, nRow;
+    if (row == -1) {
+        nRow = vb.nRow();
+        startRow = 0;
+        endRow = nRow - 1;
+    } else {
+        nRow = 1;
+        startRow = endRow = row;
+    }
+
+    Vector<Int> rowFlags(vb.flagRow().nelements(),0);
+    for (Int rownr=startRow; rownr<=endRow; rownr++) {
+        if (vb.flagRow()(rownr)) rowFlags(rownr) = 1;
+    }
+
+    // Take care of translation of Bools to Integer
+    Int idopsf = dopsf ? 1 : 0;
+
+    /*if(isTiled) {
+    }
+    else*/
+    {
+        Matrix<Double> xyPositions(2, endRow - startRow + 1);
+        xyPositions = -1e9; // make sure failed getXYPos does not fall on grid
+        for (Int rownr=startRow; rownr<=endRow; rownr++) {
+            if (getXYPos(vb, rownr)) {
+                xyPositions(0, rownr) = xyPos(0);
+                xyPositions(1, rownr) = xyPos(1); 
+            }
+        }
+        {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cGridData);
+            #endif
+            Bool del;
+            //      IPosition s(data.shape());
+            const IPosition& fs=flags.shape();
+            std::vector<Int> s(fs.begin(), fs.end());
+            Bool datCopy, wgtCopy;
+            Complex * datStor=griddedData.getStorage(datCopy);
+            Float * wgtStor=wGriddedData.getStorage(wgtCopy);
+
+            Bool call_ggridsd = !clipminmax_ || dopsf;
+
+            if (call_ggridsd) {
+
+                ggridsd(xyPositions.getStorage(del),
+                    datStorage,
+                    &s[0],
+                    &s[1],
+                    &idopsf,
+                    flags.getStorage(del),
+                    rowFlags.getStorage(del),
+                    wgtStorage,
+                    &s[2],
+                    &row,
+                    datStor,
+                    wgtStor,
+                    &nx,
+                    &ny,
+                    &npol,
+                    &nchan,
+                    &convSupport,
+                    &convSampling,
+                    convFunc.getStorage(del),
+                    chanMap.getStorage(del),
+                    polMap.getStorage(del),
+                    sumWeight.getStorage(del));
+
+            } 
+            else {
+                Bool gminCopy;
+                Complex *gminStor = gmin_.getStorage(gminCopy);
+                Bool gmaxCopy;
+                Complex *gmaxStor = gmax_.getStorage(gmaxCopy);
+                Bool wminCopy;
+                Float *wminStor = wmin_.getStorage(wminCopy);
+                Bool wmaxCopy;
+                Float *wmaxStor = wmax_.getStorage(wmaxCopy);
+                Bool npCopy;
+                Int *npStor = npoints_.getStorage(npCopy);
+
+                ggridsdclip(xyPositions.getStorage(del),
+                    datStorage,
+                    &s[0],
+                    &s[1],
+                    &idopsf,
+                    flags.getStorage(del),
+                    rowFlags.getStorage(del),
+                    wgtStorage,
+                    &s[2],
+                    &row,
+                    datStor,
+                    wgtStor,
+                    npStor,
+                    gminStor,
+                    wminStor,
+                    gmaxStor,
+                    wmaxStor,
+                    &nx,
+                    &ny,
+                    &npol,
+                    &nchan,
+                    &convSupport,
+                    &convSampling,
+                    convFunc.getStorage(del),
+                    chanMap.getStorage(del),
+                    polMap.getStorage(del),
+                    sumWeight.getStorage(del));
+
+                gmin_.putStorage(gminStor, gminCopy);
+                gmax_.putStorage(gmaxStor, gmaxCopy);
+                wmin_.putStorage(wminStor, wminCopy);
+                wmax_.putStorage(wmaxStor, wmaxCopy);
+                npoints_.putStorage(npStor, npCopy);
+            }
+            griddedData.putStorage(datStor, datCopy);
+            wGriddedData.putStorage(wgtStor, wgtCopy);
+        }
+    }
+    if (!dopsf)
+        data.freeStorage(datStorage, isCopy);
+    elWeight.freeStorage(wgtStorage,iswgtCopy);
 }
 
 void SDGrid::get(VisBuffer& vb, Int row)
@@ -1247,143 +1367,166 @@ void SDGrid::get(VisBuffer& vb, Int row)
   interpolateFrequencyFromgrid(vb, data, FTMachine::MODEL);
 }
 
+// Helper functions for SDGrid::makeImage
+namespace {
+inline
+void setupVisBufferForFTMachineType(FTMachine::Type type, VisBuffer& vb) {
+    switch(type) {
+    case FTMachine::RESIDUAL:
+        vb.visCube() = vb.correctedVisCube();
+        vb.visCube() -= vb.modelVisCube();
+        break;
+    case FTMachine::PSF:
+        vb.visCube() = Complex(1.0,0.0);
+        break;
+    case FTMachine::COVERAGE:
+        vb.visCube() = Complex(1.0);
+        break;
+    default:
+        break;
+    }
+}
 
+inline
+void getParamsForFTMachineType(const ROVisibilityIterator& vi, FTMachine::Type in_type,
+          casacore::Bool& out_dopsf, FTMachine::Type& out_type) {
+    
+    // Tune input type of FTMachine
+    auto haveCorrectedData = not (vi.msColumns().correctedData().isNull());
+    auto tunedType = 
+            ((in_type == FTMachine::CORRECTED) && (not haveCorrectedData)) ?
+            FTMachine::OBSERVED : in_type;
 
-  // Make a plain straightforward honest-to-FSM image. This returns
-  // a complex image, without conversion to Stokes. The representation
-  // is that required for the visibilities.
-  //----------------------------------------------------------------------
-  void SDGrid::makeImage(FTMachine::Type type,
-			    ROVisibilityIterator& vi,
-			    ImageInterface<Complex>& theImage,
-			    Matrix<Float>& weight) {
+    // Compute output parameters
+    switch(tunedType) {
+    case FTMachine::RESIDUAL:
+    case FTMachine::MODEL:
+    case FTMachine::CORRECTED:
+        out_dopsf = false;
+        out_type = tunedType;
+        break;
+    case FTMachine::PSF:
+    case FTMachine::COVERAGE:
+        out_dopsf = true;
+        out_type = tunedType;
+        break;
+    default:
+        out_dopsf = false;
+        out_type = FTMachine::OBSERVED;
+        break;
+    }
+}
 
+void abortOnPolFrameChange(const StokesImageUtil::PolRep refPolRep, const String & refMsName, ROVisibilityIterator &vi) {
+    auto vb = vi.getVisBuffer();
+    const auto polRep = (vb->polFrame() == MSIter::Linear) ?
+            StokesImageUtil::LINEAR : StokesImageUtil::CIRCULAR;
+    const auto polFrameChanged = (polRep != refPolRep);
+    if (polFrameChanged) {
+        // Time of polarization change
+        constexpr auto timeColEnum = MS::PredefinedColumns::TIME;
+        const auto & timeColName = MS::columnName(timeColEnum);
+        const auto timeVbFirstRow = vb->time()[0];
+
+        ScalarMeasColumn<MEpoch> timeMeasCol(vi.ms(),timeColName);
+        const auto & timeMeasRef = timeMeasCol.getMeasRef();
+
+        const auto & timeUnit = MS::columnUnit(timeColEnum);
+
+        MEpoch polFrameChangeEpoch(Quantity(timeVbFirstRow,timeUnit),
+                                   timeMeasRef);
+        MVTime polFrameChangeTime(polFrameChangeEpoch.getValue());
+
+        // Error message
+        MVTime::Format fmt(MVTime::YMD | MVTime::USE_SPACE,10);
+        constexpr auto nl = '\n';
+        stringstream msg;
+        msg  << "Polarization Frame changed ! " << nl
+                << setw(9) << right << "from: " << setw(8) << left << StokesImageUtil::toString(refPolRep)
+                << " in: " << refMsName << nl
+                << setw(9) << right << "to: "   << setw(8) << left << StokesImageUtil::toString(polRep)
+                << " at: " << MVTime::Format(fmt) << polFrameChangeTime
+                << " (" << fixed << setprecision(6) << polFrameChangeTime.second() << " s)"
+                << " in: " << vb->msName();
+
+        LogOrigin logOrigin("","abortOnPolFrameChange()");
+        LogIO logger(logOrigin);
+        logger << msg.str() << LogIO::SEVERE << LogIO::POST;
+
+        // Abort
+        logger.sourceLocation(WHERE);
+        logger << "Polarization Frame must not change" << LogIO::EXCEPTION;
+    };
+}
+
+} // SDGrid::makeImage helper functions namespace
+
+void SDGrid::nextChunk(ROVisibilityIterator &vi) {
+#if defined(SDGRID_PERFS)
+    StartStop trigger(cNextChunk);
+#endif 
+    vi.nextChunk();
+}
+
+// Make a plain straightforward honest-to-FSM image. This returns
+// a complex image, without conversion to Stokes. The representation
+// is that required for the visibilities.
+//----------------------------------------------------------------------
+void SDGrid::makeImage(FTMachine::Type inType,
+                ROVisibilityIterator& vi,
+                ImageInterface<Complex>& theImage,
+                Matrix<Float>& weight) {
 
     logIO() << LogOrigin("FTMachine", "makeImage0") << LogIO::NORMAL;
 
-    // Loop over all visibilities and pixels
+    // Attach visibility buffer (VisBuffer) to visibility iterator (VisibilityIterator)
     VisBuffer vb(vi);
 
-    // Initialize put (i.e. transform to Sky) for this model
+    // Set the Polarization Representation
+    // of image's Stokes Coordinate Axis
+    // based on first data in first MS
     vi.origin();
+    const auto imgPolRep = (vb.polFrame() == MSIter::Linear) ?
+            StokesImageUtil::LINEAR : StokesImageUtil::CIRCULAR;
+    StokesImageUtil::changeCStokesRep(theImage, imgPolRep);
+    const auto firstMsName = vb.msName();
 
-    if(vb.polFrame()==MSIter::Linear) {
-      StokesImageUtil::changeCStokesRep(theImage, StokesImageUtil::LINEAR);
+    initializeToSky(theImage,weight,vb);
+
+    // Setup SDGrid Cache Manager
+    const auto onDuty = cacheIsEnabled;
+    const auto accessMode = cache.isEmpty() ? Cache::AccessMode::WRITE
+                                            : Cache::AccessMode::READ;
+    CacheManager cacheManager(cache, onDuty, accessMode);
+
+    // Loop over the visibilities, putting VisBuffers
+    for (vi.originChunks(); vi.moreChunks(); nextChunk(vi)) {
+        abortOnPolFrameChange(imgPolRep,firstMsName,vi);
+        FTMachine::Type actualType;
+        Bool doPSF;
+        if (vi.newMS()) { // Note: the first MS is a new MS
+            getParamsForFTMachineType(vi, inType, doPSF, actualType);
+            if (cacheIsEnabled) cache.newMS(vi.ms());
+        }
+        for (vi.origin(); vi.more(); vi++) {
+            setupVisBufferForFTMachineType(actualType, vb);
+            constexpr Int allVbRows = -1;
+            put(vb, allVbRows, doPSF, actualType);
+        }
     }
-    else {
-      StokesImageUtil::changeCStokesRep(theImage, StokesImageUtil::CIRCULAR);
+    finalizeToSky();
+
+    // Normalize by dividing out weights, etc.
+    auto doNormalize = (inType != FTMachine::COVERAGE);
+    getImage(weight, doNormalize);
+
+    // Warning message
+    if (allEQ(weight, 0.0f)) {
+        logIO() << LogIO::SEVERE
+                << "No useful data in SDGrid: all weights are zero"
+                << LogIO::POST;
     }
-    Bool useCorrected= !(vi.msColumns().correctedData().isNull());
-    if((type==FTMachine::CORRECTED) && (!useCorrected))
-      type=FTMachine::OBSERVED;
-    Bool normalize=true;
-    if(type==FTMachine::COVERAGE)
-      normalize=false;
-
-    Int Nx=theImage.shape()(0);
-    Int Ny=theImage.shape()(1);
-    Int Npol=theImage.shape()(2);
-    Int Nchan=theImage.shape()(3);
-    Double memtot=Double(HostInfo::memoryTotal(true))*1024.0; // return in kB
-    Int nchanInMem=Int(memtot/2.0/8.0/Double(Nx*Ny*Npol));
-    Int nloop=nchanInMem >= Nchan ? 1 : Nchan/nchanInMem+1;
-    ImageInterface<Complex> *imCopy=NULL;
-    IPosition blc(theImage.shape());
-    IPosition trc(theImage.shape());
-    blc-=blc; //set all values to 0
-    trc=theImage.shape();
-    trc-=1; // set trc to image size -1
-    if(nloop==1) {
-      imCopy=& theImage;
-      nchanInMem=Nchan;
-    }
-    else
-      logIO()  << "Not enough memory to image in one go \n will process the image in   "
-	       << nloop
-	      << " sections  "
-	      << LogIO::POST;
-
-    weight.resize(Npol, Nchan);
-    Matrix<Float> wgtcopy(Npol, Nchan);
-
-    Bool isWgtZero=true;
-    for (Int k=0; k < nloop; ++k){
-      Int bchan=k*nchanInMem;
-      Int echan=(k+1)*nchanInMem < Nchan ?  (k+1)*nchanInMem-1 : Nchan-1;
-
-      if(nloop > 1) {
-	 blc[3]=bchan;
-	 trc[3]=echan;
-	 Slicer sl(blc, trc, Slicer::endIsLast);
-	 imCopy=new SubImage<Complex>(theImage, sl, true);
-	 wgtcopy.resize(npol, echan-bchan+1);
-      }
-      vi.originChunks();
-      vi.origin();
-      initializeToSky(*imCopy,wgtcopy,vb);
-
-
-      // for minmax clipping
-      logIO() << LogOrigin("SDGrid", "makeImage", WHERE) << LogIO::DEBUGGING
-          << "doclip_ = " << (clipminmax_ ? "TRUE" : "FALSE") << " (" << clipminmax_ << ")" << LogIO::POST;
-      if (clipminmax_) {
-        logIO() << LogOrigin("SDGRID", "makeImage", WHERE)
-             << LogIO::DEBUGGING << "use ggridsd2 for imaging" << LogIO::POST;
-      }
-
-      // Loop over the visibilities, putting VisBuffers
-      for (vi.originChunks();vi.moreChunks();vi.nextChunk()) {
-	for (vi.origin(); vi.more(); vi++) {
-
-	  switch(type) {
-	  case FTMachine::RESIDUAL:
-	    vb.visCube()=vb.correctedVisCube();
-	    vb.visCube()-=vb.modelVisCube();
-	    put(vb, -1, false);
-	    break;
-	  case FTMachine::MODEL:
-	    put(vb, -1, false, FTMachine::MODEL);
-	    break;
-	  case FTMachine::CORRECTED:
-	    put(vb, -1, false, FTMachine::CORRECTED);
-	    break;
-	  case FTMachine::PSF:
-	    vb.visCube()=Complex(1.0,0.0);
-	    put(vb, -1, true, FTMachine::PSF);
-	    break;
-	  case FTMachine::COVERAGE:
-	    vb.visCube()=Complex(1.0);
-	    put(vb, -1, true, FTMachine::COVERAGE);
-	    break;
-	  case FTMachine::OBSERVED:
-	  default:
-	    put(vb, -1, false, FTMachine::OBSERVED);
-	    break;
-	  }
-	}
-      }
-      finalizeToSky();
-      // Normalize by dividing out weights, etc.
-      getImage(wgtcopy, normalize);
-      if(max(wgtcopy)==0.0){
-	if(nloop > 1)
-	  logIO() << LogIO::WARN
-		  << "No useful data in SDGrid: weights all zero for image slice  " << k
-		  << LogIO::POST;
-      }
-      else
-	isWgtZero=false;
-
-      weight(Slice(0, Npol), Slice(bchan, echan-bchan+1))=wgtcopy;
-      if(nloop >1) delete imCopy;
-    }//loop k
-    if(isWgtZero)
-      logIO() << LogIO::SEVERE
-	      << "No useful data in SDGrid: weights all zero"
-	      << LogIO::POST;
-  }
-
-
+}
 
 // Finalize : optionally normalize by weight image
 ImageInterface<Complex>& SDGrid::getImage(Matrix<Float>& weights,
@@ -1483,7 +1626,7 @@ void SDGrid::getWeightImage(ImageInterface<Float>& weightImage, Matrix<Float>& w
 }
 
 void SDGrid::ok() {
-  AlwaysAssert(image, AipsError);
+    AlwaysAssert(image, AipsError);
 }
 
 // Get the index into the pointing table for this time. Note that the
@@ -1557,148 +1700,259 @@ Int SDGrid::getIndex(const MSPointingColumns& mspc, const Double& time,
 
 Bool SDGrid::getXYPos(const VisBuffer& vb, Int row) {
 
-  Bool dointerp;
-  Bool nullPointingTable = false;
-  const MSPointingColumns& act_mspc = vb.msColumns().pointing();
-  nullPointingTable = (act_mspc.nrow() < 1);
-  Int pointIndex = -1;
-  if (!nullPointingTable) {
-    ///if(vb.newMS())  vb.newMS does not work well using msid
-    if (vb.msId() != msId_p) {
-      lastIndex_p = 0;
-      if (lastIndexPerAnt_p.nelements() < (size_t)vb.numberAnt()) {
-        lastIndexPerAnt_p.resize(vb.numberAnt());
-      }
-      lastIndexPerAnt_p = 0;
-      msId_p = vb.msId();
-      lastAntID_p = -1;
+    // Cache control
+    if (cacheIsEnabled and cache.isReadable()) {
+        cache.loadRowPixel();
+        return rowPixel.isValid;
     }
-    pointIndex = getIndex(act_mspc, vb.time()(row), -1.0, vb.antenna1()(row));
-    //Try again to locate a pointing within the integration
-    if (pointIndex < 0)
-      pointIndex = getIndex(act_mspc, vb.time()(row), vb.timeInterval()(row), vb.antenna1()(row));
-  }
-  if (!nullPointingTable && ((pointIndex < 0) || (pointIndex >= Int(act_mspc.time().nrow())))) {
-    ostringstream o;
-    o << "Failed to find pointing information for time " <<
-      MVTime(vb.time()(row)/86400.0) << ": Omitting this point";
-    logIO_p << LogIO::DEBUGGING << String(o) << LogIO::POST;
-    //    logIO_p << String(o) << LogIO::POST;
-    return false;
-  }
+    const auto onDuty = cacheIsEnabled and cache.isWriteable();
+    CacheWriter cacheWriter(cache, onDuty);
 
-  dointerp = false;
-  if (!nullPointingTable && (vb.timeInterval()(row) < act_mspc.interval()(pointIndex))) {
-    dointerp = true;
-    if (!isSplineInterpolationReady) {
-      interpolator = new SDPosInterpolator(vb, pointingDirCol_p);
-      isSplineInterpolationReady = true;
+    // Until we manage to compute a valid one ...
+    rowPixel.isValid = false;
+
+    // Check POINTING table.
+    const MSPointingColumns& act_mspc = vb.msColumns().pointing();
+    const auto nPointings = act_mspc.nrow();
+    const auto havePointings = (nPointings >= 1);
+
+    // We'll need to call these many times, so let's call them once for good
+    const auto rowTime = vb.time()(row);
+    const auto rowTimeInterval = vb.timeInterval()(row);
+    const auto rowAntenna1 = vb.antenna1()(row);
+
+    // 1. Try to find the index of a pointing recorded:
+    //     - for the antenna of specified row,
+    //     - at a time close enough to the time at which
+    //       data of specified row was taken using that antenna
+    Int pointingIndex = -1;
+    if (havePointings) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cSearchValidPointing);
+        #endif
+        // if (vb.newMS())  vb.newMS does not work well using msid
+        // Note about above comment:
+        // - vb.newMS probably works well
+        // - but if the calling code is iterating over the rows of a subchunk
+        //   vb.newMS returns true for all rows belonging to the first subchunk
+        //   of the first chunk of a new MS.
+
+        // ???
+        // What if vb changed since we were last called ?
+        // What if the calling code calls put and get, with different VisBuffers ?
+        if (vb.msId() != msId_p) {
+            lastIndex_p = 0; // no longer used
+            if (lastIndexPerAnt_p.nelements() < (size_t)vb.numberAnt()) {
+                lastIndexPerAnt_p.resize(vb.numberAnt());
+            }
+            lastIndexPerAnt_p = 0;
+            msId_p = vb.msId();
+            lastAntID_p = -1;
+        }
+
+        // Try to locate a pointing verifying for specified row:
+        // | POINTING.TIME - MAIN.TIME | <= 0.5*(MAIN.INTERVAL + tolerance)
+
+        // Try first using a tiny tolerance
+        constexpr Double useTinyTolerance = -1.0;
+        pointingIndex = getIndex(act_mspc, rowTime, useTinyTolerance , rowAntenna1);
+
+        const auto foundPointing = (pointingIndex >= 0);
+        if (not foundPointing) {
+            // Try again using tolerance = MAIN.INTERVAL
+            pointingIndex = getIndex(act_mspc, rowTime, rowTimeInterval, rowAntenna1);
+        }
+
+        // Making the implicit type conversion explicit. 
+        // Conversion is safe because it occurs only when pointingIndex >= 0.
+        const auto foundValidPointing = (foundPointing and (static_cast<rownr_t>(pointingIndex) < nPointings));
+
+        if (not foundValidPointing) {
+            ostringstream o;
+            o << "Failed to find pointing information for time "
+              << MVTime(rowTime/86400.0) << " : Omitting this point";
+
+            logIO_p << LogIO::DEBUGGING << String(o) << LogIO::POST;
+
+            return rowPixel.isValid;
+         }
+    }
+
+    // 2. At this stage we have a valid pointingIndex.
+    //    Decide now if we need to interpolate antenna's pointing direction
+    //    at data-taking time: 
+    //    we'll do so when data is sampled faster than pointings are recorded
+    const auto pointingInterval = act_mspc.interval()(pointingIndex);
+    const auto needInterpolation = (rowTimeInterval < pointingInterval);
+
+    // 3. Create interpolator if needed
+    auto dointerp = false;
+    if (havePointings && needInterpolation) {
+        dointerp = true;
+        // Known points are the directions of the specified
+        // POINTING table column, 
+        // relative to the reference frame of the POINTING table
+        if (not isSplineInterpolationReady) {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cComputeSplines);
+            #endif
+            interpolator = new SDPosInterpolator(vb, pointingDirCol_p);
+            isSplineInterpolationReady = true;
+        } else {
+            if (not interpolator->inTimeRange(rowTime, rowAntenna1)) {
+                // setup spline interpolator for the current dataset (CAS-11261, 2018/5/22 WK)
+                delete interpolator;
+                interpolator = 0;
+                interpolator = new SDPosInterpolator(vb, pointingDirCol_p);
+            }
+        }
+    }
+
+    // 4. If it does not already exist, create the machine to convert pointings directions
+    if (not pointingToImage) {
+        // Set the frame
+        const auto & rowAntenna1Position = 
+                vb.msColumns().antenna().positionMeas()(rowAntenna1);
+        const MEpoch dummyEpoch(Quantity(0, "s"));
+        mFrame_p = MeasFrame(dummyEpoch, rowAntenna1Position);
+
+        // Remember antenna id for next call,
+        // which may be done using a different VisBuffer ...
+        lastAntID_p = rowAntenna1;
+
+        // Compute the "model" required to setup the conversion machine
+        if (havePointings) {
+            worldPosMeas = dointerp ? directionMeas(act_mspc, pointingIndex, rowTime)
+                                    : directionMeas(act_mspc, pointingIndex);
+        } else {
+            // Without pointings, this sets the direction to the phase center
+            worldPosMeas = vb.direction1()(row);
+        }
+
+        // Make a machine to convert from the worldPosMeas to the output
+        // Direction Measure type for the relevant frame
+        MDirection::Ref outRef(directionCoord.directionType(), mFrame_p);
+        pointingToImage = new MDirection::Convert(worldPosMeas, outRef);
+        if (not pointingToImage) {
+            logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
+        }
+        // Perform 1 dummy direction conversion to clear values
+        // cached in static variables of casacore functions like MeasTable::dUT1
+        MDirection _dir_tmp = (*pointingToImage)();
+    } 
+
+    // 5. Update the frame holding the measurements for this row
+    const MEpoch rowEpoch(Quantity(rowTime, "s"));
+    // ---- Always reset the epoch
+    {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cResetFrame);
+        #endif
+        mFrame_p.resetEpoch(rowEpoch);
+    }
+    // ---- Reset antenna position only if antenna changed since we were last called
+    if (lastAntID_p != rowAntenna1) {
+        // Debug messages
+        if (lastAntID_p == -1) {
+            // antenna ID is unset
+            logIO_p << LogIO::DEBUGGING
+                << "updating antenna position for conversion: new MS ID " << msId_p
+                << ", antenna ID " << rowAntenna1 << LogIO::POST;
+        } else {
+            logIO_p << LogIO::DEBUGGING
+                << "updating antenna position for conversion: MS ID " << msId_p
+                << ", last antenna ID " << lastAntID_p
+                << ", new antenna ID " << rowAntenna1 << LogIO::POST;
+        }
+        const auto & rowAntenna1Position =
+                  vb.msColumns().antenna().positionMeas()(rowAntenna1);
+        {
+            #if defined(SDGRID_PERFS)
+            StartStop trigger(cResetFrame);
+            #endif
+            mFrame_p.resetPosition(rowAntenna1Position);
+        }
+        // Remember antenna id for next call,
+        // which may be done using a different VisBuffer ...
+        lastAntID_p = rowAntenna1;
+    }
+
+    // 6. First: interpolate pointing direction if needed,
+    //    Then: convert the result to image's reference frame
+    if (havePointings) {
+        if (dointerp) {
+            #if defined(SDGRID_PERFS)
+            cInterpolateDirection.start();
+            #endif
+            MDirection newdir = directionMeas(act_mspc, pointingIndex, rowTime);
+            #if defined(SDGRID_PERFS)
+            cInterpolateDirection.stop();
+            cConvertDirection.start();
+            #endif
+            worldPosMeas = (*pointingToImage)(newdir);
+            #if defined(SDGRID_PERFS)
+            cConvertDirection.stop();
+            #endif
+
+            // Debug stuff
+            //Vector<Double> newdirv = newdir.getAngle("rad").getValue();
+            //cerr<<"dir0="<<newdirv(0)<<endl;
+
+            //fprintf(pfile,"%.8f %.8f \n", newdirv(0), newdirv(1));
+            //printf("%lf %lf \n", newdirv(0), newdirv(1));
+        } else {
+            worldPosMeas = (*pointingToImage)(directionMeas(act_mspc, pointingIndex));
+        }
     } else {
-      if (!interpolator->inTimeRange(vb.time()(row), vb.antenna1()(row))) {
-	// setup spline interpolator for the current dataset (CAS-11261, 2018/5/22 WK)
-	delete interpolator;
-	interpolator = 0;
-	interpolator = new SDPosInterpolator(vb, pointingDirCol_p);
-      }
-    }
-  }
-
-  if (!pointingToImage) {
-    // Set the frame
-    MPosition pos;
-    lastAntID_p = vb.antenna1()(row);
-    pos = vb.msColumns().antenna().positionMeas()(lastAntID_p);
-    MEpoch dummyEpoch(Quantity(0, "s"));
-    mFrame_p = MeasFrame(dummyEpoch, pos);
-    if (!nullPointingTable) {
-      if (dointerp) {
-        worldPosMeas = directionMeas(act_mspc, pointIndex, vb.time()(row));
-      } else {
-        worldPosMeas = directionMeas(act_mspc, pointIndex);
-      }
-    } else {
-      worldPosMeas = vb.direction1()(row);
+        // Without pointings, this converts the direction of the phase center
+        worldPosMeas = (*pointingToImage)(vb.direction1()(row));
     }
 
-    //worldPosMeas=directionMeas(act_mspc, pointIndex);
-    // Make a machine to convert from the worldPosMeas to the output
-    // Direction Measure type for the relevant frame
-    MDirection::Ref outRef(directionCoord.directionType(), mFrame_p);
-    pointingToImage = new MDirection::Convert(worldPosMeas, outRef);
-    if (!pointingToImage) {
-      logIO_p << "Cannot make direction conversion machine" << LogIO::EXCEPTION;
+    // 7. Convert world position coordinates to image pixel coordinates
+    {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cComputeDirectionPixel);
+        #endif
+
+        rowPixel.isValid = directionCoord.toPixel(xyPos, worldPosMeas);
     }
 
-    // perform direction conversion to clear cache
-    MDirection _dir_tmp = (*pointingToImage)();
-  }
-
-  MEpoch epoch(Quantity(vb.time()(row), "s"));
-  mFrame_p.resetEpoch(epoch);
-  if (lastAntID_p != vb.antenna1()(row)) {
-    if (lastAntID_p == -1) {
-      // antenna ID is unset
-      logIO_p << LogIO::DEBUGGING
-        << "update antenna position for conversion: new MS ID " << msId_p
-        << ", antenna ID " << vb.antenna1()(row) << LogIO::POST;
-    } else {
-      logIO_p << LogIO::DEBUGGING
-        << "update antenna position for conversion: MS ID " << msId_p
-        << ", last antenna ID " << lastAntID_p
-        << ", new antenna ID " << vb.antenna1()(row) << LogIO::POST;
+    if (not rowPixel.isValid) {
+        logIO_p << "Failed to find a pixel for pointing direction of "
+            << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME)
+            << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE)
+            << LogIO::WARN << LogIO::POST;
+        return rowPixel.isValid;
     }
-    MPosition pos;
-    lastAntID_p = vb.antenna1()(row);
-    pos = vb.msColumns().antenna().positionMeas()(lastAntID_p);
-    mFrame_p.resetPosition(pos);
-  }
 
-  if (!nullPointingTable) {
-    if (dointerp) {
-      MDirection newdir = directionMeas(act_mspc, pointIndex, vb.time()(row));
-      worldPosMeas = (*pointingToImage)(newdir);
-      //Vector<Double> newdirv = newdir.getAngle("rad").getValue();
-      //cerr<<"dir0="<<newdirv(0)<<endl;
-
-    //fprintf(pfile,"%.8f %.8f \n", newdirv(0), newdirv(1));
-    //printf("%lf %lf \n", newdirv(0), newdirv(1));
-    } else {
-      worldPosMeas = (*pointingToImage)(directionMeas(act_mspc, pointIndex));
+    // 8. Handle moving sources
+    if ((pointingDirCol_p == "SOURCE_OFFSET") || (pointingDirCol_p == "POINTING_OFFSET")) {
+        // It makes no sense to track in offset coordinates...
+        // hopefully the user sets the image coords right
+        fixMovingSource_p = false;
     }
-  } else {
-    worldPosMeas = (*pointingToImage)(vb.direction1()(row));
-  }
 
-  Bool result = directionCoord.toPixel(xyPos, worldPosMeas);
-  if (!result) {
-    logIO_p << "Failed to find a pixel for pointing direction of "
-	    << MVTime(worldPosMeas.getValue().getLong("rad")).string(MVTime::TIME) << ", " << MVAngle(worldPosMeas.getValue().getLat("rad")).string(MVAngle::ANGLE) << LogIO::WARN << LogIO::POST;
-    return false;
-  }
+    if (fixMovingSource_p) {
+        #if defined(SDGRID_PERFS)
+        StartStop trigger(cHandleMovingSource);
+        #endif
+        if (xyPosMovingOrig_p.nelements() < 2) {
+            directionCoord.toPixel(xyPosMovingOrig_p, firstMovingDir_p);
+        }
+        //via HADEC or AZEL for parallax of near sources
+        MDirection::Ref outref1(MDirection::AZEL, mFrame_p);
+        MDirection tmphadec = MDirection::Convert(movingDir_p, outref1)();
+        MDirection actSourceDir = (*pointingToImage)(tmphadec);
+        Vector<Double> actPix;
+        directionCoord.toPixel(actPix, actSourceDir);
 
-  if ((pointingDirCol_p == "SOURCE_OFFSET") || (pointingDirCol_p == "POINTING_OFFSET")) {
-    //there is no sense to track in offset coordinates...hopefully the
-    //user set the image coords right
-    fixMovingSource_p = false;
-  }
-  if (fixMovingSource_p) {
-    if (xyPosMovingOrig_p.nelements() < 2) {
-      directionCoord.toPixel(xyPosMovingOrig_p, firstMovingDir_p);
+        //cout << row << " scan " << vb.scan()(row) << "xyPos " << xyPos 
+        //     << " xyposmovorig " << xyPosMovingOrig_p << " actPix " << actPix << endl;
+
+        xyPos = xyPos + xyPosMovingOrig_p - actPix;
     }
-    //via HADEC or AZEL for parallax of near sources
-    MDirection::Ref outref1(MDirection::AZEL, mFrame_p);
-    MDirection tmphadec=MDirection::Convert(movingDir_p, outref1)();
-    MDirection actSourceDir=(*pointingToImage)(tmphadec);
-    Vector<Double> actPix;
-    directionCoord.toPixel(actPix, actSourceDir);
-
-    //cout << row << " scan " << vb.scan()(row) << "xyPos " << xyPos << " xyposmovorig " << xyPosMovingOrig_p << " actPix " << actPix << endl;
-
-    xyPos=xyPos+xyPosMovingOrig_p-actPix;
-  }
-
-  return result;
-  // Convert to pixel coordinates
+    
+    return rowPixel.isValid;
 }
 
 MDirection SDGrid::directionMeas(const MSPointingColumns& mspc, const Int& index){
@@ -1840,6 +2094,9 @@ MDirection SDGrid::interpolateDirectionMeas(const MSPointingColumns& mspc,
 }
 
 void SDGrid::pickWeights(const VisBuffer& vb, Matrix<Float>& weight){
+  #if defined(SDGRID_PERFS)
+  StartStop trigger(cPickWeights);
+  #endif
   //break reference
   weight.resize();
 
@@ -1922,5 +2179,228 @@ void SDGrid::clipMinMax() {
     gmin_.freeStorage(gmin_p, gmin_b);
   }
 }
+
+SDGrid::MaskedPixelRef::MaskedPixelRef(Vector<Double>& xyIn, Bool isValidIn)
+  : xy {xyIn},
+    isValid {isValidIn}
+{}
+
+SDGrid::MaskedPixelRef& 
+SDGrid::MaskedPixelRef::operator=(const SDGrid::MaskedPixelRef &other) {
+  xy = other.xy;
+  isValid = other.isValid;
+  return *this;
+}
+
+SDGrid::MaskedPixel::MaskedPixel(Double xIn, Double yIn, Bool isValidIn)
+    : x {xIn},
+      y {yIn},
+      isValid {isValidIn}
+{}
+
+SDGrid::Cache::Cache(SDGrid &parent)
+    : sdgrid {parent},
+      isOpened {false},
+      accessMode {AccessMode::READ},
+      canRead {false},
+      canWrite {false},
+      inputPixel {sdgrid.rowPixel},
+      outputPixel {sdgrid.rowPixel}
+{}
+
+const casacore::String& SDGrid::Cache::className() {
+    static casacore::String className_ = "SDGrid::Cache";
+    return className_;
+}
+
+ SDGrid::Cache& SDGrid::Cache::operator=(const Cache &other) {
+    sdgrid = other.sdgrid;
+    msCaches = other.msCaches;
+    isOpened = false;
+    canRead = false;
+    canWrite = false;
+    // inputPixel = sdgrid.rowPixel;
+    inputPixel.xy = sdgrid.rowPixel.xy;
+    //inputPixel.isValid = sdgrid.rowPixel.isValid;
+    // <=> 
+    msPixels = nullptr;
+    outputPixel = other.outputPixel;
+    msCacheReadIterator =  MsCaches::const_iterator();
+    pixelReadIterator = Pixels::const_iterator();
+    return *this;
+ }
+
+void
+SDGrid::Cache::open(AccessMode accessModeIn) {
+    if (isOpened) {
+      LogIO logger(LogOrigin(className(), "open", WHERE));
+      logger << "BUG: Opened " << className() << " was re-opened before being closed." << LogIO::EXCEPTION;
+    }
+    isOpened = true;
+    accessMode = accessModeIn;
+    canRead = accessMode == AccessMode::READ;
+    canWrite = accessMode == AccessMode::WRITE;
+    if (outputPixel.xy.size() < 2) {
+      outputPixel.xy.resize(2);
+      outputPixel.isValid = false;
+    }
+    rewind();
+}
+
+void
+SDGrid::Cache::rewind() {
+    // Writer
+    msPixels = nullptr;
+
+    // Reader
+    msCacheReadIterator = msCaches.cbegin();
+    pixelReadIterator = Pixels::const_iterator();
+}
+
+void
+SDGrid::Cache::close() {
+    if (not isOpened) {
+      LogIO logger(LogOrigin(className(), "close", WHERE));
+      logger << "BUG: Closed " << className() << " was re-closed before being opened." << LogIO::EXCEPTION;
+    }
+    if (isWriteable()) {
+        // Make sure we have 1 pixel per row
+        for (const auto & msCache : msCaches) {
+            if (not msCache.isConsistent()) {
+                LogIO logger(LogOrigin(className(), "close", WHERE));
+                const auto didOverflow = msCache.pixels.size() > msCache.nRows;
+                const auto overOrUnder = didOverflow ? "over" : "under";
+                logger << "BUG: Cache " << overOrUnder << "flow:"
+                       << " nRows=" << msCache.nRows
+                       << " != nPixels=" <<  msCache.pixels.size()
+                       << " for: " << msCache.msPath
+                       << " with selection: " << msCache.msTableName
+                       << LogIO::EXCEPTION;
+            }
+        }
+    }
+    // Reset state
+    isOpened = false;
+    accessMode = AccessMode::READ;
+    canRead = false;
+    canWrite = false;
+}
+
+Bool
+SDGrid::Cache::isReadable() const {
+    return isOpened and canRead;
+}
+
+Bool
+SDGrid::Cache::isWriteable() const {
+    return isOpened and canWrite;
+}
+
+Bool
+SDGrid::Cache::isEmpty() const {
+    return msCaches.empty();
+}
+
+void
+SDGrid::Cache::clear()  {
+    msCaches.clear();
+}
+
+SDGrid::Cache::MsCache::MsCache(const String& msPathIn, const String& msTableNameIn, rownr_t nRowsIn)
+    : msPath {msPathIn},
+      msTableName {msTableNameIn},
+      nRows {nRowsIn}
+{
+    pixels.reserve(nRows);
+}
+
+Bool SDGrid::Cache::MsCache::isConsistent() const {
+  return pixels.size() == nRows;
+}
+
+void
+SDGrid::Cache::newMS(const MeasurementSet& ms) {
+    LogIO os(LogOrigin(className(),"newMS"));
+    const auto msPath =  ms.getPartNames()[0];
+
+    if (isWriteable()) {
+        os << "Will compute and cache spectra pixels coordinates for: " << msPath << LogIO::POST;
+        msCaches.emplace_back(msPath, ms.tableName(), ms.nrow());
+        msPixels = &(msCaches.back().pixels);
+        return;
+    }
+
+    if (isReadable()) {
+        os << "Will load cached spectra pixels coordinates for: " << msPath << LogIO::POST;
+        if (msCacheReadIterator == msCaches.cend()) {
+            os << "BUG! Cached data missing for: " << msPath << LogIO::EXCEPTION;
+        }
+        const auto & pixelsToLoad = msCacheReadIterator->pixels;
+        if (pixelsToLoad.size() != ms.nrow()) {
+            os << "BUG! Cached data size mismatch for: " << msPath
+               << " : nRows: " << ms.nrow() 
+               << " nCachedRows: " << pixelsToLoad.size() << LogIO::EXCEPTION;
+        }
+        if (  msCacheReadIterator->msTableName != ms.tableName()) {
+            os << "BUG! Cached data was probably for a different selection of: " << msPath
+               << " current selection: " << ms.tableName()
+               << " cached selection: " <<  msCacheReadIterator->msTableName << LogIO::EXCEPTION;
+        }
+        pixelReadIterator = pixelsToLoad.cbegin();
+        ++msCacheReadIterator;
+    }
+}
+
+void
+SDGrid::Cache::storeRowPixel() {
+    msPixels->emplace_back(
+        inputPixel.xy[0],
+        inputPixel.xy[1],
+        inputPixel.isValid
+    );
+}
+
+void
+SDGrid::Cache::loadRowPixel() {
+    const auto & pixel = *pixelReadIterator;
+    outputPixel.xy[0] = pixel.x;
+    outputPixel.xy[1] = pixel.y;
+    outputPixel.isValid = pixel.isValid;
+    ++pixelReadIterator;
+}
+
+SDGrid::CacheManager::CacheManager(Cache& cacheIn,
+    Bool onDutyIn,  Cache::AccessMode accessModeIn)
+    : cache {cacheIn},
+      onDuty {onDutyIn},
+      accessMode {accessModeIn}
+{
+    if (onDuty) {
+      cache.open(accessMode);
+    }
+}
+
+SDGrid::CacheManager::~CacheManager()
+{
+    if (onDuty) {
+      cache.close();
+    }
+}
+
+SDGrid::CacheWriter::CacheWriter(Cache& cacheIn,
+    Bool onDutyIn)
+    : cache {cacheIn},
+      onDuty {onDutyIn}
+{}
+
+SDGrid::CacheWriter::~CacheWriter()
+{
+    if (onDuty) {
+      cache.storeRowPixel();
+    }
+}
+
+
+
 
 } //#End casa namespace
