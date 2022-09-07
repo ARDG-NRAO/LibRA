@@ -31,19 +31,19 @@
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines/SynthesisMath.h>
-#include <coordinates/Coordinates/SpectralCoordinate.h>
-#include <coordinates/Coordinates/CoordinateSystem.h>
-#include <casa/OS/Timer.h>
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
+#include <casacore/casa/OS/Timer.h>
 #include <fstream>
 #include <iostream>
 #include <typeinfo>
 #include <iomanip>
 #include <map>
-#include <synthesis/TransformMachines2/FortranizedLoops.h>
+//#include <synthesis/TransformMachines2/FortranizedLoops.h>
 //#include <synthesis/TransformMachines2/hpg.hpp>
 
-#include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg.hpp>
+//#include <hpg/hpg_indexing.hpp>
 
 #include <type_traits>
 #include <synthesis/TransformMachines2/HPGVisBuffer.cc>
@@ -247,7 +247,7 @@ namespace casa{
 	}
     };
   //#include "HPGLoadCF.cc"
-#include "HPGLoadCFNew.cc"
+#include "HPGLoadCFNew.inc"
   //
   // END -- Global functions
   // --------------------------------------------------------------------------------------

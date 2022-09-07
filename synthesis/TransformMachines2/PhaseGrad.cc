@@ -46,6 +46,7 @@ namespace casa{
 	field_phaseGrad_p = other.field_phaseGrad_p;
 	antenna_phaseGrad_p = other.antenna_phaseGrad_p;
 	cached_FieldOffset_p = other.cached_FieldOffset_p;
+	needCFPhaseGrad_p=other.needCFPhaseGrad_p;
       }
     return *this;
   }
@@ -82,6 +83,12 @@ namespace casa{
 					   const pair<int,int> antGrp)
 
     {
+      if (!needCFPhaseGrad_p)
+	{
+	  needsNewPOPG_p = false;
+	  return true;
+	}
+
       //
       // Re-find the max. CF size if the CFB changed.
       //
@@ -133,7 +140,7 @@ namespace casa{
 	    
 	  int nx=maxCFShape_p(0), ny=maxCFShape_p(1);
 	  double grad;
-	  Complex phx,phy;
+	  DComplex phx,phy;
 	  Vector<int> convOrigin = maxCFShape_p/2;
 	  
 	  field_phaseGrad_p.resize(nx,ny);
@@ -168,20 +175,23 @@ namespace casa{
 	      // cached_FieldOffset_p[row](0) = pointingOffsets_p->gradPerPixel((ant1PO_l[0] + ant2PO_l[0])/2);
 	      // cached_FieldOffset_p[row](1) = pointingOffsets_p->gradPerPixel((ant1PO_l[1] + ant2PO_l[1])/2);
 	    }
- 	  // cerr << "Cached Field Offset is : " << cached_FieldOffset_p[row](0) << " " << cached_FieldOffset_p[row](1)<< " for row " << row << " field id " << vb.fieldId()(0) << endl;
-	  for(int ix=0;ix<nx;ix++)
+
 	    {
-	      grad = (ix-convOrigin[0])*cached_FieldOffset_p[row](0);
-	      double sx,cx;
-	      SINCOS(grad,sx,cx);
-	      phx = Complex(cx,sx);
-	      for(int iy=0;iy<ny;iy++)
+	      cerr << "Cached Field Offset is : " << cached_FieldOffset_p[row](0) << " " << cached_FieldOffset_p[row](1)<< " for row " << row << " field id " << vb.fieldId()(0) << " " << needCFPhaseGrad_p<< endl;
+	      for(int ix=0;ix<nx;ix++)
 		{
-		  grad = (iy-convOrigin[1])*cached_FieldOffset_p[row](1);
-		  Double sy,cy;
-		  SINCOS(grad,sy,cy);
-		  phy = Complex(cy,sy);
-		  field_phaseGrad_p(ix,iy)=phx*phy;
+		  grad = (ix-convOrigin[0])*cached_FieldOffset_p[row](0);
+		  double sx,cx;
+		  SINCOS(grad,sx,cx);
+		  phx = Complex(cx,sx);
+		  for(int iy=0;iy<ny;iy++)
+		    {
+		      grad = (iy-convOrigin[1])*cached_FieldOffset_p[row](1);
+		      Double sy,cy;
+		      SINCOS(grad,sy,cy);
+		      phy = Complex(cy,sy);
+		      field_phaseGrad_p(ix,iy)=phx*phy;
+		    }
 		}
 	    }
 	  needsNewPOPG_p = false;

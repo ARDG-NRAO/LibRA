@@ -45,7 +45,7 @@ namespace casa{
   namespace refim{
     Int mapAntIDToAntType(const casacore::Int& /*ant*/) {return 0;};
 
-    VB2CFBMap::VB2CFBMap(): vb2CFBMap_p(), cfPhaseGrad_p(), baselineType_p(), vectorPhaseGradCalculator_p(), doPointing_p(false), cachedFieldId_p(-1), vbRow2BLMap_p(), vbRows_p(0), sigmaDev(2), cachedCFBPtr_p(), maxCFShape_p(2), timer_p()
+    VB2CFBMap::VB2CFBMap(): vb2CFBMap_p(), cfPhaseGrad_p(), baselineType_p(), vectorPhaseGradCalculator_p(), doPointing_p(false), cachedFieldId_p(-1), vbRow2BLMap_p(), vbRows_p(0), sigmaDev(2), cachedCFBPtr_p(), maxCFShape_p(2), timer_p(),computePhaseScreen_p(true)
     {
       baselineType_p = new BaselineType();
       needsNewPOPG_p = false;
@@ -67,6 +67,7 @@ namespace casa{
 	  vbRow2BLMap_p = other.vbRow2BLMap_p;
 	  vectorPhaseGradCalculator_p.assign(other.vectorPhaseGradCalculator_p);
 	  doPointing_p = other.doPointing_p;
+	  computePhaseScreen_p = other.computePhaseScreen_p;
 	}
       return *this;
     };
@@ -417,6 +418,7 @@ namespace casa{
 		if (vectorPhaseGradCalculator_p[i].null())
 		  {
 		    vectorPhaseGradCalculator_p[i]=new PhaseGrad();
+		    vectorPhaseGradCalculator_p[i]->needCFPhaseGrad_p=computePhaseScreen_p;
 		    // blNeedsNewPOPG_p[i] = true;
 		  }
 	    }
@@ -453,6 +455,7 @@ namespace casa{
 	      vectorPhaseGradCalculator_p.resize(1);
 	      if (vectorPhaseGradCalculator_p[myrow].null())
 		vectorPhaseGradCalculator_p[myrow]=new PhaseGrad();
+	      vectorPhaseGradCalculator_p[myrow]->needCFPhaseGrad_p=computePhaseScreen_p;
 	    }
 	  // vectorPhaseGradCalculator_p[vbRow2BLMap_p[myrow]]->ComputeFieldPointingGrad(pointingOffsets_p,cfb,vb,0);    
 	  vectorPhaseGradCalculator_p[vbRow2BLMap_p[myrow]]->maxCFShape_p = maxCFShape_p;

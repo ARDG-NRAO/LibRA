@@ -34,19 +34,21 @@
 #include <synthesis/TransformMachines2/VBStore.h>
 #include <synthesis/TransformMachines2/VisibilityResampler.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <casa/Arrays/Array.h>
-#include <casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/Vector.h>
 
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/LogSink.h>
-#include <casa/Logging/LogMessage.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/LogSink.h>
+#include <casacore/casa/Logging/LogMessage.h>
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 //#include <synthesis/TransformMachines2/VBStoreHPG.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
 //#include <synthesis/TransformMachines2/hpg.hpp>
-#include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
-
+//#include <hpg/hpg.hpp>
+//#include <hpg/hpg_indexing.hpp>
+///I am tired with cmake not finding the include putting the path directly for now
+#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
+#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
 #include <tuple>
 #define HPGNPOL 2
 

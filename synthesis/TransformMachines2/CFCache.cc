@@ -28,6 +28,7 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <casacore/lattices/LEL/LatticeExpr.h>
 #include <casacore/casa/System/ProgressMeter.h>
 #include <casacore/casa/Exceptions/Error.h>
@@ -231,11 +232,10 @@ namespace casa{
       }
   }
 
-  void CFCache::initCache2(Bool verbose, Float selectedPA, Float dPA)
+  void CFCache::initCache2(Bool verbose, Float selectedPA, Float dPA,casacore::String prefix)
   {
     LogOrigin logOrigin("CFCache2", "initCache2");
     LogIO log_l(logOrigin);
-
     Directory dirObj(Dir);
 
     if (Dir.length() == 0) 
@@ -264,39 +264,109 @@ namespace casa{
         log_l << "CF Cache in read only mode." << LogIO::POST;
     }
 
-    fillCFSFromDisk(dirObj,"CFS*", memCache2_p, true, selectedPA, dPA, verbose);
-    fillCFSFromDisk(dirObj,"WTCFS*", memCacheWt2_p, false, selectedPA, dPA, verbose);
-    // memCache2_p[0].show("Re-load CFS",cerr);
-    // memCacheWt2_p[0].show("Re-load WTCFS",cerr);
-    memCache2_p[0].primeTheCFB();
-    memCacheWt2_p[0].primeTheCFB();
-
-    // memCache2_p[0].show("CF Cache: ");
-    // memCacheWt2_p[0].show("WTCF Cache: ");
-
-    Double memUsed0,memUsed1;
     String memUnit="B";
-    memUsed0=memCache2_p[0].memUsage();
-    memUsed1=memCacheWt2_p[0].memUsage();
-    if (memUsed0 > 1024.0)
+    Double memUsed0=0, memUsed1=0;
+    //
+    // Lambda function to fill CFs with a given prefix.
+    //
+    auto fillCF_l = [&](CFStoreCacheType2& memCache2_l, casacore::String& cfprefix)
+		    {
+		      fillCFSFromDisk(dirObj,cfprefix, memCache2_l, true, selectedPA, dPA, verbose);
+		      memCache2_l[0].primeTheCFB();
+		      if (verbose > 0)
+			summarize(memCache2_l,   cfprefix,   true);
+		      return 0.0;//memCache2_l[0].memUsage();
+		    };
+
+    if (prefix == "CFS*") memUsed0 = fillCF_l(memCache2_p, prefix);
+    else if (prefix == "WTCFS*") memUsed1 = fillCF_l(memCacheWt2_p, prefix);
+    else // Load both, CFS* and WTCFS* if prefix is blank or of unexpected value
       {
-	memUsed0 /= 1024.0;
-	memUsed1 /= 1024.0;
+	casacore::String s="CFS*";
+	memUsed0 = fillCF_l(memCache2_p, s);
+	s="WTCFS*";
+	memUsed1 = fillCF_l(memCacheWt2_p, s);
+      }
+      
+    double tt=memUsed0 + memUsed1;
+    if (tt > 1024.0)
+      {
+	tt /= 1024.0;
 	memUnit="KB";
       }
-
-    if (verbose > 0)
-      {
-	summarize(memCache2_p,   "CFS",   True);
-	summarize(memCacheWt2_p, "WTCFS", False);
-      }
-
-    if (memUsed0+memUsed1 > 0)
-      log_l << "Total CF Cache memory footprint: " << (memUsed0+memUsed1) << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
-
-    // memCache2_p[0].makePersistent("./junk.cf");
-    // memCacheWt2_p[0].makePersistent("./junk.cf","","WT");
+    if (tt > 0)
+      log_l << "Total CF Cache memory footprint: " << tt << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
   }
+
+
+  // void CFCache::initCache2(Bool verbose, Float selectedPA, Float dPA,casacore::String /*prefix*/)
+  // {
+  //   LogOrigin logOrigin("CFCache2", "initCache2");
+  //   LogIO log_l(logOrigin);
+
+  //   Directory dirObj(Dir);
+
+  //   if (Dir.length() == 0) 
+  //     throw(SynthesisFTMachineError(LogMessage("Got null string for disk cache dir. ",
+  // 					       logOrigin).message()));
+
+  //   Bool ReadOnly = SynthesisUtils::getenv("CFCache.READONLY",0);
+  
+  //   if (!dirObj.exists()) dirObj.create();
+  //   else if ((!dirObj.isReadable()))
+  //     {
+  // 	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
+  // 				      String(" for convolution function cache"
+  // 					     " exists but is unreadable")));
+  //     }
+  //   else if ((!dirObj.isWritable()) && (!ReadOnly))
+  //   {
+  //   	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
+  // 				      String(" for convolution function cache"
+  // 					     " exists but is unwriteable")));
+  //   }
+    
+    
+  //   if(ReadOnly)
+  //   {
+  //       log_l << "CF Cache in read only mode." << LogIO::POST;
+  //   }
+
+  //   fillCFSFromDisk(dirObj,"CFS*", memCache2_p, true, selectedPA, dPA, verbose);
+  //   fillCFSFromDisk(dirObj,"WTCFS*", memCacheWt2_p, false, selectedPA, dPA, verbose);
+  //   // memCache2_p[0].show("Re-load CFS",cerr);
+  //   // memCacheWt2_p[0].show("Re-load WTCFS",cerr);
+  //   memCache2_p[0].primeTheCFB();
+  //   memCacheWt2_p[0].primeTheCFB();
+
+  //   // memCache2_p[0].show("CF Cache: ");
+  //   // memCacheWt2_p[0].show("WTCF Cache: ");
+
+  //   Double memUsed0,memUsed1;
+  //   String memUnit="B";
+  //   memUsed0=memCache2_p[0].memUsage();
+  //   memUsed1=memCacheWt2_p[0].memUsage();
+  //   if (memUsed0 > 1024.0)
+  //     {
+  // 	memUsed0 /= 1024.0;
+  // 	memUsed1 /= 1024.0;
+  // 	memUnit="KB";
+  //     }
+
+  //   if (verbose > 0)
+  //     {
+  // 	summarize(memCache2_p,   "CFS",   True);
+  // 	summarize(memCacheWt2_p, "WTCFS", False);
+  //     }
+
+  //   if (memUsed0+memUsed1 > 0)
+  //     log_l << "Total CF Cache memory footprint: " << (memUsed0+memUsed1) << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
+
+  //   // memCache2_p[0].makePersistent("./junk.cf");
+  //   // memCacheWt2_p[0].makePersistent("./junk.cf","","WT");
+  // }
+
+
   //
   //-----------------------------------------------------------------------
   //
@@ -372,6 +442,7 @@ namespace casa{
 	    // 	if (pickThisCF) cfCount++;
 	    //   }
 	    // cerr << "Will load " << cfCount << "CFs." << endl;
+	    log_l << "Loading misc info from CFs" << LogIO::POST;
 	    TableRecord miscInfo;
 	    {
 	      ProgressMeter pm(1.0, Double(fileNames.nelements()),
@@ -381,8 +452,9 @@ namespace casa{
 		  Double paVal, wVal, fVal, sampling, conjFreq; Int mVal, xSupport, ySupport, conjPoln;
 		  CoordinateSystem coordSys;
 
-		  miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], pixBuf, coordSys,  sampling, paVal, 
-			      xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		  IPosition cfShape;
+		  miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
+							 xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
 		
 		  Bool pickThisCF=true;
 		  if (selectPA) pickThisCF = (fabs(paVal - selectPAVal) <= dPA);
@@ -457,7 +529,8 @@ namespace casa{
 		    //
 		    // Get the parameters from the CF file
 		    //
-		    TableRecord miscInfo = SynthesisUtils::getCFParams(Dir,fileNames[nf], pixBuf, coordSys,  sampling, paVal, 
+		    IPosition cfShape;
+		    TableRecord miscInfo = SynthesisUtils::getCFParams(Dir,fileNames[nf], cfShape, pixBuf, coordSys,  sampling, paVal,
 								       xSupport, ySupport, fVal, wVal, mVal, conjFreq, conjPoln,loadPixBuf_p,True);
 		    //
 		    // Get the storage buffer from the CFBuffer and
@@ -495,24 +568,14 @@ namespace casa{
 		    //		   telescopeName, diameter);
 
 		    // cfb->setParams(fndx, wndx, mVal, miscInfo);
-		    cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,miscInfo);
-		    
+		    auto ndx=cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,miscInfo);
+		    (cfb->getCFCellPtr(ndx(0), ndx(1), ndx(2)))->shape_p=cfShape;
+
 		    if (verbose > 0) log_l << cfCacheTable_l[ipa].cfNameList[nf]
 					   << "[" << fndx << "," << wndx << "," << mndx << "] "
 					   << paList_p[ipa] << " " << xSupport << LogIO::POST;
 		  }
-		// cfb->show("cfb: ");
-
-		//log_l << LogIO::POST;
-
-		// for (uInt inu=0; inu<fList.size(); inu++)
-		//   for (uInt im=0; im<mList.size(); im++)
-		//     for (uInt iw=0; iw<wList.size(); iw++)
-		//       log_l << " Freq: " << fList[inu] 
-		// 	    << " MuellerElement: " << mList[im]
-		// 	    << " WValue: " << wList[iw]
-		// 	    << " FileName: " << cfCacheTable_l[ipa].cfNameList[inu]
-		// 	    << LogIO::POST;
+		//cfb->show("cfb: ");
 	      }
 
 	  }
@@ -522,6 +585,9 @@ namespace casa{
 	throw(SynthesisFTMachineError(String("Error while initializing CF disk cache: ")
 				      +x.getMesg()));
       }
+
+    //memStore[0].getCFBuffer(0,0)->show("CFB0: ");
+
   }
   //
   //-----------------------------------------------------------------------
@@ -934,20 +1000,20 @@ namespace casa{
   //-------------------------------------------------------------------------
   //Load the average PB from the disk cache.
   //
-  Int CFCache::loadWtImage(ImageInterface<Float>& avgPB, String qualifier)
+  Int CFCache::loadWtImage(ImageInterface<Float>& avgPB, String qualifier, std::tuple<int, double> cubeinfo)
   {
     LogIO log_l(LogOrigin("CFCache2", "loadWtImage"));
     ostringstream name, sumWtName;
     name << WtImagePrefix << ".weight" << qualifier;
     if (qualifier != "") sumWtName << WtImagePrefix << ".sumwt.tt0";// << qualifier;
     else                 sumWtName << WtImagePrefix << ".sumwt";
-      
+    
     try
       {
 	// First try to load .weight image.  If this fails, AipsError
 	// will be caught and a NOTCACHED returned.
 	PagedImage<Float> tmp(name.str().c_str());
-
+        //cerr << "BBBBBBBBBBBBBB " << tmp.shape() << endl;
 	// Now try to load .sumwt.  If .sumwt is not found, this is a
 	// fatal error (inconsistancy on the disk).  So this time
 	// throw a SEVER exception.
@@ -962,8 +1028,32 @@ namespace casa{
 	    log_l << "Sum-of-weights not found " << x.getMesg() << LogIO::SEVERE;
 	  }
 
-	avgPB.resize(tmp.shape());
-	avgPB.put(tmp.get()*sumwt);
+        int nchan=std::get<0> (cubeinfo);
+	Double freqofBegChan=std::get<1>(cubeinfo);
+	if(freqofBegChan > 0.0 && (tmp.shape()(3) > nchan)){
+
+                //get freq of first chan of chunk
+                CoordinateSystem cs=tmp.coordinates();
+		SpectralCoordinate  fsys=cs.spectralCoordinate(cs.findCoordinate(Coordinate::SPECTRAL));
+		Double startchan;
+		fsys.toPixel(startchan, freqofBegChan);
+		Int endchan=startchan+nchan-1;
+		ImageInterface<Float>* subim=SpectralImageUtil::getChannel(tmp,Int(startchan), endchan);
+		avgPB.resize(subim->shape());
+                LatticeExpr<Float> myexpr( (*subim)*sumwt);
+		avgPB.copyData(myexpr);
+		avgPB.setCoordinateInfo(subim->coordinates());
+		delete subim;		
+	}
+	else{
+		avgPB.resize(tmp.shape());
+                LatticeExpr<Float> myexpr( tmp*sumwt);
+		avgPB.copyData(myexpr);
+		avgPB.setCoordinateInfo(tmp.coordinates());
+	}
+	//avgPB.resize(tmp.shape());
+	//avgPB.put(tmp.get()*sumwt);
+	//avgPB.setCoordinateInfo(tmp.coordinates());
 	//cerr << "peak = " << max(tmp.get()*sumwt) << endl;
       }
     catch(AipsError& x) // Just rethrowing the exception for now.
@@ -981,13 +1071,13 @@ namespace casa{
   //-------------------------------------------------------------------------
   //Load the average PB from the disk cache.
   //
-  Int CFCache::loadAvgPB(ImageInterface<Float>& avgPB, String qualifier)
+  Int CFCache::loadAvgPB(ImageInterface<Float>& avgPB, String qualifier, std::tuple<int, double>cubeinfo)
   {
     LogIO log_l(LogOrigin("CFCache2", "loadAvgPB"));
 
     if (WtImagePrefix != "") 
       {
-	return loadWtImage(avgPB, qualifier);
+	return loadWtImage(avgPB, qualifier, cubeinfo);
       }
 
     if (Dir.length() == 0) 
@@ -1000,8 +1090,28 @@ namespace casa{
     try
       {
 	PagedImage<Float> tmp(name.str().c_str());
-	avgPB.resize(tmp.shape());
-	avgPB.put(tmp.get());
+	int nchan=std::get<0> (cubeinfo);
+	Double freqofBegChan=std::get<1>(cubeinfo);
+	if(freqofBegChan > 0.0 && (tmp.shape()(3) > nchan)){
+
+                //get freq of first chan of chunk
+                CoordinateSystem cs=tmp.coordinates();
+		SpectralCoordinate  fsys=cs.spectralCoordinate(cs.findCoordinate(Coordinate::SPECTRAL));
+		Double startchan;
+		fsys.toPixel(startchan, freqofBegChan);
+		Int endchan=startchan+nchan-1;
+		ImageInterface<Float>* subim=SpectralImageUtil::getChannel(tmp,Int(startchan), endchan);
+		avgPB.resize(subim->shape());
+		avgPB.copyData(*subim);
+		avgPB.setCoordinateInfo(subim->coordinates());
+		delete subim;		
+	}
+	else{
+		avgPB.resize(tmp.shape());
+		avgPB.copyData(tmp);
+		avgPB.setCoordinateInfo(tmp.coordinates());
+	}
+	
       }
     catch(AipsError& x) // Just rethrowing the exception for now.
                         // Ultimately, this should be used to make
@@ -1186,6 +1296,7 @@ namespace casa{
 		      << paKey << LogIO::POST;
 	      else
 	      	throw(SynthesisFTMachineError("Internal error: paKey out of range"));
+	      break;
 	    }
 	  case MEMCACHE:  
 	    {

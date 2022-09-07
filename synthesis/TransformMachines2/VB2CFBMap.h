@@ -109,6 +109,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      Vector<int> maxCFShape_p;
      casacore::Timer timer_p;
      float totalCost_p, totalVB_p;
+     casacore::Bool  computePhaseScreen_p;
    };
  }
 }

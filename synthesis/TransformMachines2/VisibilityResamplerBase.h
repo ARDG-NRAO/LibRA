@@ -37,7 +37,7 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Vector.h>
-#include <msvis/MSVis/AsynchronousTools.h>
+#include <stdcasa/thread/AsynchronousTools.h>
 
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>

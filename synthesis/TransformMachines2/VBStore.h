@@ -89,6 +89,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
 
     casacore::Int nRow_p, beginRow_p, endRow_p, spwID_p, startChan_p, endChan_p,nDataChan_p, nDataPol_p;
+    casacore::Int nWPlanes_p;
     casacore::Matrix<casacore::Double> uvw_p;
     casacore::Vector<casacore::Bool> rowFlag_p;
     casacore::Cube<casacore::Bool> flagCube_p;
@@ -102,8 +103,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     const VisBuffer2 *vb_p;
     casacore::Double imRefFreq_p;
     CFBStruct cfBSt_p;
-    casacore::Bool accumCFs_p;
+    casacore::Bool accumCFs_p, wbAWP_p;
     casacore::Matrix<casacore::uInt> BLCXi, BLCYi, TRCXi, TRCYi;
+    int  ftmType_p;
   };
   }
 } //# NAMESPACE CASA - END

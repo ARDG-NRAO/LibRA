@@ -66,7 +66,8 @@ namespace casa{
 	imName << "im" << fileName;
 	{
 	  PagedImage<Float> tmp(theImg.shape(), theImg.coordinates(), reName);
-	  LatticeExpr<Float> le(abs(theImg));
+	  //LatticeExpr<Float> le(abs(theImg));
+	  LatticeExpr<Float> le(real(theImg));
 	  tmp.copyData(le);
 	}
 	{
@@ -300,9 +301,9 @@ namespace casa{
 		   Int &row2) const
   {
     if (row1<0) row1=0;
-    Int jrow = row2;
+    int jrow = row2;
     if (jrow < 0) jrow = vb.nRows()-1;
-    DebugAssert(jrow<vb.nRows(),AipsError);
+    DebugAssert(jrow<(int)vb.nRows(),AipsError);
     
     // It is not important now to have a separate function for a "block"
     // operation. Because an appropriate caching is implemented inside
@@ -311,7 +312,7 @@ namespace casa{
     // first row where the change occured rather than the last unchanged 
     // row as it was for BeamSkyJones::changedBuffer
       
-    for (Int ii=row1;ii<=jrow;++ii)
+    for (int ii=row1;ii<=jrow;++ii)
          if (changed(vb,ii)) {
              row2 = ii;
              return true;
@@ -789,6 +790,8 @@ namespace casa{
     Float SynthesisUtils::getenv(const char *name, const Float defaultVal);
     template 
     double SynthesisUtils::getenv(const char *name, const double defaultVal);
+  template 
+    String SynthesisUtils::getenv(const char *name, const String defaultVal);
 
   Float SynthesisUtils::libreSpheroidal(Float nu) 
   {
@@ -987,6 +990,10 @@ namespace casa{
   template <class T>
   T SynthesisUtils::stdNearestValue(const vector<T>& list, const T& val, Int& index)
   {
+    // auto const it = std::lower_bound(list.begin(), list.end(), val);
+    // if (it == list.begin()) return list[0];
+    // else return list[*(it-1)];
+
     vector<T> diff=list;
     for (uInt i=0;i<list.size();i++)
       diff[i] = fabs(list[i] - val);
@@ -1170,6 +1177,22 @@ namespace casa{
     return casacore::Array<Complex>(); // Just to keep the complier happy.  Program control should never get here.
   }
   
+ void SynthesisUtils::putCFPixels(const casacore::String& Dir,
+				  const casacore::String& fileName,
+				  const casacore::Array<Complex>& srcpix)
+  {
+    try
+      {
+	casacore::PagedImage<casacore::Complex> thisCF(Dir+'/'+fileName);
+	return thisCF.put(srcpix);
+      }
+    catch (AipsError &x)
+      {
+	LogIO log_l(LogOrigin("SynthesisUtils","putCFPixels"));
+	log_l << x.getMesg() << LogIO::EXCEPTION;
+      }
+  }
+  
  const casacore::IPosition SynthesisUtils::getCFShape(const casacore::String& Dir,
 						      const casacore::String& fileName)
   {
@@ -1188,6 +1211,7 @@ namespace casa{
   
   casacore::TableRecord SynthesisUtils::getCFParams(const casacore::String& Dir,
 						    const casacore::String& fileName,
+						    casacore::IPosition& cfShape,
 						    casacore::Array<Complex>& pixelBuffer,
 						    casacore::CoordinateSystem& coordSys, 
 						    casacore::Double& sampling,
@@ -1200,7 +1224,9 @@ namespace casa{
   {
     try
       {
+	//casacore::Table tThisCF(Dir+'/'+fileName);
 	casacore::PagedImage<casacore::Complex> thisCF(Dir+'/'+fileName);
+	cfShape = thisCF.shape();
 	if (loadPixels) pixelBuffer.assign(thisCF.get());
 	casacore::TableRecord miscinfo;
 	if (loadMiscInfo)
@@ -1312,8 +1338,117 @@ namespace casa{
     }
 
 
-  
-  
+//
+//-----------------------------------------------------------------------------------------
+//
+    casacore::CoordinateSystem SynthesisUtils::makeModelGridFromImage(const std::string& modelImageName,
+								      casacore::TempImage<casacore::DComplex>& modelImageGrid)
+    {
+      // This code is basically loading a floating point image from
+      // the disk, and loading it into a complex<double> image.  This
+      // should be possible on-the-fly.
+      //
+      // However currently it is not possible to this OTF.  So one has
+      // to load the image from the disk in a float image (copy-1 of
+      // the image in the memory).  Then, since
+      // StokesImageUtil::From() does not work with complex<double>
+      // images, convert it first to a complex<float> image (equal to
+      // 2 more float buffers in the memory).  And then covert the
+      // complex<float> image to a complex<Double> image (equal to 4
+      // more float buffers in the memory).
+      //
+      // In the end, just because of limitations of OTF type
+      // conversions, we end up with 7x memory footprint!
+
+      casacore::LatticeBase* lattPtr = casacore::ImageOpener::openImage (modelImageName);
+      casacore::ImageInterface<float> *fImage;
+      fImage = dynamic_cast<casacore::ImageInterface<float>*>(lattPtr);
+
+      TempImage<casacore::Complex> tmp(fImage->shape(), fImage->coordinates());
+      StokesImageUtil::From(tmp, *fImage);
+
+      modelImageGrid  = casacore::TempImage<casacore::DComplex> (fImage->shape(), fImage->coordinates());
+
+      Bool d0,d1;
+      casacore::Array<casacore::DComplex> dcArray=modelImageGrid.get();
+      casacore::Array<casacore::Complex> fcArray=tmp.get();
+
+      casacore::DComplex* dcArrayPtr= dcArray.getStorage(d0);
+      casacore::Complex* fcArrayPtr = fcArray.getStorage(d1);
+      IPosition ndx(4,0,0,0,0),shape=fImage->shape();
+
+      for (ndx(0)=0; ndx(0)<shape(0);ndx(0)++)
+	for (ndx(1)=0; ndx(1)<shape(1);ndx(1)++)
+	  for (ndx(2)=0; ndx(2)<shape(2);ndx(2)++)
+	    for (ndx(3)=0; ndx(3)<shape(3);ndx(3)++)
+	      dcArray(ndx) = DComplex(fcArray(ndx).real(), fcArray(ndx).imag());
+
+      modelImageGrid.put(dcArray);
+      return fImage->coordinates();
+    }
+    //
+    //-------------------------------------------------------------------------------------
+    //
+    void SynthesisUtils::makeAWLists(const casacore::Vector<double>& wVals,
+				     const casacore::Vector<double>& fVals,
+				     const bool& wbAWP, const uint& nw,
+				     const double& imRefFreq, const double& spwRefFreq,
+				     casacore::Vector<int>& wNdxList,
+				     casacore::Vector<int>& spwNdxList,
+				     const int vbSPW)
+    {
+      //
+      // The following can be generalized to pick a subset of CFs along
+      // W and SPW axis in the CFB.  Perhaps also useful in the longer
+      // run, e.g. when using a super-set CFC not all of which may be
+      // used for a given imaging.
+      //
+      // W-pixels in the CFC should be >= w-planes user setting
+      assert(wVals.nelements() >= nw);
+      
+      // Make list of W-CF indexes
+      int nWCFs=(nw<=1)?nw:wVals.nelements();
+      wNdxList.resize(nWCFs);
+      for(int i=0;i<nWCFs;i++) wNdxList[i] = i;
+      
+      // Make list of SPW-CF indexes
+      int nSPWCFs=fVals.nelements();
+      if (wbAWP==true)
+	{
+	  // If a valid SPW ID is given, translate it to the spwNdx for the nearest SPW
+	  if ((vbSPW>=0))// && (vbSPW <nSPWCFs))
+	    {
+	      int refSPW;
+	      std::vector<double> stdList(nSPWCFs);
+	      for (int i=0; i<nSPWCFs; i++) stdList[i] = fVals[i];
+	      //Double refCFFreq =
+	      SynthesisUtils::stdNearestValue(stdList, spwRefFreq, refSPW);
+	      
+	      spwNdxList.resize(1);
+	      spwNdxList[0]=refSPW;
+	    }
+	  else
+	    {
+	      spwNdxList.resize(nSPWCFs);
+	      for(int i=0;i<nSPWCFs;i++) spwNdxList[i] = i;
+	    }
+	}
+      else
+	{
+	  // For wbAWP=F, pick up the CF closest to the image reference frequency
+	  int refSPW;
+	  std::vector<double> stdList(nSPWCFs);
+	  for (int i=0; i<nSPWCFs; i++) stdList[i] = fVals[i];
+	  //Double refCFFreq =
+	  SynthesisUtils::stdNearestValue(stdList, imRefFreq, refSPW);
+	  
+	  spwNdxList.resize(1);
+	  spwNdxList[0]=refSPW;
+	}
+      
+      return;
+    }
+
   template
   std::vector<Double>::iterator SynthesisUtils::Unique(std::vector<Double>::iterator first, std::vector<Double>::iterator last);
   template
