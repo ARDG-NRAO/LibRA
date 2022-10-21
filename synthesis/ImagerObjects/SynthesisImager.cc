@@ -1041,8 +1041,11 @@ bool SynthesisImager::unlockImages()
 		runMajorCycleCube(true);
 	}
 	else{
-	 if( itsDataLoopPerMapper == false )
-	  {runMajorCycle(true, false);}
+          if( itsDataLoopPerMapper == false )
+            { 
+              runMajorCycle(true, false);
+            }
+            
 	else
 	  {runMajorCycle2(true, false);}
 	}

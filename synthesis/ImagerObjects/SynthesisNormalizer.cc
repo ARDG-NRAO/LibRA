@@ -92,7 +92,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
             normpars.get( RecordFieldId("psfcutoff") , itsPsfcutoff  );
         }else
         {
-            throw( AipsError("psfcutoff not specified"));
+          itsPsfcutoff=0.35;
         }
           
           
@@ -350,6 +350,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     // Irrespective of facets.
     itsImages->normalizePrimaryBeam(itsPBLimit);
+    itsImages->releaseLocks();
   }
 
 

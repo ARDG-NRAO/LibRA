@@ -603,6 +603,8 @@ namespace casa{
       {
 	Regex regex(Regex::fromPattern(pattern));
 	Vector<String> fileNames(dirObj.find(regex));
+	if (fileNames.nelements() == 0)
+	  throw(SynthesisFTMachineError(String("CFCache is empty!")));
 	String CFCDir=dirObj.path().absoluteName();
 	if (showInfo)
 	  log_l << "No. of " << pattern << " found in " 

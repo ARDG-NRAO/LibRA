@@ -552,9 +552,9 @@ namespace casa{
 
     
     // cerr << "CFBuffer::initMaps: " 
-    // 	 << freqSelection << endl
-    // 	 << freqValues_p << endl
-    // 	 << freqNdxMap_p << endl
+    // 	 << freqSelection << endl << endl
+    // 	 << freqValues_p << endl << endl
+    // 	 << freqNdxMap_p << endl<< endl
     // 	 << conjFreqNdxMap_p << endl;
 
   }

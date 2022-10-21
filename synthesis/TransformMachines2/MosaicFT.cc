@@ -719,8 +719,12 @@ void MosaicFT::finalizeToSky()
   if(pointingToImage) delete pointingToImage; pointingToImage=0;
 }
 
-void MosaicFT::setWeightImage(CountedPtr<TempImage<Float> >& wgtimage){
-  skyCoverage_p=wgtimage;
+void MosaicFT::setWeightImage(CountedPtr<ImageInterface<Float> >& wgtimage){
+  IPosition shp=wgtimage->shape();
+  CoordinateSystem cs=wgtimage->coordinates();
+  CountedPtr<TempImage<Float> > wgtim=new TempImage<Float>(shp, cs);
+  wgtim->copyData(*(wgtimage));
+  skyCoverage_p=wgtim;
   Record rec=skyCoverage_p->miscInfo();
   //For mosaicFTNew it has the nx*ny factor already in
   rec.define("isscaled", True);
@@ -762,7 +766,7 @@ extern "C" {
 		const Int*/*nx*/, const Int*/*ny*/, const Int*/*npol*/, const Int*/*nchan*/, 
 		const Int*/*support*/, const Int*/*convsize*/, const Int*/*sampling*/, 
 		const Int*/*chanmap*/, const Int*/*polmap*/,
-		DComplex* /*weightgrid*/, const Complex*/*convweight*/, const Int*/*convplanemap*/, 
+		DComplex* /*weightgrid*/, Double* /*sumwt*/, const Complex*/*convweight*/, const Int*/*convplanemap*/, 
 		const Int*/*convchanmap*/,  const Int*/*convpolmap*/, 
 		const Int*/*nconvplane*/, const Int*/*nconvchan*/, const Int*/*nconvpol*/, const Int*/*rbeg*/, 
 		const Int*/*rend*/, const Int*/*loc*/, const Int*/*off*/, const Complex*/*phasor*/);
@@ -771,7 +775,7 @@ extern "C" {
 		const Int*/*nx*/, const Int*/*ny*/, const Int*/*npol*/, const Int*/*nchan*/, 
 		const Int*/*support*/, const Int*/*convsize*/, const Int*/*sampling*/, 
 		const Int*/*chanmap*/, const Int*/*polmap*/,
-		Complex* /*weightgrid*/, const Complex*/*convweight*/, const Int*/*convplanemap*/, 
+               Complex* /*weightgrid*/, Double*/*sumwt*/, const Complex*/*convweight*/, const Int*/*convplanemap*/, 
 		const Int*/*convchanmap*/,  const Int*/*convpolmap*/, 
 		const Int*/*nconvplane*/, const Int*/*nconvchan*/, const Int*/*nconvpol*/, const Int*/*rbeg*/, 
 		const Int*/*rend*/, const Int*/*loc*/, const Int*/*off*/, const Complex*/*phasor*/);
@@ -1146,10 +1150,10 @@ void MosaicFT::put(const vi::VisBuffer2& vb, Int row, Bool dopsf,
 
 
  
-timemass_p +=tim.real();
-Int  ixsub, iysub, icounter;
-  ixsub=1;
-  iysub=1;
+ timemass_p +=tim.real();
+ Int  ixsub, iysub, icounter;
+ ixsub=1;
+ iysub=1;
   //////***********************DEBUGGING
   //nth=1;
   ////////***************
@@ -1186,6 +1190,11 @@ Int  ixsub, iysub, icounter;
    //cerr << xsect.shape() << "  " << xsect << endl;
   const Int* pmapstor=polMap.getStorage(del);
   const Int* cmapstor=chanMap.getStorage(del);
+// Dummy sumwt for gridweight part
+  Matrix<Double> dumSumWeight(npol, nchan);
+  dumSumWeight=sumWeight;
+  Bool isDSWC;
+  Double *dsumwtstor=dumSumWeight.getStorage(isDSWC);
   Int nc=nchan;
   Int np=npol;
   Int nxp=nx;
@@ -1197,6 +1206,9 @@ Int  ixsub, iysub, icounter;
   const Int *convrowmapstor=convRowMap_p.getStorage(del);
   const Int *convchanmapstor=convChanMap_p.getStorage(del);
   const Int *convpolmapstor=convPolMap_p.getStorage(del);
+  ///
+
+  
   ////////***************************
   tim.mark(); 
 
@@ -1273,7 +1285,7 @@ Int  ixsub, iysub, icounter;
       gmoswgtd(&nvp, &nvc,flagstor, rowflagstor, wgtStorage, &nvisrow, 
 	       &nxp, &nyp, &np, &nc, &csupp, &csize, &csamp, 
 	       cmapstor, pmapstor,
-	       gridwgtstor, wconvstor, convrowmapstor, 
+	       gridwgtstor, dsumwtstor, wconvstor, convrowmapstor, 
 	       convchanmapstor,  convpolmapstor, 
 	       &nConvFunc, &nChanConv, &nPolConv, &rbeg, 
 	       &rend, locstor, offstor, phasorstor);
@@ -1353,7 +1365,7 @@ Int  ixsub, iysub, icounter;
       gmoswgts(&nvp, &nvc,flagstor, rowflagstor, wgtStorage, &nvisrow, 
 	       &nxp, &nyp, &np, &nc, &csupp, &csize, &csamp, 
 	       cmapstor, pmapstor,
-	       gridwgtstor, wconvstor, convrowmapstor, 
+	       gridwgtstor, dsumwtstor, wconvstor, convrowmapstor, 
 	       convchanmapstor,  convpolmapstor, 
 	       &nConvFunc, &nChanConv, &nPolConv, &rbeg, 
 	       &rend, locstor, offstor, phasorstor);
@@ -1364,6 +1376,7 @@ Int  ixsub, iysub, icounter;
   }
   convFunc.freeStorage(convstor, convcopy);
   weightConvFunc_p.freeStorage(wconvstor, wconvcopy);
+  dumSumWeight.putStorage(dsumwtstor, isDSWC);
   uvw.freeStorage(uvwstor, uvwcopy);
   if(!dopsf)
     data.freeStorage(datStorage, isCopy);
@@ -1375,6 +1388,188 @@ Int  ixsub, iysub, icounter;
 
 }
 
+void MosaicFT::gridImgWeights(const vi::VisBuffer2& vb){
+
+  if(doneWeightImage_p)
+    return;
+  matchChannel(vb);
+ 
+  
+  //cerr << "CHANMAP " << chanMap << endl;
+  //No point in reading data if its not matching in frequency
+  if(max(chanMap)==-1)
+    return;
+
+  Int startRow, endRow, nRow;
+  nRow=vb.nRows();
+  startRow=0;
+  endRow=nRow-1;
+  
+  
+  //const Matrix<Float> *imagingweight;
+  //imagingweight=&(vb.imagingWeight());
+  Matrix<Float> imagingweight;
+  getImagingWeight(imagingweight, vb);
+
+
+  Cube<Complex> data;
+  //Fortran gridder need the flag as ints 
+  Cube<Int> flags;
+  Matrix<Float> elWeight;
+  interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, FTMachine::PSF);
+  
+ 
+
+  Bool iswgtCopy;
+  const Float *wgtStorage;
+  wgtStorage=elWeight.getStorage(iswgtCopy);
+  Bool issumWgtCopy;
+  Double* sumwgtstor=sumWeight.getStorage(issumWgtCopy);
+
+  
+ 
+  // Get the uvws in a form that Fortran can use and do that
+  // necessary phase rotation. 
+  Matrix<Double> uvw(negateUV(vb));
+  Vector<Double> dphase(vb.nRows());
+  dphase=0.0;
+ 
+  doUVWRotation_p=true;
+  girarUVW(uvw, dphase, vb);
+  refocus(uvw, vb.antenna1(), vb.antenna2(), dphase, vb);
+  // This needs to be after the interp to get the interpolated channels
+  //Also has to be after rotateuvw in case tracking is on
+  findConvFunction(*image, vb);
+  //nothing to grid here as the pointing resulted in a zero support convfunc
+  if(convSupport <= 0)
+    return;
+  
+  Bool del;
+  
+  const Int* pmapstor=polMap.getStorage(del);
+  const Int* cmapstor=chanMap.getStorage(del);
+  
+  Vector<Int> rowFlags(vb.nRows());
+  rowFlags=0;
+  rowFlags(vb.flagRow())=true;
+  if(!usezero_p) {
+    for (uInt rownr=0; rownr< vb.nRows(); rownr++) {
+      if(vb.antenna1()(rownr)==vb.antenna2()(rownr)) rowFlags(rownr)=1;
+    }
+  }
+
+  //Fortran indexing
+  
+  Int rbeg=1;
+  Int rend=vb.nRows();
+
+  const Int * flagstor=flags.getStorage(del);
+  const Int * rowflagstor=rowFlags.getStorage(del);
+
+  const Int *convrowmapstor=convRowMap_p.getStorage(del);
+  const Int *convchanmapstor=convChanMap_p.getStorage(del);
+  const Int *convpolmapstor=convPolMap_p.getStorage(del);
+  
+  //Tell the gridder to grid the weights too ...need to do that once only
+  //Int doWeightGridding=1;
+  //if(doneWeightImage_p)
+  //  doWeightGridding=-1;
+  //    IPosition s(flags.shape());
+  const IPosition& fs=flags.shape();
+  //cerr << "flags shape " << fs << endl;
+  std::vector<Int>s(fs.begin(), fs.end());
+  Int nvp=s[0];
+  Int nvc=s[1];
+  Int nvisrow=s[2];
+  Int csamp=convSampling;
+  Bool uvwcopy; 
+  const Double *uvwstor=uvw.getStorage(uvwcopy);
+  Bool gridcopy;
+  Bool convcopy;
+  Bool wconvcopy;
+  const Complex *wconvstor=weightConvFunc_p.getStorage(wconvcopy);
+  Int nPolConv=convFunc.shape()[2];
+  Int nChanConv=convFunc.shape()[3];
+  Int nConvFunc=convFunc.shape()(4);
+  Bool weightcopy;
+  ////////**************************
+  Cube<Int> loc(2, nvc, vb.nRows());
+  Cube<Int> off(2, nvc, vb.nRows());
+  Matrix<Complex> phasor(nvc, vb.nRows());
+  Bool delphase;
+  Complex * phasorstor=phasor.getStorage(delphase);
+  const Double * visfreqstor=interpVisFreq_p.getStorage(del);
+  const Double * scalestor=uvScale.getStorage(del);
+  const Double * offsetstor=uvOffset.getStorage(del);
+  Int * locstor=loc.getStorage(del);
+  Int * offstor=off.getStorage(del);
+  const Double *dpstor=dphase.getStorage(del);
+
+  Int irow;
+  Int nth=1;
+#ifdef _OPENMP
+  if(numthreads_p >0){
+    nth=min(numthreads_p, omp_get_max_threads());
+  }
+  else{   
+    nth= omp_get_max_threads();
+  }
+  //nth=min(4,nth);
+#endif
+  Double cinv=Double(1.0)/C::c;
+ 
+  Int dow=0;
+
+#pragma omp parallel default(none) private(irow) firstprivate(visfreqstor, nvc, scalestor, offsetstor, csamp, phasorstor, uvwstor, locstor, offstor, dpstor, dow, cinv) shared(startRow, endRow) num_threads(nth)  
+{
+#pragma omp for
+  for (irow=startRow; irow<=endRow;irow++){
+    /*locateuvw(uvwstor,dpstor, visfreqstor, nvc, scalestor, offsetstor, csamp, 
+	      locstor, 
+	      offstor, phasorstor, irow, false);*/
+    locuvw(uvwstor, dpstor, visfreqstor, &nvc, scalestor, offsetstor, &csamp, locstor, offstor, phasorstor, &irow, &dow, &cinv);
+  }  
+
+ }//end pragma parallel
+
+
+
+
+  if(useDoubleGrid_p) {
+      //This can be parallelized by making copy of the central part of the griddedWeight
+      //and adding it after dooing the gridding
+      DComplex *gridwgtstor=griddedWeight2.getStorage(weightcopy);
+      gmoswgtd(&nvp, &nvc,flagstor, rowflagstor, wgtStorage, &nvisrow, 
+	       &nx, &ny, &npol, &nchan, &convSupport, &convSize, &convSampling, 
+	       cmapstor, pmapstor,
+	       gridwgtstor, sumwgtstor, wconvstor, convrowmapstor, 
+	       convchanmapstor,  convpolmapstor, 
+	       &nConvFunc, &nChanConv, &nPolConv, &rbeg, 
+	       &rend, locstor, offstor, phasorstor);
+      griddedWeight2.putStorage(gridwgtstor, weightcopy);
+    
+    
+
+
+
+  }
+  else{
+    Complex *gridwgtstor=griddedWeight.getStorage(weightcopy);
+    gmoswgts(&nvp, &nvc,flagstor, rowflagstor, wgtStorage, &nvisrow, 
+             &nx, &ny, &npol, &nchan, &convSupport, &convSize, &convSampling, 
+             cmapstor, pmapstor,
+             gridwgtstor, sumwgtstor, wconvstor, convrowmapstor, 
+             convchanmapstor,  convpolmapstor, 
+             &nConvFunc, &nChanConv, &nPolConv, &rbeg, 
+             &rend, locstor, offstor, phasorstor);
+    griddedWeight.putStorage(gridwgtstor, weightcopy);
+
+
+  }
+  sumWeight.putStorage(sumwgtstor, issumWgtCopy); 
+  elWeight.freeStorage(wgtStorage,iswgtCopy);
+    
+}
 
 void MosaicFT::get(vi::VisBuffer2& vb, Int row)
 {

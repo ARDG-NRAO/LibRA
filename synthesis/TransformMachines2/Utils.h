@@ -59,6 +59,7 @@ namespace casa
     void makeStokesAxis(casacore::Int npol_p, casacore::Vector<casacore::String>& polType, casacore::Vector<casacore::Int>& whichStokes);
     casacore::Double getPA(const vi::VisBuffer2& vb);
     void storeImg(casacore::String fileName,casacore::ImageInterface<casacore::Complex>& theImg, casacore::Bool writeReIm=false);
+    void storeImg(casacore::String fileName,casacore::PagedImage<casacore::Complex>& theImg, casacore::Bool writeReIm=false);
     void storeImg(casacore::String fileName,casacore::ImageInterface<casacore::Float>& theImg);
     void storeArrayAsImage(casacore::String fileName, const casacore::CoordinateSystem& coords, const casacore::Array<casacore::Complex>& cf);
     void storeArrayAsImage(casacore::String fileName, const casacore::CoordinateSystem& coords, const casacore::Array<casacore::DComplex>& cf);
@@ -161,12 +162,40 @@ namespace casa
       casacore::CoordinateSystem makeModelGridFromImage(const std::string& modelImageName,
 				  casacore::TempImage<casacore::DComplex>& modelImageGrid);
 
+      //
+      // Make a list of A- and W-term IDs for paging-in the CFs from
+      // the CFCache.
+      //
+      // wVals and fVals is the list of pixel values along the w- and
+      // frequency-axis of the CFCache.
+      //
+      // wbAWP==true indicates that WB A-Projection is requested.
+      // nw > 1 indicates that W-term correction is requested.
+      // imRefFreq is the reference frequency of the sky image frame.
+      // spwRefFreq is the reference frequency of the current SPW.
+      // wNdxList and spwNdxList are the return values of list of IDs for CFs in the CFCache.
+      // vbSPW is the SPW ID in the current VB.
       void makeAWLists(const casacore::Vector<double>& wVals,
 		       const casacore::Vector<double>& fVals,
 		       const bool& wbAWP, const uint& nw,
 		       const double& imRefFreq, const double& spwRefFreq,
-		       casacore::Vector<int>& wNdxList, casacore::Vector<int>& spwNdxList,
-		       const int vbSPW);
+		       const int vbSPW,
+		       casacore::Vector<int>& wNdxList, casacore::Vector<int>& spwNdxList);
+      //
+      // A decision if new CFs are to be paged in for the AW line of
+      // resamplers (AWVisResampler, AWVisResamplerHPG). This
+      // evaluates to true if WB AW-P algorithm is requested and the
+      // SPW ID has changed, or if forced==true.
+      //
+      // If the condition evaluates to true (i.e. a new CF is needed)
+      // and current SPW is different, the value of the first argument
+      // (cachedVBSpw) is replaced with the value of the second
+      // argument (currentVBSpw).
+      // 
+      bool needNewCF(int& cachedVBSpw, const int currentVBSpw,
+		     const int nWPlanes, const bool wbAWP,
+		     const bool forced);
+
     }
     
     void getHADec(casacore::MeasurementSet& ms, const VisBuffer2& vb, casacore::Double &HA, casacore::Double& RA, casacore::Double& Dec);

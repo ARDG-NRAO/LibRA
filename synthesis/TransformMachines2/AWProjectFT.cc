@@ -57,7 +57,7 @@
 #include <synthesis/TransformMachines2/NoOpATerm.h>
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <synthesis/TransformMachines2/EVLAAperture.h>
-
+#include <iomanip>
 //#define CONVSIZE (1024*2)
 // #define OVERSAMPLING 2
 #define USETABLES 0           // If equal to 1, use tabulated exp() and
@@ -175,7 +175,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       Second("s"),Radian("rad"),Day("d"), pbNormalized_p(false), paNdxProcessed_p(),
       visResampler_p(), sensitivityPatternQualifier_p(-1),sensitivityPatternQualifierStr_p(""),
     rotatedConvFunc_p(),
-    runTime1_p(0.0), previousSPWID_p(-1), self_p(), vb2CFBMap_p(), po_p()
+      runTime1_p(0.0), previousSPWID_p(-1), self_p(), vb2CFBMap_p(), po_p(),wbAWP_p(true)
   {
     //    convSize=0;
     tangentSpecified_p=false;
@@ -238,7 +238,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       rotateOTFPAIncr_p(0.1),
       Second("s"),Radian("rad"),Day("d"), pbNormalized_p(false),
       visResampler_p(visResampler), sensitivityPatternQualifier_p(-1),sensitivityPatternQualifierStr_p(""),
-    rotatedConvFunc_p(), runTime1_p(0.0),  previousSPWID_p(-1),self_p(), vb2CFBMap_p(), po_p()
+      rotatedConvFunc_p(), runTime1_p(0.0),  previousSPWID_p(-1),self_p(), vb2CFBMap_p(), po_p(),wbAWP_p(true)
   {
     //convSize=0;
     tangentSpecified_p=false;
@@ -278,12 +278,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     po_p = new PointingOffsets();
     po_p->setOverSampling(convSampling);
     vb2CFBMap_p->setPOSigmaDev(pointingOffsetSigDev);
+    wbAWP_p=convFuncCtor_p->isWBAWP();
+
   }
   //
   //---------------------------------------------------------------
   //
   AWProjectFT::AWProjectFT(const RecordInterface& stateRec)
-    : FTMachine(),Second("s"),Radian("rad"),Day("d"),visResampler_p(), self_p(), vb2CFBMap_p(), po_p()
+    : FTMachine(),Second("s"),Radian("rad"),Day("d"),visResampler_p(), self_p(), vb2CFBMap_p(), po_p(),wbAWP_p(true)
   {
     //
     // Construct from the input state record
@@ -323,8 +325,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   // This is nasty, we should use CountedPointers here.
   AWProjectFT::~AWProjectFT() 
   {
-      if(imageCache) delete imageCache; imageCache=0;
-      if(gridder) delete gridder; gridder=0;
+      if(imageCache) delete imageCache;
+      imageCache=0;
+      if(gridder) delete gridder;
+      gridder=0;
   }
   //
   //---------------------------------------------------------------
@@ -368,7 +372,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 	
 	padding_p=other.padding_p;
-	nWPlanes_p=other.nWPlanes_p;
 	imageCache=other.imageCache;
 	cachesize=other.cachesize;
 	tilesize=other.tilesize;
@@ -426,6 +429,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	vb2CFBMap_p = other.vb2CFBMap_p;
 	po_p = other.po_p;
 	//	self_p = other.self_p;
+	wbAWP_p=other.wbAWP_p;
       };
     return *this;
   };
@@ -441,10 +445,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     npol  = image->shape()(2);
     nchan = image->shape()(3);
     
-    if(image->shape().product()>cachesize) 
-      isTiled=true;
-    else 
-      isTiled=false;
     
     sumWeight.resize(npol, nchan);
     sumCFWeight.resize(npol, nchan);
@@ -467,13 +467,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     uvOffset(1)=ny/2;
     uvOffset(2)=0;
     
-    if(gridder) delete gridder; gridder=0;
+    if(gridder) delete gridder;
+    gridder=0;
     gridder = new ConvolveGridder<Double, Complex>(IPosition(2, nx, ny),
 						   uvScale, uvOffset,
 						   "SF");
     
     // Set up image cache needed for gridding. 
-    if(imageCache) delete imageCache;   imageCache=0;
+    if(imageCache) delete imageCache;
+    imageCache=0;
     
     // The tile size should be large enough that the
     // extended convolution function can fit easily
@@ -532,6 +534,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     paChangeDetector.reset();
     makingPSF = false;
     
+    log_l << "Using " << visResampler_p->name() << " visibility resampler (a.k.a. \"gridder/degridder\")" << LogIO::POST;
+    vb2CFBMap_p->computePhaseScreen_p = visResampler_p->needCFPhaseScreen();
     //cerr << "Current runTime = " << runTime << endl;
   }
   //
@@ -1198,10 +1202,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // 					       dPAQuant,
     // 					       chanMap,polMap,pointingOffset);
     vb2CFBMap_p->setDoPointing(doPointing);
-    cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p,
-						vb,
-						dPAQuant,
-						chanMap,polMap,po_p);
+    if ((ftmType() == casa::refim::FTMachine::PSF) || (ftmType() == casa::refim::FTMachine::WEIGHT))
+      cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
+					       vb,
+					       dPAQuant,
+					       chanMap,polMap,po_p);
+    else 
+      cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p,
+					       vb,
+					       dPAQuant,
+					       chanMap,polMap,po_p);
 
     if (cfSource == CFDefs::NOTCACHED)
       {
@@ -1256,17 +1266,38 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     
 	cfCache_p->initPolMaps(pNdx,cpNdx);
 
-	cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
-	cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+	if (!cfs2_p.null()) cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+	if (!cfwts2_p.null()) cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
       }
     //
     // Load the average PB (sensitivity pattern) from the cache.  If
     // not found in the cache, make one and cache it.
     //
-    if (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p) == CFDefs::NOTCACHED)
-	makeSensitivityImage(vb,image,*avgPB_p);
+    //if (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p) == CFDefs::NOTCACHED)
+	//makeSensitivityImage(vb,image,*avgPB_p);
 
-    verifyShapes(avgPB_p->shape(), image.shape());
+	std::tuple<int, double>cubeinfo(1,-1.0);
+        double freqofBegChan;
+        spectralCoord_p.toWorld(freqofBegChan, 0.0);
+        
+        cubeinfo=std::make_tuple(image.shape()(3),freqofBegChan);
+	
+	if (isAVGPBReady()==false)
+	  {
+	    Bool avgPBReady = (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p, cubeinfo) != CFDefs::NOTCACHED);
+    
+	    if(avgPBReady){
+	      LatticeExprNode le( max( *avgPB_p ) );
+	      Float avgPB_max=le.getFloat();
+        
+	      if(avgPB_max <= 0.0) avgPBReady = false;
+	    }
+    
+	    if(!avgPBReady) makeSensitivityImage(vb,image,*avgPB_p);
+	    verifyShapes(avgPB_p->shape(), image.shape());
+	  }
+	
+    
 
     if (paChangeDetector.changed(vb,0)) paChangeDetector.update(vb,0);
     //
@@ -1413,6 +1444,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void AWProjectFT::initializeToVis(ImageInterface<Complex>& iimage,
 				    const VisBuffer2& vb)
   {
+
+    //    initializeToVisDP(iimage, vb);
     LogIO log_l(LogOrigin("AWProjectFT2", "initializeToVis[R&D]"));
     image=&iimage;
     
@@ -1440,8 +1473,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     npol  = image->shape()(2);
     nchan = image->shape()(3);
     
-    if(image->shape().product()>cachesize) isTiled=true;
-    else isTiled=false;
     //
     // If we are memory-based then read the image in and create an
     // ArrayLattice otherwise just use the PagedImage
@@ -1449,10 +1480,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     isTiled=false;
 
-    if(isTiled){
-    	lattice=CountedPtr<Lattice<Complex> > (image, false);
-    }
-    else 
+    // if(isTiled){
+    // 	lattice=CountedPtr<Lattice<Complex> > (image, false);
+    // }
+    // else 
       {
 	IPosition gridShape(4, nx, ny, npol, nchan);
 	griddedData.resize(gridShape);
@@ -1481,6 +1512,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	if(ix==centerX) sincConv(ix)=1.0;
 	else            sincConv(ix)=sin(x)/x;
+	sincConv(ix) = 1.0;
       }
     
     //    Vector<Complex> correction(nx);
@@ -1488,6 +1520,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // Do the Grid-correction
     //
     //    if(0) //UUU
+    // {
+    //   String fileName(visResampler_p->name()+"_modelimage.im");
+    //   storeImg(fileName, *image,true);
+    // }
+
     if(cfCache_p->avgPBReady()) //SB
     {
       //      normalizeAvgPB();
@@ -1541,15 +1578,20 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //
     // Now do the FFT2D in place
     //
+    // {
+    //   String fileName(visResampler_p->name()+"_modelimage.afternorm.im");
+    //   storeImg(fileName, *image,true);
+    // }
 
-    //    storeImg(String("img.before.mod"), *image);
     LatticeFFT::cfft2d(*lattice);
-    //    storeImg(String("img.after.mod"), *image);
-
+    // {
+    //   String fileName(visResampler_p->name()+"_modelimage.afterfft.im");
+    //   storeArrayAsImage(fileName, image->coordinates(),griddedData);
+    // }
     log_l << LogIO::DEBUGGING << "Finished FFT" << LogIO::POST;
   }
   //
-  //---------------------------------------------------------------
+  //------------------------------------------------------------------------------
   //
   void AWProjectFT::initializeToVis(ImageInterface<Complex>& iimage,
 				     const VisBuffer2& vb,
@@ -1559,6 +1601,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     initializeToVis(iimage, vb);
     griddedVis.assign(griddedData); //using the copy for storage
     uvscale.assign(uvScale);
+    
   }
   //
   //---------------------------------------------------------------
@@ -1571,7 +1614,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   if(!arrayLattice.null()) arrayLattice=0;
   if(!lattice.null()) lattice=0;
   griddedData.resize();
-
+  
     if(isTiled) 
       {
 	AlwaysAssert(imageCache, AipsError);
@@ -1583,7 +1626,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	LogIO log_l(LogOrigin("AWProjectFT2", "finalizeToVis[R&D]"));
 	log_l << o.str() << LogIO::POST;
       }
-    if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if(pointingToImage) delete pointingToImage;
+    pointingToImage=0;
   }
   //
   //---------------------------------------------------------------
@@ -1595,31 +1639,48 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				     Matrix<Float>& weight,
 				     const VisBuffer2& vb)
   {
-    //    LogIO log_l(LogOrigin("AWProjectFT2", "initializeToSky[R&D]"));
+    LogIO log_l(LogOrigin("AWProjectFT2", "initializeToSky[R&D]"));
     
     // image always points to the image
     image=&iimage;
     
     init();
     initMaps(vb);
+    log_l << "Computed maps using FTMachine::initMaps. " << "polMap = " << polMap << LogIO::POST;
     visResampler_p->setMaps(chanMap, polMap);
+    //cerr << expandedSpwFreqSel_p << endl;
     visResampler_p->setFreqMaps(expandedSpwFreqSel_p,expandedSpwConjFreqSel_p);
     
     // Initialize the maps for polarization and channel. These maps
     // translate visibility indices into image indices
     
+    //    cerr << "initializeToSky: image shape: " << image->shape() << endl;
+
     nx    = image->shape()(0);
     ny    = image->shape()(1);
     npol  = image->shape()(2);
     nchan = image->shape()(3);
     
-    if(image->shape().product()>cachesize) isTiled=true;
-    else                                   isTiled=false;
+    // if(image->shape().product()>cachesize) isTiled=true;
+    // else                                   isTiled=false;
     
     sumWeight=0.0;
     sumCFWeight = 0.0;
     weight.resize(sumWeight.shape());
     weight=0.0;
+
+    //    log_l << "Initializing HPG" << LogIO::POST;
+
+    //
+    // Construct the HPG.  This is now donw in AWVRHPG.  Not the right
+    // place, I think, but good enough for testing. (21Dec2020).
+    //
+    // const std::array<unsigned, 4> gridSize{(uInt)nx,(uInt)ny,(uInt)npol,(uInt)nchan};
+    // const std::array<float, 2> gridScale{(float)uvScale(0), (float)uvScale(1)};
+    // unsigned max_added_tasks=1; // This allocates 2 CUDA streams in AWVRHPG.
+    // visResampler_p->initGridder(max_added_tasks,gridSize,gridScale);
+
+
     //
     // Initialize for in memory or to disk gridding. lattice will
     // point to the appropriate Lattice, either the ArrayLattice for
@@ -1673,7 +1734,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	imageCache->showCacheStatistics(o);
 	//	log_l << o.str() << LogIO::POST;
       }
-    if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if(pointingToImage) delete pointingToImage;
+    pointingToImage=0;
 
     paChangeDetector.reset();
     cfCache_p->flush();
@@ -1681,6 +1743,42 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       visResampler_p->finalizeToSky(griddedData2, sumWeight);
     else
       visResampler_p->finalizeToSky(griddedData, sumWeight);
+
+    // CLEANUP_WORK_NEEDED
+    // CLEANUP_WORK_NEEDED: Done.  
+    // CLEANUP_WORK_NEEDED: VisReBase::finalizeToSky() calls ::GatherGrids(),
+    // CLEANUP_WORK_NEEDED: which calls the speicalized AWVRHPG::GatherGrids().
+    // CLEANUP_WORK_NEEDED: The complex grid and SoW are retrived from the Device 
+    // CLEANUP_WORK_NEEDED: and the HPG is close/finalized.
+    // CLEANUP_WORK_NEEDED: The code below is not required.
+
+    //VisResampler::finializeToSky() is what should be converted to
+    //::resetGridder().  This is done in a hurry, and if this code is
+    //to be used for production, cleanup work is needed here.
+    //
+    // VRBase also has ::GatherGrids method, which should be used in AWVRHPG.h
+
+    // sow is is a vector<vector<doulbe>>.  sumWeight is a Matrix.
+    // sow[i][*] is a Mueller row. i is the index for the polarization product.
+    // wt below is a sum of the weights of all the Mueller elements in a row.
+    // sumofweight_fp sow;
+
+    // sow = visResampler_p->resetGridder(griddedData2);
+
+
+    // if (sow.size() > 0)
+    //   {
+    // 	for (int i=0; i<sumWeight.shape()(0); i++)
+    // 	  {
+    // 	    double wt=0.0;
+    // 	    for (int j=0; j<sow[i].size(); j++)
+    // 	      wt += sow[i][j];
+    // 	    for (int j=0; j<sumWeight.shape()(1); j++)
+    // 	      {
+    // 		sumWeight[i][j]=wt;
+    // 	      }
+    // 	  }
+    //   }
   }
   //
   //---------------------------------------------------------------
@@ -1708,10 +1806,19 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
     // Take care of translation of Bools to Integer
     makingPSF=dopsf;
+
+    // std::chrono::time_point<std::chrono::steady_clock> 
+    //   startTime=std::chrono::steady_clock::now();
     
     try
       {
+	// std::chrono::time_point<std::chrono::steady_clock> 
+	//   findCFTime=std::chrono::steady_clock::now();
+
 	findConvFunction(*image, vb);
+
+	// std::chrono::duration<double> duration_findCF = std::chrono::steady_clock::now() - findCFTime;
+	// cerr << "    findCF: " << duration_findCF.count() << endl;
       }
     catch(AipsError& x)
       {
@@ -1725,6 +1832,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     //const Matrix<Float> *imagingweight;
     //imagingweight=&(vb.imagingWeight());
+
+    // std::chrono::time_point<std::chrono::steady_clock> 
+    //   interpolateFTime=std::chrono::steady_clock::now();
+
     Matrix<Float> imagingweight;
     getImagingWeight(imagingweight, vb);
 
@@ -1734,25 +1845,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Matrix<Float> elWeight;
 
     interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
-    // nAnt set but not used
-    // Int NAnt;
-    // if (doPointing) NAnt = findPointingOffsets(vb,l_offsets,m_offsets,true);
-    //
-    // If row is -1 then we pass through all rows
-    //
-    // Int nRow;
-    // if (row==-1) 
-    //   {
-    // 	nRow=vb.nRows();
-    // 	//startRow=0;
-    // 	//endRow=nRow-1;
-    //   } 
-    // else 
-    //   {
-    // 	nRow=1;
-    // 	// startRow=row;
-    // 	// endRow=row;
-    //   }
+
+    // std::chrono::duration<double> duration_inter = std::chrono::steady_clock::now() - interpolateFTime;
+    // cerr << "    interpolate: " << duration_inter.count() << endl;
+
     //    
     // Get the uvws in a form that Fortran can use and do that
     // necessary phase rotation. On a Pentium Pro 200 MHz when null,
@@ -1760,15 +1856,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // noticeable for Stokes I continuum and irrelevant for other
     // cases.
     //
+
+    // std::chrono::time_point<std::chrono::steady_clock> 
+    //   uvwTime=std::chrono::steady_clock::now();
     Matrix<Double> uvw(negateUV(vb));
-    // Matrix<Double> uvw(3, vb.uvw().nelements());
-    // uvw=0.0;
-    // //NEGATING to correct for an image inversion problem
-    // for (Int i=startRow;i<=endRow;i++) 
-    //   {
-    // 	for (Int idim=0;idim<2;idim++) uvw(idim,i)=-vb.uvw()(i)(idim);
-    // 	uvw(2,i)=vb.uvw()(i)(2);
-    //   }
     
     Vector<Double> dphase(vb.nRows());
     dphase=0.0;
@@ -1776,29 +1867,20 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //rotateUVW(uvw, dphase, vb);
     girarUVW(uvw, dphase, vb);
     refocus(uvw, vb.antenna1(), vb.antenna2(), dphase, vb);
-    
-    // // This is the convention for dphase
-    // dphase*=-1.0;
-
-    //Check if ms has changed then cache new spw and chan selection
-    // if(vb.newMS())
-    //   matchAllSpwChans(vb);  
-    
     //Here we redo the match or use previous match
+
+    // std::chrono::duration<double> duration_uvw = std::chrono::steady_clock::now() - uvwTime;
+    // cerr << "    UVW: " << duration_uvw.count() << endl;
     
     //Channel matching for the actual spectral window of buffer
-    // if(doConversion_p[vb.spectralWindow()])
-    //   matchChannel(vb.spectralWindow(), vb);
-    // else
-    //   {
-    // 	chanMap.resize();
-    // 	chanMap=multiChanMap_p[vb.spectralWindow()];
-    //   }
 
     matchChannel(vb);
     VBStore vbs;
     Vector<Int> gridShape = griddedData2.shape().asVector();
     setupVBStore(vbs,vb, elWeight,data,uvw,flags, dphase,dopsf,gridShape);
+
+    // std::chrono::duration<double> duration = std::chrono::steady_clock::now() - startTime;
+    // cerr << "Prepare VB time: " << duration.count() << endl;
 
     if (useDoubleGrid_p)
       {
@@ -1813,6 +1895,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	//storeArrayAsImage(String("cgrid_awp_s.im"), image->coordinates(), griddedData);
       }
   }
+
+  std::shared_ptr<std::complex<double>> AWProjectFT::getGridPtr(size_t& size) const
+  {
+    return visResampler_p->getGridPtr(size);
+  }
+
+  std::shared_ptr<double> AWProjectFT::getSumWeightsPtr(size_t& size) const
+  {
+    return visResampler_p->getSumWeightsPtr(size);
+  }
+
   //
   //-------------------------------------------------------------------------
   // Gridding
@@ -1841,6 +1934,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    LogIO log_l(LogOrigin("AWProjectFT2", "get[R&D]"));
     // If row is -1 then we pass through all rows
 
+    // {
+    //   String fileName(visResampler_p->name()+"_modelgrid.im");
+    //   storeArrayAsImage(fileName, image->coordinates(),griddedData);
+    // }
     //------COMMON FROM HERE
     //Int nRow;
     // if (row==-1) 
@@ -1880,6 +1977,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     dphase=0.0;
     doUVWRotation_p=true;
     //rotateUVW(uvw, dphase, vb);
+
     girarUVW(uvw, dphase, vb);
     refocus(uvw, vb.antenna1(), vb.antenna2(), dphase, vb);
     
@@ -1979,6 +2077,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       log_l // UUU //<< LogIO::SEVERE
 	    << "No useful data in " << name() << ".  Weights all zero"
 	    << LogIO::POST;
+    else
+      {
+	log_l << "Sum of weights: " << weights << " " << max(griddedData2) << " " << min(griddedData2) << LogIO::POST;
+	cerr << "Sum of weights: " << setprecision(20) << weights << endl;
+      }
     // UUU else
       {
 	log_l << LogIO::DEBUGGING
@@ -1990,6 +2093,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	if (useDoubleGrid_p)
 	  {
 	    ArrayLattice<DComplex> darrayLattice(griddedData2);
+	    // {
+	    //   griddedData.resize(griddedData2.shape());
+	    //   convertArray(griddedData, griddedData2);
+	    //   storeArrayAsImage(String("cgrid_"+visResampler_p->name()+".im"), image->coordinates(), griddedData);
+	    // }
 	    LatticeFFT::cfft2d(darrayLattice,false);
 	    griddedData.resize(griddedData2.shape());
 	    convertArray(griddedData, griddedData2);
@@ -2004,7 +2112,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  {
 	    arrayLattice = new ArrayLattice<Complex>(griddedData);
 	// cerr << "##### " << griddedData2.shape() << endl;
-	// storeArrayAsImage(String("cgrid_awp.im"), image->coordinates(), griddedData);
 	    lattice=arrayLattice;
 	    LatticeFFT::cfft2d(*lattice,false);
 	  }
@@ -2078,7 +2185,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     {
       // TempImage<Complex> tt(lattice->shape(), image->coordinates());
       // tt.put(lattice->get());
-      //storeImg(String("uvgrid.im"), *image);
+      //storeImg(String("uvgrid"+visResampler_p->name()+".im"), *image,true);
     }
 
     return *image;
@@ -2122,7 +2229,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //   storeImg(nameavgpb,*avgPB_p);
     // }
   }
-  //
+  //---------------------------------------------------------------
+    void AWProjectFT::setWeightImage(ImageInterface<Float>& weightImage){
+      IPosition latticeShape = weightImage.shape();
+      CoordinateSystem cs=weightImage.coordinates();
+      avgPB_p=new TempImage<Float>(latticeShape, cs);
+      avgPB_p->copyData(weightImage);
+
+
+    }
+    
   //---------------------------------------------------------------
   //
   Bool AWProjectFT::toRecord(RecordInterface& outRec, Bool withImage) 
@@ -2443,6 +2559,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    Vector<Int> ConjCFMap, CFMap;
 
     vbs.vb_p = &vb;
+    vbs.wbAWP_p=wbAWP_p;
+    vbs.ftmType_p=ftmType_p;
+    vbs.nWPlanes_p = nWPlanes_p;
     makeCFPolMap(vb,cfStokes_p,CFMap_p);
     makeConjPolMap(vb,CFMap_p,ConjCFMap_p);
 
@@ -2466,7 +2585,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     vbs.paQuant_p = Quantity(getPA(vb),"rad");
     //    vbs.corrType_p.reference(vb.corrType());
     vbs.corrType_p.reference(vb.correlationTypes());
-    vbs.uvw_p.reference(uvw);
+    //    vbs.uvw_p.reference(uvw);
+    vbs.uvw_p=uvw;
     vbs.imagingWeight_p.reference(imagingweight);
     vbs.visCube_p.reference(visData);
     //    vbs.freq_p.reference(interpVisFreq_p);
@@ -2487,107 +2607,37 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //timer_p.mark();
 
     po_p->fetchPointingOffset(*image, vb, doPointing);
-    if (makingPSF){
+    if (makingPSF || (vbs.ftmType_p==casa::refim::FTMachine::WEIGHT)){
       cfwts2_p->invokeGC(vbs.spwID_p);
       vb2CFBMap_p->setDoPointing(doPointing);
       vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
 				      vb,
 				      paChangeDetector.getParAngleTolerance(),
 				      chanMap,polMap,po_p);
-      // visResampler_p->makeVBRow2CFBMap(*cfwts2_p,*convFuncCtor_p, vb,
-      // 				      paChangeDetector.getParAngleTolerance(),
-      // 				      chanMap,polMap,pointingOffset);
     }
     else
       {
-	
-       // If the Wt. CFs are still in the memory, clear them.  They
+	// If the Wt. CFs are still in the memory, clear them.  They
 	// won't be required again (though with the silly check below,
 	// if the in-memory Wt. CFs are less than 1KB, they will be
 	// left in memory).
-	if (cfwts2_p->memUsage() > 1000)
-	  {
-	    //SynthesisUtilMethods::getResource(String("BeforeWTSClearing"),String("memusage"));
-	    //cerr << "CFWTS memusage before clearing: " << cfwts2_p->memUsage() << endl;
-
-	    cfwts2_p->clear();
-
-	    //cerr << "CFWTS memusage after clearing: " << cfwts2_p->memUsage() << endl;
-	    //SynthesisUtilMethods::getResource(String("AfterWTSClearing"),String("memusage"));
-	  }
-
 	cfs2_p->invokeGC(vbs.spwID_p);
 	vb2CFBMap_p->setDoPointing(doPointing);
 	vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p, vb,
 				       paChangeDetector.getParAngleTolerance(),
 				       chanMap,polMap,po_p);
-
-      // visResampler_p->makeVBRow2CFBMap(*cfs2_p,*convFuncCtor_p, vb,
-      // 				      paChangeDetector.getParAngleTolerance(),
-      // 				      chanMap,polMap,pointingOffset);
-
       }
-
-    //    VB2CFBMap& theMap=visResampler_p->getVBRow2CFBMap();
     // 
     // Trigger the computation of phase gradiant corresponding to the
     // field offset (from the VB) w.r.t. the image phase center.
     //
-    {
-      // Vector<int> maxCFShape(2), convOrigin(2);
-      // maxCFShape[0] = maxCFShape[1] = theMap[0]->getMaxCFSize();
-      // cerr << maxCFShape << endl;
-      // double dummyCFFreq, dummyIMFreq;
-      // int vbSpw = vb.spectralWindows()(0);
-      // int vbFieldID = -1;//((const Int)((vbs.vb_p)->fieldId()(0)));
-
-      // convOrigin = maxCFShape/2;
-      // if (phaseGrad_p.ComputeFieldPointingGrad(pointingOffset,
-      // 					       maxCFShape,
-      // 					       convOrigin,
-      // 					       dummyCFFreq,
-      // 					       dummyIMFreq,
-      // 					       vbSpw, vbFieldID))
-      
-
-      // WRONG --  WE NEED NOT CALL THIS.  DELETE THIS?
-      //      vb2CFBMap_p->phaseGradCalculator_p->ComputeFieldPointingGrad(pointingOffset,(*vb2CFBMap_p)[0],vb,0);
-
-      // visResampler_p->setFieldPhaseGrad(vb2CFBMap_p->phaseGrad_p->getFieldPointingGrad());
-
-      // if (phaseGrad_p.ComputeFieldPointingGrad(pointingOffset,(*vb2CFBMap_p)[0],vb))
-      // 	visResampler_p->setFieldPhaseGrad(phaseGrad_p.getFieldPointingGrad());
-    }
     //
     // For AzElApertures, this rotates the CFs.
     //
     convFuncCtor_p->prepareConvFunction(vb,*vb2CFBMap_p);
     
     vbs.accumCFs_p=((vbs.uvw_p.nelements() == 0) && dopsf);
-    
-    
-    // for(int ii=0;ii<cfbst_pub.shape[0];ii++)
-    //   for(int jj=0;jj<cfbst_pub.shape[1];jj++)
-    // 	for(int kk=0;kk<cfbst_pub.shape[2];kk++)
-    // 	  {
-    // 	    CFCStruct cfcst=cfbst_pub.getCFB(ii,jj,kk);
-    // 	    cerr << "[" << ii << "," << jj << "," << kk << "]:" 
-    // 		 << cfcst.sampling << " "
-    // 		 << cfcst.xSupport << " "
-    // 		 << cfcst.ySupport 
-    // 		 << endl;
-    // 	  }
     visResampler_p->setVB2CFMap(vb2CFBMap_p);
-
-    
-    // The following code is required only for GPU or multi-threaded
-    //gridder.  Currently does not work without the rest of the
-    //GPU/multi-threaded infrastructure (though, I (SB) thought this
-    //was designed to be benign for normal gridding).
-    //
-    //makeThGridCoords(vbs,gridShape);
-
-    //runTime1_p += timer_p.real();
     visResampler_p->initializeDataBuffers(vbs);
   }
 
@@ -3072,10 +3122,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				    )
   {
     cerr << "AWProjectFT::initVisBuffer(VisBuffer2& vb, Type whichVBColumn, Int row) disabled" << endl;
-    // if (whichVBColumn == FTMachine::MODEL)
-    //   vb.visCubeModel().xyPlane(row)=Complex(0.0,0.0);
-    // else if (whichVBColumn == FTMachine::OBSERVED)
-    //   vb.visCube().xyPlane(row)=Complex(0.0,0.0);
   }
 
   void AWProjectFT::ComputeResiduals(VisBuffer2&vb, Bool useCorrected)
@@ -3093,193 +3139,5 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     visResampler_p->ComputeResiduals(vbs);
   }
 
-  // void AWProjectFT::ComputeResiduals(VBStore &vbs)
-  // {
-  //   vbs.nRow_p = vb.nRow();
-  //   vbs.modelCube_p.reference(vb.modelVisCube());
-  //   if (useCorrected) vbs.correctedCube_p.reference(vb.correctedVisCube());
-  //   else vbs.visCube_p.reference(vb.visCube());
-  //   vbs.useCorrected_p = useCorrected;
-  //   visResampler_p->ComputeResiduals(vbs);
-  // }
-
 } //# NAMESPACE CASA - END
 };
-
-
-
-  // //
-  // //---------------------------------------------------------------
-  // //
-  // void AWProjectFT::normalizeImage(Lattice<Complex>& skyImage,
-  // 				   const Matrix<Double>& sumOfWts,
-  // 				   Lattice<Float>& sensitivityImage,
-  // 				   Lattice<Complex>& sensitivitySqImage,
-  // 				   Bool fftNorm)
-  // {
-  //   //
-  //   // Apply the gridding correction
-  //   //    
-  //   Int inx = skyImage.shape()(0);
-  //   Int iny = skyImage.shape()(1);
-  //   //    Vector<Complex> correction(inx);
-	  
-  //   Vector<Float> sincConv(nx);
-  //   Float centerX=nx/2;
-  //   for (Int ix=0;ix<nx;ix++) 
-  //     {
-  // 	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
-  // 	if(ix==centerX) sincConv(ix)=1.0;
-  // 	else 	    sincConv(ix)=sin(x)/x;
-  //     }
-	  
-  //   IPosition cursorShape(4, inx, 1, 1, 1);
-  //   IPosition axisPath(4, 0, 1, 2, 3);
-  //   LatticeStepper lsx(skyImage.shape(), cursorShape, axisPath);
-  //   LatticeIterator<Complex> lix(skyImage, lsx);
-    
-  //   LatticeStepper lavgpb(sensitivityImage.shape(),cursorShape,axisPath);
-  //   LatticeIterator<Float> liavgpb(sensitivityImage, lavgpb);
-  //   LatticeStepper lavgpbSq(sensitivitySqImage.shape(),cursorShape,axisPath);
-  //   LatticeIterator<Complex> liavgpbSq(sensitivitySqImage, lavgpbSq);
-	  
-  //   for(lix.reset(),liavgpb.reset(),liavgpbSq.reset();
-  // 	!lix.atEnd();
-  // 	lix++,liavgpb++,liavgpbSq++) 
-  //     {
-  // 	Int pol=lix.position()(2);
-  // 	Int chan=lix.position()(3);
-  // 	//	Int iy=lix.position()(1);
-
-  // 	//	gridder->correctX1D(correction,iy);
-	    
-  // 	Vector<Complex> PBCorrection(liavgpb.rwVectorCursor().shape());
-  // 	Vector<Float> avgPBVec(liavgpb.rwVectorCursor().shape());
-  // 	Vector<Complex> avgPBSqVec(liavgpbSq.rwVectorCursor().shape());
-	    
-  // 	avgPBSqVec= liavgpbSq.rwVectorCursor();
-  // 	avgPBVec = liavgpb.rwVectorCursor();
-
-  // 	for(int i=0;i<PBCorrection.shape();i++)
-  // 	  {
-  // 	    PBCorrection(i)=(avgPBSqVec(i)/avgPBVec(i));///(sincConv(i)*sincConv(iy));
-  // 	    if ((abs(avgPBVec(i))) >= pbLimit_p)
-  // 	      lix.rwVectorCursor()(i) /= PBCorrection(i);
-  // 	  }
-
-  // 	//	if(sumOfWts(pol, chan)>0.0)  // UUU Changing this again....
-  // 	  {
-  // 	    if(fftNorm)
-  // 	      {
-  // 		if(sumOfWts(pol, chan)>0.0) // UUU Moving this inside the fftNorm check.
-  // 		  {
-  // 		    Complex rnorm(Float(inx)*Float(iny)/sumOfWts(pol,chan));
-  // 		    lix.rwCursor()*=rnorm;
-  // 		  }
-  // 		else 
-  // 		  lix.woCursor()=0.0;
-  // 	      }
-  // 	    else 
-  // 	      {
-  // 		Complex rnorm(Float(inx)*Float(iny));
-  // 		lix.rwCursor()*=rnorm;
-  // 	      }
-  // 	  }
-  // 	  //else 
-  // 	  //lix.woCursor()=0.0;
-  //     }
-  // }
-  // //
-  // //---------------------------------------------------------------
-  // //
-  // void AWProjectFT::normalizeImage(Lattice<Complex>& skyImage,
-  // 				   const Matrix<Double>& sumOfWts,
-  // 				   Lattice<Float>& sensitivityImage,
-  // 				   Bool fftNorm)
-  // {
-  //   //
-  //   // Apply the gridding correction
-  //   //    
-  //   Int inx = skyImage.shape()(0);
-  //   Int iny = skyImage.shape()(1);
-  //   Vector<Complex> correction(inx);
-	  
-  //   Vector<Float> sincConv(nx);
-  //   Float centerX=nx/2;
-  //   for (Int ix=0;ix<nx;ix++) 
-  //     {
-  // 	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
-  // 	if(ix==centerX) sincConv(ix)=1.0;
-  // 	else 	    sincConv(ix)=sin(x)/x;
-  //     }
-	  
-  //   IPosition cursorShape(4, inx, 1, 1, 1);
-  //   IPosition axisPath(4, 0, 1, 2, 3);
-  //   LatticeStepper lsx(skyImage.shape(), cursorShape, axisPath);
-  //   //    LatticeIterator<Complex> lix(skyImage, lsx);
-  //   LatticeIterator<Complex> lix(skyImage, lsx);
-    
-  //   LatticeStepper lavgpb(sensitivityImage.shape(),cursorShape,axisPath);
-  //   // Array<Float> senArray;sensitivityImage.get(senArray,true);
-  //   // ArrayLattice<Float> senLat(senArray,true);
-  //   //    LatticeIterator<Float> liavgpb(senLat, lavgpb);
-  //   LatticeIterator<Float> liavgpb(sensitivityImage, lavgpb);
-
-  //   for(lix.reset(),liavgpb.reset();
-  // 	!lix.atEnd();
-  // 	lix++,liavgpb++) 
-  //     {
-  // 	Int pol=lix.position()(2);
-  // 	Int chan=lix.position()(3);
-	
-  // 	//	if(sumOfWts(pol, chan)>0.0)  // UUU Changing this again.....
-  // 	  {
-  // 	    Int iy=lix.position()(1);
-  // 	    gridder->correctX1D(correction,iy);
-	    
-  // 	    Vector<Float> avgPBVec(liavgpb.rwVectorCursor().shape());
-	    
-  // 	    avgPBVec = liavgpb.rwVectorCursor();
-
-  // 	    for(int i=0;i<avgPBVec.shape();i++)
-  // 	      {
-  // 		//
-  // 		// This with the PS functions
-  // 		//
-  // 		// PBCorrection(i)=FUNC(avgPBVec(i))*sincConv(i)*sincConv(iy);
-  // 		// if ((abs(PBCorrection(i)*correction(i))) >= pbLimit_p)
-  // 		// 	lix.rwVectorCursor()(i) /= PBCorrection(i)*correction(i);
-  // 		// else if (!makingPSF)
-  // 		// 	lix.rwVectorCursor()(i) /= correction(i)*sincConv(i)*sincConv(iy);
-  // 		//
-  // 		// This without the PS functions
-  // 		//
-  // 		Float tt = pbFunc(avgPBVec(i),pbLimit_p)*sincConv(i)*sincConv(iy);
-  //                 //		PBCorrection(i)=pbFunc(avgPBVec(i),pbLimit_p)*sincConv(i)*sincConv(iy);
-  //                 //                lix.rwVectorCursor()(i) /= PBCorrection(i);
-  // 		//                lix.rwVectorCursor()(i) *= tt;
-  // 		//		if (!makingPSF)
-
-  // 		lix.rwVectorCursor()(i) /= tt;
-  // 	      }
-	    
-  // 	    if(fftNorm)
-  // 	      {
-  // 		if(sumOfWts(pol, chan)>0.0) // UUU Moved this inside the fftNorm check.
-  // 		  {
-  // 		    Complex rnorm(Float(inx)*Float(iny)/sumOfWts(pol,chan));
-  // 		    lix.rwCursor()*=rnorm;
-  // 		  }
-  // 		else 
-  // 		  lix.woCursor()=0.0;
-  // 	      }
-  // 	    else 
-  // 	      {
-  // 		Complex rnorm(Float(inx)*Float(iny));
-  // 		lix.rwCursor()*=rnorm;
-  // 	      }
-  // 	  }
-  // 	  //else 
-  // 	  //lix.woCursor()=0.0;
-  //     }
-  // }

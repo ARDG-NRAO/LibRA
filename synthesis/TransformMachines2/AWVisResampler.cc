@@ -38,7 +38,11 @@
 #include <typeinfo>
 #include <iomanip>
 #include <cfenv>
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+#include <synthesis/TransformMachines2/FortranizedLoops.h>
+=======
 //#include <synthesis/TransformMachines2/FortranizedLoops.h>
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 //#include <synthesis/TransformMachines2/hpg.hpp>
 
 #ifdef _OPENMP
@@ -131,8 +135,11 @@ namespace casa{
     //    cerr << "CFC indexes(w,f,p),ipol: " << wndx << " " << fndx << " " << pndx << " " << ipol << endl;
     cfcell=&(*(cfb->getCFCellPtr(fndx,wndx,pndx)));
 
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+=======
     //cerr << "CF Name: " << cfcell->fileName_p << endl;
 
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
     convFuncV = &(*cfcell->getStorage());
     support(0)=support(1)=cfcell->xSupport_p;
 
@@ -264,6 +271,12 @@ namespace casa{
     nx = grid.shape()[0]; ny = grid.shape()[1]; 
     nGridPol = grid.shape()[2]; nGridChan = grid.shape()[3];
 
+    // const std::array<unsigned, 4> grid_size{(uInt)nx, (uInt)ny, (uInt)nGridPol, (uInt)nGridChan};
+    // const std::array<unsigned, 4> cf_size{31, 21, 2, 3};
+    // const std::array<float, 2> grid_scale{0.1, -0.1};
+    // auto st0 = hpg::Gridder(hpg::Device::Cuda, 2, grid_size, grid_scale);
+
+
     nDataPol  = vbs.flagCube_p.shape()[0];
     nDataChan = vbs.flagCube_p.shape()[1];
 
@@ -305,8 +318,37 @@ namespace casa{
 
    Int vbSpw = (vbs.vb_p)->spectralWindows()(0);
    Double vbPA = vbs.paQuant_p.getValue("rad");
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+   //Int vbFieldID = -1;//((const Int)((vbs.vb_p)->fieldId()(0)));
+   
+   // TEMP. DELETE THIS
+   // rbeg=9;
+   // rend=10; // For a single-vis test
+   //startChan=32; endChan=33;
+   //   cerr << "SPW, ChanMap: " << vbSpw << " " << chanMap_p << " " << rbeg << " " << rend << " " << startChan << " " << endChan << endl;
+
+   // cerr << "polMap: " << polMap_p << endl;
+   // cerr << "mNdx: " << endl;
+   // for (int kk=0;kk<mNdx.size();kk++)
+   //   {
+   //     for(int ll=0;ll<mNdx[kk].size();ll++)
+   // 	 cerr << mNdx[kk][ll] << " ";
+   //     cerr << endl;
+   //   }
+   // cerr << "conjMNdx: " << endl;
+   // for (int kk=0;kk<conjMNdx.size();kk++)
+   //   {
+   //     for(int ll=0;ll<conjMNdx[kk].size();ll++)
+   // 	 cerr << conjMNdx[kk][ll] << " ";
+   //     cerr << endl;
+   //   }
+   //   cerr << "---------------------------------------------------------------" << endl;
+   for(Int irow=rbeg; irow< rend; irow++){   
+      //      if ((UVW.nelements() == 0)) 
+=======
 
    for(Int irow=rbeg; irow< rend; irow++){   
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
       
       if(!(*(rowFlag_ptr+irow)))
 	{   
@@ -321,6 +363,23 @@ namespace casa{
 		  
 		  if((targetIMChan>=0) && (targetIMChan<nGridChan)) 
 		    {
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+		      //timer_p.mark();
+		      //Double dataWVal = vbs.vb_p->uvw()(2,irow);
+		      Double dataWVal = (UVW.nelements() > 0) ? UVW(2,irow) : 0.0;
+		      Int wndx = cfb->nearestWNdx(abs(dataWVal)*freq[ichan]/C::c);
+
+		      // Double conjFreq=sqrt(2*conjRefFreq*conjRefFreq - freq[ichan]*freq[ichan]);
+		      // Int fndx = cfb.nearestFreqNdx(freq[ichan]),
+		      // 	conjFNdx =cfb.nearestFreqNdx(conjFreq);
+
+		      // Int fndx=cfb.nearestFreqNdx(vbSpw,ichan), conjFNdx=cfb.nearestFreqNdx(vbSpw,ichan,true);
+		      // Int cfFreqNdx;
+		      // if (vbs.conjBeams_p) cfFreqNdx = cfb.nearestFreqNdx(vbSpw,ichan,true);// Get the conj. freq. index
+		      // else  cfFreqNdx = cfb.nearestFreqNdx(vbSpw,ichan);
+		      Int cfFreqNdx = cfb->nearestFreqNdx(vbSpw,ichan,vbs.conjBeams_p);
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 
 		      Double dataWVal = (UVW.nelements() > 0) ? dataWVal = UVW(2,irow) : 0.0;
 		      Int wndx = cfb->nearestWNdx(dataWVal*freq[ichan]/C::c);
@@ -334,9 +393,21 @@ namespace casa{
 		      //------------------------------------------------------------------------------
 		      //
 
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+		      //timer_p.mark();
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 		      cfb->getParams(cfRefFreq, s, support(0), support(1),cfFreqNdx,wndx,0);
 
 		      sampling(0) = sampling(1) = SynthesisUtils::nint(s);
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+		      
+		      //timer_p.mark();
+		      sgrid(pos,loc,off, phasor, irow, UVW, dphase_p[irow], freq[ichan], 
+			    uvwScale_p, offset_p, sampling);
+		      //runTimeG5_p += timer_p.real();
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 		      
 		      sgrid(pos,loc,off, phasor, irow, UVW, dphase_p[irow], freq[ichan], 
 			    uvwScale_p, offset_p, sampling);
@@ -356,7 +427,14 @@ namespace casa{
 				      // Loop over all relevant elements of the Mueller matrix for the polarization
 				      // ipol.
 				      Vector<int> conjMRow = conjMNdx[ipol];
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+				      //cerr << "conjMRow = " << conjMRow << endl;
+				      // ipol determines the targetIMPol.  Each targetIMPol gets a row of CFs (mRow).
+				      // visVecElements is gridded using the convFuncV and added to the target grid.
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 
+//cfFreqNdx=0;
 				      for (uInt mCols=0;mCols<conjMRow.nelements(); mCols++) 
 					{
 					  int visVecElement=mCols, muellerElement;
@@ -385,8 +463,22 @@ namespace casa{
 					  else      nvalue=Complex(*(imgWts_ptr+ichan+irow*nDataChan))*
 					   	      (*(visCube_ptr+visVecElement+ichan*nDataPol+irow*nDataChan*nDataPol)*phasor);
 
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+					  // if (ipol==1)
+					  // if (UVW.nelements() > 0)
+					  //   cerr << "Vis: " << irow << " " << ipol << " "
+					  // 	 <<  *(visCube_ptr+visVecElement+ichan*nDataPol+irow*nDataChan*nDataPol) << " "
+					  // 	 << *(imgWts_ptr + ichan + irow*nDataChan) <<  " " 
+					  // 	 << UVW(0,irow) << " " << UVW(1,irow) << " " << UVW(2,irow) << " "
+					  // 	 << wndx << " " << cfFreqNdx << " " << vbSpw << endl;
+
+
+					  if (!onGrid(nx, ny, nw, loc, support)) break;
+					  //runTimeG6_p += timer_p.real();
+=======
 					  if (!onGrid(nx, ny, nw, loc, support)) break;
 
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 					  convOrigin=cfShape/2;
 					  
 					  cacheAxisIncrements(cfShape, cfInc_p);
@@ -397,6 +489,10 @@ namespace casa{
 				      //		      *(sumWt_ptr+apol+achan*nGridChan)+= *(imgWts_ptr+ichan+irow*nDataChan);
 				    }
 				}
+			      // else
+			      // 	{
+			      // 	  cerr << "Vis0: " << irow << " " << ipol << " " << UVW(0,irow) << " " << UVW(1,irow) << " " << UVW(2,irow) << endl;
+			      // 	}
 			    } // End poln-loop
 			}
 		    }
@@ -404,7 +500,14 @@ namespace casa{
 	    } // End chan-loop
 	}
     } // End row-loop
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+   //   cerr <<  std::setprecision(20) << "WTS: " << sumwt(0,0) << endl;
+   // cerr << "sumwt: " << dopsf << " " << sumwt << endl;
+    // exit(0);
+   //runTimeG_p = timer_p.real() + runTimeG1_p + runTimeG2_p + runTimeG3_p + runTimeG4_p + runTimeG5_p + runTimeG6_p + runTimeG7_p;
+=======
 
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
     T *tt=(T *)gridStore;
     grid.putStorage(tt,gDummy);
   }
@@ -578,9 +681,15 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
   for(Int idim=0;idim<2;idim++)
     {
       pos[idim]=scale[idim]*uvw_l(idim)*freq/C::c+(offset[idim]);
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+      //loc[idim]=SynthesisUtils::nint(pos[idim]);
+      loc[idim]=std::lrint(pos[idim]);
+      //off[idim]=SynthesisUtils::nint((loc[idim]-pos[idim])*sampling[idim]);
+=======
 
       loc[idim]=std::lrint(pos[idim]);
 
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
       off[idim]=std::lrint((loc[idim]-pos[idim])*sampling[idim]);
     }
   
@@ -593,6 +702,124 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
     }
   else
     phasor=Complex(1.0);
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.cc
+  // //  if ((loc(0)==845) && (loc(1)==356))
+  //   cerr << "AWP coord: " << " " 
+  // 	 << pos[0] << " " << pos[1] << " "
+  // 	 << loc(0) << " " << loc(1) << " " 
+  // 	 << offset << " " 
+  // 	 << uvw_l(0) << " " << uvw_l(1) << " " 
+  // 	 << freq/C::c << scale[0] << " " 
+  // 	 << scale[1] << " " 
+  // 	 << off[0] << " " << off[1] << " "
+  // 	 << std::lrint((loc[0]-pos[0])*sampling[0]) << " "
+  // 	 << std::lrint((loc[1]-pos[1])*sampling[1]) << " "
+  // 	 << std::fegetround()
+  // 	 << endl;
+  // exit(0);
+}
+//
+//-----------------------------------------------------------------------------------
+//
+Bool AWVisResampler::reindex(const Vector<Int>& in, Vector<Int>& out,
+			     const Double& sinDPA, const Double& cosDPA,
+			     const Vector<Int>& Origin, const Vector<Int>& size)
+{
+  
+  Bool onGrid=false;
+  Int ix=in[0], iy=in[1];
+  if (sinDPA != 0.0)
+    {
+      ix = SynthesisUtils::nint(cosDPA*in[0] + sinDPA*in[1]);
+      iy = SynthesisUtils::nint(-sinDPA*in[0] + cosDPA*in[1]);
+    }
+  out[0]=ix+Origin[0];
+  out[1]=iy+Origin[1];
+  
+  onGrid = ((out[0] >= 0) && (out[0] < size[0]) &&
+	    (out[1] >= 0) && (out[1] < size[1]));
+  if (!onGrid)
+    cerr << "CF index out of range: " << out << " " << size << endl;
+  return onGrid;
+}
+
+
+// void lineCFArea(const Int& th,
+// 		  const Double& sinDPA,
+// 		  const Double& cosDPA,
+// 		  const Complex*__restrict__& convFuncV,
+// 		  const Vector<Int>& cfShape,
+// 		  const Vector<Int>& convOrigin,
+// 		  const Int& cfInc,
+// 		  Vector<Int>& iloc,
+// 		  Vector<Int>& tiloc,
+// 		  const Int* supportPtr,
+// 		  const Float* samplingPtr,
+// 		  const Double* offPtr,
+// 		  Complex *cfAreaArrPtr)
+// {
+//   cfAreaArrPtr[th]=0.0;
+//   for(Int ix=-supportPtr[0]; ix <= supportPtr[0]; ix++) 
+//     {
+// 	iloc[0]=(Int)((samplingPtr[0]*ix+offPtr[0])-1);//+convOrigin[0];
+// 	tiloc=iloc;
+// 	if (reindex(iloc,tiloc,sinDPA, cosDPA, 
+// 		    convOrigin, cfShape))
+// 	  {
+// 	    wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
+// 				tiloc,cfInc);
+// 	    if (dataWVal > 0.0) wt = conj(wt);
+// 	    cfAreaArrPtr[th] += wt;
+// 	  }
+//     }
+// }
+
+Complex AWVisResampler::getCFArea(Complex* __restrict__& convFuncV, 
+				  Double& wVal, 
+				  Vector<Int>& scaledSupport, 
+				  Vector<Float>& scaledSampling,
+				  Vector<Double>& off,
+				  Vector<Int>& convOrigin, 
+				  Vector<Int>& cfShape,
+				  Double& sinDPA, 
+				  Double& cosDPA)
+{
+  Vector<Int> iloc(4,0),tiloc(4);
+  Complex cfArea=0, wt;
+  Bool dummy;
+  Int *supportPtr=scaledSupport.getStorage(dummy);
+  Double *offPtr=off.getStorage(dummy);
+  Float *samplingPtr=scaledSampling.getStorage(dummy);
+  Int Nth=1;
+  Vector<Complex> cfAreaArr(Nth);
+  Complex *cfAreaArrPtr=cfAreaArr.getStorage(dummy);
+  
+  for(Int iy=-supportPtr[1]; iy <= supportPtr[1]; iy++) 
+    {
+      iloc(1)=(Int)((samplingPtr[1]*iy+offPtr[1])-1);//+convOrigin[1];
+      for (Int th=0;th<Nth;th++)
+	{
+	  cfAreaArr[th]=0.0;
+	  for(Int ix=-supportPtr[0]; ix <= supportPtr[0]; ix++) 
+	    {
+	      iloc[0]=(Int)((samplingPtr[0]*ix+offPtr[0])-1);//+convOrigin[0];
+	      tiloc=iloc;
+	      if (reindex(iloc,tiloc,sinDPA, cosDPA, 
+			  convOrigin, cfShape))
+		{
+		  wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
+				      tiloc,cfInc_p);
+		  if (wVal > 0.0) wt = conj(wt);
+		  cfAreaArrPtr[th] += wt;
+		}
+	    }
+	}
+      cfArea += sum(cfAreaArr);
+    }
+  //    cerr << "cfArea: " << scaledSupport << " " << scaledSampling << " " << cfShape << " " << convOrigin << " " << cfArea << endl;
+  return cfArea;
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.cc
 }
 using namespace casacore;
 };// end namespace casa

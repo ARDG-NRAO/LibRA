@@ -278,7 +278,9 @@ void CubeMajorCycleAlgorithm::task(){
 	    }
 	    ////tclean expects a PB to be always there...
 	    //so for standard make it
-	    subImgr.makePB();
+            if(doPB_p){
+              subImgr.makePB();
+            }
             for(uInt k=0; k < subImStor.nelements(); ++k){
               if(controlRecord_p.isDefined("dividebyweight") && controlRecord_p.asBool("dividebyweight"))
 		{
@@ -295,6 +297,8 @@ void CubeMajorCycleAlgorithm::task(){
                     norm.setImageStore(subImStorShared[k]);
                     norm.dividePSFByWeight();
 		    copyBeamSet(*(subImStorShared[k]->psf()), k);
+                    //if(doPB_p)
+                    //  norm.normalizePrimaryBeam();
                   }
                   else{
                     LatticeLocker lock1 (*(subImStor[k]->psf()), FileLocker::Write);

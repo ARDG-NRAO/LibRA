@@ -234,9 +234,13 @@ void MosaicFTNew::getWeightImage(ImageInterface<Float>& weightImage,
 {
   
   logIO() << LogOrigin("MosaicFTNew", "getWeightImage") << LogIO::NORMAL;
-  
+
+  //cerr << "SUMWEIGHT " << sumWeight << endl;
   weights.resize(sumWeight.shape());
   convertArray(weights,sumWeight);
+  if(!skyCoverage_p)
+    throw(AipsError("MosaicFTNew::getWeightImage: called before initializing"));
+  //cerr << "skyCoverage_p " << skyCoverage_p.get() << endl;
   Record rec=skyCoverage_p->miscInfo();
   Float inx=1;
   Float iny=1;

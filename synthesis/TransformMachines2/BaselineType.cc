@@ -169,6 +169,12 @@ namespace casa{
       if (doPointing_p==false) return antennaGroups_p;
       else if(!cachedGroups_p)
 	{
+	  if (sigmaDev < 1e-6)
+	    {
+	      LogIO log_l(LogOrigin("BaselineType", "findAntennaGroups"));
+	      log_l << "sigmaDev is " << sigmaDev << ".  Seems small."
+		    << "  Make sure this is intentional." << LogIO::WARN;
+	    }
 	  totalGroups_p = 0;
 	  // const Int nRows = vb.nRows();
 	  cachedPointingOffsets_p.assign(pointingOffsets_p->pullPointingOffsets());

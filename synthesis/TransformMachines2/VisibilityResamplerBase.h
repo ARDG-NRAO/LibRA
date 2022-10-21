@@ -34,6 +34,7 @@
 #include <synthesis/TransformMachines2/ConvolutionFunction.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines2/VBStore.h>
+#include <synthesis/TransformMachines2/MyCFArray.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -43,6 +44,8 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Logging/LogMessage.h>
 #include <casacore/casa/OS/Timer.h>
+#include <hpg/hpg.hpp>
+#include <hpg/hpg_indexing.hpp>
 //#include <hpg.hpp>
 
 using sumofweight_fp = std::vector<std::vector<double>>;
@@ -87,6 +90,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			   const casacore::Vector<casacore::Double>& dphase) = 0;
 
     virtual void setMaps(const casacore::Vector<casacore::Int>& chanMap, const casacore::Vector<casacore::Int>& polMap) = 0;
+    virtual void getMaps(casacore::Vector<casacore::Int>& chanMap, casacore::Vector<casacore::Int>& polMap) = 0;
     virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap)=0;
     virtual void setFreqMaps(const casacore::Matrix<casacore::Double>& spwChanFreqs, const casacore::Matrix<casacore::Double>& spwnChanConjFreqs) = 0;
 
@@ -146,11 +150,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     const casacore::Vector<casacore::Int> getCFMap() {return cfMap_p;};
     const casacore::Vector<casacore::Int> getConjCFMap() {return conjCFMap_p;};
 
-    // get pointers to storage for gridded visibilities or weight;
+    virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer cfsi) = 0;
+    virtual bool set_cf(casa::refim::MyCFArray& ) = 0;
+    virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& dcfArray) = 0;
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& rwdcfArray) = 0;
+   // get pointers to storage for gridded visibilities or weight;
     // size to number of elements in storage; may not be implemented
     // by all sub-classes, if not, will return empty shared_ptr and
     // size equal to 0
-    virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const;
+     virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const;
     virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const;
 
     virtual void releaseBuffers() = 0;
@@ -167,7 +175,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     void setVB2CFMap(const casacore::CountedPtr<refim::VB2CFBMap>& thisMap);
     //    virtual void setModelImage(const std::unique_ptr<hpg::GridValueArray> /*HPGModelImage*/) {};
     virtual void setModelImage(const std::string& /*HPGModelImage*/) {};
-    virtual void setModelImage(std::shared_ptr<casacore::ImageInterface<casacore::Complex> > /*HPGModelImage*/) {};
+
+    virtual void saveGriddedData(const std::string&,const casacore::CoordinateSystem&) {};
+ 
     casacore::Double runTimeG_p, runTimeDG_p, runTimeG1_p, runTimeG2_p, runTimeG3_p, runTimeG4_p, runTimeG5_p, runTimeG6_p, runTimeG7_p,griddingTime;
     casacore::Timer timer_p;
     //

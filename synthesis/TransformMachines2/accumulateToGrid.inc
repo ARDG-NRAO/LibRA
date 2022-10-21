@@ -25,30 +25,48 @@
     Int phaseGradOrigin_l[2]; 
     phaseGradOrigin_l[0] = cached_phaseGrad_p.shape()(0)/2;
     phaseGradOrigin_l[1] = cached_phaseGrad_p.shape()(1)/2;
+    //cerr << phaseGradOrigin_l[0] << " " << phaseGradOrigin_l[1] << endl;
+
+
+    //    cerr << "# " << vbs.uvw_p[irow] << " " << convOrigin << " " << support << " " << sampling << endl;
 
     for(Int iy=-scaledSupport_ptr[1]; iy <= scaledSupport_ptr[1]; iy++) 
       {
-	//	iloc_ptr[1]=SynthesisUtils::nint((scaledSampling_ptr[1]*iy+off_ptr[1])-1);
-	iLoc[1]=(Int)((scaledSampling_ptr[1]*iy+off_ptr[1])-1);
+	iLoc[1]=std::lrint((scaledSampling_ptr[1]*iy+off_ptr[1]));
+
+	//	iLoc[1]=SynthesisUtils::nint((scaledSampling_ptr[1]*iy+off_ptr[1]));
+	//iLoc[1]=(Int)((scaledSampling_ptr[1]*iy+off_ptr[1])-1);
+	//iLoc[1]=(Int)((scaledSampling_ptr[1]*iy+off_ptr[1]));
 	igrdpos_ptr[1]=loc_ptr[1]+iy;
         iCFPos_ptr[1] =iLoc[1]+convOrigin_ptr[1];
 
 	for(Int ix=-scaledSupport_ptr[0]; ix <= scaledSupport_ptr[0]; ix++) 
 	  {
-	    //	    iloc_ptr[0]=SynthesisUtils::nint((scaledSampling_ptr[0]*ix+off_ptr[0])-1);
-	    iLoc[0]=(Int)((scaledSampling_ptr[0]*ix+off_ptr[0])-1);
+	    iLoc[0]=std::lrint((scaledSampling_ptr[0]*ix+off_ptr[0]));
+	    // iLoc[0]=SynthesisUtils::nint((scaledSampling_ptr[0]*ix+off_ptr[0]));
+	    //iLoc[0]=(Int)((scaledSampling_ptr[0]*ix+off_ptr[0])-1);
+	    //iLoc[0]=(Int)((scaledSampling_ptr[0]*ix+off_ptr[0]));
 	    igrdpos_ptr[0]=loc_ptr[0]+ix;
 	    iCFPos_ptr[0] =iLoc[0]+convOrigin_ptr[0];
 	    wt = getFrom4DArray((const Complex * __restrict__ &)convFuncV, 
 				iCFPos_ptr,cfInc_p_ptr);//cfArea;
+	    // if ((loc_ptr[0]==845) && (loc_ptr[1]==356))
+	    //   cerr << loc_ptr[0] << " " << loc_ptr[1] << " " 
+	    // 	   << iLoc[0] << " " << iLoc[1] << " "
+	    // 	   << off_ptr[0] << " " << off_ptr[1] << " "
+	    // 	   << igrdpos_ptr[0] << " " << igrdpos_ptr[1] 
+	    // 	   << endl;
 	    if (dataWVal > 0.0) {wt = conj(wt);}
 	    norm += (wt);
+	    //Complex tt=cached_phaseGrad_p(iLoc[0]+phaseGradOrigin_l[0],iLoc[1]+phaseGradOrigin_l[1]);
+	    //cout << ix << " " << iy << " " <<  tt.real() << " " << tt.imag() << " " << atan2(tt.imag(), tt.real()) << endl;
 	    if (finitePointingOffsets)
 	      {
-		wt *= cached_phaseGrad_p(iLoc[0]+phaseGradOrigin_l[0],
-					 iLoc[1]+phaseGradOrigin_l[1]);
+	    	wt *= cached_phaseGrad_p(iLoc[0]+phaseGradOrigin_l[0],
+	    				 iLoc[1]+phaseGradOrigin_l[1]);
 	      }
 	    addTo4DArray_ptr(gridStore,iGrdPosPtr,gridInc_p_ptr, nvalue,wt);
 	  }
+	//cout << endl;
       }
   }

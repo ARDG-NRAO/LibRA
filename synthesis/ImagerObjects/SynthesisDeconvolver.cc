@@ -368,7 +368,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
           os<<LogIO::DEBUG1<<"Calling calcRobustRMS .. "<<LogIO::POST;
           robustrms = itsImages->calcRobustRMS(medians, itsPBMask, itsFastNoise);
+// <<<<<<< HEAD:casa5/code/synthesis/ImagerObjects/SynthesisDeconvolver.cc
+//           itsImages->releaseLocks();
+//           os<< LogIO::NORMAL << "time for calcRobustRMS:  real "<< timer.real() << "s ( user " << timer.user() 
+// =======
           os<< LogIO::NORMAL << "time for calcRobustRMS:  real "<< timer.real() << "s ( user " << timer.user()
+// >>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/ImagerObjects/SynthesisDeconvolver.cc
              <<"s, system "<< timer.system() << "s)" << LogIO::POST;
           //reset itsRobustStats
           //cerr << "medians " << medians << " pbmask " << itsPBMask << endl;
@@ -1038,7 +1043,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  os << "[" << itsImages->getName() << "] Setting up a PB based mask" << LogIO::POST;
           itsMaskHandler->makePBMask(itsImages, itsPBMask);
         }
-
+        itsImages->releaseLocks();
 	os << "----------------------------------------------------------------------------------------------------------------------------------------" << LogIO::POST;
 
       } else {
@@ -1119,6 +1124,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
        //cerr <<this << " SETAutoMask " << itsRobustStats << endl;
        //cerr << "SUM of chanFlag AFTER " << ntrue(itsChanFlag) << endl;
      }
+     itsImages->releaseLocks();
   }
 
   // check if restoring beam is reasonable

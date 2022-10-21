@@ -85,10 +85,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //   storeArrayAsImage(name,image->coordinates(),wtImage.get());
     // }
     LatticeFFT::cfft2d(wtImage,false);
-    // {
-    //   String name("ftwtimg.im");
-    //   storeArrayAsImage(name,image->coordinates(),wtImage.get());
-    // }
     wtImageFTDone_p=true;
 
     Int sizeX=wtImage.shape()(0), sizeY=wtImage.shape()(1);
@@ -123,27 +119,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //cerr << "SumCFWt: " << getSumOfCFWeights() << " " << max(wtBuf) << " " << sensitivityPatternQualifier_p << endl;
     for(wtImIter.reset(); !wtImIter.atEnd(); wtImIter++)
       {
-	// Int pol_l=wtImIter.position()(2), chan_l=wtImIter.position()(3);
-	// Lets write some mildly obfuscated code ~[8-)
-	//if ((sensitivityPatternQualifier_p == -1) && (doSumWtNorm))
-	//  sumwt_l = ((sumwt_l = getSumOfCFWeights()(pol_l,chan_l))==0)?1.0:sumwt_l;
-
-	//sumwt_l = getSumOfCFWeights()(pol_l,chan_l);
-
 	wtImIter.rwCursor() = (wtImIter.rwCursor()
 			       *Float(sizeX)*Float(sizeY)
-			       //U			       /sumwt_l
 			       );
 
-	////////////////////	wtImIter.rwCursor() = sqrt( fabs(wtImIter.rwCursor()) );
-
-	//Double maxval = fabs( max( wtImIter.rwCursor() ) );
-	//cout << "sumwt from WBAWPNew::ftWeightImage : " << sumwt_l << "  max val in wtimg : " << maxval << endl;
-
-
-
-	//	sumwt_l = getSumOfCFWeights()(pol_l,chan_l);
-	//	weightRatio_p = maxval * Float(sizeX)*Float(sizeY) / sumwt_l;
       }
 
   }

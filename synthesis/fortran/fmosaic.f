@@ -451,7 +451,7 @@ C
      $     nx, ny, npol, nchan, 
      $     support, convsize, sampling, 
      $     chanmap, polmap,
-     $      weightgrid, convweight, convplanemap, 
+     $      weightgrid, sumwt, convweight, convplanemap, 
      $     convchanmap, convpolmap, 
      $     nconvplane, nconvchan, nconvpol, rbeg, 
      $     rend, loc, off, phasor)
@@ -469,7 +469,7 @@ C
       integer, intent(in) :: support
       integer, intent(in) ::  chanmap(nchan), polmap(npol)
       double complex, intent(inout) ::  weightgrid(nx, ny, npol, nchan)
-
+      double precision, intent(inout) :: sumwt(npol, nchan)
       double complex :: nweight
       integer, intent(in) :: convsize, sampling
       integer, intent(in) ::  nconvplane, nconvchan, nconvpol
@@ -519,7 +519,8 @@ C     rotate but we do want to reproject uvw
                           
                            
                            nweight=cmplx(weight(ichan,irow))
-                          
+                           sumwt(apol, achan)=sumwt(apol, achan)+
+     $                          weight(ichan, irow)
                            
 C     norm will be the value we would get for the peak
 C     at the phase center. We will want to normalize 
@@ -560,7 +561,7 @@ C Single precision weight grid image...Damn you fortran...no templates
      $     nx, ny, npol, nchan, 
      $     support, convsize, sampling, 
      $     chanmap, polmap,
-     $      weightgrid, convweight, convplanemap, 
+     $      weightgrid, sumwt, convweight, convplanemap, 
      $     convchanmap, convpolmap, 
      $     nconvplane, nconvchan, nconvpol, rbeg, 
      $     rend, loc, off, phasor)
@@ -578,7 +579,7 @@ C Single precision weight grid image...Damn you fortran...no templates
       integer, intent(in) :: support
       integer, intent(in) ::  chanmap(nchan), polmap(npol)
       complex, intent(inout) ::  weightgrid(nx, ny, npol, nchan)
-
+      double precision, intent(inout) :: sumwt(npol, nchan)
       complex :: nweight
       integer, intent(in) :: convsize, sampling
       integer, intent(in) ::  nconvplane, nconvchan, nconvpol
@@ -628,7 +629,8 @@ C     rotate but we do want to reproject uvw
                           
                            
                            nweight=cmplx(weight(ichan,irow))
-                          
+                           sumwt(apol, achan)=sumwt(apol, achan)+
+     $                          weight(ichan, irow)
                            
 C     norm will be the value we would get for the peak
 C     at the phase center. We will want to normalize 

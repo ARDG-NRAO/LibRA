@@ -292,7 +292,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     void put(const vi::VisBuffer2& vb, casacore::Int row=-1, casacore::Bool dopsf=false,
 	     FTMachine::Type type=FTMachine::OBSERVED);
-    
+
+    virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const override;
+    virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const override;
+
     // Make the entire image using a ROVisIter
     // virtual void makeImage(FTMachine::Type,
     // 			   ROVisibilityIterator&,
@@ -311,6 +314,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     // Get the final weights image
     void getWeightImage(casacore::ImageInterface<casacore::Float>&, casacore::Matrix<casacore::Float>&);
+    //Put the weights image so that it is not calculated again
+    virtual void setWeightImage(casacore::ImageInterface<casacore::Float>& weightImage);
+    
     
     // Save and restore the AWProjectFT to and from a record
     casacore::Bool toRecord(casacore::RecordInterface& outRec,  casacore::Bool withImage=false);
@@ -423,6 +429,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     CFBStruct cfbst_pub;
     // Image Scaling and offset
     casacore::Vector<casacore::Double> uvScale, uvOffset;
+    CountedPtr<CFBuffer> getCFB(const int irow) {return (*vb2CFBMap_p)[irow];}
   protected:
     
     casacore::Int nint(casacore::Double val) {return casacore::Int(floor(val+0.5));};
@@ -568,6 +575,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::CountedPtr<refim::VB2CFBMap> vb2CFBMap_p;
     casacore::CountedPtr<refim::PointingOffsets> po_p;
 
+    Bool wbAWP_p;
 #include "AWProjectFT.FORTRANSTUFF.INC"
   };
 } //# NAMESPACE CASA - END

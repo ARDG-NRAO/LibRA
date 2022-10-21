@@ -3571,8 +3571,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    mType="imagemosaic";
 	    if (wprojplanes>1 || wprojplanes==-1){ ftmachine="wprojectft"; }
 	  }
-	if(gridder=="awproject" || gridder=="awprojectft" || gridder=="awp")
+	if(gridder=="awproject" || gridder=="awprojectft" || gridder=="awp" )
 	  {ftmachine="awprojectft";}
+	if (gridder=="awphpg")
+	  {ftmachine="awphpg";}
+	  
 	if(gridder=="singledish") {
 	  ftmachine="sd";
 	}
@@ -3623,7 +3626,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	if( ftmachine=="awprojectft" && cfCache=="" )
 	  {cfCache=imageName+".cf"; }
 
-	if( ftmachine=="awprojectft" && 
+	if( (ftmachine=="awprojectft"||ftmachine=="awppg" ) && 
 	    usePointing==True && 
 	    pointingOffsetSigDev.nelements() != 2 )
 	  {
@@ -3656,7 +3659,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     if( (ftmachine != "gridft") && (ftmachine != "wprojectft") && 
 	(ftmachine != "mosaicft") && (ftmachine != "awprojectft") && 
-	(ftmachine != "mawprojectft") && (ftmachine != "protoft") &&
+	(ftmachine != "mawprojectft") && (ftmachine != "awphpg") &&
 	(ftmachine != "sd"))
       { err += "Invalid ftmachine name. Must be one of 'gridft', 'wprojectft', 'mosaicft', 'awprojectft', 'mawpojectft'";   }
 

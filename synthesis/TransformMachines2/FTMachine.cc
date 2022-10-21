@@ -100,7 +100,7 @@ using namespace casa::vi;
 			   pointingDirCol_p("DIRECTION"),
 			   cfStokes_p(), cfCache_p(), cfs_p(), cfwts_p(), cfs2_p(), cfwts2_p(), 
 			   canComputeResiduals_p(false), toVis_p(true), 
-                           numthreads_p(-1), pbLimit_p(0.05),sj_p(0), cmplxImage_p( ), vbutil_p(), phaseCenterTime_p(-1.0), doneThreadPartition_p(-1), briggsWeightor_p(nullptr), tempFileNames_p(0), ftmType_p(FTMachine::CORRECTED), avgPBReady_p(false)
+        numthreads_p(-1), pbLimit_p(0.05),sj_p(0), cmplxImage_p( ), vbutil_p(), phaseCenterTime_p(-1.0), doneThreadPartition_p(-1), briggsWeightor_p(nullptr), tempFileNames_p(0), ftmType_p(FTMachine::CORRECTED), avgPBReady_p(false)
   {
     spectralCoord_p=SpectralCoordinate();
     isPseudoI_p=false;
@@ -500,6 +500,68 @@ using namespace casa::vi;
         logIO() << "Illegal Channel Map: " << chanMap << LogIO::EXCEPTION;
       }
 
+// <<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/FTMachine.cc
+//       // Polarization map
+//       Int stokesIndex=coords.findCoordinate(Coordinate::STOKES);
+//       AlwaysAssert(stokesIndex>-1, AipsError);
+//       StokesCoordinate stokesCoord=coords.stokesCoordinate(stokesIndex);
+//       Vector<Stokes::StokesTypes> visPolMap(vb.getCorrelationTypesSelected());
+//       nvispol=visPolMap.nelements();
+//       AlwaysAssert(nvispol>0, AipsError);
+//       polMap.resize(nvispol);
+//       polMap=-1;
+//       Int pol=0;
+//       Bool found=false;
+//       // First we try matching Stokes in the visibilities to
+//       // Stokes in the image that we are gridding into.
+//       for (pol=0;pol<nvispol;pol++) {
+//         Int p=0;
+//         if(stokesCoord.toPixel(p, Stokes::type(visPolMap(pol)))) {
+//         	AlwaysAssert(p<npol, AipsError);
+//         	polMap(pol)=p;
+//         	found=true;
+//         }
+//       }
+//       // If this fails then perhaps we were looking to grid I
+//       // directly. If so then we need to check that the parallel
+//       // hands are present in the visibilities.
+//       if(!found) {
+//     	  Int p=0;
+//     	  if(stokesCoord.toPixel(p, Stokes::I)) {
+//     		  polMap=-1;
+//     		  if(vb.polarizationFrame()==MSIter::Linear) {
+//     			  p=0;
+//     			  for (pol=0;pol<nvispol;pol++) {
+//     				  if(Stokes::type(visPolMap(pol))==Stokes::XX)
+//     				  {polMap(pol)=0;p++;found=true;};
+//     				  if(Stokes::type(visPolMap(pol))==Stokes::YY)
+//     				  {polMap(pol)=0;p++;found=true;};
+//     			  }
+//         	}
+//         	else {
+//         		p=0;
+//         		for (pol=0;pol<nvispol;pol++) {
+//         			if(Stokes::type(visPolMap(pol))==Stokes::LL)
+//         			{polMap(pol)=0;p++;found=true;};
+//         			if(Stokes::type(visPolMap(pol))==Stokes::RR)
+//         			{polMap(pol)=0;p++;found=true;};
+//         		}
+//         	}
+//     		if(!found) {
+//     			logIO() <<  "Cannot find polarization map: visibility polarizations = "
+//     					<< visPolMap << LogIO::EXCEPTION;
+//     		}
+//     	else {
+    		
+//     		//logIO() << LogIO::DEBUGGING << "Transforming I only" << LogIO::POST;
+//     	}
+//     	  };
+//       }
+//       // logIO() //<< LogIO::DEBUGGING
+//       // 	      << "Polarization map = "<< polMap
+//       // 	      << LogIO::POST;
+// =======
+// >>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/FTMachine.cc
 
       initPolInfo(vb);
       Vector<Int> intpolmap(visPolMap_p.nelements());
@@ -697,12 +759,12 @@ using namespace casa::vi;
         // e.g.
         
         
-        flags.resize(modflagCube.shape());
-        flags=0;
-        //flags(vb.flagCube())=true;
+	flags.resize(modflagCube.shape());
+	flags=0;
+	flags(vb.flagCube())=true;
 	
 	flags(modflagCube)=true;
-	
+
         weight.reference(wt);
         interpVisFreq_p.resize();
         interpVisFreq_p=lsrFreq_p;
@@ -2627,7 +2689,6 @@ using namespace casa::vi;
     return;
   };
 
-
 /////------------------------------------------------
 void FTMachine::finalizeToWeightImage(const VisBuffer2& vb,
 				   CountedPtr<SIImageStore> imstore  )				   
@@ -2644,8 +2705,7 @@ void FTMachine::finalizeToWeightImage(const VisBuffer2& vb,
        
         
 	if( useWeightImage()  ) {
-          //if( name().contains("Mosaic") ){
-          {
+          if( name().contains("Mosaic") ){
               finalizeToSky();
             }
           LatticeLocker lock1 (*(imstore->weight()), FileLocker::Write);
@@ -2709,7 +2769,7 @@ void FTMachine::finalizeToWeightImage(const VisBuffer2& vb,
   };
 
 
-  
+
   
 /////-----------------------------------------------
   Bool FTMachine::changedSkyJonesLogic(const vi::VisBuffer2& vb, Bool& firstRow, Bool& internalRow)
@@ -2744,7 +2804,7 @@ void FTMachine::finalizeToWeightImage(const VisBuffer2& vb,
     return std::shared_ptr<double>();
   }
 
-  void FTMachine::setCFCache(CountedPtr<CFCache>& /*cfc*/, const Bool /*loadCFC*/) 
+  void FTMachine::setCFCache(CountedPtr<CFCache>& /*cfc*/, const Bool /*loadCFC*/)
   {
     throw(AipsError("FTMachine::setCFCache() directly called!"));
   }

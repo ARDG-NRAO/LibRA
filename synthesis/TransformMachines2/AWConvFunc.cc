@@ -510,7 +510,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    Int supportBuffer = (Int)(getOversampling(psTerm, wTerm, aTerm)*2.0);
 		    if (!isDryRun)
 		      {
-			if (iw==0) wtcpeak = max(cfWtBuf);
+			//			if (iw==0)
+			  wtcpeak = max(cfWtBuf);
 			cfWtBuf /= wtcpeak;
 		      }
 		    //tim.show("Norm");
@@ -585,15 +586,21 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    ftRef(0)=cfBuf.shape()(0)/2.0;
 		    ftRef(1)=cfBuf.shape()(1)/2.0;
 
+		    // if (!isDryRun && iw==0)
+		    // {
+		    //   cpeak = max(cfBuf);
+		    //   cfBuf /= cpeak;
+		    // }
+		    // cerr << "Peak: " << cpeak << " " << max(cfBuf) << endl;
 		    //tim.mark();
 		    cfNorm=cfWtNorm=1.0;
 		    //if ((iw == 0) && (!isDryRun))
-		    if (!isDryRun)
-		      {
-			cfNorm=0; cfWtNorm=0;
-			cfNorm = AWConvFunc::cfArea(cfBufMat, xSupport, ySupport, sampling);
-			cfWtNorm = AWConvFunc::cfArea(cfWtBufMat, xSupportWt, ySupportWt, sampling);
-		      }
+		    // if (!isDryRun)
+		    //   {
+		    // 	cfNorm=0; cfWtNorm=0;
+		    // 	cfNorm = AWConvFunc::cfArea(cfBufMat, xSupport, ySupport, sampling);
+		    // 	cfWtNorm = AWConvFunc::cfArea(cfWtBufMat, xSupportWt, ySupportWt, sampling);
+		    //   }
 		    //tim.show("Area*2:");
 
 		    //tim.mark();

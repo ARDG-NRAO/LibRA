@@ -186,6 +186,8 @@ public:
   void put(const vi::VisBuffer2& vb, casacore::Int row=-1, casacore::Bool dopsf=false, 
 	   FTMachine::Type type=FTMachine::OBSERVED);
 
+  virtual void gridImgWeights(const vi::VisBuffer2& vb);
+  
   // Make the entire image
   void makeImage(FTMachine::Type type,
 		 vi::VisibilityIterator2& vs,
@@ -237,7 +239,7 @@ public:
   virtual void ComputeResiduals(vi::VisBuffer2&/*vb*/, casacore::Bool /*useCorrected*/) {};
 
   //Sometimes weightimage is already calculated ...just use it
-  virtual void setWeightImage(casacore::CountedPtr<casacore::TempImage<casacore::Float> >& wgtimage);
+  virtual void setWeightImage(casacore::CountedPtr<casacore::ImageInterface<casacore::Float> >& wgtimage);
 protected:        
 
   casacore::Int nint(casacore::Double val) {return casacore::Int(floor(val+0.5));};

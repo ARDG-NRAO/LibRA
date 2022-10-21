@@ -229,7 +229,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if( doesImageExist(itsImageName+String(".residual")) || 
 	doesImageExist(itsImageName+String(".psf")) ||
 	doesImageExist(itsImageName+String(".model")) ||
-	doesImageExist(itsImageName+String(".gridwt"))  )
+	doesImageExist(itsImageName+String(".gridwt")) ||
+        doesImageExist(itsImageName+String(".pb")) ||
+        doesImageExist(itsImageName+String(".weight"))
+        )
       {
 	std::shared_ptr<ImageInterface<Float> > imptr;
 	if( doesImageExist(itsImageName+String(".psf")) )
@@ -245,6 +248,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	}
 	else if ( doesImageExist(itsImageName+String(".model")) ){
 	  buildImage( imptr, (itsImageName+String(".model")) );
+	  //          itsObjectName=imptr->imageInfo().objectName();
+	  //	  itsMiscInfo=imptr->miscInfo();
+	}
+        else if ( doesImageExist(itsImageName+String(".pb")) ){
+	  buildImage( imptr, (itsImageName+String(".pb")) );
+	  //          itsObjectName=imptr->imageInfo().objectName();
+	  //	  itsMiscInfo=imptr->miscInfo();
+	}
+        else if ( doesImageExist(itsImageName+String(".weight")) ){
+	  buildImage( imptr, (itsImageName+String(".weight")) );
 	  //          itsObjectName=imptr->imageInfo().objectName();
 	  //	  itsMiscInfo=imptr->miscInfo();
 	}
@@ -661,6 +674,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       godot.unlock();
     }
     TableLock::LockOption locktype=TableLock::AutoNoReadLocking;
+    //TableLock::LockOption locktype=TableLock::UserLocking;
     /*if((name.contains(imageExts(PSF)) && !name.contains(imageExts(PSF)+".tt"))|| (name.contains(imageExts(RESIDUAL))&& !name.contains(imageExts(RESIDUAL)+".tt")) || (name.contains(imageExts(SUMWT)) && !name.contains(imageExts(SUMWT)+".tt"))){
       locktype=TableLock::UserNoReadLocking;
       }*/
@@ -1445,6 +1459,7 @@ void SIImageStore::setWeightDensity( std::shared_ptr<SIImageStore> imagetoset )
 		LatticeExpr<Bool> pbmask( iif( *pb() > fabs(pblimit) , True , False ) );
 		//MSK// 
 		createMask( pbmask, pb() );
+                pb()->pixelMask().unlock();
 	      }
 
 	  }
@@ -1495,9 +1510,11 @@ void SIImageStore::setWeightDensity( std::shared_ptr<SIImageStore> imagetoset )
 	    LatticeExpr<Bool> pbmask( iif( *pb() > fabs(pblimit) , True , False ) );
 	    //MSK// 
 	    createMask( pbmask, pb() );
+            pb()->pixelMask().unlock();
 	  }
 
      }// if hasPB
+   pb()->unlock();
 
   }
 
@@ -1665,6 +1682,7 @@ void SIImageStore::setWeightDensity( std::shared_ptr<SIImageStore> imagetoset )
 	
     }//if itsUseWeight
     else { makePBImage(pblimit); } // OR... just check that it exists already.
+    pb()->unlock();
     
    }
 

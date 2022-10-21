@@ -468,6 +468,32 @@ void MultiTermFTNew::initializeToVisNew(const VisBuffer2& vb,
   
   //----------------------------------------------------------------------
 
+///-------------------
+  void MultiTermFTNew::gridImgWeights(const VisBuffer2& vb)
+  {
+    
+    subftms_p[0]->gridImgWeights(vb);
+    if (!dryRun())
+      {
+	Int gridnterms=2*nterms_p-1;
+      
+    
+	//cerr << "  Calling put for " << gridnterms << " terms, nelements :  " << subftms_p.nelements() << "  and dopsf " << dopsf << " reffreq " << reffreq_p << endl;
+    
+	for(Int tix=1;tix<gridnterms;tix++)
+	  {
+	    modifyVisWeights(const_cast<vi::VisBuffer2&>(vb),tix);
+	    subftms_p[tix]->gridImgWeights(vb); 
+	    restoreImagingWeights(const_cast<vi::VisBuffer2&>(vb));
+	  }
+      }    
+    
+  }// end of gridImgWeights
+
+
+
+
+////---------------------------
 //  void MultiTermFTNew::finalizeToSky(Block<CountedPtr<ImageInterface<Complex> > > & compImageVec, PtrBlock<SubImage<Float> *> & resImageVec, PtrBlock<SubImage<Float> *>& weightImageVec, PtrBlock<SubImage<Float> *>& fluxScaleVec, Bool dopsf, Block<Matrix<Float> >& weightsVec, const VisBuffer& /*vb*/)
 
 void MultiTermFTNew::finalizeToSkyNew(Bool dopsf, 
@@ -508,6 +534,39 @@ void MultiTermFTNew::finalizeToSkyNew(Bool dopsf,
 
 
   //---------------------------------------------------------------------------------------------------
+
+//////-------------------------------------------------------------------
+  void MultiTermFTNew::finalizeToWeightImage(const VisBuffer2& /*vb*/,
+                                           CountedPtr<SIImageStore> imstore  ){
+
+    for(uInt taylor=0;taylor< psfnterms_p  ;taylor++) 
+      {
+	Matrix<Float> sumWeights;
+	subftms_p[taylor]->finalizeToSky();
+     	if( subftms_p[taylor]->useWeightImage()  ) 
+        {
+          LatticeLocker lock1 (*(imstore->weight(taylor)), FileLocker::Write);
+	  subftms_p[taylor]->getWeightImage(*(imstore->weight(taylor)), sumWeights);
+	
+
+          // Take sumWeights from corrToStokes here....
+          Matrix<Float> sumWeightStokes( (imstore->sumwt())->shape()[2], (imstore->sumwt())->shape()[3]   );
+          StokesImageUtil::ToStokesSumWt( sumWeightStokes, sumWeights );
+          
+          AlwaysAssert( ( (imstore->sumwt(taylor))->shape()[2] == sumWeightStokes.shape()[0] ) && 
+                        ((imstore->sumwt(taylor))->shape()[3] == sumWeightStokes.shape()[1] ) , AipsError );
+          LatticeLocker lock2 (*(imstore->sumwt(taylor)), FileLocker::Write);
+          (imstore->sumwt(taylor))->put( sumWeightStokes.reform((imstore->sumwt(taylor))->shape()) );
+        }//useWeight
+	//	cout << "taylor : " << taylor << "   sumwt : " << sumWeights << endl;
+
+      }// end for taylor
+
+
+
+
+}
+////////---------------------------------------------
   //----------------------------- Obtain Images -----------------------------------------------------
   //---------------------------------------------------------------------------------------------------
   //----------------------------------------------------------------------

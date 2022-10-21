@@ -152,7 +152,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     void makePersistent(const char *dir, const char *cfName="");
     casacore::CountedPtr<CFCell> clone();
     void setParams(const CFCell& other);
-    void initCache(const casacore::Bool& releaseSpace=false) {shape_p=getShape(); cfShape_p.assign(shape_p.asVector());casacore::IPosition tt=shape_p;tt=0;tt[0]=tt[1]=0;if (releaseSpace) storage_p->resize(tt);};
+    void initCache(const casacore::Bool& releaseSpace=false)
+    {
+      //shape_p=getShape();
+      cfShape_p.assign(getShape().asVector());
+      // casacore::IPosition tt(0,0);
+      // tt=0;tt[0]=tt[1]=0;
+      if (releaseSpace) storage_p->resize(casacore::IPosition(0,0));
+    };
     casacore::IPosition getShape() {return storage_p->shape();}
     //
     //============================= casacore::Functional Parts ============================

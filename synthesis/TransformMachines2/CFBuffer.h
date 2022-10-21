@@ -251,12 +251,13 @@ using namespace casa::vi;
     
     inline casacore::Int nearestWNdx(const casacore::Double& wVal) 
     {
-      //      return SynthesisUtils::nint(sqrt(wValIncr_p*abs(wVal)));
-      return max(0,min((int)(sqrt(wValIncr_p*abs(wVal))),(int)wValues_p.nelements())-1);
-      // Int ndx=(int)(sqrt(wValIncr_p*abs(wVal)));
-      // if ((uInt)ndx >= wValues_p.nelements())
-      // 	cerr << endl << endl << ndx << " " <<  wVal << " " << wValIncr_p << endl << endl;
-      // return min(ndx,wValues_p.nelements()-1);
+      return max(0,
+		 min(
+		     (int)round(sqrt(wValIncr_p*abs(wVal))),
+		     (int)(wValues_p.nelements()-1)
+		     )
+		 ); // CAS-13191
+      //return max(0,min((int)round(sqrt(abs(wVal)/wValIncr_p)),(int)(wValues_p.nelements()-1))); // CAS-13191
     }
     
     casacore::Double nearest(casacore::Bool& found, const casacore::Double& val, const casacore::Vector<casacore::Double>& valList, const casacore::Double& incr);
@@ -409,6 +410,7 @@ using namespace casa::vi;
 
     int getMaxCFSize();
     bool finitePointingOffsets();
+    casacore::Double wValIncr_p, freqValIncr_p;
     //
     //============================= Protected Parts ============================
     //------------------------------------------------------------------
@@ -423,7 +425,6 @@ using namespace casa::vi;
     casacore::Cube<casacore::CountedPtr<CFCell> > cfCells_p;// freqValues x wValues x muellerElements
     casacore::Vector<casacore::Double> wValues_p, freqValues_p;
     PolMapType muellerElements_p, muellerElementsIndex_p,conjMuellerElements_p,conjMuellerElementsIndex_p; 
-    casacore::Double wValIncr_p, freqValIncr_p;
     MuellerMatrixType muellerMask_p;
     
     casacore::Int nPol_p, nChan_p, nW_p, maxXSupport_p, maxYSupport_p;

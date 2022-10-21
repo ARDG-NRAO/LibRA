@@ -158,7 +158,7 @@ namespace casa{
     virtual void setMiscInfo(const casacore::RecordInterface& /*params*/) {};
     virtual casacore::CountedPtr<CFTerms> getTerm(const casacore::String& /*name*/) {return NULL;}
     virtual int getOversampling(){return 1;};
-
+    virtual bool isWBAWP() {return false;};
     // virtual casacore::Vector<casacore::Vector<casacore::Double> > findPointingOffset(const casacore::ImageInterface<casacore::Complex>& image,
     // 								  const VisBuffer2& vb, const casacore::Bool& doPointing) = 0;
 

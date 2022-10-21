@@ -65,7 +65,8 @@ namespace casa{
     LogIO log_l(LogOrigin("CFCell","show[R&D]"));
       //       << "CoordSys: " << coordSys_p << endl
     if (Mesg) os << Mesg;
-    os << "Sampling: "           << sampling_p  << endl
+    os << "File name: " << fileName_p << endl
+       << "Sampling: "           << sampling_p  << endl
        << "xSupport, ySupport: " << xSupport_p  << " " << ySupport_p << endl
        << "wValues: "            << wValue_p    << endl
        << "wIncr: "            << wIncr_p    << endl
@@ -73,7 +74,7 @@ namespace casa{
        << "ConjFreq: "           << conjFreq_p  << endl
        << "ConjPoln: "           << conjPoln_p  << endl
        << "MuellerElements: "    << muellerElement_p << endl
-       << "Data shape: "         << storage_p->shape() << " " << cfShape_p << endl
+       << "Data shape: "         << storage_p->shape() << " " << shape_p << endl
        << "Parallactic Angle(d): "  << pa_p.getValue("deg")
        << endl;
     IPosition dummy;

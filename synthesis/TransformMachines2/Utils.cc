@@ -78,6 +78,34 @@ namespace casa{
       }
   }
   
+  void storeImg(String fileName,PagedImage<Complex>& theImg, Bool writeReIm)
+  {
+    if (writeReIm)
+      {
+	ostringstream reName,imName;
+	reName << "re" << fileName;
+	{
+	  PagedImage<Float> tmp(theImg.shape(), theImg.coordinates(), reName);
+	  //LatticeExpr<Float> le(abs(theImg));
+	  LatticeExpr<Float> le(real(theImg));
+	  tmp.copyData(le);
+	}
+
+	imName << "im" << fileName;
+	{
+	  PagedImage<Float> tmp(theImg.shape(), theImg.coordinates(), imName);
+	  LatticeExpr<Float> le(arg(theImg));
+	  tmp.copyData(le);
+	}
+      }
+    else
+      {
+	PagedImage<Complex> ctmp(theImg);
+	LatticeExpr<Complex> le(theImg);
+	ctmp.copyData(le);
+      }
+  }
+  
   void storeImg(String fileName,ImageInterface<Float>& theImg)
   {
     PagedImage<Float> tmp(theImg.shape(), theImg.coordinates(), fileName);
@@ -1369,12 +1397,21 @@ namespace casa{
 
       modelImageGrid  = casacore::TempImage<casacore::DComplex> (fImage->shape(), fImage->coordinates());
 
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/Utils.cc
+      casacore::Array<casacore::DComplex> dcArray=modelImageGrid.get();
+      casacore::Array<casacore::Complex> fcArray=tmp.get();
+
+      // Bool d0,d1;
+      // casacore::DComplex* dcArrayPtr= dcArray.getStorage(d0);
+      // casacore::Complex* fcArrayPtr = fcArray.getStorage(d1);
+=======
       Bool d0,d1;
       casacore::Array<casacore::DComplex> dcArray=modelImageGrid.get();
       casacore::Array<casacore::Complex> fcArray=tmp.get();
 
       casacore::DComplex* dcArrayPtr= dcArray.getStorage(d0);
       casacore::Complex* fcArrayPtr = fcArray.getStorage(d1);
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/Utils.cc
       IPosition ndx(4,0,0,0,0),shape=fImage->shape();
 
       for (ndx(0)=0; ndx(0)<shape(0);ndx(0)++)
@@ -1391,11 +1428,19 @@ namespace casa{
     //
     void SynthesisUtils::makeAWLists(const casacore::Vector<double>& wVals,
 				     const casacore::Vector<double>& fVals,
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/Utils.cc
+				     const bool& wbAWP, const uint& wprojplanes,
+				     const double& imRefFreq, const double& spwRefFreq,
+				     const int vbSPW,
+				     casacore::Vector<int>& wNdxList,
+				     casacore::Vector<int>& spwNdxList)
+=======
 				     const bool& wbAWP, const uint& nw,
 				     const double& imRefFreq, const double& spwRefFreq,
 				     casacore::Vector<int>& wNdxList,
 				     casacore::Vector<int>& spwNdxList,
 				     const int vbSPW)
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/Utils.cc
     {
       //
       // The following can be generalized to pick a subset of CFs along
@@ -1404,6 +1449,17 @@ namespace casa{
       // used for a given imaging.
       //
       // W-pixels in the CFC should be >= w-planes user setting
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/Utils.cc
+      assert(wVals.nelements() >= wprojplanes);
+      
+      // Make list of W-CF indexes
+      int nWCFs=(wprojplanes<=1)?wprojplanes:wVals.nelements();
+      wNdxList.resize(nWCFs);
+      for(int i=0;i<nWCFs;i++) wNdxList[i] = i;
+      
+      int tspw=(wprojplanes == 1)?-1:vbSPW;
+
+=======
       assert(wVals.nelements() >= nw);
       
       // Make list of W-CF indexes
@@ -1411,12 +1467,17 @@ namespace casa{
       wNdxList.resize(nWCFs);
       for(int i=0;i<nWCFs;i++) wNdxList[i] = i;
       
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/Utils.cc
       // Make list of SPW-CF indexes
       int nSPWCFs=fVals.nelements();
       if (wbAWP==true)
 	{
 	  // If a valid SPW ID is given, translate it to the spwNdx for the nearest SPW
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/Utils.cc
+	  if ((tspw>=0))// && (vbSPW <nSPWCFs))
+=======
 	  if ((vbSPW>=0))// && (vbSPW <nSPWCFs))
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/Utils.cc
 	    {
 	      int refSPW;
 	      std::vector<double> stdList(nSPWCFs);
@@ -1448,6 +1509,21 @@ namespace casa{
       
       return;
     }
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/Utils.cc
+    bool SynthesisUtils::needNewCF(int& cachedVBSpw,
+				   const int currentVBSpw,
+				   const int nWPlanes, const bool wbAWP,
+				   const bool overrider)
+    {
+      bool d = (((cachedVBSpw != currentVBSpw) &&    // when data for a new SPW arrives, and
+		 (nWPlanes > 1) && (wbAWP==true)) || // WB AW-P (A-term *and* w-term) corrections is requested, or
+		overrider);                          // if a forced override is requested
+      if (d && (cachedVBSpw != currentVBSpw)) cachedVBSpw = currentVBSpw;
+      return d;
+    }
+
+=======
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/Utils.cc
 
   template
   std::vector<Double>::iterator SynthesisUtils::Unique(std::vector<Double>::iterator first, std::vector<Double>::iterator last);

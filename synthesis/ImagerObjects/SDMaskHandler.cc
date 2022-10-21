@@ -1073,6 +1073,7 @@ itsTooLongForFname = false;
         imstore->mask()->copyData( themask );
         imstore->mask()->get(maskdata);
         tempmask->put(maskdata);
+        imstore->pb()->unlock();
         delete dummy;
       }
     } 
@@ -1189,6 +1190,7 @@ itsTooLongForFname = false;
           }
           delete testres; testres=0;
        }
+       imstore->pb()->unlock();
     }
 
     //use new noise calc.
@@ -1219,6 +1221,7 @@ itsTooLongForFname = false;
     //Record thenewstats = calcRobustImageStatistics(*tempres, *tempmask, pbmask, LELmask, region_ptr, robust, chanflag);
       try{
 	thenewstats = calcRobustImageStatistics(*tempres, *tempmask, pbmask, LELmask, region_ptr, robust, chanflag);
+        imstore->releaseLocks();
       }
       catch( AipsError &x )
       {
@@ -1279,6 +1282,7 @@ itsTooLongForFname = false;
       tempmask->get(updatedMaskData);
       imstore->mask()->put(updatedMaskData);
     }
+    imstore->releaseLocks();
     //tempmask->get(maskdata);
     //imstore->mask()->put(maskdata);
     delete tempmask; tempmask=0;
@@ -1379,7 +1383,7 @@ itsTooLongForFname = false;
     else if (pbmask.shape()!=shp) {
       throw(AipsError("Mismatch in shapes of pbmask and residual image"));
     }
-
+    
     //for stats storage
     IPosition statshape(2, shp(2), shp(3));
     Array<Double> outMins(statshape);

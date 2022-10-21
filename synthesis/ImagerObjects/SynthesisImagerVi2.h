@@ -101,9 +101,11 @@ public:
 		   const casacore::Bool& aTermOn,
 		   const casacore::Bool& conjBeams);
   void reloadCFCache();
-  ///load the weightimage in the MosaicFT machine if it has already been done
+  ///load the weightimage in the A projection FT machines if it has already been done
   //this can be called only after defineimage
-  void loadMosaicSensitivity();
+  bool loadMosaicSensitivity();
+  ///
+  bool makeMosaicSensitivity();
   //Some access methods
   casacore::CountedPtr<vi::VisibilityIterator2> getVi();
   casacore::CountedPtr<refim::FTMachine> getFTM(const casacore::Int whichfield=0,

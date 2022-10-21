@@ -55,9 +55,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    {setConvFunc(cfs);};
     virtual ~VisibilityResampler()
     {
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/VisibilityResampler.h
+      cerr << "~VisibilityResampler:: "
+	   << "No. of VBs  processed: " << nVBs_p << endl
+	   << "No. of vis. processed: " << nVisGridded_p << endl;
+=======
       // cerr << "~VisibilityResampler:: "
       // 	   << "No. of VBs  processed: " << nVBs_p << endl
       // 	   << "No. of vis. processed: " << nVisGridded_p << endl;
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/VisibilityResampler.h
     };
 
     //    VisibilityResampler& operator=(const VisibilityResampler& other);
@@ -90,6 +96,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       polMap_p.reference(polMap);
     }
 
+    virtual void getMaps(casacore::Vector<casacore::Int>& chanMap, casacore::Vector<casacore::Int>& polMap)
+    {
+      SynthesisUtils::SETVEC(chanMap,chanMap_p);
+      SynthesisUtils::SETVEC(polMap,polMap_p);
+      // chanMap_p.reference(chanMap);
+      // polMap_p.reference(polMap);
+    }
+
     virtual void setFreqMaps(const casacore::Matrix<casacore::Double>& spwChanFreqs, const casacore::Matrix<casacore::Double>& spwChanConjFreqs)
     {
       spwChanFreq_p.assign(spwChanFreqs);
@@ -102,6 +116,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     };
     virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap) {(void)cfMap;(void)conjCFMap;};
     virtual void setPATolerance(const double& dPA) {paTolerance_p = dPA;};
+    virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer /*cfsi*/) {return hpg::CFSimpleIndexer({1,false},{1,false},{1,true},{1,true}, 1);}
+    virtual bool set_cf(casa::refim::MyCFArray& /*cfArray*/) {return false;}  // Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& /*dcfArray*/) {return false;}// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& /*rwdcfArray*/) {return false;}// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
     //
     //------------------------------------------------------------------------------
     //

@@ -52,15 +52,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
    public:
      VB2CFBMap();
      
-     ~VB2CFBMap() 
-     {
-       LogIO log_l(LogOrigin("VB2CFBMap", "~VB2CFMap[R&D]"));
-
-       log_l << "Total extra cost of heterogeneous array pointing correction = " << totalCost_p << "sec.  Total VBs processed =  " << totalVB_p << 
-	 ". The pointingoffsetsigdev used was = "<< sigmaDev <<LogIO::POST;
-       
-     };
+     ~VB2CFBMap() {adios();};
      
+     void adios();
      VB2CFBMap& operator=(const VB2CFBMap& other);
      const casacore::CountedPtr<CFBuffer >& operator[](const int& i) {return vb2CFBMap_p[i];};
      
@@ -109,7 +103,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      Vector<int> maxCFShape_p;
      casacore::Timer timer_p;
      float totalCost_p, totalVB_p;
+<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/VB2CFBMap.h
+     Bool computePhaseScreen_p;
+=======
      casacore::Bool  computePhaseScreen_p;
+>>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/VB2CFBMap.h
    };
  }
 }

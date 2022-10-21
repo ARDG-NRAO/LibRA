@@ -108,7 +108,9 @@ public:
   virtual void finalizeToSkyNew(casacore::Bool dopsf, 
 					   const vi::VisBuffer2& vb,
 					   casacore::CountedPtr<SIImageStore> imstore  );
-
+  
+  virtual void finalizeToWeightImage(const vi::VisBuffer2& vb,
+					   casacore::CountedPtr<SIImageStore> imstore  );
   //  void normalizeToSky(casacore::ImageInterface<casacore::Complex>& compImage, casacore::ImageInterface<casacore::Float>& resImage, casacore::ImageInterface<casacore::Float>& weightImage, casacore::Bool dopsf, casacore::Matrix<casacore::Float>& weights)
   // {throw(casacore::AipsError("MultiTermFTNew::normalizeToSky should not get called !"));};
 
@@ -122,6 +124,8 @@ public:
   void put(const vi::VisBuffer2& /*vb*/, casacore::Int /*row=-1*/, casacore::Bool /*dopsf=false*/,
     	   refim::FTMachine::Type /*type=FTMachine::OBSERVED*/)
   {throw(casacore::AipsError("Internal error: called MultiTermFTNew::put(const VB2)"));};
+
+  virtual void gridImgWeights(const vi::VisBuffer2& vb); 
   // Calculate residual visibilities if possible.
   // The purpose is to allow rGridFT to make this multi-threaded
   virtual void ComputeResiduals(vi::VisBuffer2& vb, casacore::Bool useCorrected);

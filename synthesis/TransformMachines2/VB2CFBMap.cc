@@ -57,6 +57,15 @@ namespace casa{
       // sigmaDev = SynthesisUtils::getenv("PO_SIGMADEV",3.0);
     };
 
+    void VB2CFBMap::adios()
+     {
+       // LogIO log_l(LogOrigin("VB2CFBMap", "~VB2CFMap[R&D]"));
+
+       // log_l << "Total extra cost of heterogeneous array pointing correction = "
+       // 	     << totalCost_p << "sec.  Total VBs processed =  " << totalVB_p
+       // 	     << ". The pointingoffsetsigdev used was = "<< sigmaDev <<LogIO::POST;
+     }
+
     VB2CFBMap& VB2CFBMap::operator=(const VB2CFBMap& other)
     {
       if(this!=&other) 
