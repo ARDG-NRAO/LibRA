@@ -115,15 +115,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     //  private:
 
-<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/AWVisResampler.h
-    // casacore::Vector<casacore::Double> uvwScale_p, offset_p, dphase_p;
-    // casacore::Vector<casacore::Int> chanMap_p, polMap_p;
-    // CFStore convFuncStore_p;
-    // //    casacore::Int inc0_p, inc1_p, inc2_p, inc3_p;
-    // casacore::Vector<casacore::Int> inc_p;
-    //    casacore::Vector<casacore::Int> cfMap_p, conjCFMap_p;
-=======
->>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/AWVisResampler.h
     casacore::Vector<casacore::Int> gridInc_p, cfInc_p;
     casacore::Vector<casacore::Double> cached_PointingOffset_p;
     //

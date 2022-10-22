@@ -55,15 +55,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    {setConvFunc(cfs);};
     virtual ~VisibilityResampler()
     {
-<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/VisibilityResampler.h
-      cerr << "~VisibilityResampler:: "
-	   << "No. of VBs  processed: " << nVBs_p << endl
-	   << "No. of vis. processed: " << nVisGridded_p << endl;
-=======
       // cerr << "~VisibilityResampler:: "
       // 	   << "No. of VBs  processed: " << nVBs_p << endl
       // 	   << "No. of vis. processed: " << nVisGridded_p << endl;
->>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/VisibilityResampler.h
     };
 
     //    VisibilityResampler& operator=(const VisibilityResampler& other);

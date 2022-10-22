@@ -409,14 +409,14 @@ public:
   virtual casacore::Vector<casacore::String> cleanupTempFiles(const casacore::String& message);
 
   virtual void setFTMType(const FTMachine::Type& type) {ftmType_p=type;};
-<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/FTMachine.h
-  virtual FTMachine::Type ftmType() {return ftmType_p;};
+// <<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/FTMachine.h
+//   virtual FTMachine::Type ftmType() {return ftmType_p;};
 
+//   virtual void setPBReady(const bool& isready) {avgPBReady_p=isready;};
+//   virtual bool isAVGPBReady() {return avgPBReady_p;}
+// =======
   virtual void setPBReady(const bool& isready) {avgPBReady_p=isready;};
-  virtual bool isAVGPBReady() {return avgPBReady_p;}
-=======
-  virtual void setPBReady(const bool& isready) {avgPBReady_p=isready;};
->>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/FTMachine.h
+// >>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/FTMachine.h
 protected:
 
   friend class VisModelData;

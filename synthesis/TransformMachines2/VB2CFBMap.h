@@ -103,11 +103,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
      Vector<int> maxCFShape_p;
      casacore::Timer timer_p;
      float totalCost_p, totalVB_p;
-<<<<<<< HEAD:casa5/code/synthesis/TransformMachines2/VB2CFBMap.h
-     Bool computePhaseScreen_p;
-=======
      casacore::Bool  computePhaseScreen_p;
->>>>>>> CAS-13857-WITH-HPG:casatools/src/code/synthesis/TransformMachines2/VB2CFBMap.h
    };
  }
 }
