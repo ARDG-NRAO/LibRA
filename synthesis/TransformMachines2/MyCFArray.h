@@ -1,5 +1,4 @@
 #include <hpg/hpg.hpp>
-//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
 #ifndef SYNTHESIS_TRANSFORM2_MYCFARRAY_H
 #define SYNTHESIS_TRANSFORM2_MYCFARRAY_H
 
