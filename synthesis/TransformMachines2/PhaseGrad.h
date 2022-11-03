@@ -35,7 +35,7 @@
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/PointingOffsets.h>
 
-// #include <coordinates/Coordinates/DirectionCoordinate.h>
+// #include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 // #include <images/Images/ImageInterface.h>
 // #include <images/Images/TempImage.h>
 // #include <msvis/MSVis/VisBuffer2.h>

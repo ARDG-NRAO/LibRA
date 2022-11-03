@@ -47,7 +47,7 @@
 #include <synthesis/TransformMachines2/CFDefs.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/Utils.h>
-// #include <casa/Tables/Table.h>
+// #include <casacore/casa/Tables/Table.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{

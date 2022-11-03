@@ -32,9 +32,9 @@
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines/SynthesisError.h>
-// #include <casa/Logging/LogIO.h>
-// #include <casa/Logging/LogSink.h>
-// #include <casa/Logging/LogOrigin.h>
+// #include <casacore/casa/Logging/LogIO.h>
+// #include <casacore/casa/Logging/LogSink.h>
+// #include <casacore/casa/Logging/LogOrigin.h>
 
 using namespace casacore;
 namespace casa{

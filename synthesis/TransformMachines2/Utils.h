@@ -59,7 +59,7 @@ namespace casa
     void makeStokesAxis(casacore::Int npol_p, casacore::Vector<casacore::String>& polType, casacore::Vector<casacore::Int>& whichStokes);
     casacore::Double getPA(const vi::VisBuffer2& vb);
     void storeImg(casacore::String fileName,casacore::ImageInterface<casacore::Complex>& theImg, casacore::Bool writeReIm=false);
-    void storeImg(casacore::String fileName,casacore::PagedImage<casacore::Complex>& theImg, casacore::Bool writeReIm=false);
+    // void storeImg(casacore::String fileName,casacore::PagedImage<casacore::Complex>& theImg, casacore::Bool writeReIm=false);
     void storeImg(casacore::String fileName,casacore::ImageInterface<casacore::Float>& theImg);
     void storeArrayAsImage(casacore::String fileName, const casacore::CoordinateSystem& coords, const casacore::Array<casacore::Complex>& cf);
     void storeArrayAsImage(casacore::String fileName, const casacore::CoordinateSystem& coords, const casacore::Array<casacore::DComplex>& cf);

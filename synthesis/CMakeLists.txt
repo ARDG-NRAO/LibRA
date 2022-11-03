@@ -43,6 +43,15 @@ target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::CASACORE)
 target_link_libraries(casacpp_synthesis PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency
 target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::SAKURA)
+# Libhpg dependency
+target_link_libraries(casacpp_synthesis PUBLIC hpg::hpg)
+# Libparafeed dependency
+#target_link_libraries(casacpp_synthesis PUBLIC parafeed::parafeed)
+target_include_directories(casacpp_synthesis PRIVATE /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
+#add_library(libparafeed SHARED IMPORTED)
+#set_property(TEST libparafeed )
+set(PARAFEED_LIBRARIES /home/pjaganna/Software/casa_build_native/linux_64b/libparafeed.a /usr/lib/x86_64-linux-gnu/libreadline.so /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
+
 
 # Internal dependencies
 target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)

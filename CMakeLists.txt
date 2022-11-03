@@ -99,7 +99,12 @@ find_package(hpg CONFIG)
 if(DEFINED hpg_FOUND AND ${hpg_FOUND})
   add_definitions(-DUSE_HPG)
 endif()
-
+include_directories(AFTER SYSTEM /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
+#parafeed dependency
+#find_package(parafeed CONFIG)
+#if(DEFINED parafeed_FOUND AND ${parafeed_FOUND})
+#  add_definitions(-DUSE_PARAFEED)
+#endif()
 
 # Create a list with all the components
 set(casacpp_all_components

@@ -60,7 +60,7 @@ namespace casa{
 
 namespace refim{
 // temporary, for debugging
-/*#include <casa/Quanta/MVAngle.h>
+/*#include <casacore/casa/Quanta/MVAngle.h>
 void printDirection(std::ostream &os,const MDirection &dir) throw (AipsError) {
   double lngbuf=dir.getValue().getLong("deg").getValue();
   if (lngbuf<0) lngbuf+=360.;

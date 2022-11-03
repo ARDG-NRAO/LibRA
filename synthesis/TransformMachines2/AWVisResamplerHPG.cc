@@ -52,7 +52,7 @@
 #include <omp.h>
 #endif
 
-//#include <casa/BasicMath/Functors.h>
+//#include <casacore/casa/BasicMath/Functors.h>
 using namespace casacore;
 using namespace hpg;
 namespace casa{
