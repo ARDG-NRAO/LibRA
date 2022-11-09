@@ -101,6 +101,8 @@ if(DEFINED hpg_FOUND AND ${hpg_FOUND})
 endif()
 include_directories(AFTER SYSTEM /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
 #parafeed dependency
+find_package(parafeed REQUIRED)
+pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 #find_package(parafeed CONFIG)
 #if(DEFINED parafeed_FOUND AND ${parafeed_FOUND})
 #  add_definitions(-DUSE_PARAFEED)
