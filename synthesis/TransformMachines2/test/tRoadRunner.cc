@@ -58,11 +58,11 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-// #include <cl.h> // C++ized version
-// #include <clinteract.h>
+#include <cl.h> // C++ized version
+#include <clinteract.h>
 
- #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/cl.h> // C++ized version
- #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/clinteract.h>
+ // #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/cl.h> // C++ized version
+ // #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/clinteract.h>
 
 
 #ifdef ROADRUNNER_USE_MPI
