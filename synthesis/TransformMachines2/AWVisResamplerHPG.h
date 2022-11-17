@@ -29,7 +29,6 @@
 #ifndef SYNTHESIS_TRANSFORM2_AWVISRESAMPLERHPG_H
 #define SYNTHESIS_TRANSFORM2_AWVISRESAMPLERHPG_H
 
-#ifdef USE_HPG
 #include <synthesis/TransformMachines2/CFStore.h>
 #include <synthesis/TransformMachines2/VBStore.h>
 #include <synthesis/TransformMachines2/VisibilityResampler.h>
@@ -41,34 +40,28 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Logging/LogMessage.h>
 #include <synthesis/TransformMachines2/AWVisResampler.h>
-//#include <synthesis/TransformMachines2/VBStoreHPG.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
-//#include <synthesis/TransformMachines2/hpg.hpp>
 #include <hpg/hpg.hpp>
 #include <hpg/hpg_indexing.hpp>
-///I am tired with cmake not finding the include putting the path directly for now
-//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg.hpp"
-//#include "/export/home/gpuhost001/mpokorny/casa_hpg_debug/include/hpg/hpg_indexing.hpp"
 #include <tuple>
 #define HPGNPOL 2
+#include <chrono>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{
-
 
   class AWVisResamplerHPG: public AWVisResampler
   {
 
   public:
-    AWVisResamplerHPG(bool hpgInitAndFin=false): AWVisResampler(), hpgGridder_p(NULL), cfArray(),vis(), grid_cubes(), cf_cubes(), weights(), frequencies(),
-						cf_phase_screens(), hpgPhases(), visUVW(),
-						//hpgCFInit(0),
-						nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
-						 //vbsList_p(),
-						 hpgVBList_p(), HPGModelImageName_p(""),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
-                                                 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), modelImage_p(nullptr)
+    AWVisResamplerHPG(bool hpgInitAndFin=false): AWVisResampler(), hpgGridder_p(NULL), vis(), grid_cubes(), cf_cubes(), weights(), frequencies(),
+						 cf_phase_screens(), hpgPhases(), visUVW(),
+						 nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
+						 hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
+						 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
+						 mkHPGVB_startTime(), mkHPGVB_duration()
+
     {
-      //      vbsList_p.resize(maxVBList_p);
       hpgVBList_p.reserve(maxVBList_p);
 
       String hpgDevice="cuda";
@@ -81,9 +74,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual ~AWVisResamplerHPG()
     {
-      LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
-      log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
-      //hpg::finalize();
+      //LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
+      //log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
+      cerr << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << endl;
     };
 
     std::tuple<String, hpg::Device> getHPGDevice();
@@ -118,6 +111,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       SynthesisUtils::SETVEC(cached_phaseGrad_p, other.cached_phaseGrad_p);
       SynthesisUtils::SETVEC(cached_PointingOffset_p, other.cached_PointingOffset_p);
       hpgGridder_p = other.hpgGridder_p;
+      cfsi_p = other.cfsi_p;
+      cfArray_p = other.cfArray_p;
+      //      dcf_ptr_p = other.dcf_ptr_p;
       return *this;
     }
 
@@ -135,11 +131,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     //    virtual void setModelImage(const std::unique_ptr<hpg::GridValueArray> HPGModelImage) {HPGModelImage_p = HPGModelImage;}
     virtual void setModelImage(const std::string& HPGModelImageName) {HPGModelImageName_p = HPGModelImageName;}
-    virtual void setModelImage(std::shared_ptr<casacore::ImageInterface<casacore::Complex> > modelim) ;
 
     //    virtual void sendModelImage(const std::unique_ptr<hpg::GridValueArray>& HPGModelImage)
-    virtual bool sendModelImage(const std::array<unsigned, 4>& gridSize);
+    virtual bool sendModelImage(const std::string& HPGModelImageName,
+				const std::array<unsigned, 4>& gridSize);
 
+    virtual void saveGriddedData(const std::string& name,const casacore::CoordinateSystem& csys);
     //
     //---------------------------------------------------------------------------------------------------------------------
     // These specialized methods reterive the products from the external Device and do the necessary finalization for it.
@@ -155,53 +152,60 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     };
     //---------------------------------------------------------------------------------------------------------------------
 
-    virtual void initGridder(const uInt& NProcs,
-			     const hpg::CFArray* cfArray_ptr,
-			     const std::array<unsigned, 4>& grid_size,
-			     const std::array<float, 2>& grid_scale);
+    std::tuple<hpg::opt_t<hpg::Error>, hpg::CFSimpleIndexer>
+    loadCF(VBStore& vbs, Int& nGridPol, Int& nDataPol,
+	   Vector<Int>& wNdxList, Vector<Int>& spwNdxList,
+	   bool send_to_device=false);
 
-  template <unsigned N>
-  hpg::Gridder* initGridder2(const hpg::Device HPGDevice_l,
-			     const uInt& NProcs,
-			     const hpg::CFArray* cfArray_ptr,
-			     const std::array<unsigned, 4>& grid_size,
-			     const std::array<double, 2>& grid_scale,
-			     const PolMapType& mNdx,
-			     const PolMapType& mVals,
-			     const PolMapType& conjMNdx,
-			     const PolMapType& conjMVals,
-			     const int& nAntenna,
-			     const int& nChannel
-			     // std::vector<std::array<int, N> > mueller_indexes,
-			     // std::vector<std::array<int, N> > conjugate_mueller_indexes
-			     );
+    virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer cfsi) {cfsi_p = cfsi; return cfsi_p;}
+    virtual bool set_cf(casa::refim::MyCFArray& cfArray)// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    {
+      cfArray_p = cfArray;
 
-    //    hpg::CFSimpleIndexer loadCFOld(VBStore& vbs, Int& nGridPol, Int& nDataPol, bool send_to_device=false);
-    //    hpg::CFSimpleIndexer loadCF(VBStore& vbs, Int& nGridPol, Int& nDataPol, bool send_to_device=false);
-    std::tuple<hpg::opt_t<hpg::Error>, hpg::CFSimpleIndexer> loadCF(VBStore& vbs, Int& nGridPol, Int& nDataPol,
-								    Vector<Int>& wNdxList, Vector<Int>& spwNdxList,
-								    bool send_to_device=false);
-    std::tuple<hpg::opt_t<hpg::Error>, hpg::CFSimpleIndexer> loadCF(casacore::CountedPtr<casa::refim::CFBuffer>& cfb,
-								    VBStore& vbs, Int& nGridPol, Int& nDataPol,
-								    Vector<Int>& wNdxList, Vector<Int>& spwNdxList,
-								    bool send_to_device=false);
+      // auto err=hpgGridder_p->set_convolution_function(hpg::Device::OpenMP, std::move(cfArray));
+      // if (err)
+      // 	{
+      // 	  throw(AipsError("Error in AWVRHPG::set_cf()"));
+      // 	}
 
+      return true;
+    }  
+    virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& dcfArray)// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    {
+      dcf_ptr_p = dcfArray;
+      return (dcf_ptr_p!=NULL);
+    }
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& rwdcfArray)// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    {
+      rwdcf_ptr_p = rwdcfArray;
+      return (rwdcf_ptr_p!=NULL);
+    }
     virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const override;
     virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const override;
+    bool createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
+		   const int& nVBAntenna, const int& nVBChannels,
+		   const PolMapType& mVals,  const PolMapType& mNdx,
+		   const PolMapType& conjMVals, const PolMapType& conjMNdx);
     //
     //------------------------------------------------------------------------------
     //
-    // Re-sample VisBuffer to a regular grid (griddedData) (a.k.a. de-gridding)
-    //
-
   protected:
     hpg::Gridder* hpgGridder_p;
     template <class T>
     void DataToGridImpl_p(casacore::Array<T>& griddedData, VBStore& vb,
-			  casacore::Matrix<casacore::Double>& sumwt,const casacore::Bool& dopsf,
+			  casacore::Matrix<casacore::Double>& sumwt,const casacore::Bool& /*dopsf*/,
 			  casacore::Bool /*useConjFreqCF*/);
+    //
+    // Retrieve the gridded data from the device.  The grid from the
+    // device is in DP and is converted OTF to the target type.
+    //
+    template <class T>
+    void getGriddedData(casacore::Array<T>& griddedData);
+    void GridToData(VBStore& vbs,const casacore::Array<casacore::Complex>& griddedData);
+    //    casacore::Cube<casacore::Complex>& GridToData_p(VBStore& vbs,const casacore::Array<casacore::Complex>& griddedData); 
 
-    MyCFArray cfArray;
+    std::tuple<bool, CountedPtr<CFBuffer>>
+    initializeHPG(VBStore& vbs, const IPosition& gridShape);
 
     std::vector<std::complex<hpg::visibility_fp>> vis;
     std::vector<unsigned> grid_cubes, cf_cubes;
@@ -210,20 +214,20 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::vector<hpg::cf_phase_gradient_t> cf_phase_screens;
     std::vector<hpg::vis_phase_fp> hpgPhases;
     std::vector<hpg::vis_uvw_t> visUVW;
-    //    uInt hpgCFInit;
     uInt nVBS_p, maxVBList_p;
     Int cachedVBSpw_p;
-    //    Vector<casa::refim::VBStoreHPG> vbsList_p;
     std::vector < std::vector<hpg::VisData<HPGNPOL> > > hpgVBList_p;
-    //std::unique_ptr<hpg::GridValueArray> HPGModelImage_p;
     std::string HPGModelImageName_p;
     sumofweight_fp hpgSoW_p;
     hpg::Device HPGDevice_p;
     bool isHPGCustodian_p;
     hpg::CFSimpleIndexer cfsi_p;
-    casacore::CountedPtr<ImageInterface<Complex> > modelImage_p;
+    casa::refim::MyCFArray cfArray_p;
+    std::shared_ptr<hpg::DeviceCFArray> dcf_ptr_p;
+    std::shared_ptr<hpg::RWDeviceCFArray> rwdcf_ptr_p;
+    std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
+    std::chrono::duration<double> mkHPGVB_duration;
   };
   }; //# NAMESPACE CASA - END
 };
-#endif //USE_HPG
-#endif // include guard
+#endif //
