@@ -111,9 +111,31 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap) {(void)cfMap;(void)conjCFMap;};
     virtual void setPATolerance(const double& dPA) {paTolerance_p = dPA;};
     virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer /*cfsi*/) {return hpg::CFSimpleIndexer({1,false},{1,false},{1,true},{1,true}, 1);}
-    virtual bool set_cf(casa::refim::MyCFArray& /*cfArray*/) {return false;}  // Can't figure out how to create hpg::opt_t<hpg::Error> to return!
-    virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& /*dcfArray*/) {return false;}// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
-    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& /*rwdcfArray*/) {return false;}// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+
+    // Following functions exist so that AWVR does not need a change
+    // and AWVRHPG related classes are forced (at runtime though) to
+    // implement these methods.
+    //
+    // SB Can't figure out how to create hpg::opt_t<hpg::Error> to
+    // return!
+    virtual bool set_cf(casa::refim::MyCFArray& /*cfArray*/)
+    {
+      throw(AipsError("Internal Error: VisibilityResampler.h::set_cf(MyCFArray&) called. "
+		     "This call should go to a HPG-based inhereted class."));
+      return false;
+    }
+    virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& /*dcfArray*/)
+    {
+      throw(AipsError("Internal Error: VisibilityResampler.h::set_cf(DeviceCFArray&) called. "
+		     "This call should go to a HPG-based inhereted class."));
+      return false;
+    }
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& /*rwdcfArray*/)
+    {
+      throw(AipsError("Internal Error: VisibilityResampler.h::set_cf(RWDeviceCFArray&) called. "
+		     "This call should go to a HPG-based inhereted class."));
+      return false;
+    }
     //
     //------------------------------------------------------------------------------
     //

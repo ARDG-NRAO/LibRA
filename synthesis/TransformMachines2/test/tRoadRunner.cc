@@ -1040,6 +1040,14 @@ int main(int argc, char **argv)
       }
   }
 
+  LogFilter filter(isRoot ? LogMessage::NORMAL : LogMessage::WARN);
+  LogSink::globalSink().filter(filter);
+  LogIO log_l(LogOrigin("roadrunner","main"));
+
+  // The scope below has the scientific code. That's where runtime
+  // exceptions will happen.  So enclose it in a try-catch clause.
+  try
+    {
   //-------------------------------------------------------------------
   // Load the selected MS.  The original ms (thems), the selected
   // MS and the MSSelection objects are modified.  The selected
@@ -1050,9 +1058,6 @@ int main(int argc, char **argv)
   //	String msname=MSNBuf;
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
-  LogFilter filter(isRoot ? LogMessage::NORMAL : LogMessage::WARN);
-  LogSink::globalSink().filter(filter);
-  LogIO log_l(LogOrigin("roadrunner","main"));
   log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
         << "setting up data iterators...all that boring stuff."
         << LogIO::POST;
@@ -1537,4 +1542,9 @@ int main(int argc, char **argv)
   log_l << "...done" << LogIO::POST;
   tpl_finalize();
   return result;
+    }
+  catch(AipsError& er)
+    {
+      log_l << er.what() << LogIO::SEVERE;
+    }
 }
