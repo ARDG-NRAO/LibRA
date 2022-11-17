@@ -1020,7 +1020,6 @@ int main(int argc, char **argv)
   // -------------------------------------- End of UI -------------------------------------------------------------------
   //
 
-  int result = 0;
   Timer timer;
   double griddingTime=0;
 
@@ -1048,453 +1047,453 @@ int main(int argc, char **argv)
   // exceptions will happen.  So enclose it in a try-catch clause.
   try
     {
-  //-------------------------------------------------------------------
-  // Load the selected MS.  The original ms (thems), the selected
-  // MS and the MSSelection objects are modified.  The selected
-  // list of SPW and FIELD IDs are returned as a std::tuple.
-  //
-  MSSelection msSelection;
-  MS theMS, selectedMS;
-  //	String msname=MSNBuf;
-  Vector<int> spwidList, fieldidList;
-  Vector<double> spwRefFreqList;
-  log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
-        << "setting up data iterators...all that boring stuff."
-        << LogIO::POST;
-  auto lists = loadMS(MSNBuf,
-                      spwStr,
-                      fieldStr,
-                      uvDistStr,
-                      theMS,
-                      selectedMS,
-                      msSelection);
-  spwidList=std::get<0>(lists);
-  fieldidList=std::get<1>(lists);
+      //-------------------------------------------------------------------
+      // Load the selected MS.  The original ms (thems), the selected
+      // MS and the MSSelection objects are modified.  The selected
+      // list of SPW and FIELD IDs are returned as a std::tuple.
+      //
+      MSSelection msSelection;
+      MS theMS, selectedMS;
+      //	String msname=MSNBuf;
+      Vector<int> spwidList, fieldidList;
+      Vector<double> spwRefFreqList;
+      log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
+	    << "setting up data iterators...all that boring stuff."
+	    << LogIO::POST;
+      auto lists = loadMS(MSNBuf,
+			  spwStr,
+			  fieldStr,
+			  uvDistStr,
+			  theMS,
+			  selectedMS,
+			  msSelection);
+      spwidList=std::get<0>(lists);
+      fieldidList=std::get<1>(lists);
 
-  if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
-    doSPWDataIter=true;  // Allow user to override the decision
+      if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
+	doSPWDataIter=true;  // Allow user to override the decision
 
-  //  log_l << "No. of rows selected: " << msInflationFactor * selectedMS.nrow() << LogIO::POST;
-  log_l << "No. of rows selected: " << selectedMS.nrow() << LogIO::POST;
-  MS subMS;
-  // if (ranksPerMS > 1)
-  //   {
-  //     size_t const idx = rank % ranksPerMS;
-  //     size_t const nRow = selectedMS.nrow();
-  //     size_t const minRowPerRank = nRow / ranksPerMS;
-  //     size_t const rem = nRow % ranksPerMS;
-  //     size_t const offset = idx * minRowPerRank + std::min(idx, rem);
-  //     size_t const maxRow = minRowPerRank + ((idx < rem) ? 1 : 0);
-  //     subMS = selectedMS(TableExprNode(), maxRow, offset);
-  //   }
-  // else
-    {
-      subMS = selectedMS;
-    }
-
-  //
-  //-------------------------------------------------------------------
-  //
-
-  //-------------------------------------------------------------------
-  // Set up the data iterator
-  //
-  float timeSpan=10.0;
-  Block<Int> sortCols;
-  if (doSPWDataIter)
-    {
-      sortCols.resize(4);
-      sortCols[0]=MS::ARRAY_ID;
-      sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
-      sortCols[2]=MS::FIELD_ID;
-      sortCols[3]=MS::TIME;
-      timeSpan=100000.0;
-    }
-  //
-  // Construct the vis iterator Vi2.  Set up the frequency selection
-  // in it.  Freq. selection is a two-part process.  The SPW level
-  // selection is done at the MS level (i.e., the subMS has only the
-  // selected SPWs in it).  The selection of frequency channels
-  // *within* each selected SPW is done in the Vi2 below.
-  //
-  // The weight scheme is also set up in the Vi2 via the weightor()
-  // call after making the empty sky images below.
-  //
-  vi2_g = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
-
-  // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
-  // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
-  // vi2_cfsrvr->originChunks();
-  // vi2_cfsrvr->origin();
-  // cerr << "First SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
-  {
-    Matrix<Double> freqSelection= msSelection.getChanFreqList(NULL,true);
-    //      vi2_g.setInterval(50.0);
-
-    FrequencySelectionUsingFrame fsel(MFrequency::Types::LSRK);
-    for(unsigned i=0;i<freqSelection.shape()(0); i++)
-      fsel.add(freqSelection(i,0), freqSelection(i,1), freqSelection(i,2));
-    vi2_g->setFrequencySelection (fsel);
-  }
-  // 
-  // Rebuild the spwList using the MS iterator.  This will get the actual SPW IDs in the MS,
-  // rather than rely on getting this info. from the sub-tables (since the latter aren't always
-  // made consistent with the main-table (this is not a deficiency of the MS structure)).  This
-  // may be a tad slower in the absolute sense, specially for large monolith MSes.  In a relative
-  // sense, its cost will remain insignificant for more imaging cases.
-  //
-  {
-    log_l << "Getting SPW ID list using VI..." << LogIO::POST;
-    std::vector<int> vb_SPWIDList;
-    vb_g=vi2_g->getVisBuffer();
-    vi2_g->originChunks();
-    for (vi2_g->originChunks();vi2_g->moreChunks(); vi2_g->nextChunk())
+      //  log_l << "No. of rows selected: " << msInflationFactor * selectedMS.nrow() << LogIO::POST;
+      log_l << "No. of rows selected: " << selectedMS.nrow() << LogIO::POST;
+      MS subMS;
+      // if (ranksPerMS > 1)
+      //   {
+      //     size_t const idx = rank % ranksPerMS;
+      //     size_t const nRow = selectedMS.nrow();
+      //     size_t const minRowPerRank = nRow / ranksPerMS;
+      //     size_t const rem = nRow % ranksPerMS;
+      //     size_t const offset = idx * minRowPerRank + std::min(idx, rem);
+      //     size_t const maxRow = minRowPerRank + ((idx < rem) ? 1 : 0);
+      //     subMS = selectedMS(TableExprNode(), maxRow, offset);
+      //   }
+      // else
       {
-  	vi2_g->origin(); // So that the global vb is valid
-  	vb_SPWIDList.push_back(vb_g->spectralWindows()(0));
+	subMS = selectedMS;
       }
 
-    log_l << "Done with SPWID list determination" << LogIO::POST;
-    spwidList.resize(vb_SPWIDList.size());
-    for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
-  }
+      //
+      //-------------------------------------------------------------------
+      //
 
-  cerr << "Selected SPW ID list: " << spwidList << endl;
-  // Global VB (seems to be needed for multi-threading)
-  vb_g=vi2_g->getVisBuffer();
+      //-------------------------------------------------------------------
+      // Set up the data iterator
+      //
+      float timeSpan=10.0;
+      Block<Int> sortCols;
+      if (doSPWDataIter)
+	{
+	  sortCols.resize(4);
+	  sortCols[0]=MS::ARRAY_ID;
+	  sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
+	  sortCols[2]=MS::FIELD_ID;
+	  sortCols[3]=MS::TIME;
+	  timeSpan=100000.0;
+	}
+      //
+      // Construct the vis iterator Vi2.  Set up the frequency selection
+      // in it.  Freq. selection is a two-part process.  The SPW level
+      // selection is done at the MS level (i.e., the subMS has only the
+      // selected SPWs in it).  The selection of frequency channels
+      // *within* each selected SPW is done in the Vi2 below.
+      //
+      // The weight scheme is also set up in the Vi2 via the weightor()
+      // call after making the empty sky images below.
+      //
+      vi2_g = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
 
-  //
-  //-------------------------------------------------------------------
-  // Make the empty grid with the sky image coordinates
-  //
-  Vector<Int> imSize(2,NX);
-  String mode="mfs", startModelImageName="";
+      // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
+      // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
+      // vi2_cfsrvr->originChunks();
+      // vi2_cfsrvr->origin();
+      // cerr << "First SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
+      {
+	Matrix<Double> freqSelection= msSelection.getChanFreqList(NULL,true);
+	//      vi2_g.setInterval(50.0);
 
-  // casacore::MDirection pc;
-  // Int pcField = casa::refim::getPhaseCenter(selectedMS,pc);
-  // std::ostringstream oss;
-  // pc.print(oss);
-  //      cerr << "PC = " << oss << endl;
+	FrequencySelectionUsingFrame fsel(MFrequency::Types::LSRK);
+	for(unsigned i=0;i<freqSelection.shape()(0); i++)
+	  fsel.add(freqSelection(i,0), freqSelection(i,1), freqSelection(i,2));
+	vi2_g->setFrequencySelection (fsel);
+      }
+      // 
+      // Rebuild the spwList using the MS iterator.  This will get the actual SPW IDs in the MS,
+      // rather than rely on getting this info. from the sub-tables (since the latter aren't always
+      // made consistent with the main-table (this is not a deficiency of the MS structure)).  This
+      // may be a tad slower in the absolute sense, specially for large monolith MSes.  In a relative
+      // sense, its cost will remain insignificant for more imaging cases.
+      //
+      {
+	log_l << "Getting SPW ID list using VI..." << LogIO::POST;
+	std::vector<int> vb_SPWIDList;
+	vb_g=vi2_g->getVisBuffer();
+	vi2_g->originChunks();
+	for (vi2_g->originChunks();vi2_g->moreChunks(); vi2_g->nextChunk())
+	  {
+	    vi2_g->origin(); // So that the global vb is valid
+	    vb_SPWIDList.push_back(vb_g->spectralWindows()(0));
+	  }
 
-  PagedImage<Complex> cgrid=makeEmptySkyImage(*vi2_g, selectedMS, msSelection,
-                                              cmplxGridName, startModelImageName,
-                                              imSize, cellSize, phaseCenter,
-                                              stokes, refFreqStr, mode);
-  PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
+	log_l << "Done with SPWID list determination" << LogIO::POST;
+	spwidList.resize(vb_SPWIDList.size());
+	for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
+      }
 
-  cgrid.table().markForDelete();
+      cerr << "Selected SPW ID list: " << spwidList << endl;
+      // Global VB (seems to be needed for multi-threading)
+      vb_g=vi2_g->getVisBuffer();
 
-  // Setup the weighting scheme in the supplied VI2
-  weightor(*vi2_g,
-           cgrid.coordinates(), // CSys of the sky image
-           cgrid.shape(),       // X-Y shape of the sky image
-           weighting,
-           rmode,
-           casacore::Quantity(0.0, "Jy"),  // noise
-           robust);
+      //
+      //-------------------------------------------------------------------
+      // Make the empty grid with the sky image coordinates
+      //
+      Vector<Int> imSize(2,NX);
+      String mode="mfs", startModelImageName="";
 
-  // remove all images except the reduced one on the root rank
-  if (!isRoot)
-    skyImage.table().markForDelete();
+      // casacore::MDirection pc;
+      // Int pcField = casa::refim::getPhaseCenter(selectedMS,pc);
+      // std::ostringstream oss;
+      // pc.print(oss);
+      //      cerr << "PC = " << oss << endl;
 
-  StokesImageUtil::From(cgrid, skyImage);
-  if(vb_g->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
-  else StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
+      PagedImage<Complex> cgrid=makeEmptySkyImage(*vi2_g, selectedMS, msSelection,
+						  cmplxGridName, startModelImageName,
+						  imSize, cellSize, phaseCenter,
+						  stokes, refFreqStr, mode);
+      PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
 
-  //-------------------------------------------------------------------
-  // Create the AWP FTMachine.  The AWProjectionFT is construed
-  // with the re-sampler depending on the ftmName (AWVisResampler
-  // for ftmName='awproject' or AWVisResamplerHPG for
-  // ftmName='awphpg')
-  //
-  MPosition loc;
-  MeasTable::Observatory(loc, MSColumns(subMS).observation().telescopeName()(0));
-  Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
+      cgrid.table().markForDelete();
 
-  auto ret = 
-  createAWPFTMachine(ftmName, modelImageName, ftm_g,
-                     String("EVLA"),
-                     loc, cfCache,
-                     //cfBufferSize, cfOversampling,
-                     WBAwp,nW,
-                     useDoublePrec,
-                     aTermOn,
-                     psTermOn,
-                     mTermOn,
-                     doPointing,
-                     doPBCorr,
-                     conjBeams,
-                     pbLimit,
-                     posigdev,
-                     imageNamePrefix,
-		     imagingMode
-		     );
-  CountedPtr<refim::CFCache>  cfc = get<0>(ret);
-  CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
-  {
-    Matrix<Double> mssFreqSel;
-    mssFreqSel  = msSelection.getChanFreqList(NULL,true);
-    // Send in Freq info.
-    ftm_g->setSpwFreqSelection( mssFreqSel );
+      // Setup the weighting scheme in the supplied VI2
+      weightor(*vi2_g,
+	       cgrid.coordinates(), // CSys of the sky image
+	       cgrid.shape(),       // X-Y shape of the sky image
+	       weighting,
+	       rmode,
+	       casacore::Quantity(0.0, "Jy"),  // noise
+	       robust);
 
-    doPSF=(ftm_g->ftmType()==casa::refim::FTMachine::PSF);
-  }
+      // remove all images except the reduced one on the root rank
+      if (!isRoot)
+	skyImage.table().markForDelete();
 
-  //-------------------------------------------------------------------
-  // Iterate over the MS, trigger the gridding.
-  //
-  cgrid.set(Complex(0.0));
-  Matrix<Float> weight;
-  vi2_g->originChunks();
-  vi2_g->origin();
+      StokesImageUtil::From(cgrid, skyImage);
+      if(vb_g->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
+      else StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
 
-  // If no normalization is requested, AWProjectWBFT should not grid
-  // for .weight image.
-  //
-  // This de-couples calculations for .weight, .psf, .residual, which
-  // can now be done independently and in any order.
-  //
-  // The run for .residual image also save the sumwt image, since that
-  // matches what production CASA does.  Which SoW out of .weight,
-  // .psf, or .residual runs is the appropriate one is unresolved.
-  // Probably all should be used, but this needs to be carefully
-  // worked out.
-  if (!normalize) ftm_g->setPBReady(true);
+      //-------------------------------------------------------------------
+      // Create the AWP FTMachine.  The AWProjectionFT is construed
+      // with the re-sampler depending on the ftmName (AWVisResampler
+      // for ftmName='awproject' or AWVisResamplerHPG for
+      // ftmName='awphpg')
+      //
+      MPosition loc;
+      MeasTable::Observatory(loc, MSColumns(subMS).observation().telescopeName()(0));
+      Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
 
-  if (imagingMode=="predict")
-    ftm_g->initializeToVis(cgrid,*vb_g);
-  else
-    ftm_g->initializeToSky(cgrid, weight, *vb_g);
+      auto ret = 
+	createAWPFTMachine(ftmName, modelImageName, ftm_g,
+			   String("EVLA"),
+			   loc, cfCache,
+			   //cfBufferSize, cfOversampling,
+			   WBAwp,nW,
+			   useDoublePrec,
+			   aTermOn,
+			   psTermOn,
+			   mTermOn,
+			   doPointing,
+			   doPBCorr,
+			   conjBeams,
+			   pbLimit,
+			   posigdev,
+			   imageNamePrefix,
+			   imagingMode
+			   );
+      CountedPtr<refim::CFCache>  cfc = get<0>(ret);
+      CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
+      {
+	Matrix<Double> mssFreqSel;
+	mssFreqSel  = msSelection.getChanFreqList(NULL,true);
+	// Send in Freq info.
+	ftm_g->setSpwFreqSelection( mssFreqSel );
 
-  // barrier needed for accurate elapsed time measurement
-  // mpi_barrier(MPI_COMM_WORLD);
-  timer.mark();
+	doPSF=(ftm_g->ftmType()==casa::refim::FTMachine::PSF);
+      }
 
-  CountedPtr<casa::refim::CFStore2> cfs2_l;
-  if (!cfc.null())
-    {
-      if (doPSF || (imagingMode=="weight"))
-	cfs2_l =  CountedPtr<casa::refim::CFStore2>(&cfc->memCacheWt2_p[0],false);//new CFStore2;
+      //-------------------------------------------------------------------
+      // Iterate over the MS, trigger the gridding.
+      //
+      cgrid.set(Complex(0.0));
+      Matrix<Float> weight;
+      vi2_g->originChunks();
+      vi2_g->origin();
+
+      // If no normalization is requested, AWProjectWBFT should not grid
+      // for .weight image.
+      //
+      // This de-couples calculations for .weight, .psf, .residual, which
+      // can now be done independently and in any order.
+      //
+      // The run for .residual image also save the sumwt image, since that
+      // matches what production CASA does.  Which SoW out of .weight,
+      // .psf, or .residual runs is the appropriate one is unresolved.
+      // Probably all should be used, but this needs to be carefully
+      // worked out.
+      if (!normalize) ftm_g->setPBReady(true);
+
+      if (imagingMode=="predict")
+	ftm_g->initializeToVis(cgrid,*vb_g);
       else
-	cfs2_l = CountedPtr<casa::refim::CFStore2>(&(cfc->memCache2_p)[0],false);//new CFStore2;
-    }
+	ftm_g->initializeToSky(cgrid, weight, *vb_g);
 
-  Vector<int> chanMap, polMap;
-  visResampler->getMaps(chanMap, polMap);
-  int nGridPlanes = skyImage.shape()[2]; 
-  PolMapType mndx, conj_mndx;
-  {
-    auto ret = makeMNdx(std::string("stokesI.mndx"), polMap, nGridPlanes);
-    mndx      = std::get<0>(ret);
-    conj_mndx = std::get<1>(ret);
+      // barrier needed for accurate elapsed time measurement
+      // mpi_barrier(MPI_COMM_WORLD);
+      timer.mark();
 
-    auto prt = [](std::string tag, PolMapType& p) -> void
-	       {
-		 cerr << tag << endl;
-		 for( auto row : p)
+      CountedPtr<casa::refim::CFStore2> cfs2_l;
+      if (!cfc.null())
+	{
+	  if (doPSF || (imagingMode=="weight"))
+	    cfs2_l =  CountedPtr<casa::refim::CFStore2>(&cfc->memCacheWt2_p[0],false);//new CFStore2;
+	  else
+	    cfs2_l = CountedPtr<casa::refim::CFStore2>(&(cfc->memCache2_p)[0],false);//new CFStore2;
+	}
+
+      Vector<int> chanMap, polMap;
+      visResampler->getMaps(chanMap, polMap);
+      int nGridPlanes = skyImage.shape()[2]; 
+      PolMapType mndx, conj_mndx;
+      {
+	auto ret = makeMNdx(std::string("stokesI.mndx"), polMap, nGridPlanes);
+	mndx      = std::get<0>(ret);
+	conj_mndx = std::get<1>(ret);
+
+	auto prt = [](std::string tag, PolMapType& p) -> void
 		   {
-		     for (auto col : row) cerr << col << " ";
-		     cerr << endl;
-		   }
-	       };
-    prt(std::string("mndx:"),mndx);
-    prt(std::string("cmndx:"),conj_mndx);
-  }
+		     cerr << tag << endl;
+		     for( auto row : p)
+		       {
+			 for (auto col : row) cerr << col << " ";
+			 cerr << endl;
+		       }
+		   };
+	prt(std::string("mndx:"),mndx);
+	prt(std::string("cmndx:"),conj_mndx);
+      }
 
-  int nDataPol;
-  // Extract SPW ref. frequency and the number of polarizations in the
-  // data (nDataPol).
-  {
-    vi2_g->originChunks();
-    vi2_g->origin();
-    spwRefFreqList.assign(vb_g->subtableColumns().spectralWindow().refFrequency().getColumn());
-    nDataPol  = vb_g->flagCube().shape()[0];
-  }
-  //
-  // Finally, the data iteration loops.
-  //-----------------------------------------------------------------------------------
-  double griddingEngine_time=0;
-  unsigned long vol=0;
-  ProgressMeter pm(1.0, vi2_g->ms().nrow(),
-		   "Gridding", "","","",true);
-  DataIterator di(isRoot);
+      int nDataPol;
+      // Extract SPW ref. frequency and the number of polarizations in the
+      // data (nDataPol).
+      {
+	vi2_g->originChunks();
+	vi2_g->origin();
+	spwRefFreqList.assign(vb_g->subtableColumns().spectralWindow().refFrequency().getColumn());
+	nDataPol  = vb_g->flagCube().shape()[0];
+      }
+      //
+      // Finally, the data iteration loops.
+      //-----------------------------------------------------------------------------------
+      double griddingEngine_time=0;
+      unsigned long vol=0;
+      ProgressMeter pm(1.0, vi2_g->ms().nrow(),
+		       "Gridding", "","","",true);
+      DataIterator di(isRoot);
       
-  if (ftm_g->name() != "AWProjectWBFTHPG")
-    {
-      // auto waitForCFReady = [](int&, int&){}; // NoOp
-      // auto notifyCFSent   = [](const int&){}; //NoOp
-      auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode);
-      griddingEngine_time += std::get<2>(ret);
-      vol+= std::get<1>(ret);
-    }
-  else // if (ftm_g->name()=="AWProjectWBFTHPG")
-    {
-      casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
-      ThreadCoordinator thcoord;
-      thcoord.newCF=false;
-
-      // Start the CFServer thread.
-      auto cfPrep = std::async(&CFServer,
-			       std::ref(thcoord),
-			       std::ref(mkCF),
-			       std::ref(WBAwp), std::ref(nW),
-			       std::ref(skyImage),
-			       std::ref(polMap),
-			       std::ref(cfs2_l),
-			       std::ref(spwidList),
-			       std::ref(spwRefFreqList),
-			       std::ref(nDataPol));
-
-      // First set of CFs have to be ready before proceeding. The
-      // ThreadCoordinator state after this remains CFReady=true,
-      // since the call to .waitForCFReady_or_EoD() in the
-      // DataIterator should immediately return.  The CFReady state is
-      // reset in the lambda function code passed to the DataIterator
-      // for thread coordination.
-      thcoord.waitForCFReady_or_EoD();
-
-      //-------------------------------------------------------------------------------------------
-      // Lambda functions with the code to coordinate the two threads
-      // via the data iteration loops in the DataIterator object.  The
-      // following functions assume that the MS iteraters over the SPW
-      // axis.
-      //
-      // If the VB has a new SPW ID, increment the index into the list
-      // of the selected SPW IDs, and wait for CFReady signal from the
-      // CFServer thread. Once that is received, send the current CFSI
-      // and DeviceCFArray to the visResampler. This function is used
-      // in the chunk iterations of VI2.  When this returns,
-      // VisResampler is ready for gridding, which is then triggered.
-      // That in-turn first sends the current DeviceCFArray to the
-      // device and issues the CFSent signal via a call to the
-      // notifyCFSent() function.  This unblocks the CFServe thread,
-      // which proceeds to load the next CF set.
-      //
-      auto waitForCFReady =
-	[&thcoord, &spwidList, &visResampler](int& nVB, int& spwNdx)
+      if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
-	    {
-	      nVB=0;    // Reset the VB count for the new SPW
-	      spwNdx++; // Advance the SPW ID counter
-	      //
-	      // At this point the internal state of the
-	      // ThreadCoordinator object remains CFReady=True from an
-	      // earlier call to thcoord.waitForCFReady_or_EoD(), soon
-	      // after starting the CFServer thread
-	      // (std::async(&CFServer,...).  This earlier call is to
-	      // make sure that the code does not proceed to using the
-	      // data iterators till the first CFs are loaded and
-	      // ready for use in the memory.
-	      //
-	      // .setCFReady(false) explicitly sets the internal state
-	      // of the ThreadCoordinator object to CFReady=false.
-	      //
-	      thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
-	      thcoord.setCFReady(false);
-	    }
-	  if (thcoord.newCF)
-	    {
-	      visResampler->setCFSI(cfsi_g);
-
-	      if (visResampler->set_cf(dcfa_sptr_g)==false)
-		throw(AipsError("Device CFArray pointer is null in CFServer"));
-	    }
-	};
-      //-------------------------------------------------------------------------------------------
-      auto notifyCFSent =
-	[&thcoord](const int& nVB)
+	  // auto waitForCFReady = [](int&, int&){}; // NoOp
+	  // auto notifyCFSent   = [](const int&){}; //NoOp
+	  auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode);
+	  griddingEngine_time += std::get<2>(ret);
+	  vol+= std::get<1>(ret);
+	}
+      else // if (ftm_g->name()=="AWProjectWBFTHPG")
 	{
-	  if ((nVB==0) && (!thcoord.isEoD()))
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
+	  ThreadCoordinator thcoord;
+	  thcoord.newCF=false;
+
+	  // Start the CFServer thread.
+	  auto cfPrep = std::async(&CFServer,
+				   std::ref(thcoord),
+				   std::ref(mkCF),
+				   std::ref(WBAwp), std::ref(nW),
+				   std::ref(skyImage),
+				   std::ref(polMap),
+				   std::ref(cfs2_l),
+				   std::ref(spwidList),
+				   std::ref(spwRefFreqList),
+				   std::ref(nDataPol));
+
+	  // First set of CFs have to be ready before proceeding. The
+	  // ThreadCoordinator state after this remains CFReady=true,
+	  // since the call to .waitForCFReady_or_EoD() in the
+	  // DataIterator should immediately return.  The CFReady state is
+	  // reset in the lambda function code passed to the DataIterator
+	  // for thread coordination.
+	  thcoord.waitForCFReady_or_EoD();
+
+	  //-------------------------------------------------------------------------------------------
+	  // Lambda functions with the code to coordinate the two threads
+	  // via the data iteration loops in the DataIterator object.  The
+	  // following functions assume that the MS iteraters over the SPW
+	  // axis.
+	  //
+	  // If the VB has a new SPW ID, increment the index into the list
+	  // of the selected SPW IDs, and wait for CFReady signal from the
+	  // CFServer thread. Once that is received, send the current CFSI
+	  // and DeviceCFArray to the visResampler. This function is used
+	  // in the chunk iterations of VI2.  When this returns,
+	  // VisResampler is ready for gridding, which is then triggered.
+	  // That in-turn first sends the current DeviceCFArray to the
+	  // device and issues the CFSent signal via a call to the
+	  // notifyCFSent() function.  This unblocks the CFServe thread,
+	  // which proceeds to load the next CF set.
+	  //
+	  auto waitForCFReady =
+	    [&thcoord, &spwidList, &visResampler](int& nVB, int& spwNdx)
 	    {
-	      cerr << "gridderEngine: CFSent notification" << endl;
-	      thcoord.setCFSent(true);
-	      thcoord.newCF=false;
-	      thcoord.Notify_CFSent();
-	      dcfa_sptr_g.reset();	  
-	    }
-	};
-      //-------------------------------------------------------------------------------------------
+	      if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
+		{
+		  nVB=0;    // Reset the VB count for the new SPW
+		  spwNdx++; // Advance the SPW ID counter
+		  //
+		  // At this point the internal state of the
+		  // ThreadCoordinator object remains CFReady=True from an
+		  // earlier call to thcoord.waitForCFReady_or_EoD(), soon
+		  // after starting the CFServer thread
+		  // (std::async(&CFServer,...).  This earlier call is to
+		  // make sure that the code does not proceed to using the
+		  // data iterators till the first CFs are loaded and
+		  // ready for use in the memory.
+		  //
+		  // .setCFReady(false) explicitly sets the internal state
+		  // of the ThreadCoordinator object to CFReady=false.
+		  //
+		  thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
+		  thcoord.setCFReady(false);
+		}
+	      if (thcoord.newCF)
+		{
+		  visResampler->setCFSI(cfsi_g);
 
-      auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
-			     waitForCFReady, notifyCFSent);
+		  if (visResampler->set_cf(dcfa_sptr_g)==false)
+		    throw(AipsError("Device CFArray pointer is null in CFServer"));
+		}
+	    };
+	  //-------------------------------------------------------------------------------------------
+	  auto notifyCFSent =
+	    [&thcoord](const int& nVB)
+	    {
+	      if ((nVB==0) && (!thcoord.isEoD()))
+		{
+		  cerr << "gridderEngine: CFSent notification" << endl;
+		  thcoord.setCFSent(true);
+		  thcoord.newCF=false;
+		  thcoord.Notify_CFSent();
+		  dcfa_sptr_g.reset();	  
+		}
+	    };
+	  //-------------------------------------------------------------------------------------------
 
-      griddingEngine_time += std::get<2>(ret);
-      vol+= std::get<1>(ret);
-      // Trying to ensure that the CFServer thread gets the signal
-      // that EoD has been reached in the main thread.
-      thcoord.setEoD(true);
-      thcoord.setCFSent(true);
-      thcoord.Notify_CFSent();
-      //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
-    }
-  // End of data iteration loops
-  //-----------------------------------------------------------------------------------
+	  auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
+				 waitForCFReady, notifyCFSent);
 
-  cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
-  unsigned long allVol=vol;
-// #ifdef ROADRUNNER_USE_MPI 
-//   allVol=0;
-//   mpi_reduce(&vol, &allVol, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-// #endif
-  log_l << "Total rows processed: " << allVol << LogIO::POST;
-  {
-    // NB: to be safe, we ensure that value returned by getGridPtr()
-    // (a shared_ptr) releases its managed object as soon as we're
-    // done with it by assigning the value to a variable with block
-    // scope
-    size_t gridValuesCount;
-    auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
-    assert((size_t)((int)gridValuesCount) == gridValuesCount);
-    // mpi_reduce(
-    //   (isRoot ? MPI_IN_PLACE : gridValuesPtr.get()),
-    //   gridValuesPtr.get(),
-    //   static_cast<int>(gridValuesCount),
-    //   gridValueDatatype,
-    //   MPI_SUM,
-    //   0,
-    //   MPI_COMM_WORLD);
-    if (doSow) {
-      // NB: similar caution (as getSumWeightsPtr() value) is
-      // warranted for value returned by getGridPtr()
-      size_t gridWeightsCount;
-      auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
-      // mpi_reduce(
-      //   (isRoot ? MPI_IN_PLACE : gridWeightsPtr.get()),
-      //   gridWeightsPtr.get(),
-      //   static_cast<int>(gridWeightsCount),
-      //   gridWeightDatatype,
-      //   MPI_SUM,
-      //   0,
-      //   MPI_COMM_WORLD);
-    }
-  }
+	  griddingEngine_time += std::get<2>(ret);
+	  vol+= std::get<1>(ret);
+	  // Trying to ensure that the CFServer thread gets the signal
+	  // that EoD has been reached in the main thread.
+	  thcoord.setEoD(true);
+	  thcoord.setCFSent(true);
+	  thcoord.Notify_CFSent();
+	  //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
+	}
+      // End of data iteration loops
+      //-----------------------------------------------------------------------------------
 
-  // complete the gridding only on the root, after reduction
-  //if (isRoot && (imagingMode!="predict"))
-  if (imagingMode!="predict")
-    {
-      griddingTime += timer.real();
-      log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
+      cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
+      unsigned long allVol=vol;
+      // #ifdef ROADRUNNER_USE_MPI 
+      //   allVol=0;
+      //   mpi_reduce(&vol, &allVol, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+      // #endif
+      log_l << "Total rows processed: " << allVol << LogIO::POST;
+      {
+	// NB: to be safe, we ensure that value returned by getGridPtr()
+	// (a shared_ptr) releases its managed object as soon as we're
+	// done with it by assigning the value to a variable with block
+	// scope
+	size_t gridValuesCount;
+	auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
+	assert((size_t)((int)gridValuesCount) == gridValuesCount);
+	// mpi_reduce(
+	//   (isRoot ? MPI_IN_PLACE : gridValuesPtr.get()),
+	//   gridValuesPtr.get(),
+	//   static_cast<int>(gridValuesCount),
+	//   gridValueDatatype,
+	//   MPI_SUM,
+	//   0,
+	//   MPI_COMM_WORLD);
+	if (doSow) {
+	  // NB: similar caution (as getSumWeightsPtr() value) is
+	  // warranted for value returned by getGridPtr()
+	  size_t gridWeightsCount;
+	  auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
+	  // mpi_reduce(
+	  //   (isRoot ? MPI_IN_PLACE : gridWeightsPtr.get()),
+	  //   gridWeightsPtr.get(),
+	  //   static_cast<int>(gridWeightsCount),
+	  //   gridWeightDatatype,
+	  //   MPI_SUM,
+	  //   0,
+	  //   MPI_COMM_WORLD);
+	}
+      }
 
-      if (cmplxGridName!="")
-	visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
+      // complete the gridding only on the root, after reduction
+      //if (isRoot && (imagingMode!="predict"))
+      if (imagingMode!="predict")
+	{
+	  griddingTime += timer.real();
+	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
 
-      // Do the FFT of the grid on the device and get the grid and
-      // weights to the CPU memory.
-      //
-      // The call sequence is is
-      // AWProjectWBFT->finalizeToSky()-->AWVisResamplerHPG::finalizeToSky()-->[GPU
-      // FFT + gatherGrids()].  This gets the image to the FMT
-      // griddedData object, which is set to be the cgrid
-      // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
-      ftm_g->finalizeToSky();
+	  if (cmplxGridName!="")
+	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
 
-      // Normalize the image.  normalize=True will divide the FFT'ed 
-      // image by the weights (which is SoW)
-      //
-      //Bool normalize=false;
-      ftm_g->getImage(weight, normalize);
+	  // Do the FFT of the grid on the device and get the grid and
+	  // weights to the CPU memory.
+	  //
+	  // The call sequence is is
+	  // AWProjectWBFT->finalizeToSky()-->AWVisResamplerHPG::finalizeToSky()-->[GPU
+	  // FFT + gatherGrids()].  This gets the image to the FMT
+	  // griddedData object, which is set to be the cgrid
+	  // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
+	  ftm_g->finalizeToSky();
+
+	  // Normalize the image.  normalize=True will divide the FFT'ed 
+	  // image by the weights (which is SoW)
+	  //
+	  //Bool normalize=false;
+	  ftm_g->getImage(weight, normalize);
 
           casacore::Matrix<double> sow_dp=ftm_g->getSumWeights();
           IPosition shp=sow_dp.shape();
@@ -1510,41 +1509,41 @@ int main(int argc, char **argv)
           log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision(). 
           cerr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
 
-      // Save the SoW as an image.
-      if (doSow)
-        {
-          // Split any extension in imageName to construct a name with
-          // same base name and extension given by sowImageExt
-          std::string baseName=imageName;
-          baseName=remove_extension(imageName);
+	  // Save the SoW as an image.
+	  if (doSow)
+	    {
+	      // Split any extension in imageName to construct a name with
+	      // same base name and extension given by sowImageExt
+	      std::string baseName=imageName;
+	      baseName=remove_extension(imageName);
 
-          PagedImage<float> sowImage(sow.shape(),cgrid.coordinates(), baseName+"."+sowImageExt);
+	      PagedImage<float> sowImage(sow.shape(),cgrid.coordinates(), baseName+"."+sowImageExt);
 
-          // Not sure what this info. is about, and if it is
-          // necessary.  It is present in the SoW image written to
-          // the disk from CASA framework.
-          Record miscinfo;
-          miscinfo.define("INSTRUME", "EVLA");
-          miscinfo.define("distance", 0.0);
-          miscinfo.define("useweightimage", true);
-          sowImage.setMiscInfo(miscinfo);
-          sowImage.put(sow);
-          //storeArrayAsImage(name+".sumwt", cgrid.coordinates(), sow);
-        }
-      // Convert the skyImage (retrieved in ftm->finalizeToSky()) and
-      // convert it from Feed basis to Stokes basis.
-      StokesImageUtil::To(skyImage, cgrid);
-    }
+	      // Not sure what this info. is about, and if it is
+	      // necessary.  It is present in the SoW image written to
+	      // the disk from CASA framework.
+	      Record miscinfo;
+	      miscinfo.define("INSTRUME", "EVLA");
+	      miscinfo.define("distance", 0.0);
+	      miscinfo.define("useweightimage", true);
+	      sowImage.setMiscInfo(miscinfo);
+	      sowImage.put(sow);
+	      //storeArrayAsImage(name+".sumwt", cgrid.coordinates(), sow);
+	    }
+	  // Convert the skyImage (retrieved in ftm->finalizeToSky()) and
+	  // convert it from Feed basis to Stokes basis.
+	  StokesImageUtil::To(skyImage, cgrid);
+	}
 
-  //detach the ms for cleaning up
-  subMS = MeasurementSet();
-  selectedMS = MeasurementSet();
-  log_l << "...done" << LogIO::POST;
-  tpl_finalize();
-  return result;
+      //detach the ms for cleaning up
+      subMS = MeasurementSet();
+      selectedMS = MeasurementSet();
+      log_l << "...done" << LogIO::POST;
     }
   catch(AipsError& er)
     {
       log_l << er.what() << LogIO::SEVERE;
     }
+  tpl_finalize();
+  return 0;
 }
