@@ -110,7 +110,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     };
     virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap) {(void)cfMap;(void)conjCFMap;};
     virtual void setPATolerance(const double& dPA) {paTolerance_p = dPA;};
-    virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer /*cfsi*/) {return hpg::CFSimpleIndexer({1,false},{1,false},{1,true},{1,true}, 1);}
+    virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer /*cfsi*/)
+    {
+      throw(AipsError("Internal Error: VisibilityResampler.h::setCFSI(hpg::CFSimpleIndexer&) called. "
+		     "This call should go to a HPG-based inhereted class."));
+      return hpg::CFSimpleIndexer({1,false},{1,false},{1,true},{1,true}, 1);
+    }
 
     // Following functions exist so that AWVR does not need a change
     // and AWVRHPG related classes are forced (at runtime though) to
