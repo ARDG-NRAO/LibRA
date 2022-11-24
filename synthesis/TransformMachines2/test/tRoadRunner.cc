@@ -505,7 +505,7 @@ std::string remove_extension(const std::string& path) {
 // separate class and this code appropriate re-factored to be used as
 // an API for MPI class.  Ideally, MPI code should not be part of the
 // roadrunner (application layer) code.
-#include <synthesis/TransformMachines2/test/RR_MPI.h>
+//#include <synthesis/TransformMachines2/test/RR_MPI.h>
 //
 //-------------------------------------------------------------------------
 //
@@ -582,8 +582,8 @@ std::chrono::time_point<std::chrono::steady_clock> startTime;
 //
 void tpl_initialize(int* argc, char*** argv)
 {
-  mpi_init(argc, argv);
-  mpi_barrier(MPI_COMM_WORLD);
+  //  mpi_init(argc, argv);
+  //  mpi_barrier(MPI_COMM_WORLD);
   startTime = std::chrono::steady_clock::now();
   //hpg_initialize();
   libhpg->initialize();
@@ -1373,50 +1373,50 @@ int main(int argc, char **argv)
 	    [&thcoord, &spwidList, &visResampler](int& nVB, int& spwNdx)
 	    {
 	      if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
-		{
+	  	{
 		  nVB=0;    // Reset the VB count for the new SPW
-		  spwNdx++; // Advance the SPW ID counter
-		  //
-		  // At this point the internal state of the
-		  // ThreadCoordinator object remains CFReady=True from an
-		  // earlier call to thcoord.waitForCFReady_or_EoD(), soon
-		  // after starting the CFServer thread
-		  // (std::async(&CFServer,...).  This earlier call is to
-		  // make sure that the code does not proceed to using the
-		  // data iterators till the first CFs are loaded and
-		  // ready for use in the memory.
-		  //
-		  // .setCFReady(false) explicitly sets the internal state
-		  // of the ThreadCoordinator object to CFReady=false.
-		  //
-		  thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
-		  thcoord.setCFReady(false);
-		}
+	  	  spwNdx++; // Advance the SPW ID counter
+	  	  //
+	  	  // At this point the internal state of the
+	  	  // ThreadCoordinator object remains CFReady=True from an
+	  	  // earlier call to thcoord.waitForCFReady_or_EoD(), soon
+	  	  // after starting the CFServer thread
+	  	  // (std::async(&CFServer,...).  This earlier call is to
+	  	  // make sure that the code does not proceed to using the
+	  	  // data iterators till the first CFs are loaded and
+	  	  // ready for use in the memory.
+	  	  //
+	  	  // .setCFReady(false) explicitly sets the internal state
+	  	  // of the ThreadCoordinator object to CFReady=false.
+	  	  //
+	  	  thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
+	  	  thcoord.setCFReady(false);
+	  	}
 	      if (thcoord.newCF)
-		{
-		  visResampler->setCFSI(cfsi_g);
+	  	{
+	  	  visResampler->setCFSI(cfsi_g);
 
-		  if (visResampler->set_cf(dcfa_sptr_g)==false)
-		    throw(AipsError("Device CFArray pointer is null in CFServer"));
-		}
+	  	  if (visResampler->set_cf(dcfa_sptr_g)==false)
+	  	    throw(AipsError("Device CFArray pointer is null in CFServer"));
+	  	}
 	    };
 	  //-------------------------------------------------------------------------------------------
 	  auto notifyCFSent =
 	    [&thcoord](const int& nVB)
 	    {
 	      if ((nVB==0) && (!thcoord.isEoD()))
-		{
-		  cerr << "gridderEngine: CFSent notification" << endl;
-		  thcoord.setCFSent(true);
-		  thcoord.newCF=false;
-		  thcoord.Notify_CFSent();
-		  dcfa_sptr_g.reset();	  
-		}
+	  	{
+	  	  cerr << "gridderEngine: CFSent notification" << endl;
+	  	  thcoord.setCFSent(true);
+	  	  thcoord.newCF=false;
+	  	  thcoord.Notify_CFSent();
+	  	  dcfa_sptr_g.reset();
+	  	}
 	    };
 	  //-------------------------------------------------------------------------------------------
 
 	  auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
-				 waitForCFReady, notifyCFSent);
+	  			 waitForCFReady, notifyCFSent);
 
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);

@@ -129,14 +129,17 @@ public:
     // waitForCFSent the current CFSI (cfsi_g) and the device CFArray
     // (dcfa_sptr_g) are set for the vis resampler if a new CF set is
     // available (due to change in VB SPW ID).  The CFArray is then
-    // sent to the device via gridderEngine()(currently sent via
-    // AWVRHPG::initGridder2()!), a gridderEngine calls
-    // cfSentNotifier() function to send the CFSent signal and trigger
-    // gridding.  CFSever thread blocks till it gets the CFSent
-    // signal, after which it starts filling the DeviceCFArray with
-    // the next CF set in parallel with gridding which is always in
-    // the main thread, and issues a CFReady signal when the
-    // DeviceCFArray is ready for use.
+    // sent to the device from the waitForCFReady() lambda
+    // function. iterVB() then calls cfSentNotifier() function to send
+    // the CFSent signal after successfully triggering the gridding
+    // with the current VB and CFs on the device.  CFServer in the
+    // main thread blocks till it gets the CFSent signal, after which
+    // it starts filling the DeviceCFArray with the next CF set in
+    // parallel with gridding which is always in the main thread, and
+    // issues a CFReady signal when the DeviceCFArray is ready for
+    // use.  Gridding is triggered via the call to iterVB() of this
+    // class instance, but the call is always made from the main
+    // thread.
     //
     for (vi2->originChunks();vi2->moreChunks(); vi2->nextChunk())
       {
