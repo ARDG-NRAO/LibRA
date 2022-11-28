@@ -84,6 +84,7 @@ using namespace casacore;
 
 #include <synthesis/TransformMachines2/test/rWeightor.inc>
 #include <synthesis/TransformMachines2/test/DataIterations.h>
+#include <synthesis/TransformMachines2/test/DataBase.h>
 
 std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>>
 createAWPFTMachine(const String ftmName,
@@ -302,6 +303,23 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;dbgclgetBValp("normalize",normalize,i);
       i=1;dbgclgetBValp("spwdataiter",doSPWDataIter,i);
      EndCL();
+
+     // do some input parameter checking now.
+     string mesgs;
+     if (phaseCenter == "")
+       mesgs += "The phasecenter parameter needs to be set. ";
+
+     if (refFreqStr == "")
+       mesgs += "The reffreq parameter needs to be set. ";
+
+     if (ImSize <= 0)
+       mesgs += "The imsize parameter needs to be set to a positive finite value. ";
+
+     if (cellSize <= 0)
+       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
+
+     if (mesgs != "")
+       clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
   catch (clError x)
     {
@@ -575,7 +593,6 @@ void hpg_finalize()
 // we need a global variable to know whether the call to UI() on the
 // root rank has returned normally or called exit(), because an exit()
 // leaves a broadcast pending
-bool bcastQuitOnExit;
 std::chrono::time_point<std::chrono::steady_clock> startTime;
 //
 //-------------------------------------------------------------------------
@@ -902,6 +919,7 @@ makeMNdx(const string& fileName,
 //
 //-------------------------------------------------------------------------
 //
+bool isRoot=true;
 int main(int argc, char **argv)
 {
   //
@@ -927,94 +945,26 @@ int main(int argc, char **argv)
   Bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
 
-  // int rank;
-  // int numRanks;
-  // mpi_comm_size(MPI_COMM_WORLD, &numRanks);
-  // mpi_comm_rank(MPI_COMM_WORLD, &rank);
-  bool const isRoot = true;
-
-  // get UI parameter: load on root, then broadcast
-  // UIParams params;
-  //  if (isRoot)
     {
-      // because UI may call std::exit on root, while other ranks go
-      // straight to mpi_bcast, we track whether parameter processing
-      // completed normally through a global variable, which is used
-      // in tpl_finalize() (an exit handler) to complete the bcast if
-      // needed
-      // bcastQuitOnExit= true;
-      {
-	UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
-	   sowImageExt, cmplxGridName, NX, nW, cellSize,
-	   stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-	   ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-	   doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-	   doSPWDataIter);
-      }
+      UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+	 sowImageExt, cmplxGridName, NX, nW, cellSize,
+	 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+	 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+	 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+	 doSPWDataIter);
       set_terminate(NULL);
-      // do some input parameter checking now; return on error before
-      // bcastQuitOnExit is set to false ensures bcast completion in
-      // that cast
-      // if (phaseCenter == "")
-      //   {
-      //     cerr << "The phasecenter parameter needs to be set" << endl;
-      //     return 1;
-      //   }
-      // if (refFreqStr == "")
-      //   {
-      //     cerr << "The reffreq parameter needs to be set" << endl;
-      //     return 1;
-      //   }
-      // if (NX <= 0)
-      //   {
-      //     cerr << "The imsize parameter needs to be set to a positive finite value" << endl;
-      //     return 1;
-      //   }
-      // if (cellSize <= 0)
-      //   {
-      //     cerr << "The cellsize parameter needs to be set to a positive finite value" << endl;
-      //     return 1;
-      //   }
-
-      // UIParams rootParams(
-      // 			  MSNBuf, ftmName, cfCache, fieldStr, spwStr, uvDistStr,
-      // 			  imageName, modelImageName, cmplxGridName, phaseCenter, stokes,
-      // 			  refFreqStr, weighting, rmode, robust, sowImageExt, imagingMode,
-      // 			  cellSize, NX, nW, nIntDummy, nchanDummy, WBAwp, restartUI, doPointing,
-      // 			  normalize, doPBCorr, conjBeams, pbLimit, posigdev,
-      // 			  doSPWDataIter);
-      // params = rootParams;
     }
 
   libhpg  = (new LibHPG(ftmName=="awphpg"));
   tpl_initialize(&argc, &argv);
   //  std::atexit(tpl_finalize);
-  
-  bcastQuitOnExit = false;
-  // broadcast params
-  // mpi_bcast(&params, 1, UIParams::datatype, 0, MPI_COMM_WORLD);
-  // if (params.doQuit) // quit when root has told us to quit
 
-  // params.unpack(
-  //   MSNBuf, ftmName, cfCache, fieldStr, spwStr, uvDistStr,
-  //   imageName, modelImageName, cmplxGridName, phaseCenter, stokes,
-  //   refFreqStr, weighting, rmode, robust, sowImageExt, imagingMode,
-  //   cellSize, NX, nW, nIntDummy, nchanDummy, WBAwp, restartUI, doPointing,
-  //   normalize, doPBCorr, conjBeams, pbLimit, posigdev,
-  //   doSPWDataIter, msInflationFactor);
   bool const doSow = sowImageExt != "";
   // to prevent using the same image name by all ranks, we insert
   // substrings into the given image name that encode the rank number
   // on all ranks but the root
   string imageNamePrefix =
     imageName.substr(0, imageName.find_last_of("."));
-  //  if (!isRoot)
-    // {
-    //   string imageNameSuffix =
-    //     imageName.substr(imageName.find_last_of("."));
-    //   imageName =
-    //     imageNamePrefix + "." + std::to_string(rank) + imageNameSuffix;
-    // }
 
   //
   // -------------------------------------- End of UI -------------------------------------------------------------------
@@ -1039,7 +989,7 @@ int main(int argc, char **argv)
       }
   }
 
-  LogFilter filter(isRoot ? LogMessage::NORMAL : LogMessage::WARN);
+  LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","main"));
 
@@ -1050,117 +1000,25 @@ int main(int argc, char **argv)
       //-------------------------------------------------------------------
       // Load the selected MS.  The original ms (thems), the selected
       // MS and the MSSelection objects are modified.  The selected
-      // list of SPW and FIELD IDs are returned as a std::tuple.
+      // list of SPW and FIELD IDs are also generated.  All these are
+      // currently internal but public members of the DataBase class.
       //
       MSSelection msSelection;
       MS theMS, selectedMS;
-      //	String msname=MSNBuf;
       Vector<int> spwidList, fieldidList;
       Vector<double> spwRefFreqList;
-      log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
-	    << "setting up data iterators...all that boring stuff."
-	    << LogIO::POST;
-      auto lists = loadMS(MSNBuf,
-			  spwStr,
-			  fieldStr,
-			  uvDistStr,
-			  theMS,
-			  selectedMS,
-			  msSelection);
-      spwidList=std::get<0>(lists);
-      fieldidList=std::get<1>(lists);
 
-      if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
-	doSPWDataIter=true;  // Allow user to override the decision
 
-      //  log_l << "No. of rows selected: " << msInflationFactor * selectedMS.nrow() << LogIO::POST;
-      log_l << "No. of rows selected: " << selectedMS.nrow() << LogIO::POST;
-      MS subMS;
-      // if (ranksPerMS > 1)
-      //   {
-      //     size_t const idx = rank % ranksPerMS;
-      //     size_t const nRow = selectedMS.nrow();
-      //     size_t const minRowPerRank = nRow / ranksPerMS;
-      //     size_t const rem = nRow % ranksPerMS;
-      //     size_t const offset = idx * minRowPerRank + std::min(idx, rem);
-      //     size_t const maxRow = minRowPerRank + ((idx < rem) ? 1 : 0);
-      //     subMS = selectedMS(TableExprNode(), maxRow, offset);
-      //   }
-      // else
-      {
-	subMS = selectedMS;
-      }
+      DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
+		  doSPWDataIter);
 
-      //
-      //-------------------------------------------------------------------
-      //
-
-      //-------------------------------------------------------------------
-      // Set up the data iterator
-      //
-      float timeSpan=10.0;
-      Block<Int> sortCols;
-      if (doSPWDataIter)
-	{
-	  sortCols.resize(4);
-	  sortCols[0]=MS::ARRAY_ID;
-	  sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
-	  sortCols[2]=MS::FIELD_ID;
-	  sortCols[3]=MS::TIME;
-	  timeSpan=100000.0;
-	}
-      //
-      // Construct the vis iterator Vi2.  Set up the frequency selection
-      // in it.  Freq. selection is a two-part process.  The SPW level
-      // selection is done at the MS level (i.e., the subMS has only the
-      // selected SPWs in it).  The selection of frequency channels
-      // *within* each selected SPW is done in the Vi2 below.
-      //
-      // The weight scheme is also set up in the Vi2 via the weightor()
-      // call after making the empty sky images below.
-      //
-      vi2_g = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
-
-      // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
-      // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
-      // vi2_cfsrvr->originChunks();
-      // vi2_cfsrvr->origin();
-      // cerr << "First SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
-      {
-	Matrix<Double> freqSelection= msSelection.getChanFreqList(NULL,true);
-	//      vi2_g.setInterval(50.0);
-
-	FrequencySelectionUsingFrame fsel(MFrequency::Types::LSRK);
-	for(unsigned i=0;i<freqSelection.shape()(0); i++)
-	  fsel.add(freqSelection(i,0), freqSelection(i,1), freqSelection(i,2));
-	vi2_g->setFrequencySelection (fsel);
-      }
-      // 
-      // Rebuild the spwList using the MS iterator.  This will get the actual SPW IDs in the MS,
-      // rather than rely on getting this info. from the sub-tables (since the latter aren't always
-      // made consistent with the main-table (this is not a deficiency of the MS structure)).  This
-      // may be a tad slower in the absolute sense, specially for large monolith MSes.  In a relative
-      // sense, its cost will remain insignificant for more imaging cases.
-      //
-      {
-	log_l << "Getting SPW ID list using VI..." << LogIO::POST;
-	std::vector<int> vb_SPWIDList;
-	vb_g=vi2_g->getVisBuffer();
-	vi2_g->originChunks();
-	for (vi2_g->originChunks();vi2_g->moreChunks(); vi2_g->nextChunk())
-	  {
-	    vi2_g->origin(); // So that the global vb is valid
-	    vb_SPWIDList.push_back(vb_g->spectralWindows()(0));
-	  }
-
-	log_l << "Done with SPWID list determination" << LogIO::POST;
-	spwidList.resize(vb_SPWIDList.size());
-	for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
-      }
-
-      cerr << "Selected SPW ID list: " << spwidList << endl;
-      // Global VB (seems to be needed for multi-threading)
-      vb_g=vi2_g->getVisBuffer();
+      theMS          = MeasurementSet(db.theMS);
+      selectedMS     = MeasurementSet(db.selectedMS);
+      spwidList      = db.spwidList;
+      fieldidList    = db.fieldidList;
+      spwRefFreqList = db.spwRefFreqList;
+      vi2_g          = db.vi2_l;
+      vb_g           = db.vb_l;
 
       //
       //-------------------------------------------------------------------
@@ -1175,7 +1033,7 @@ int main(int argc, char **argv)
       // pc.print(oss);
       //      cerr << "PC = " << oss << endl;
 
-      PagedImage<Complex> cgrid=makeEmptySkyImage(*vi2_g, selectedMS, msSelection,
+      PagedImage<Complex> cgrid=makeEmptySkyImage(*vi2_g, selectedMS, db.msSelection,
 						  cmplxGridName, startModelImageName,
 						  imSize, cellSize, phaseCenter,
 						  stokes, refFreqStr, mode);
@@ -1207,7 +1065,7 @@ int main(int argc, char **argv)
       // ftmName='awphpg')
       //
       MPosition loc;
-      MeasTable::Observatory(loc, MSColumns(subMS).observation().telescopeName()(0));
+      MeasTable::Observatory(loc, MSColumns(selectedMS).observation().telescopeName()(0));
       Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
 
       auto ret = 
@@ -1232,7 +1090,7 @@ int main(int argc, char **argv)
       CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
       {
 	Matrix<Double> mssFreqSel;
-	mssFreqSel  = msSelection.getChanFreqList(NULL,true);
+	mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
 	// Send in Freq info.
 	ftm_g->setSpwFreqSelection( mssFreqSel );
 
@@ -1328,6 +1186,17 @@ int main(int argc, char **argv)
 	}
       else // if (ftm_g->name()=="AWProjectWBFTHPG")
 	{
+	  // Start the CFServer in a separate thread.  This thred does
+	  // a look-ahead for the set of CFs required and loads them
+	  // in the memory data structure needed for sending them to
+	  // the device.  All this gets done in parallel with the
+	  // gridding which is managed by the main thread (this
+	  // thread).
+	  //
+	  // Gridding/De-gridding is triggered via di.dataIter() call
+	  // below, which is modified by lambda functions supplied to
+	  // cooridinate with the CFServer thread.
+	  //
 	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
 	  ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
@@ -1371,61 +1240,61 @@ int main(int argc, char **argv)
 	  //
 	  auto waitForCFReady =
 	    [&thcoord, &spwidList, &visResampler](int& nVB, int& spwNdx)
-	    {
-	      if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
-	  	{
-		  nVB=0;    // Reset the VB count for the new SPW
-	  	  spwNdx++; // Advance the SPW ID counter
-	  	  //
-	  	  // At this point the internal state of the
-	  	  // ThreadCoordinator object remains CFReady=True from an
-	  	  // earlier call to thcoord.waitForCFReady_or_EoD(), soon
-	  	  // after starting the CFServer thread
-	  	  // (std::async(&CFServer,...).  This earlier call is to
-	  	  // make sure that the code does not proceed to using the
-	  	  // data iterators till the first CFs are loaded and
-	  	  // ready for use in the memory.
-	  	  //
-	  	  // .setCFReady(false) explicitly sets the internal state
-	  	  // of the ThreadCoordinator object to CFReady=false.
-	  	  //
-	  	  thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
-	  	  thcoord.setCFReady(false);
-	  	}
-	      if (thcoord.newCF)
-	  	{
-	  	  visResampler->setCFSI(cfsi_g);
+	      {
+		if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
+		  {
+		    nVB=0;    // Reset the VB count for the new SPW
+		    spwNdx++; // Advance the SPW ID counter
+		    //
+		    // At this point the internal state of the
+		    // ThreadCoordinator object remains CFReady=True from an
+		    // earlier call to thcoord.waitForCFReady_or_EoD(), soon
+		    // after starting the CFServer thread
+		    // (std::async(&CFServer,...).  This earlier call is to
+		    // make sure that the code does not proceed to using the
+		    // data iterators till the first CFs are loaded and
+		    // ready for use in the memory.
+		    //
+		    // .setCFReady(false) explicitly sets the internal state
+		    // of the ThreadCoordinator object to CFReady=false.
+		    //
+		    thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
+		    thcoord.setCFReady(false);
+		  }
+		if (thcoord.newCF)
+		  {
+		    visResampler->setCFSI(cfsi_g);
 
-	  	  if (visResampler->set_cf(dcfa_sptr_g)==false)
-	  	    throw(AipsError("Device CFArray pointer is null in CFServer"));
-	  	}
-	    };
-	  //-------------------------------------------------------------------------------------------
-	  auto notifyCFSent =
-	    [&thcoord](const int& nVB)
-	    {
-	      if ((nVB==0) && (!thcoord.isEoD()))
-	  	{
-	  	  cerr << "gridderEngine: CFSent notification" << endl;
-	  	  thcoord.setCFSent(true);
-	  	  thcoord.newCF=false;
-	  	  thcoord.Notify_CFSent();
-	  	  dcfa_sptr_g.reset();
-	  	}
-	    };
-	  //-------------------------------------------------------------------------------------------
+		    if (visResampler->set_cf(dcfa_sptr_g)==false)
+		      throw(AipsError("Device CFArray pointer is null in CFServer"));
+		  }
+	      };
+	      //-------------------------------------------------------------------------------------------
+	      auto notifyCFSent =
+	      [&thcoord](const int& nVB)
+	      {
+		if ((nVB==0) && (!thcoord.isEoD()))
+		  {
+		    cerr << "gridderEngine: CFSent notification" << endl;
+		    thcoord.setCFSent(true);
+		    thcoord.newCF=false;
+		    thcoord.Notify_CFSent();
+		    dcfa_sptr_g.reset();
+		  }
+	      };
+	      //-------------------------------------------------------------------------------------------
 
-	  auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
-	  			 waitForCFReady, notifyCFSent);
+	      auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
+				     waitForCFReady, notifyCFSent);
 
-	  griddingEngine_time += std::get<2>(ret);
-	  vol+= std::get<1>(ret);
-	  // Trying to ensure that the CFServer thread gets the signal
-	  // that EoD has been reached in the main thread.
-	  thcoord.setEoD(true);
-	  thcoord.setCFSent(true);
-	  thcoord.Notify_CFSent();
-	  //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
+	      griddingEngine_time += std::get<2>(ret);
+	      vol+= std::get<1>(ret);
+	      // Trying to ensure that the CFServer thread gets the signal
+	      // that EoD has been reached in the main thread.
+	      thcoord.setEoD(true);
+	      thcoord.setCFSent(true);
+	      thcoord.Notify_CFSent();
+	      //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
 	}
       // End of data iteration loops
       //-----------------------------------------------------------------------------------
@@ -1495,19 +1364,19 @@ int main(int argc, char **argv)
 	  //Bool normalize=false;
 	  ftm_g->getImage(weight, normalize);
 
-          casacore::Matrix<double> sow_dp=ftm_g->getSumWeights();
-          IPosition shp=sow_dp.shape();
+	  casacore::Matrix<double> sow_dp=ftm_g->getSumWeights();
+	  IPosition shp=sow_dp.shape();
 	  // Save .sumwt in DP
 	  // .sumwt is REQUIRED to be a float image somewhere in the CASA framework!
-          casacore::Array<float> sow(IPosition(4,shp(0),shp(1),1,1));
-          //casacore::Array<double> sow(IPosition(4,shp(0),shp(1),1,1));
+	  casacore::Array<float> sow(IPosition(4,shp(0),shp(1),1,1));
+	  //casacore::Array<double> sow(IPosition(4,shp(0),shp(1),1,1));
 
-          for (auto i=0;i<shp(0);i++)
-            for (auto j=0;j<shp(1);j++)
-              sow(IPosition(4,i,j,0,0))=sow_dp(i,j);
+	  for (auto i=0;i<shp(0);i++)
+	    for (auto j=0;j<shp(1);j++)
+	      sow(IPosition(4,i,j,0,0))=sow_dp(i,j);
 
-          log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision(). 
-          cerr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
+	  log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision(). 
+	  cerr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
 
 	  // Save the SoW as an image.
 	  if (doSow)
@@ -1534,10 +1403,9 @@ int main(int argc, char **argv)
 	  // convert it from Feed basis to Stokes basis.
 	  StokesImageUtil::To(skyImage, cgrid);
 	}
-
-      //detach the ms for cleaning up
-      subMS = MeasurementSet();
-      selectedMS = MeasurementSet();
+      // //detach the ms for cleaning up
+      // theMS = MeasurementSet();
+      // selectedMS = MeasurementSet();
       log_l << "...done" << LogIO::POST;
     }
   catch(AipsError& er)
