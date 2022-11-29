@@ -35,12 +35,50 @@
 using namespace casacore;
 using namespace std;
 
+//
+//-------------------------------------------------------------------
+//
+std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
+					     const String& spwStr,
+					     const String& fieldStr,
+					     const String& uvDistStr,
+					     MeasurementSet& thems,
+					     MeasurementSet& selectedMS,
+					     MSSelection& msSelection)
+{
+  //MeasurementSet thems;
+  if (Table::isReadable(msname))
+    thems=MeasurementSet(msname, Table::Update);
+  else
+    throw(AipsError(msname+" does exist or not readable"));
+  //
+  //-------------------------------------------------------------------
+  //
+  msSelection.setSpwExpr(spwStr);
+  //msSelection.setAntennaExpr(antStr);
+  msSelection.setFieldExpr(fieldStr);
+  msSelection.setUvDistExpr(uvDistStr);
+  selectedMS = MeasurementSet(thems);
+  Vector<int> spwid, fieldid;
+  TableExprNode exprNode=msSelection.toTableExprNode(&thems);
+  if (!exprNode.isNull())
+    {
+      selectedMS = MS(thems(exprNode));
+      // TODO: should the following statements be moved outside this
+      // block?
+      spwid=msSelection.getSpwList();
+      fieldid=msSelection.getFieldList();
+    }
+  return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
+}
+
+
 class DataBase
 {
 public:
   DataBase(const string& MSNBuf, const string& fieldStr, const string& spwStr,
-	     const string& uvDistStr, const bool& WBAwp, const int& nW,
-	     bool& doSPWDataIter):
+	   const string& uvDistStr, const bool& WBAwp, const int& nW,
+	   bool& doSPWDataIter):
     msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
   {
     LogIO log_l(LogOrigin("roadrunner","DataBase"));
@@ -106,7 +144,7 @@ public:
     // rather than rely on getting this info. from the sub-tables (since the latter aren't always
     // made consistent with the main-table (this is not a deficiency of the MS structure)).  This
     // may be a tad slower in the absolute sense, specially for large monolith MSes.  In a relative
-    // sense, its cost will remain insignificant for more imaging cases.
+    // sense, its cost will remain insignificant for most imaging cases.
     //
     {
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
@@ -131,7 +169,7 @@ public:
   //
   //-------------------------------------------------------------------
   //
- ~DataBase()
+  ~DataBase()
   {
     LogIO log_l(LogOrigin("roadrunner","~DataBase"));
     log_l << "Closing the database.  Detaching the MS for cleanup." << LogIO::POST;
@@ -139,44 +177,6 @@ public:
     theMS = MeasurementSet();
     selectedMS = MeasurementSet();
   };
-  //
-  //-------------------------------------------------------------------
-  //
-  std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
-					       const String& spwStr,
-					       const String& fieldStr,
-					       const String& uvDistStr,
-					       MeasurementSet& thems,
-					       MeasurementSet& selectedMS,
-					       MSSelection& msSelection)
-  {
-    //MeasurementSet thems;
-    if (Table::isReadable(msname))
-      thems=MeasurementSet(msname, Table::Update);
-    else
-      throw(AipsError(msname+" does exist or not readable"));
-    //
-    //-------------------------------------------------------------------
-    //
-    msSelection.setSpwExpr(spwStr);
-    //msSelection.setAntennaExpr(antStr);
-    msSelection.setFieldExpr(fieldStr);
-    msSelection.setUvDistExpr(uvDistStr);
-    selectedMS = MeasurementSet(thems);
-    Vector<int> spwid, fieldid;
-    TableExprNode exprNode=msSelection.toTableExprNode(&thems);
-    if (!exprNode.isNull())
-      {
-	selectedMS = MS(thems(exprNode));
-	// TODO: should the following statements be moved outside this
-	// block?
-	spwid=msSelection.getSpwList();
-	fieldid=msSelection.getFieldList();
-      }
-    return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
-  }
-
-
   //private:
 
   // Ideally the following could be private members with the class

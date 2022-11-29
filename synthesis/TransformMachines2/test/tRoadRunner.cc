@@ -469,42 +469,6 @@ PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
 //
 //-------------------------------------------------------------------------
 //
-std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
-					     const String& spwStr,
-					     const String& fieldStr,
-					     const String& uvDistStr,
-					     MeasurementSet& thems,
-					     MeasurementSet& selectedMS,
-					     MSSelection& msSelection)
-{
-  //MeasurementSet thems;
-  if (Table::isReadable(msname))
-    thems=MeasurementSet(msname, Table::Update);
-  else
-    throw(AipsError(msname+" does exist or not readable"));
-  //
-  //-------------------------------------------------------------------
-  //
-  msSelection.setSpwExpr(spwStr);
-  //msSelection.setAntennaExpr(antStr);
-  msSelection.setFieldExpr(fieldStr);
-  msSelection.setUvDistExpr(uvDistStr);
-  selectedMS = MeasurementSet(thems);
-  Vector<int> spwid, fieldid;
-  TableExprNode exprNode=msSelection.toTableExprNode(&thems);
-  if (!exprNode.isNull())
-    {
-      selectedMS = MS(thems(exprNode));
-      // TODO: should the following statements be moved outside this
-      // block?
-      spwid=msSelection.getSpwList();
-      fieldid=msSelection.getFieldList();
-    }
-  return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
-}
-//
-//-------------------------------------------------------------------------
-//
 std::string remove_extension(const std::string& path) {
     if (path == "." || path == "..")
         return path;
@@ -641,9 +605,7 @@ static const string defaultFtmName = "awproject";
 //
 //-------------------------------------------------------------------------
 //
-vi::VisBuffer2 *vb_g;
 //vi::VisBuffer2 *vb_cfsrvr;
-vi::VisibilityIterator2 *vi2_g;
 //vi::VisibilityIterator2 *vi2_cfsrvr;
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
@@ -722,10 +684,10 @@ void CFServer(ThreadCoordinator& thcoord,
       // thread.  This can lead to runtime issues. If this list can be
       // determined up front before starting the data iteration (which
       // uses two threads), this can be made reliable.
-      int vbSPWID=(vb_g)->spectralWindows()(0);
-      //double spwRefFreq = spwRefFreqList[vbSPWID];
       double spwRefFreq = spwRefFreqList[ispw];//spwRefFreqList[ispw];
-      cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+      // int vbSPWID=(vb_g)->spectralWindows()(0);
+      // cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+      cerr << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
       auto ret = prepCFEngine(mkCF,
 			      WBAwp, nW,
 			      //vbSPWID,
@@ -1003,8 +965,6 @@ int main(int argc, char **argv)
       // list of SPW and FIELD IDs are also generated.  All these are
       // currently internal but public members of the DataBase class.
       //
-      MSSelection msSelection;
-      MS theMS, selectedMS;
       Vector<int> spwidList, fieldidList;
       Vector<double> spwRefFreqList;
 
@@ -1012,13 +972,9 @@ int main(int argc, char **argv)
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
 		  doSPWDataIter);
 
-      theMS          = MeasurementSet(db.theMS);
-      selectedMS     = MeasurementSet(db.selectedMS);
       spwidList      = db.spwidList;
       fieldidList    = db.fieldidList;
       spwRefFreqList = db.spwRefFreqList;
-      vi2_g          = db.vi2_l;
-      vb_g           = db.vb_l;
 
       //
       //-------------------------------------------------------------------
@@ -1033,7 +989,7 @@ int main(int argc, char **argv)
       // pc.print(oss);
       //      cerr << "PC = " << oss << endl;
 
-      PagedImage<Complex> cgrid=makeEmptySkyImage(*vi2_g, selectedMS, db.msSelection,
+      PagedImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
 						  cmplxGridName, startModelImageName,
 						  imSize, cellSize, phaseCenter,
 						  stokes, refFreqStr, mode);
@@ -1042,7 +998,7 @@ int main(int argc, char **argv)
       cgrid.table().markForDelete();
 
       // Setup the weighting scheme in the supplied VI2
-      weightor(*vi2_g,
+      weightor(*(db.vi2_l),
 	       cgrid.coordinates(), // CSys of the sky image
 	       cgrid.shape(),       // X-Y shape of the sky image
 	       weighting,
@@ -1055,7 +1011,7 @@ int main(int argc, char **argv)
 	skyImage.table().markForDelete();
 
       StokesImageUtil::From(cgrid, skyImage);
-      if(vb_g->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
+      if(db.vb_l->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
       else StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
 
       //-------------------------------------------------------------------
@@ -1065,7 +1021,7 @@ int main(int argc, char **argv)
       // ftmName='awphpg')
       //
       MPosition loc;
-      MeasTable::Observatory(loc, MSColumns(selectedMS).observation().telescopeName()(0));
+      MeasTable::Observatory(loc, MSColumns(db.selectedMS).observation().telescopeName()(0));
       Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
 
       auto ret = 
@@ -1102,8 +1058,8 @@ int main(int argc, char **argv)
       //
       cgrid.set(Complex(0.0));
       Matrix<Float> weight;
-      vi2_g->originChunks();
-      vi2_g->origin();
+      db.vi2_l->originChunks();
+      db.vi2_l->origin();
 
       // If no normalization is requested, AWProjectWBFT should not grid
       // for .weight image.
@@ -1119,9 +1075,9 @@ int main(int argc, char **argv)
       if (!normalize) ftm_g->setPBReady(true);
 
       if (imagingMode=="predict")
-	ftm_g->initializeToVis(cgrid,*vb_g);
+	ftm_g->initializeToVis(cgrid,*(db.vb_l));
       else
-	ftm_g->initializeToSky(cgrid, weight, *vb_g);
+	ftm_g->initializeToSky(cgrid, weight, *(db.vb_l));
 
       // barrier needed for accurate elapsed time measurement
       // mpi_barrier(MPI_COMM_WORLD);
@@ -1162,17 +1118,17 @@ int main(int argc, char **argv)
       // Extract SPW ref. frequency and the number of polarizations in the
       // data (nDataPol).
       {
-	vi2_g->originChunks();
-	vi2_g->origin();
-	spwRefFreqList.assign(vb_g->subtableColumns().spectralWindow().refFrequency().getColumn());
-	nDataPol  = vb_g->flagCube().shape()[0];
+	db.vi2_l->originChunks();
+	db.vi2_l->origin();
+	spwRefFreqList.assign(db.vb_l->subtableColumns().spectralWindow().refFrequency().getColumn());
+	nDataPol  = db.vb_l->flagCube().shape()[0];
       }
       //
       // Finally, the data iteration loops.
       //-----------------------------------------------------------------------------------
       double griddingEngine_time=0;
       unsigned long vol=0;
-      ProgressMeter pm(1.0, vi2_g->ms().nrow(),
+      ProgressMeter pm(1.0, db.vi2_l->ms().nrow(),
 		       "Gridding", "","","",true);
       DataIterator di(isRoot);
       
@@ -1180,7 +1136,7 @@ int main(int argc, char **argv)
 	{
 	  // auto waitForCFReady = [](int&, int&){}; // NoOp
 	  // auto notifyCFSent   = [](const int&){}; //NoOp
-	  auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode);
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);
 	}
@@ -1239,9 +1195,9 @@ int main(int argc, char **argv)
 	  // which proceeds to load the next CF set.
 	  //
 	  auto waitForCFReady =
-	    [&thcoord, &spwidList, &visResampler](int& nVB, int& spwNdx)
+	    [&thcoord, &spwidList, &visResampler,&db](int& nVB, int& spwNdx)
 	      {
-		if (vb_g->spectralWindows()(0) != spwidList[spwNdx])
+		if (db.vb_l->spectralWindows()(0) != spwidList[spwNdx])
 		  {
 		    nVB=0;    // Reset the VB count for the new SPW
 		    spwNdx++; // Advance the SPW ID counter
@@ -1284,7 +1240,7 @@ int main(int argc, char **argv)
 	      };
 	      //-------------------------------------------------------------------------------------------
 
-	      auto ret = di.dataIter(vi2_g, vb_g, ftm_g,doPSF,imagingMode,
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
 				     waitForCFReady, notifyCFSent);
 
 	      griddingEngine_time += std::get<2>(ret);
@@ -1403,9 +1359,8 @@ int main(int argc, char **argv)
 	  // convert it from Feed basis to Stokes basis.
 	  StokesImageUtil::To(skyImage, cgrid);
 	}
-      // //detach the ms for cleaning up
-      // theMS = MeasurementSet();
-      // selectedMS = MeasurementSet();
+      //MSes are detach for cleaning up when the DataBase object goes
+      //out of scope here.
       log_l << "...done" << LogIO::POST;
     }
   catch(AipsError& er)
