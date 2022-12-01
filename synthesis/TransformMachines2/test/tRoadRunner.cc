@@ -219,14 +219,18 @@ std::string remove_extension(const std::string& path) {
 //#include <synthesis/TransformMachines2/test/RR_MPI.h>
 //
 //-------------------------------------------------------------------------
+// Class to manages the HPG initialize/finalize scope.
+// hpg::finalize() in the destructor.  This also reports, via the
+// destructor, the time elapsed between contruction and destruction.
 //
 class LibHPG
 {
 public:
-  LibHPG(const bool usingHPG=true): init_hpg(usingHPG) {};
+  LibHPG(const bool usingHPG=true): init_hpg(usingHPG){}
 
   bool initialize()
   {
+  startTime = std::chrono::steady_clock::now();
 #ifdef ROADRUNNER_USE_HPG
     if (init_hpg) return hpg::initialize();
 #endif
@@ -244,42 +248,25 @@ public:
 #endif
   };
 
-  ~LibHPG(){finalize();};
+  ~LibHPG()
+  {
+    finalize();
 
+    auto endTime = std::chrono::steady_clock::now();
+    std::chrono::duration<double> runtime = endTime - startTime;
+    std::cerr << "roadrunner runtime: " << runtime.count()
+	      << " sec" << std::endl;
+  };
+
+  std::chrono::time_point<std::chrono::steady_clock> startTime;
   bool init_hpg;
 };
-//
-//-------------------------------------------------------------------------
-//
-LibHPG* libhpg;
-
-std::chrono::time_point<std::chrono::steady_clock> startTime;
-//
-//-------------------------------------------------------------------------
-//
-void tpl_initialize(int* argc, char*** argv)
-{
-  startTime = std::chrono::steady_clock::now();
-
-  libhpg->initialize();
-}
-
-void tpl_finalize()
-{
-  delete libhpg;
-
-  auto endTime = std::chrono::steady_clock::now();
-  std::chrono::duration<double> runtime = endTime - startTime;
-  std::cerr << "roadrunner runtime: " << runtime.count()
-	    << " sec" << std::endl;
-}
 //
 //-------------------------------------------------------------------------
 //
 #ifdef ROADRUNNER_USE_HPG
 static const string defaultFtmName = "awphpg";
 #else // !ROADRUNNER_USE_HPG
-
 static const string defaultFtmName = "awproject";
 #endif // ROADRUNNER_USE_HPG
 //
@@ -292,7 +279,8 @@ hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
 std::shared_ptr<hpg::RWDeviceCFArray> dcfa_sptr_g;
 //
 //-------------------------------------------------------------------------
-//
+// The engine that loads the required CFs from the cache and copies
+// them to the hpg::CFArray.
 std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>>
 prepCFEngine(casa::refim::MakeCFArray& mkCF,
 	     bool WBAwp, int nW,
@@ -338,6 +326,10 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 }
 //
 //-------------------------------------------------------------------------
+// Server function that triggers the prepCFEngine() fro each SPW in
+// the spwidList.  This is run in parallel with gridding in a separate
+// thread than the gridder-thread (the main thread).  Coordination
+// between the thread is managed by the ThreadCoordinator object.
 //
 void CFServer(ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
@@ -587,18 +579,26 @@ int main(int argc, char **argv)
   Bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
 
+  {
+    UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+       sowImageExt, cmplxGridName, NX, nW, cellSize,
+       stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+       ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+       doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+       doSPWDataIter);
+    set_terminate(NULL);
+  }
+
+  // Class instance that manages the HPG initialize/finalize scope.
+  // And hpg::finalize() is called when this instance goes out of
+  // scope (i.e. it's distructor is envoked).
+  LibHPG libhpg(ftmName=="awphpg");
+  if (!libhpg.initialize())
     {
-      UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
-	 sowImageExt, cmplxGridName, NX, nW, cellSize,
-	 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-	 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-	 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-	 doSPWDataIter);
-      set_terminate(NULL);
+      throw(AipsError("LibHPG::initialize() failed"));
+      exit(-1);
     }
 
-  libhpg  = (new LibHPG(ftmName=="awphpg"));
-  tpl_initialize(&argc, &argv);
   //  std::atexit(tpl_finalize);
 
   bool const doSow = sowImageExt != "";
@@ -876,61 +876,61 @@ int main(int argc, char **argv)
 	  //
 	  auto waitForCFReady =
 	    [&thcoord, &visResampler,&db](int& nVB, int& spwNdx)
-	      {
-		if (db.vb_l->spectralWindows()(0) != db.spwidList[spwNdx])
-		  {
-		    nVB=0;    // Reset the VB count for the new SPW
-		    spwNdx++; // Advance the SPW ID counter
-		    //
-		    // At this point the internal state of the
-		    // ThreadCoordinator object remains CFReady=True from an
-		    // earlier call to thcoord.waitForCFReady_or_EoD(), soon
-		    // after starting the CFServer thread
-		    // (std::async(&CFServer,...).  This earlier call is to
-		    // make sure that the code does not proceed to using the
-		    // data iterators till the first CFs are loaded and
-		    // ready for use in the memory.
-		    //
-		    // .setCFReady(false) explicitly sets the internal state
-		    // of the ThreadCoordinator object to CFReady=false.
-		    //
-		    thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
-		    thcoord.setCFReady(false);
-		  }
-		if (thcoord.newCF)
-		  {
-		    visResampler->setCFSI(cfsi_g);
+	    {
+	      if (db.vb_l->spectralWindows()(0) != db.spwidList[spwNdx])
+		{
+		  nVB=0;    // Reset the VB count for the new SPW
+		  spwNdx++; // Advance the SPW ID counter
+		  //
+		  // At this point the internal state of the
+		  // ThreadCoordinator object remains CFReady=True from an
+		  // earlier call to thcoord.waitForCFReady_or_EoD(), soon
+		  // after starting the CFServer thread
+		  // (std::async(&CFServer,...).  This earlier call is to
+		  // make sure that the code does not proceed to using the
+		  // data iterators till the first CFs are loaded and
+		  // ready for use in the memory.
+		  //
+		  // .setCFReady(false) explicitly sets the internal state
+		  // of the ThreadCoordinator object to CFReady=false.
+		  //
+		  thcoord.waitForCFReady_or_EoD(); // Wait for notification from the CFServer
+		  thcoord.setCFReady(false);
+		}
+	      if (thcoord.newCF)
+		{
+		  visResampler->setCFSI(cfsi_g);
 
-		    if (visResampler->set_cf(dcfa_sptr_g)==false)
-		      throw(AipsError("Device CFArray pointer is null in CFServer"));
-		  }
-	      };
-	      //-------------------------------------------------------------------------------------------
-	      auto notifyCFSent =
-	      [&thcoord](const int& nVB)
-	      {
-		if ((nVB==0) && (!thcoord.isEoD()))
-		  {
-		    cerr << "gridderEngine: CFSent notification" << endl;
-		    thcoord.setCFSent(true);
-		    thcoord.newCF=false;
-		    thcoord.Notify_CFSent();
-		    dcfa_sptr_g.reset();
-		  }
-	      };
-	      //-------------------------------------------------------------------------------------------
+		  if (visResampler->set_cf(dcfa_sptr_g)==false)
+		    throw(AipsError("Device CFArray pointer is null in CFServer"));
+		}
+	    };
+	  //-------------------------------------------------------------------------------------------
+	  auto notifyCFSent =
+	    [&thcoord](const int& nVB)
+	    {
+	      if ((nVB==0) && (!thcoord.isEoD()))
+		{
+		  cerr << "gridderEngine: CFSent notification" << endl;
+		  thcoord.setCFSent(true);
+		  thcoord.newCF=false;
+		  thcoord.Notify_CFSent();
+		  dcfa_sptr_g.reset();
+		}
+	    };
+	  //-------------------------------------------------------------------------------------------
 
-	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
-				     waitForCFReady, notifyCFSent);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
+				 waitForCFReady, notifyCFSent);
 
-	      griddingEngine_time += std::get<2>(ret);
-	      vol+= std::get<1>(ret);
-	      // Trying to ensure that the CFServer thread gets the signal
-	      // that EoD has been reached in the main thread.
-	      thcoord.setEoD(true);
-	      thcoord.setCFSent(true);
-	      thcoord.Notify_CFSent();
-	      //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
+	  griddingEngine_time += std::get<2>(ret);
+	  vol+= std::get<1>(ret);
+	  // Trying to ensure that the CFServer thread gets the signal
+	  // that EoD has been reached in the main thread.
+	  thcoord.setEoD(true);
+	  thcoord.setCFSent(true);
+	  thcoord.Notify_CFSent();
+	  //cfPrep.wait(); // The main thread does not have to wait for the CFServer thread to exit.
 	}
       // End of data iteration loops
       //-----------------------------------------------------------------------------------
@@ -1047,6 +1047,6 @@ int main(int argc, char **argv)
     {
       log_l << er.what() << LogIO::SEVERE;
     }
-  tpl_finalize();
+
   return 0;
 }
