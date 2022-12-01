@@ -61,10 +61,6 @@
 #include <cl.h> // C++ized version
 #include <clinteract.h>
 
- // #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/cl.h> // C++ized version
- // #include </home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/clinteract.h>
-
-
 #ifdef ROADRUNNER_USE_MPI
 # include <mpi.h>
 #endif
@@ -85,137 +81,7 @@ using namespace casacore;
 #include <synthesis/TransformMachines2/test/rWeightor.inc>
 #include <synthesis/TransformMachines2/test/DataIterations.h>
 #include <synthesis/TransformMachines2/test/DataBase.h>
-
-std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>>
-createAWPFTMachine(const String ftmName,
-		   const String modelImageName,
-		   CountedPtr<refim::FTMachine>& theFT, 
-		   const String& telescopeName,
-		   MPosition& observatoryLocation,
-		   const String cfCache= "testCF.cf",
-		   const Bool wbAWP= true,
-		   //------------------------------
-		   const Int wprojPlane=1,
-		   //const Float=1.0,
-		   const Bool useDoublePrec=true,
-		   //------------------------------
-		   const Bool aTermOn= true,
-		   const Bool psTermOn= false,
-		   const Bool mTermOn= false,
-		   const Bool doPointing= true,
-		   const Bool doPBCorr= true,
-		   const Bool conjBeams= true,
-		   Float pbLimit_l=1e-3,
-		   vector<float> posigdev = {300.0,300.0},
-		   const String imageNamePrefix=String(""),
-		   const String imagingMode="residual",
-		   const Float computePAStep=360.0,
-		   const Float rotatePAStep=360.0,
-		   const Int cache=1000000000,
-		   const Int tile=16)
-  
-{
-  LogIO os( LogOrigin("roadrunner","createAWPFTMachine",WHERE));
-  
-  if (wprojPlane<=1)
-    {
-      os << LogIO::NORMAL
-	 << "You are using wprojplanes=1. Doing co-planar imaging (no w-projection needed)" 
-	 << LogIO::POST;
-      os << LogIO::NORMAL << "Performing WBA-Projection" << LogIO::POST; // Loglevel PROGRESS
-    }
-  else
-    os << LogIO::NORMAL << "Performing WBAW-Projection" << LogIO::POST; // Loglevel PROGRESS
-  // if((wprojPlane>1)&&(wprojPlane<64)) 
-  //   {
-  //     os << LogIO::WARN
-  // 	 << "No. of w-planes set too low for W projection - recommend at least 128"
-  // 	 << LogIO::POST;
-  //   }
-  
-  // MSObservationColumns msoc(mss4vi_p[0].observation());
-  // String telescopeName=msoc.telescopeName()(0);
-  CountedPtr<refim::ConvolutionFunction> awConvFunc = AWProjectFT::makeCFObject(telescopeName, 
-									 aTermOn,
-									 psTermOn, true, mTermOn, wbAWP,
-									 false);
-  //
-  // PointingOffsets is now a private object in AWP.
-  //
-  // CountedPtr<refim::PointingOffsets> po = new refim::PointingOffsets();
-  // po->setOverSampling(awConvFunc->getOversampling());
-  // po->setDoPointing(doPointing);
-  // awConvFunc->setPointingOffsets(po);
-
-  //
-  // Construct the appropriate re-sampler.
-  //
-  CountedPtr<refim::VisibilityResamplerBase> visResampler;
-  if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false);
-  else visResampler = new refim::AWVisResampler();
-  visResampler->setModelImage(modelImageName);
-  //
-  // Construct and initialize the CF cache object.
-  //
-  CountedPtr<refim::CFCache> cfCacheObj;
-  
-  //
-  // Finally construct the FTMachine with the CFCache, ConvFunc and
-  // Re-sampler objects.  
-  //
-  if (ftmName == "awphpg")
-    theFT = new refim::AWProjectWBFTHPG(wprojPlane, cache/2,
-					   cfCacheObj, awConvFunc,
-					   visResampler,
-					   /*true */doPointing, posigdev, doPBCorr,
-					   tile, computePAStep, pbLimit_l, true,conjBeams,
-					   useDoublePrec);
-  else
-    theFT = new refim::AWProjectWBFT(wprojPlane, cache/2,
-					   cfCacheObj, awConvFunc,
-					   visResampler,
-					   /*true */doPointing, posigdev, doPBCorr,
-					   tile, computePAStep, pbLimit_l, true,conjBeams,
-					   useDoublePrec);
-  
-  if (imagingMode=="weight")    {theFT->setFTMType(casa::refim::FTMachine::WEIGHT);}
-  else if (imagingMode=="psf")  {theFT->setFTMType(casa::refim::FTMachine::PSF);}
-  else if (imagingMode=="snrpsf")  {theFT->setFTMType(casa::refim::FTMachine::SNRPSF);}
-
-  cfCacheObj = new refim::CFCache();
-  cfCacheObj->setCacheDir(cfCache.data());
-  cfCacheObj->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
-  cfCacheObj->setWtImagePrefix(imageNamePrefix.c_str());
-  //cfCacheObj->initCache2(); // This loads, both CFS* and WTCFS* CFs.  In roadrunner, only one of them required (depending on the "imagingmode" parameter)
-  if (theFT->ftmType()   == casa::refim::FTMachine::PSF 
-      || theFT->ftmType()== casa::refim::FTMachine::WEIGHT)
-    cfCacheObj->initCache2(false, 400.0, -1.0,casacore::String("WTCFS*")); // This would load only WTCFS* CFs
-  else
-    cfCacheObj->initCache2(false, 400.0, -1.0,casacore::String("CFS*")); // This would load only CFS* CFs
-  // {
-  //   CountedPtr<casa::refim::CFBuffer> cfb_l = cfCacheObj->memCache2_p[0].getCFBuffer(0,0);
-  //   cfb_l->show("cfb: ");
-  // }
-  
-  theFT->setCFCache(cfCacheObj);
-  
-  
-  Quantity rotateOTF(rotatePAStep,"deg");
-  static_cast<refim::AWProjectFT &>(*theFT).setObservatoryLocation(observatoryLocation);
-  static_cast<refim::AWProjectFT &>(*theFT).setPAIncrement(Quantity(computePAStep,"deg"),rotateOTF);
-
-  // Send in Freq info. Reference code for enabling arbitrary
-  // freq. resolution for wbawp imaging (currently it is set to SPW
-  // resolution).
-  //
-  // os << "Sending frequency selection information " <<  mssFreqSel_p  <<  " to AWP FTM." << LogIO::POST;
-  // theFT->setSpwFreqSelection( mssFreqSel_p );
-  // theIFT->setSpwFreqSelection( mssFreqSel_p );
-
-  std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>> retup = std::make_tuple(cfCacheObj,visResampler); 
-
-  return retup;
-}
+#include <synthesis/TransformMachines2/test/MakeComponents.h>
 //
 //-------------------------------------------------------------------------
 //
@@ -332,143 +198,6 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
 //
 //-------------------------------------------------------------------------
 //
-bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
-{
-   bool rstat(false);
-   String tmpA, tmpB, tmpC;
-   std::istringstream iss(in);
-   iss >> tmpA >> tmpB >> tmpC;
-   ushort ntrials=0;
-
-   while((rstat==false) && (ntrials < 2))
-     {
-       try
-	 {
-	   casacore::Quantity tmpQA;
-	   casacore::Quantity tmpQB;
-	   casacore::Quantity::read(tmpQA, tmpA);
-	   casacore::Quantity::read(tmpQB, tmpB);
-	   if(tmpC.length() > 0)
-	     {
-	       MDirection::Types theRF;
-	       MDirection::getType(theRF, tmpC);
-	       theDir = MDirection (tmpQA, tmpQB, theRF);
-	       rstat = true;
-	     }
-	   else
-	     {
-	       theDir = MDirection (tmpQA, tmpQB);
-	       rstat = true;
-	     }
-	 }
-       catch (AipsError& e)
-	 {
-	   cerr << e.what() << endl;
-	   if (ntrials > 1) throw(e);
-	   // Assume that the string is in the EPOCH RA DEC format
-	   // (and therefore failed).  So try RA DEC EPOCH format.
-	   String tt=tmpA;
-	   tmpA=tmpB;
-	   tmpB=tmpC;
-	   tmpC=tt;
-	   cerr << "###Informational: Re-trying phasecenter specification as " << tmpA << " " << tmpB << " " << tmpC << "...";
-	   ntrials++;
-	 }
-     }
-   if (ntrials > 0) {rstat ? cerr << "success!" << endl : cerr << "failed." << endl;}
-
-   return rstat;
-}
-//
-//-------------------------------------------------------------------------
-//
-std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > >
-makeTheChanSelMap(MSSelection& mss)
-{
-  Matrix<Int> mssChanSel = mss.getChanList();
-  IPosition mssChanSelShape=mssChanSel.shape();
-
-  std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > > chanselKurfuffel;
-  std::map<casacore::Int, casacore::Vector<casacore::Int> > channelsPerSpw;
-  for(int i=0;i<mssChanSelShape[0];i++)
-    {
-      Vector<Int> channels(2,-1);
-      int spw=mssChanSel(i,0);
-      channels[0]=mssChanSel(i,2)-mssChanSel(i,1)+1;//mssChanSel(i,1);
-      channels[1]=mssChanSel(i,1);//mssChanSel(i,2);
-      channelsPerSpw[spw]=channels;
-      //      cerr << "SPW:CHAN " << spw << " " << channels << endl;
-    }
-  chanselKurfuffel[0]=channelsPerSpw;
-  return chanselKurfuffel;
-}
-//
-//-------------------------------------------------------------------------
-//
-PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
-				      const MeasurementSet& selectedMS,
-				      MSSelection& msSelection,
-				      const String& imageName, const String& startModelImageName,
-				      const Vector<Int>& imSize, const float& cellSize,
-				      const String& phaseCenter, const String& stokes,
-				      const String& refFreq,
-				      const String& mode)
-{
-  Vector<Quantity> qCellSize(2);
-  for (int i=0;i<2;i++)
-    {
-      String qUnit("arcsec");
-      qCellSize[i]=Quantity(cellSize, qUnit);
-    }
-
-  int imStokes=1;
-  if (stokes=="I") imStokes=1;
-  else if (stokes=="IV") imStokes=2;
-  else if (stokes=="IQUV") imStokes=4;
-
-  int imNChan=1;
-  if (mode=="mfs") imNChan=1;
-  // else if (mode=="pseudo") {}
-  // else if (mode=="spectral") {imnchan=datanchan[0];imstart=datastart[0];imstep=datastep[0];}
-  
-  MDirection mphaseCenter;
-  mdFromString(mphaseCenter, phaseCenter);
-
-  SynthesisParamsGrid gridParams;
-  SynthesisParamsImage imageParams;
-  imageParams.imageName=imageName;
-  imageParams.startModel=startModelImageName;
-  imageParams.imsize=imSize;
-  imageParams.cellsize=qCellSize;
-  imageParams.phaseCenter = mphaseCenter;
-  imageParams.stokes=stokes;
-  imageParams.mode=mode;
-  imageParams.frame=String("LSRK");
-  imageParams.veltype=String("radio");
-
-  //
-  // There are two items related to ref. freq. "reffreq" (a String) and "refFreq" (a Quantity).
-  // Set them both.
-  //
-  if (refFreq != "")
-    {
-      imageParams.reffreq=refFreq;
-     
-      std::istringstream iss(refFreq);
-      Double ff;
-      iss >> ff;
-      //      cerr << "Ref. freq. = " << ff << endl;
-      imageParams.refFreq=Quantity(ff,"GHz");
-    }
-  
-  casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;
-  CoordinateSystem csys = imageParams.buildCoordinateSystem(vi2,makeTheChanSelMap(msSelection),msList);
-  IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
-  return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
-}
-//
-//-------------------------------------------------------------------------
-//
 std::string remove_extension(const std::string& path) {
     if (path == "." || path == "..")
         return path;
@@ -494,12 +223,12 @@ std::string remove_extension(const std::string& path) {
 class LibHPG
 {
 public:
-  LibHPG(const bool usingHPG=true): init_p(usingHPG) {};
+  LibHPG(const bool usingHPG=true): init_hpg(usingHPG) {};
 
   bool initialize()
   {
 #ifdef ROADRUNNER_USE_HPG
-    if (init_p)	return hpg::initialize();
+    if (init_hpg) return hpg::initialize();
 #endif
     return true;
   };
@@ -507,7 +236,7 @@ public:
   void finalize()
   {
 #ifdef ROADRUNNER_USE_HPG
-    if (init_p)
+    if (init_hpg)
       {
 	cerr << endl << "CALLING hpg::finalize()" << endl;
 	hpg::finalize();
@@ -517,81 +246,32 @@ public:
 
   ~LibHPG(){finalize();};
 
-  bool init_p;
+  bool init_hpg;
 };
 //
 //-------------------------------------------------------------------------
 //
-
 LibHPG* libhpg;
 
-#ifdef ROADRUNNER_USE_HPG
-bool hpg_initialize()
-{
-  return hpg::initialize();
-}
-//
-//-------------------------------------------------------------------------
-//
-void hpg_finalize()
-{
-  hpg::finalize();
-}
-#else // !ROADRUNNER_USE_HPG
-//
-//-------------------------------------------------------------------------
-//
-bool hpg_initialize()
-{
-  return true;
-}
-//
-//-------------------------------------------------------------------------
-//
-void hpg_finalize()
-{
-  // no-op
-}
-#endif // ROADRUNNER_USE_HPG
-
-// we need a global variable to know whether the call to UI() on the
-// root rank has returned normally or called exit(), because an exit()
-// leaves a broadcast pending
 std::chrono::time_point<std::chrono::steady_clock> startTime;
 //
 //-------------------------------------------------------------------------
 //
 void tpl_initialize(int* argc, char*** argv)
 {
-  //  mpi_init(argc, argv);
-  //  mpi_barrier(MPI_COMM_WORLD);
   startTime = std::chrono::steady_clock::now();
-  //hpg_initialize();
+
   libhpg->initialize();
-  // UIParams::datatype = UIParams::compute_datatype();
-  // mpi_type_commit(&UIParams::datatype);
 }
 
 void tpl_finalize()
 {
-  // if (bcastQuitOnExit) {
-  //   UIParams params;
-  //   params.doQuit = true;
-  //   mpi_bcast(&params, 1, UIParams::datatype, 0, MPI_COMM_WORLD);
-  // }
-  // mpi_type_free(&UIParams::datatype);
-  //hpg_finalize();
   delete libhpg;
-  
-  // mpi_barrier(MPI_COMM_WORLD);
+
   auto endTime = std::chrono::steady_clock::now();
   std::chrono::duration<double> runtime = endTime - startTime;
-  // int rank;
-  // mpi_comm_rank(MPI_COMM_WORLD, &rank);
-  // mpi_finalize();
-  // if (rank == 0)
-    std::cerr << "roadrunner runtime: " << runtime.count()
-              << " sec" << std::endl;
+  std::cerr << "roadrunner runtime: " << runtime.count()
+	    << " sec" << std::endl;
 }
 //
 //-------------------------------------------------------------------------
@@ -972,9 +652,9 @@ int main(int argc, char **argv)
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
 		  doSPWDataIter);
 
-      spwidList      = db.spwidList;
-      fieldidList    = db.fieldidList;
-      spwRefFreqList = db.spwRefFreqList;
+      // spwidList      = db.spwidList;
+      // fieldidList    = db.fieldidList;
+      // spwRefFreqList = db.spwRefFreqList;
 
       //
       //-------------------------------------------------------------------
@@ -1165,7 +845,7 @@ int main(int argc, char **argv)
 				   std::ref(skyImage),
 				   std::ref(polMap),
 				   std::ref(cfs2_l),
-				   std::ref(spwidList),
+				   std::ref(db.spwidList),
 				   std::ref(spwRefFreqList),
 				   std::ref(nDataPol));
 
@@ -1195,9 +875,9 @@ int main(int argc, char **argv)
 	  // which proceeds to load the next CF set.
 	  //
 	  auto waitForCFReady =
-	    [&thcoord, &spwidList, &visResampler,&db](int& nVB, int& spwNdx)
+	    [&thcoord, &visResampler,&db](int& nVB, int& spwNdx)
 	      {
-		if (db.vb_l->spectralWindows()(0) != spwidList[spwNdx])
+		if (db.vb_l->spectralWindows()(0) != db.spwidList[spwNdx])
 		  {
 		    nVB=0;    // Reset the VB count for the new SPW
 		    spwNdx++; // Advance the SPW ID counter
