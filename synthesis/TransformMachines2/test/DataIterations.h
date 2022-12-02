@@ -37,6 +37,7 @@
 #include <synthesis/TransformMachines2/ThreadCoordinator.h>
 #include <synthesis/TransformMachines2/FTMachine.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
+#include <casacore/casa/System/ProgressMeter.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <hpg/hpg.hpp>
 

@@ -1,13 +1,52 @@
-//-*-C++-*-
+// -*- C++ -*-
+//# rWeightor.h: Definition of the global rWeightor function
+//#     that implements various imaging weighting schemes
+//# Copyright (C) 2021
+//# Associated Universities, Inc. Washington DC, USA.
+//#
+//# This library is free software; you can redistribute it and/or modify it
+//# under the terms of the GNU Library General Public License as published by
+//# the Free Software Foundation; either version 2 of the License, or (at your
+//# option) any later version.
+//#
+//# This library is distributed in the hope that it will be useful, but WITHOUT
+//# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+//# License for more details.
+//#
+//# You should have received a copy of the GNU Library General Public License
+//# along with this library; if not, write to the Free Software Foundation,
+//# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+//#
+//# Correspondence concerning this should be addressed as follows:
+//#        Postal address: National Radio Astronomy Observatory
+//#                        1003 Lopezville Road,
+//#                        Socorro, NM - 87801, USA
+//#
+//# $Id$
+
+#ifndef ROADRUNNER_RWEIGHTOR_H
+#define ROADRUNNER_RWEIGHTOR_H
+
 //
 // Embedded code in roadrunner.cc put in this file to minimize visual
 // overload by code that should not require attention (or even deeper
 // understanding). This is code extract from CASA systhesis module
 // into a stand-alone function to reduce the dependency graph.
 //
+#include <casacore/casa/namespace.h>
+#include <msvis/MSVis/VisibilityIterator2.h>
+#include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisImagingWeight.h>
+#include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
+#include <synthesis/TransformMachines2/FTMachine.h> //casa::refim namespace
+
 //class casa::VisImagingWeight;
 //casa::VisImagingWeight
+using namespace casa;
+using namespace casa::refim;
+using namespace casacore;
+
 void
 weightor(vi::VisibilityIterator2& vi_p,
 	 const CoordinateSystem& itsMaxCoordSys, // CSys of the sky image
@@ -205,3 +244,4 @@ weightor(vi::VisibilityIterator2& vi_p,
   
   //  return imwgt_p;
 }
+#endif
