@@ -93,15 +93,21 @@ std::string remove_extension(const std::string& path) {
 class LibHPG
 {
 public:
-  LibHPG(const bool usingHPG=true): init_hpg(usingHPG){}
+  LibHPG(const bool usingHPG=true): init_hpg(usingHPG)
+  {
+    initialize();
+  }
 
   bool initialize()
   {
-  startTime = std::chrono::steady_clock::now();
+    bool ret = true;
+    startTime = std::chrono::steady_clock::now();
 #ifdef ROADRUNNER_USE_HPG
-    if (init_hpg) return hpg::initialize();
+    if (init_hpg) ret = hpg::initialize();
 #endif
-    return true;
+    if (!ret)
+      throw(AipsError("LibHPG::initialize() failed"));
+    return ret;
   };
 
   void finalize()
@@ -419,15 +425,15 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 
   try
     {
-      // Class instance that manages the HPG initialize/finalize scope.
+      // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
-      // scope (i.e. it's distructor is envoked).
+      // scope.
       LibHPG libhpg(ftmName=="awphpg");
-      if (!libhpg.initialize())
-	{
-	  throw(AipsError("LibHPG::initialize() failed"));
-	  exit(-1);
-	}
+      // if (!libhpg.initialize())
+      // 	{
+      // 	  throw(AipsError("LibHPG::initialize() failed"));
+      // 	  exit(-1);
+      // 	}
 
       //  std::atexit(tpl_finalize);
 

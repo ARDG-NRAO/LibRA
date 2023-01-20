@@ -158,6 +158,16 @@ public:
 	}
 
       log_l << "Done with SPWID list determination" << LogIO::POST;
+
+      //
+      // Since the SPWIDList is determined by iterating over the
+      // database, this list could have duplicate entries (e.g. with
+      // multiple FIELDs all of which have the same frequency setup).
+      // So make the determined list a list of unique entries.
+      //
+      std::sort(vb_SPWIDList.begin(), vb_SPWIDList.end());
+      vb_SPWIDList.erase(std::unique(vb_SPWIDList.begin(), vb_SPWIDList.end() ), vb_SPWIDList.end());
+
       spwidList.resize(vb_SPWIDList.size());
       for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
     }
