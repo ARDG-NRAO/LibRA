@@ -71,7 +71,26 @@ std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
     }
   return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
 }
+//
+// Remove duplicate entries from a std::vector without sorting.
+//
+template <typename ForwardIterator>
+ForwardIterator remove_duplicates( ForwardIterator first,
+				   ForwardIterator last )
+{
+    auto new_last = first;
 
+    for ( auto current = first; current != last; ++current )
+    {
+        if ( std::find( first, new_last, *current ) == new_last )
+        {
+            if ( new_last != current ) *new_last = *current;
+            ++new_last;
+        }
+    }
+
+    return new_last;
+}
 
 class DataBase
 {
@@ -165,8 +184,16 @@ public:
       // multiple FIELDs all of which have the same frequency setup).
       // So make the determined list a list of unique entries.
       //
-      std::sort(vb_SPWIDList.begin(), vb_SPWIDList.end());
-      vb_SPWIDList.erase(std::unique(vb_SPWIDList.begin(), vb_SPWIDList.end() ), vb_SPWIDList.end());
+      // std::sort(vb_SPWIDList.begin(), vb_SPWIDList.end());
+      // vb_SPWIDList.erase(std::unique(vb_SPWIDList.begin(),
+      // 				     vb_SPWIDList.end()),
+      // 			 vb_SPWIDList.end());
+
+      // Remove duplicates without sorting.  This will preserve the
+      // order in which SPW IDs are presented via the VI iterator.
+      vb_SPWIDList.erase(remove_duplicates(vb_SPWIDList.begin(),
+					   vb_SPWIDList.end()),
+			 vb_SPWIDList.end());
 
       spwidList.resize(vb_SPWIDList.size());
       for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
