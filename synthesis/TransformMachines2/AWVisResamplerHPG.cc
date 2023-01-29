@@ -614,7 +614,9 @@ namespace casa{
     // Add to the list only if the hpgVB holds any data. This guard
     // is required since in the loop below we also count the number
     // visibilities gridded (the nVisGridded_p).
-    if (hpgVB.size() > 0) hpgVBList_p.push_back(hpgVB);
+
+    if (hpgVB.size() > 0)
+      hpgVBList_p.push_back(hpgVB);
     
     std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
@@ -631,6 +633,7 @@ namespace casa{
 	for(unsigned i=0;i<hpgVBList_p.size();i++)
 	  {
 	    nVisGridded_p += hpgVBList_p[i].size()*HPGNPOL;
+	    nDataBytes_p += sizeofVisData_p*hpgVBList_p[i].size();
 	    hpg::opt_t<hpg::Error> err;
 
 	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;

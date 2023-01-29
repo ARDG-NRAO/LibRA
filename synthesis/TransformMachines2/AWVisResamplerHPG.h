@@ -59,7 +59,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 						 nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
 						 hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
 						 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
-						 mkHPGVB_startTime(), mkHPGVB_duration()
+						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0)
 
     {
       hpgVBList_p.reserve(maxVBList_p);
@@ -70,6 +70,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       log_l << "Using HPG device " << hpgDevice << LogIO::POST;
 
       //      cached_PointingOffset_p.resize(2);cached_PointingOffset_p=-1000.0;runTimeG_p=runTimeDG_p=0.0;
+      hpg::VisData<HPGNPOL> vd;
+      sizeofVisData_p=0;
+      for(auto x:vd.m_visibilities) sizeofVisData_p += sizeof(x);
+      for(auto x:vd.m_weights) sizeofVisData_p += sizeof(x);
+      for(auto x:vd.m_uvw) sizeofVisData_p += sizeof(x);
+      for(auto x:vd.m_cf_phase_gradient) sizeofVisData_p += sizeof(x);
+      for(auto x:vd.m_cf_index) sizeofVisData_p += sizeof(x);
+	    
+      sizeofVisData_p += sizeof(vd.m_frequency);
+      sizeofVisData_p += sizeof(vd.m_phase);
+
     };
 
     virtual ~AWVisResamplerHPG()
@@ -227,6 +238,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::shared_ptr<hpg::RWDeviceCFArray> rwdcf_ptr_p;
     std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
     std::chrono::duration<double> mkHPGVB_duration;
+
+    unsigned int sizeofVisData_p;
   };
   }; //# NAMESPACE CASA - END
 };

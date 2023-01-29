@@ -196,7 +196,8 @@ public:
 			 vb_SPWIDList.end());
 
       spwidList.resize(vb_SPWIDList.size());
-      for(uint i=0;i<vb_SPWIDList.size();i++) spwidList[i] = vb_SPWIDList[i];
+      //for(uint i=0; auto id : vb_SPWIDList) spwidList[i++]=id; // Works only in C++-20
+      uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
     }
 
     cerr << "Selected SPW ID list: " << spwidList << endl;

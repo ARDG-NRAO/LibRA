@@ -47,7 +47,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class VisibilityResampler: public VisibilityResamplerBase
   {
   public: 
-    VisibilityResampler(): VisibilityResamplerBase() {nVBs_p=nVisGridded_p=0;};
+    VisibilityResampler(): VisibilityResamplerBase() {nVBs_p=nVisGridded_p=0;nDataBytes_p=0;};
     //    VisibilityResampler(const CFStore& cfs): VisibilityResamplerBase(cfs) {};
     VisibilityResampler(const VisibilityResampler& other):VisibilityResamplerBase()
     {copy(other);}
@@ -55,9 +55,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    {setConvFunc(cfs);};
     virtual ~VisibilityResampler()
     {
-      // cerr << "~VisibilityResampler:: "
-      // 	   << "No. of VBs  processed: " << nVBs_p << endl
-      // 	   << "No. of vis. processed: " << nVisGridded_p << endl;
+      // Report some useful stats before they are lost.
+      LogIO log_l(LogOrigin("VisibilityResampler","~VisibilityResampler"));
+      //log_l << "No. of VBs  processed: " << nVBs_p << endl
+      log_l << "Total vis. processed: " << nVisGridded_p;
+      if (nDataBytes_p > 0) log_l << "  Total bytes transferred: " << nDataBytes_p << " bytes";
+      log_l << LogIO::POST;
     };
 
     //    VisibilityResampler& operator=(const VisibilityResampler& other);
@@ -69,9 +72,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual VisibilityResamplerBase* clone() 
     {return new VisibilityResampler(*this);}
 
-    virtual void getParams(casacore::Vector<casacore::Double>& uvwScale, casacore::Vector<casacore::Double>& offset, casacore::Vector<casacore::Double>& dphase)
+    virtual void getParams(casacore::Vector<casacore::Double>& uvwScale,
+			   casacore::Vector<casacore::Double>& offset,
+			   casacore::Vector<casacore::Double>& dphase)
     {uvwScale.assign(uvwScale_p); offset.assign(offset_p); dphase.assign(dphase_p);};
-    virtual void setParams(const casacore::Vector<casacore::Double>& uvwScale, const casacore::Vector<casacore::Double>& offset,
+    virtual void setParams(const casacore::Vector<casacore::Double>& uvwScale,
+			   const casacore::Vector<casacore::Double>& offset,
 			   const casacore::Vector<casacore::Double>& dphase)
     {
       // SynthesisUtils::SETVEC(uvwScale_p, uvwScale); 
@@ -82,7 +88,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       dphase_p.reference(dphase);
     };
 
-    virtual void setMaps(const casacore::Vector<casacore::Int>& chanMap, const casacore::Vector<casacore::Int>& polMap)
+    virtual void setMaps(const casacore::Vector<casacore::Int>& chanMap,
+			 const casacore::Vector<casacore::Int>& polMap)
     {
       // SynthesisUtils::SETVEC(chanMap_p,chanMap);
       // SynthesisUtils::SETVEC(polMap_p,polMap);
@@ -90,7 +97,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       polMap_p.reference(polMap);
     }
 
-    virtual void getMaps(casacore::Vector<casacore::Int>& chanMap, casacore::Vector<casacore::Int>& polMap)
+    virtual void getMaps(casacore::Vector<casacore::Int>& chanMap,
+			 casacore::Vector<casacore::Int>& polMap)
     {
       SynthesisUtils::SETVEC(chanMap,chanMap_p);
       SynthesisUtils::SETVEC(polMap,polMap_p);
@@ -98,18 +106,23 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       // polMap_p.reference(polMap);
     }
 
-    virtual void setFreqMaps(const casacore::Matrix<casacore::Double>& spwChanFreqs, const casacore::Matrix<casacore::Double>& spwChanConjFreqs)
+    virtual void setFreqMaps(const casacore::Matrix<casacore::Double>& spwChanFreqs,
+			     const casacore::Matrix<casacore::Double>& spwChanConjFreqs)
     {
       spwChanFreq_p.assign(spwChanFreqs);
       spwChanConjFreq_p.assign(spwChanConjFreqs);
     }
 
     virtual void setConvFunc(const CFStore& cfs) 
-    {
-      convFuncStore_p = cfs;
-    };
-    virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap, const casacore::Vector<casacore::Int>& conjCFMap) {(void)cfMap;(void)conjCFMap;};
-    virtual void setPATolerance(const double& dPA) {paTolerance_p = dPA;};
+    {convFuncStore_p = cfs;};
+
+    virtual void setCFMaps(const casacore::Vector<casacore::Int>& cfMap,
+			   const casacore::Vector<casacore::Int>& conjCFMap)
+    {(void)cfMap;(void)conjCFMap;};
+
+    virtual void setPATolerance(const double& dPA)
+    {paTolerance_p = dPA;};
+
     virtual hpg::CFSimpleIndexer setCFSI(const hpg::CFSimpleIndexer /*cfsi*/)
     {
       throw(AipsError("Internal Error: VisibilityResampler.h::setCFSI(hpg::CFSimpleIndexer&) called. "
@@ -178,15 +191,27 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // These are no-ops for unithreaded samplers.
     //
     virtual void init(const casacore::Bool& doublePrecision) {(void)doublePrecision;};
-    virtual void GatherGrids(casacore::Array<casacore::DComplex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) {(void)griddedData;(void)sumwt;};
-    virtual void GatherGrids(casacore::Array<casacore::Complex>& griddedData, casacore::Matrix<casacore::Double>& sumwt) {(void)griddedData;(void)sumwt;};
-    virtual void initializePutBuffers(const casacore::Array<casacore::DComplex>& griddedData,
-				      const casacore::Matrix<casacore::Double>& sumwt) {(void)griddedData;(void)sumwt;};
-    virtual void initializePutBuffers(const casacore::Array<casacore::Complex>& griddedData,
-				      const casacore::Matrix<casacore::Double>& sumwt) {(void)griddedData;(void)sumwt;};
-    virtual void initializeDataBuffers(VBStore& vbs) {(void)vbs;};
+    virtual void GatherGrids(casacore::Array<casacore::DComplex>& griddedData,
+			     casacore::Matrix<casacore::Double>& sumwt)
+    {(void)griddedData;(void)sumwt;};
 
-    virtual void releaseBuffers() {};
+    virtual void GatherGrids(casacore::Array<casacore::Complex>& griddedData,
+			     casacore::Matrix<casacore::Double>& sumwt)
+    {(void)griddedData;(void)sumwt;};
+
+    virtual void initializePutBuffers(const casacore::Array<casacore::DComplex>& griddedData,
+				      const casacore::Matrix<casacore::Double>& sumwt)
+    {(void)griddedData;(void)sumwt;};
+
+    virtual void initializePutBuffers(const casacore::Array<casacore::Complex>& griddedData,
+				      const casacore::Matrix<casacore::Double>& sumwt)
+    {(void)griddedData;(void)sumwt;};
+
+    virtual void initializeDataBuffers(VBStore& vbs)
+    {(void)vbs;};
+
+    virtual void releaseBuffers()
+    {};
     //
     //------------------------------------------------------------------------------
     //----------------------------Private parts-------------------------------------
@@ -195,6 +220,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   protected:
     async::Mutex *myMutex_p;
     double nVBs_p, nVisGridded_p;
+    unsigned long nDataBytes_p;
     // casacore::Vector<casacore::Double> uvwScale_p, offset_p, dphase_p;
     // casacore::Vector<casacore::Int> chanMap_p, polMap_p;
     // CFStore convFuncStore_p;
