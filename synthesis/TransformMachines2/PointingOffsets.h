@@ -108,8 +108,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::CountedPtr<SolvableVisJones> epJ_p;
     bool doPointing_p;
     VisBufferUtil vbUtils_p;
-    casacore::Vector<casacore::Vector<casacore::Double> > cachedPointingOffsets_p;
     casacore::Vector<casacore::Vector<casacore::Double> > cachedAntGridPointingOffsets_p;
+    casacore::Vector<casacore::Vector<casacore::Double> > cachedPointingOffsets_p;
 
     int PO_DEBUG_P;
   };
