@@ -72,15 +72,37 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //      cached_PointingOffset_p.resize(2);cached_PointingOffset_p=-1000.0;runTimeG_p=runTimeDG_p=0.0;
       hpg::VisData<HPGNPOL> vd;
       sizeofVisData_p=0;
-      for(auto x:vd.m_visibilities) sizeofVisData_p += sizeof(x);
-      for(auto x:vd.m_weights) sizeofVisData_p += sizeof(x);
-      for(auto x:vd.m_uvw) sizeofVisData_p += sizeof(x);
-      for(auto x:vd.m_cf_phase_gradient) sizeofVisData_p += sizeof(x);
-      for(auto x:vd.m_cf_index) sizeofVisData_p += sizeof(x);
+      unsigned int SoD=0;
+      SoD=0;
+      for(auto x:vd.m_visibilities) SoD+=sizeof(x);
+      sizeofVisData_p += SoD;
+      log_l << "Size of visibilities: " << SoD << " bytes" << endl;
+
+      SoD=0;
+      for(auto x:vd.m_weights) SoD += sizeof(x);
+      sizeofVisData_p += SoD;
+      log_l << "Size of Weights: " << SoD << " bytes" << endl;
+
+      SoD=0;
+      for(auto x:vd.m_uvw) SoD += sizeof(x);
+      sizeofVisData_p += SoD;
+      log_l << "Size of UVW: " << SoD << " bytes" << endl;
+
+      SoD=0;
+      for(auto x:vd.m_cf_phase_gradient) SoD += sizeof(x);
+      sizeofVisData_p += SoD;
+      log_l << "Size of phase grad.: " << SoD << " bytes" << endl;
+
+      SoD=0;
+      for(auto x:vd.m_cf_index) SoD+=sizeof(x);
+      sizeofVisData_p += SoD;
+      log_l << "Size of cf_index: " << SoD << " bytes" << endl;
 	    
       sizeofVisData_p += sizeof(vd.m_frequency);
       sizeofVisData_p += sizeof(vd.m_phase);
-
+      log_l << "Size of freq: " << sizeof(vd.m_frequency) << " bytes" << endl;
+      log_l << "Size of m_phase: " << sizeof(vd.m_phase) << " bytes" << endl;
+      log_l << LogIO::POST;
     };
 
     virtual ~AWVisResamplerHPG()
