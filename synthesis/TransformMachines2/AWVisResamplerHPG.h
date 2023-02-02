@@ -102,6 +102,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       sizeofVisData_p += sizeof(vd.m_phase);
       log_l << "Size of freq: " << sizeof(vd.m_frequency) << " bytes" << endl;
       log_l << "Size of m_phase: " << sizeof(vd.m_phase) << " bytes" << endl;
+      log_l << "Bytes per hpg::VisData: " << sizeofVisData_p << " bytes";
       log_l << LogIO::POST;
     };
 

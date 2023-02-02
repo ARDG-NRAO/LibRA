@@ -211,7 +211,7 @@ int main(int argc, char **argv)
   bool doPBCorr= true;
   bool conjBeams= true;
   float pbLimit=1e-3;
-  bool doSPWDataIter=false;
+  bool doSPWDataIter=true;
   vector<float> posigdev = {300.0,300.0};
 
   UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,

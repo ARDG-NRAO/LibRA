@@ -62,7 +62,6 @@ public:
 
     for (vi2->origin(); vi2->more(); vi2->next())
       {
-	//cerr << "interVB: vol=" << vol << " " << nVB << endl;
 	if (dataCol==casa::refim::FTMachine::CORRECTED)
 	  vb->setVisCube(vb->visCubeCorrected());
 	else
@@ -78,6 +77,7 @@ public:
 
 	vol+=vb->nRows();
 
+	//cerr << "nVB, VBRows: " << nVB << " " << vb->nRows() << endl;
 	cfSentNotifier(nVB);
 
 	nVB++;
@@ -142,6 +142,7 @@ public:
     // class instance, but the call is always made from the main
     // thread.
     //
+    vi2->setRowBlocking(100000);
     for (vi2->originChunks();vi2->moreChunks(); vi2->nextChunk())
       {
   	vi2->origin(); // So that the global vb is valid

@@ -122,6 +122,7 @@ public:
     // Set up the data iterator
     //
     float timeSpan=10.0;
+    int rowBlocking=-1;
     Block<Int> sortCols;
     if (doSPWDataIter)
       {
@@ -130,7 +131,8 @@ public:
 	sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
 	sortCols[2]=MS::FIELD_ID;
 	sortCols[3]=MS::TIME;
-	timeSpan=100000.0;
+	timeSpan=10000000000.0;
+	rowBlocking=325*100;
       }
     //
     // Construct the vis iterator Vi2.  Set up the frequency selection
@@ -143,7 +145,7 @@ public:
     // call after making the empty sky images below.
     //
     vi2_l = new vi::VisibilityIterator2(selectedMS,vi::SortColumns(sortCols),true,0,timeSpan);
-
+    if (rowBlocking > 0) vi2_l->setRowBlocking(rowBlocking);
     // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
     // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
     // vi2_cfsrvr->originChunks();

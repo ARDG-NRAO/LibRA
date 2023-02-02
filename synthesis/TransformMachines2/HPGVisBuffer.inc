@@ -30,8 +30,10 @@ create_blank_vis_data_vector(const unsigned nPol, const unsigned nChan, const un
 // -------------------------------------------------------------------------------
 //
 template <unsigned N>
-std::vector<hpg::VisData<N>>
-makeHPGVisBuffer(casacore::Matrix<double>& sumwt,
+//std::vector<hpg::VisData<N>>
+unsigned int
+makeHPGVisBuffer(std::vector<hpg::VisData<N>>& hpgVB,
+		 casacore::Matrix<double>& sumwt,
 		 const casa::refim::VBStore& casaVBS,
 		 casacore::CountedPtr<casa::refim::VB2CFBMap> vb2CFBMap,
 		 const unsigned nGridPol, const unsigned nGridChan,
@@ -48,14 +50,15 @@ makeHPGVisBuffer(casacore::Matrix<double>& sumwt,
 		 bool useFlaggedData=false
 		 )
 {
-  unsigned nVisChan=endChan - startChan + 1;
-  unsigned nVisRow=endRow - startRow + 1;
+  unsigned nVisChan=endChan - startChan;
+  unsigned nVisRow=endRow - startRow;
   unsigned targetIMChan, targetIMPol;
   const casa::VisBuffer2& casaVB = *(casaVBS.vb_p);
   IPosition dataShape = casaVB.visCube().shape();
   //unsigned nDataChan=dataShape(1);
   unsigned nDataPol=dataShape(0);
-  std::vector<hpg::VisData<N>> hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
+  //  std::vector<hpg::VisData<N>> hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
+  hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
 
   std::array<std::complex<hpg::visibility_fp>, N> vis;
   std::array<hpg::vis_weight_fp, N> wt;
@@ -248,8 +251,9 @@ unsigned mRow=0;
 	}
     } // End row-loop
 
-  hpgVB.resize(hpgIRow);
-  return hpgVB;
+  //hpgVB.resize(hpgIRow);
+  return hpgIRow;
+  //  return hpgVB;
 }
 //
 // -------------------------------------------------------------------------------

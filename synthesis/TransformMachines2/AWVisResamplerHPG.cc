@@ -600,17 +600,23 @@ namespace casa{
     //
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
 
-    std::vector<hpg::VisData<HPGNPOL> >
-      hpgVB = makeHPGVisBuffer<HPGNPOL>(sumwt,
-					vbs,
-					vb2CFBMap_p,
-					nGridPol, nGridChan, nVisPol,
-					rbeg, rend, startChan, endChan,
-					chanMap_p, polMap_p,
-					conjMNdx, conjMVals,
-					dphase_p,pointingOffsets,
-					cfsi_p);
+    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
+    // = makeHPGVisBuffer<HPGNPOL>(sumwt,
+    unsigned int hpgVBNRows =
+      makeHPGVisBuffer<HPGNPOL>(hpgVB,
+				sumwt,
+				vbs,
+				vb2CFBMap_p,
+				nGridPol, nGridChan, nVisPol,
+				rbeg, rend, startChan, endChan,
+				chanMap_p, polMap_p,
+				conjMNdx, conjMVals,
+				dphase_p,pointingOffsets,
+				cfsi_p);
     
+    // Resize so that there are no unused VisData in the hpgVB at the end.
+    hpgVB.resize(hpgVBNRows);    
+
     // Add to the list only if the hpgVB holds any data. This guard
     // is required since in the loop below we also count the number
     // visibilities gridded (the nVisGridded_p).
@@ -632,6 +638,8 @@ namespace casa{
       {
 	for(unsigned i=0;i<hpgVBList_p.size();i++)
 	  {
+	    // LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
+	    // log_l << "No. of vis in VisData: " << hpgVBList_p[i].size() << LogIO::POST;
 	    nVisGridded_p += hpgVBList_p[i].size()*HPGNPOL;
 	    nDataBytes_p += sizeofVisData_p*hpgVBList_p[i].size();
 	    hpg::opt_t<hpg::Error> err;
@@ -705,17 +713,20 @@ namespace casa{
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
     Matrix<Double> sumwt(IPosition(2,nGridPol,nGridChan));// This is not used for degridding
     bool useFlaggedData=true;
-    std::vector<hpg::VisData<HPGNPOL> >
-      hpgVB = makeHPGVisBuffer<HPGNPOL>(sumwt,
-					vbs,
-					vb2CFBMap_p,
-					nGridPol, nGridChan, nVisPol,
-					rbeg, rend, startChan, endChan,
-					chanMap_p, polMap_p,
-					conjMNdx, conjMVals,
-					dphase_p,pointingOffsets,
-					cfsi_p,useFlaggedData);
-    
+
+    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
+    unsigned int hpgVBNRows = makeHPGVisBuffer<HPGNPOL>(hpgVB,
+							sumwt,
+							vbs,
+							vb2CFBMap_p,
+							nGridPol, nGridChan, nVisPol,
+							rbeg, rend, startChan, endChan,
+							chanMap_p, polMap_p,
+							conjMNdx, conjMVals,
+							dphase_p,pointingOffsets,
+							cfsi_p,useFlaggedData);
+    // Resize so that there are no unused VisData in the hpgVB at the end.
+    hpgVB.resize(hpgVBNRows);    
     // Add to the list only if the hpgVB holds any data. This guard
     // is required since in the loop below we also count the number
     // visibilities gridded (the nVisGridded_p).
