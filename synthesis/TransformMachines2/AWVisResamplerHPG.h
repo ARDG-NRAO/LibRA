@@ -32,6 +32,7 @@
 #include <synthesis/TransformMachines2/CFStore.h>
 #include <synthesis/TransformMachines2/VBStore.h>
 #include <synthesis/TransformMachines2/VisibilityResampler.h>
+#include <synthesis/TransformMachines2/HPGVisBufferBucket.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -59,7 +60,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 						 nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
 						 hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
 						 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
-						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0)
+						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),hpgVB_p(),hpgVBBucket_p(10)
 
     {
       hpgVBList_p.reserve(maxVBList_p);
@@ -263,6 +264,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::chrono::duration<double> mkHPGVB_duration;
 
     unsigned int sizeofVisData_p;
+    std::vector<hpg::VisData<HPGNPOL> > hpgVB_p;
+    HPGVisBufferBucket<HPGNPOL> hpgVBBucket_p;
+
   };
   }; //# NAMESPACE CASA - END
 };

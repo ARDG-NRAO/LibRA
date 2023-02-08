@@ -600,10 +600,11 @@ namespace casa{
     //
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
 
-    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
+    //    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
     // = makeHPGVisBuffer<HPGNPOL>(sumwt,
     unsigned int hpgVBNRows =
-      makeHPGVisBuffer<HPGNPOL>(hpgVB,
+      makeHPGVisBuffer<HPGNPOL>(hpgVB_p,
+				//makeHPGVisBuffer<HPGNPOL>(hpgVBBucket_p,
 				sumwt,
 				vbs,
 				vb2CFBMap_p,
@@ -614,15 +615,17 @@ namespace casa{
 				dphase_p,pointingOffsets,
 				cfsi_p);
     
+    //    cerr << "MkHPGVB: " << rbeg << " " << rend << " " << hpgVBNRows << endl;
     // Resize so that there are no unused VisData in the hpgVB at the end.
-    hpgVB.resize(hpgVBNRows);    
+    hpgVB_p.resize(hpgVBNRows);    
+    bool visDataBucketFull=(hpgVB_p.size()==hpgVBNRows);
 
     // Add to the list only if the hpgVB holds any data. This guard
     // is required since in the loop below we also count the number
     // visibilities gridded (the nVisGridded_p).
 
-    if (hpgVB.size() > 0)
-      hpgVBList_p.push_back(hpgVB);
+    if (hpgVB_p.size() > 0)
+      hpgVBList_p.push_back(hpgVB_p);
     
     std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
@@ -633,9 +636,13 @@ namespace casa{
     // If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
     // std::move() empties the storage of its argument.
     //
-    timer_p.mark();
-    if (hpgVBList_p.size() >= maxVBList_p)
+    if (!visDataBucketFull)
       {
+	cerr << "VisData bucket not yet full. " << hpgVB_p.size() << " " << hpgVBNRows << endl;
+      }
+    else if (hpgVBList_p.size() >= maxVBList_p)
+      {
+	timer_p.mark();
 	for(unsigned i=0;i<hpgVBList_p.size();i++)
 	  {
 	    // LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
@@ -662,10 +669,10 @@ namespace casa{
 		log_l << "Failed hpg::" << ((do_degrid)?"degrid_grid_visibilities()":"grid_visibilities()")
 		      << " Error type: " << static_cast<int>(err->type()) << LogIO::SEVERE;
 	      }
+	    griddingTime += timer_p.real();
 	  }
 	hpgVBList_p.resize(0);
       }
-    griddingTime += timer_p.real();
     return;
   }
   //
@@ -714,8 +721,8 @@ namespace casa{
     Matrix<Double> sumwt(IPosition(2,nGridPol,nGridChan));// This is not used for degridding
     bool useFlaggedData=true;
 
-    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
-    unsigned int hpgVBNRows = makeHPGVisBuffer<HPGNPOL>(hpgVB,
+    //    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
+    unsigned int hpgVBNRows = makeHPGVisBuffer<HPGNPOL>(hpgVB_p,
 							sumwt,
 							vbs,
 							vb2CFBMap_p,
@@ -725,12 +732,15 @@ namespace casa{
 							conjMNdx, conjMVals,
 							dphase_p,pointingOffsets,
 							cfsi_p,useFlaggedData);
+
     // Resize so that there are no unused VisData in the hpgVB at the end.
-    hpgVB.resize(hpgVBNRows);    
+    hpgVB_p.resize(hpgVBNRows);    
+    bool visDataBucketFull=(hpgVB_p.size()==hpgVBNRows);
+
     // Add to the list only if the hpgVB holds any data. This guard
     // is required since in the loop below we also count the number
     // visibilities gridded (the nVisGridded_p).
-    if (hpgVB.size() > 0) hpgVBList_p.push_back(hpgVB);
+    if (hpgVB_p.size() > 0) hpgVBList_p.push_back(hpgVB_p);
     
     std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
@@ -740,10 +750,14 @@ namespace casa{
     // If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
     // std::move() empties the storage of its argument.
     //
-    timer_p.mark();
 
+    if (!visDataBucketFull)
+      {
+	cerr << "VisData bucket not yet full. " << hpgVB_p.size() << " " << hpgVBNRows << endl;
+      }
     if (hpgVBList_p.size() >= maxVBList_p)
       {
+	timer_p.mark();
 	for(unsigned i=0;i<hpgVBList_p.size();i++)
 	  {
 	    nVisGridded_p += hpgVBList_p[i].size()*HPGNPOL;
@@ -779,10 +793,10 @@ namespace casa{
 		makeCASAVisBuffer<HPGNPOL>(//nVisRow, nVisChan, nVisPol,
 					   polMap_p, vbs, hpgModelVis);
 	      }
+	    griddingTime += timer_p.real();
 	  }
 	hpgVBList_p.resize(0);
       }
-    griddingTime += timer_p.real();
     return;
   }
   //
