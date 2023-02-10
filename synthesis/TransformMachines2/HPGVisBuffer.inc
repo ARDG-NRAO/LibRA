@@ -32,7 +32,7 @@ create_blank_vis_data_vector(const unsigned nPol, const unsigned nChan, const un
 template <unsigned N>
 //std::vector<hpg::VisData<N>>
 unsigned int
-makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL> hpgVBBucket_p,
+makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
 		 casacore::Matrix<double>& sumwt,
 		 const casa::refim::VBStore& casaVBS,
 		 casacore::CountedPtr<casa::refim::VB2CFBMap> vb2CFBMap,
@@ -92,6 +92,7 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL> hpgVBBucket_p,
   std::array<unsigned, 5> cfsi_extents = cfsi.cell_extents();
   //  cerr << "cfsi: "; for(auto i:cfsi_extents) cerr << i << " "; cerr << endl;
 
+  //  cerr << "HPGVB.Bucket: " << hpgVBBucket_p.totalUnits() << " " << hpgVBBucket_p.counter() << endl;
   unsigned hpgIRow=0;
   for(unsigned irow=startRow; irow< endRow; irow++)
     {   
@@ -233,6 +234,7 @@ unsigned mRow=0;
 		      hpgVBBucket_p.append(hpg::VisData<N>(vis,wt,frequency,dphaseHPG,hpgUVW,grid_cube,cf_index
 							   ,cf_phase_gradient
 							   ));
+		      hpgIRow++;
 		    }
 		}
 	    } // End chan-loop
@@ -240,7 +242,8 @@ unsigned mRow=0;
     } // End row-loop
 
   //hpgVB.resize(hpgIRow);
-  return hpgVBBucket_p.size();
+  if (hpgIRow > 0) hpgVBBucket_p.incrementFills();
+  return hpgVBBucket_p.counter();
   //  return hpgVB;
 }
 //

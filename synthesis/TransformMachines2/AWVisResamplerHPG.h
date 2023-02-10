@@ -46,6 +46,7 @@
 #include <hpg/hpg_indexing.hpp>
 #include <tuple>
 #define HPGNPOL 2
+#define VBS_IN_THE_BUCKET 10
 #include <chrono>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -60,7 +61,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 						 nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
 						 hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
 						 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
-						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),hpgVB_p(),hpgVBBucket_p(10)
+						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),hpgVB_p(),hpgVBBucket_p(VBS_IN_THE_BUCKET)
 
     {
       hpgVBList_p.reserve(maxVBList_p);

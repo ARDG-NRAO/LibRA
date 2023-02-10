@@ -19,8 +19,12 @@ class HPGVisBufferBucket
 {
 public:
   HPGVisBufferBucket(const unsigned& nVBs)
-    :hpgVB_p(),nVBs_p(nVBs), nFills_p(0), rowCounter_p(0)
-  {};
+    :hpgVB_p()
+  {
+    //    cerr << "HPGVBB.ctor()" << endl;
+    nVBs_p=nVBs;
+    nFills_p=rowCounter_p=nPol_p=nChan_p=nRow_p=0;
+  };
 
   ~HPGVisBufferBucket() {};
   //
@@ -43,35 +47,60 @@ public:
 			     const unsigned nChan,
 			     const unsigned nRow)
   {
-    if (hpgVB_p.size()==0)
+    //    cerr << "HPGVBB resizing...." << nPol << " " << nChan << " " << nRow << endl;
+    //    if (hpgVB_p.size()==0)
       {
 	hpgVB_p.resize(nRow*nChan*nVBs_p);
 	rowCounter_p=0;
+	nFills_p=0;
+	// Save the dimensions for use in reset() later.  Think of a better mechanism!
+	nPol_p = nPol;
+	nChan_p = nChan;
+	nRow_p = nRow;
       }
     return hpgVB_p.size();
   }
   //
   // -------------------------------------------------------------------------------
   //
-  inline unsigned size(){return hpgVB_p.size();}
-  inline unsigned counter(){return rowCounter_p;}
-  inline bool isFull() {return (rowCounter_p >= size())||(nFills_p == nVBs_p);}
+  inline unsigned size()
+  {return hpgVB_p.size();}
+
+  inline unsigned counter()
+  {return rowCounter_p;}
+
+  inline unsigned totalUnits()
+  {return nVBs_p;}
+
+  inline unsigned filledUnits()
+  {return nFills_p;}
+
+  inline unsigned incrementFills()
+  {return nFills_p++;}
+
+  inline bool isFull()
+  {return (rowCounter_p >= size())||(nFills_p == nVBs_p);}
+
+  inline unsigned reset()
+  {return resize(nPol_p, nChan_p, nRow_p);}
+
+  inline unsigned shrink()
+  {hpgVB_p.resize(rowCounter_p-1); return hpgVB_p.size();}
   //
   // -------------------------------------------------------------------------------
   //
   inline bool append(const hpg::VisData<NCorr>& visData)
   {
     hpgVB_p[rowCounter_p++]=visData;
-    nFills_p++;
     return rowCounter_p==size();
   }
   //
   // -------------------------------------------------------------------------------
   //
   std::vector<hpg::VisData<NCorr>> hpgVB_p;  
-
 private:
   unsigned int nVBs_p, nFills_p;
   unsigned int rowCounter_p;
+  unsigned int nPol_p, nChan_p, nRow_p;
 };
 #endif

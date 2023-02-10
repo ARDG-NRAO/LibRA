@@ -147,8 +147,10 @@ namespace casa{
       
       
       //size_t max_visibilities_batch_size = 351*2*1000;
-      size_t max_visibilities_batch_size = (nAntenna*(nAntenna-1)/2)*2*nChannel;
-      
+
+      unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
+      size_t max_visibilities_batch_size = nRows*VBS_IN_THE_BUCKET;
+
       cerr << "Mueller indexes: initgridder2: " << endl;
       cerr << "M: " << endl;
       for(unsigned ir=0;ir<mueller_indexes.size();ir++)
@@ -482,18 +484,25 @@ namespace casa{
     // std::vector<std::array<int, HPGNPOL> > mueller_indexes,conjugate_mueller_indexes;
     // makeMuellerIndexes<HPGNPOL>(mNdx, mVals, (uInt)nGridPol, mueller_indexes);
     // makeMuellerIndexes<HPGNPOL>(conjMNdx, conjMVals, (uInt)nGridPol, conjugate_mueller_indexes);
+    LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","createHPG"));
     
     uint nProcs = 2;
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
 					 nVBAntenna, nVBChannels);
+
     
+    unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
+      log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
+	    << " x " << VBS_IN_THE_BUCKET << endl;
+
+      hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*VBS_IN_THE_BUCKET);
+
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;
     do_degrid = sendModelImage(HPGModelImageName_p,gridSize);
     if (do_degrid)
       {
-	LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","createHPG"));
 	log_l << "Running degrid_grid GPU kernel" << LogIO::POST;
       }
     return do_degrid;
@@ -603,8 +612,8 @@ namespace casa{
     //    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
     // = makeHPGVisBuffer<HPGNPOL>(sumwt,
     unsigned int hpgVBNRows =
-      makeHPGVisBuffer<HPGNPOL>(hpgVB_p,
-				//makeHPGVisBuffer<HPGNPOL>(hpgVBBucket_p,
+      makeHPGVisBuffer<HPGNPOL>(//hpgVB_p,
+				hpgVBBucket_p,
 				sumwt,
 				vbs,
 				vb2CFBMap_p,
@@ -614,33 +623,42 @@ namespace casa{
 				conjMNdx, conjMVals,
 				dphase_p,pointingOffsets,
 				cfsi_p);
-    
-    //    cerr << "MkHPGVB: " << rbeg << " " << rend << " " << hpgVBNRows << endl;
+				
+    //    cerr << "MkHPGVB: " << rbeg << " " << rend << " " << hpgVBNRows << " " << hpgVBBucket_p.filledUnits() << endl;
     // Resize so that there are no unused VisData in the hpgVB at the end.
-    hpgVB_p.resize(hpgVBNRows);    
-    bool visDataBucketFull=(hpgVB_p.size()==hpgVBNRows);
+    if (!hpgVBBucket_p.isFull())
+      {
+	//	cerr << "VisData bucket not yet full. HPGList, hpgRows: " << hpgVB_p.size() << " " << hpgVBNRows << endl;
+      }
+    else
+      {
+	// Shrink the internal storage of the bucket to be length to
+	// which it is filled (so that unfilled content does not reach
+	// the gridder).
+	hpgVBBucket_p.shrink();
 
-    // Add to the list only if the hpgVB holds any data. This guard
-    // is required since in the loop below we also count the number
-    // visibilities gridded (the nVisGridded_p).
+	// Add to the list only if the hpgVB holds any data. This guard
+	// is required since in the loop below we also count the number
+	// visibilities gridded (the nVisGridded_p).
 
-    if (hpgVB_p.size() > 0)
-      hpgVBList_p.push_back(hpgVB_p);
-    
+	// This makes a list of hpgVB by making a copy!  Ultimately,
+	// make a the hpgVBList a list of pointers to hpgVBBucket_p
+	// (of course, this needs some careful design thinking --
+	// perhaps meant for production rather than this "prototype").
+	if (hpgVBBucket_p.size() > 0)
+	  hpgVBList_p.push_back(hpgVBBucket_p.hpgVB_p);
+
+	hpgVBBucket_p.reset();
+      }
     std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
     mkHPGVB_duration += thisVB_duration;
 
-    //     cerr << "Done making hpg::VisData<N> (" << thisVB_duration.count() << ")" << endl;
     //
     // If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
     // std::move() empties the storage of its argument.
     //
-    if (!visDataBucketFull)
-      {
-	cerr << "VisData bucket not yet full. " << hpgVB_p.size() << " " << hpgVBNRows << endl;
-      }
-    else if (hpgVBList_p.size() >= maxVBList_p)
+    if (hpgVBList_p.size() >= maxVBList_p)
       {
 	timer_p.mark();
 	for(unsigned i=0;i<hpgVBList_p.size();i++)

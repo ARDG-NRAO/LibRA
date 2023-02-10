@@ -3371,7 +3371,7 @@ void SynthesisImagerVi2::unlockMSs()
       outrec.define("relToNat",relToNat);
       outrec.define("effSens",effSensitivity);
 
-    } catch (AipsError x) {
+    } catch (AipsError& x) {
       throw(x);
       return outrec;
     } 
