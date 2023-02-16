@@ -112,19 +112,20 @@ namespace casa{
   // This is a global method, used in AWVRHPG::DataToGrid_impl().
   template <unsigned N>
   hpg::Gridder* initGridder2(const hpg::Device HPGDevice_l,
-						const uInt& NProcs,
-						const hpg::CFArray* cfArray_ptr,
-						const std::array<unsigned, 4>& grid_size,
-						const std::array<double, 2>& grid_scale,
-						const PolMapType& mNdx,
-						const PolMapType& mVals,
-						const PolMapType& conjMNdx,
-						const PolMapType& conjMVals,
-						const int& nAntenna,
-						const int& nChannel
-						// std::vector<std::array<int, N> > mueller_indexes,
-						// std::vector<std::array<int, N> > conjugate_mueller_indexes
-						)
+			     const uInt& NProcs,
+			     const hpg::CFArray* cfArray_ptr,
+			     const std::array<unsigned, 4>& grid_size,
+			     const std::array<double, 2>& grid_scale,
+			     const PolMapType& mNdx,
+			     const PolMapType& mVals,
+			     const PolMapType& conjMNdx,
+			     const PolMapType& conjMVals,
+			     const int& nAntenna,
+			     const int& nChannel,
+			     const unsigned& nVBsPerBucket
+			     // std::vector<std::array<int, N> > mueller_indexes,
+			     // std::vector<std::array<int, N> > conjugate_mueller_indexes
+			     )
   {
     //
     // FYI:  gridSize{(uInt)nx,(uInt)ny,(uInt)nGridPol,(uInt)nGridChan};
@@ -149,7 +150,7 @@ namespace casa{
       //size_t max_visibilities_batch_size = 351*2*1000;
 
       unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
-      size_t max_visibilities_batch_size = nRows*VBS_IN_THE_BUCKET;
+      size_t max_visibilities_batch_size = nRows*nVBsPerBucket;
 
       cerr << "Mueller indexes: initgridder2: " << endl;
       cerr << "M: " << endl;
@@ -489,14 +490,14 @@ namespace casa{
     uint nProcs = 2;
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
-					 nVBAntenna, nVBChannels);
+					 nVBAntenna, nVBChannels,nVBsPerBucket_p);
 
     
     unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
       log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
-	    << " x " << VBS_IN_THE_BUCKET << endl;
+	    << " x " << nVBsPerBucket_p << endl;
 
-      hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*VBS_IN_THE_BUCKET);
+      hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*nVBsPerBucket_p);
 
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;
@@ -645,10 +646,10 @@ namespace casa{
 	// make a the hpgVBList a list of pointers to hpgVBBucket_p
 	// (of course, this needs some careful design thinking --
 	// perhaps meant for production rather than this "prototype").
-	if (hpgVBBucket_p.size() > 0)
-	  hpgVBList_p.push_back(hpgVBBucket_p.hpgVB_p);
+	// if (hpgVBBucket_p.size() > 0)
+	//   hpgVBList_p.push_back(hpgVBBucket_p.hpgVB_p);
 
-	hpgVBBucket_p.reset();
+	// hpgVBBucket_p.reset();
       }
     std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
@@ -658,28 +659,33 @@ namespace casa{
     // If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
     // std::move() empties the storage of its argument.
     //
-    if (hpgVBList_p.size() >= maxVBList_p)
+    //    if (hpgVBList_p.size() >= maxVBList_p)
+    if (hpgVBBucket_p.isFull() && (hpgVBNRows>0))
       {
 	timer_p.mark();
-	for(unsigned i=0;i<hpgVBList_p.size();i++)
+	// for(unsigned i=0;i<hpgVBList_p.size();i++)
 	  {
-	    // LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
-	    // log_l << "No. of vis in VisData: " << hpgVBList_p[i].size() << LogIO::POST;
-	    nVisGridded_p += hpgVBList_p[i].size()*HPGNPOL;
-	    nDataBytes_p += sizeofVisData_p*hpgVBList_p[i].size();
-	    hpg::opt_t<hpg::Error> err;
+	    //	    unsigned nHPGVBRows = hpgVBList_p[i].size()
+	    unsigned nHPGVBRows = hpgVBBucket_p.size();
 
+	    nVisGridded_p += nHPGVBRows*HPGNPOL;
+	    nDataBytes_p += sizeofVisData_p*nHPGVBRows;
+
+	    hpg::opt_t<hpg::Error> err;
 	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
 	    if (do_degrid)
 	      err = hpgGridder_p->degrid_grid_visibilities(
 							   hpg::Device::OpenMP,
-							   std::move(hpgVBList_p[i])
+							   //std::move(hpgVBList_p[i])
+							   std::move(hpgVBBucket_p.hpgVB_p)
 							   );
 	    else
 	      err = hpgGridder_p->grid_visibilities(
 						    hpg::Device::OpenMP,
-						    std::move(hpgVBList_p[i])
+						    //						    std::move(hpgVBList_p[i])
+						    std::move(hpgVBBucket_p.hpgVB_p)
 						    );
+	    hpgVBBucket_p.reset();
 	    
 	    if (err)
 	      {

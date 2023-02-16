@@ -417,7 +417,8 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 		string& fieldStr, string& spwStr, string& uvDistStr,
 		bool& doPointing, bool& normalize, bool& doPBCorr,
 		bool& conjBeams, float& pbLimit, vector<float>& posigdev,
-		bool& doSPWDataIter)
+		bool& doSPWDataIter,
+		int& nVBsPerBucket)
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
@@ -549,7 +550,12 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 			   pbLimit,
 			   posigdev,
 			   imageNamePrefix,
-			   imagingMode
+			   imagingMode,
+			   360.0, //computePAStep
+			   360.0, //rotatePAStep
+			   1000000000, //cache
+			   16, //tile
+			   nVBsPerBucket
 			   );
       CountedPtr<refim::CFCache>  cfc = get<0>(ret);
       CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);

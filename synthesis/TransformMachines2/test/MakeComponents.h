@@ -67,7 +67,8 @@ createAWPFTMachine(const String ftmName,
 		   const Float computePAStep=360.0,
 		   const Float rotatePAStep=360.0,
 		   const Int cache=1000000000,
-		   const Int tile=16)
+		   const Int tile=16,
+		   const int nVBsPerIter=1)
   
 {
   LogIO os( LogOrigin("roadrunner","createAWPFTMachine",WHERE));
@@ -92,7 +93,7 @@ createAWPFTMachine(const String ftmName,
   // Construct the appropriate re-sampler.
   //
   CountedPtr<refim::VisibilityResamplerBase> visResampler;
-  if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false);
+  if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false,nVBsPerIter);
   else visResampler = new refim::AWVisResampler();
   visResampler->setModelImage(modelImageName);
   //

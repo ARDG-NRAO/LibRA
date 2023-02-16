@@ -65,7 +65,8 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
 	Bool& conjBeams,
 	Float& pbLimit,
 	vector<float> &posigdev,
-	Bool& doSPWDataIter)
+	Bool& doSPWDataIter,
+	Int& nVBsPerBucket)
 {
   if (!restart)
     {
@@ -134,6 +135,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
 
       i=1;clgetBValp("dopointing", doPointing,i,watchPoints);
       i=2;clgetNFValp("pointingoffsetsigdev", posigdev,i);
+      i=1;clgetIValp("visbucketsize", nVBsPerBucket,i);
 
       i=1;dbgclgetBValp("normalize",normalize,i);
       i=1;dbgclgetBValp("spwdataiter",doSPWDataIter,i);
@@ -219,13 +221,14 @@ int main(int argc, char **argv)
   float pbLimit=1e-3;
   bool doSPWDataIter=true;
   vector<float> posigdev = {300.0,300.0};
+  int nVBsPerBucket=1;
 
   UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
      sowImageExt, cmplxGridName, NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
      ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
      doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-     doSPWDataIter);
+     doSPWDataIter,nVBsPerBucket);
 
   set_terminate(NULL);
 
@@ -236,7 +239,7 @@ int main(int argc, char **argv)
 		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
 		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
 		 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-		 doSPWDataIter);
+		 doSPWDataIter,nVBsPerBucket);
     }
   catch(AipsError& er)
     {
