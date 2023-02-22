@@ -131,9 +131,9 @@
 #include <synthesis/TransformMachines/HetArrayConvFunc.h>
 #include <synthesis/TransformMachines/VisibilityResamplerBase.h>
 
-#include <synthesis/DataSampling/SynDataSampling.h>
-#include <synthesis/DataSampling/SDDataSampling.h>
-#include <synthesis/DataSampling/ImageDataSampling.h>
+// #include <synthesis/DataSampling/SynDataSampling.h>
+// #include <synthesis/DataSampling/SDDataSampling.h>
+// #include <synthesis/DataSampling/ImageDataSampling.h>
 
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <casacore/lattices/LRegions/LattRegionHolder.h>

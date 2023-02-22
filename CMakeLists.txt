@@ -110,27 +110,27 @@ pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
 # Create a list with all the components
 set(casacpp_all_components
-  alma
+#  alma
   asdmstman
   atmosphere
-  atnf
-  calanalysis
-  casadbus
+#  atnf
+#  calanalysis
+#  casadbus
   casatools
   casa_sakura
   components
   imageanalysis
-  flagging
-  graphics
-  miriad
+#  flagging
+#  graphics
+#  miriad
   mstransform
   msvis
   nrao
-  parallel
+#  parallel
   protobuf_generated
-  singledish
-  singledishfiller
-  spectrallines
+#  singledish
+#  singledishfiller
+#  spectrallines
   stdcasa
   synthesis
 )

@@ -40,7 +40,7 @@ target_sources(casacpp_synthesis
 # directory where casacore is installed
 target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::CASACORE)
 # OpenMP dependency
-target_link_libraries(casacpp_synthesis PUBLIC OpenMP::OpenMP_CXX)
+#target_link_libraries(casacpp_synthesis PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency
 target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::SAKURA)
 # Libhpg dependency
