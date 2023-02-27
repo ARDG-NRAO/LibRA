@@ -77,16 +77,16 @@ add_definitions(-DUSE_GRPC)
 find_package(GSL REQUIRED)
 
 # LIBXML dependecy
-pkg_check_modules(LibXML++ REQUIRED IMPORTED_TARGET libxml++-2.6)
+#pkg_check_modules(LibXML++ REQUIRED IMPORTED_TARGET libxml++-2.6)
 
 # LIBXSLT dependecy
-pkg_check_modules(XSLT REQUIRED IMPORTED_TARGET libxslt)
+#pkg_check_modules(XSLT REQUIRED IMPORTED_TARGET libxslt)
 
 # CFITSIO dependecy
 pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
 
 # sqllite3 dependency
-find_package(SQLite3 REQUIRED)
+#find_package(SQLite3 REQUIRED)
 
 # OpenMP dependency
 find_package(OpenMP REQUIRED)
@@ -99,7 +99,7 @@ find_package(hpg CONFIG)
 if(DEFINED hpg_FOUND AND ${hpg_FOUND})
   add_definitions(-DUSE_HPG)
 endif()
-include_directories(AFTER SYSTEM /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
+
 #parafeed dependency
 find_package(parafeed REQUIRED)
 pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
