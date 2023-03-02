@@ -1,3 +1,4 @@
+#ifdef USE_GRPC
 #include <synthesis/ImagerObjects/grpcInteractiveClean.h>
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
 #include <casatools/Config/State.h>
@@ -1724,3 +1725,4 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
 
 } //# NAMESPACE CASA - END
+#endif

@@ -53,11 +53,20 @@ target_link_libraries(casacpp_synthesis PUBLIC parafeed::parafeed)
 #set(PARAFEED_LIBRARIES /home/pjaganna/Software/casa_build_native/linux_64b/libparafeed.a /usr/lib/x86_64-linux-gnu/libreadline.so /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
 
 
-# Internal dependencies
-target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
-add_dependencies(casacpp_synthesis casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
-# the generated protobuf headers
-target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+# Internal dependencies.  Include protobuf only if using GRPC
+if (CMAKE_USE_GRPC)
+  target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+  add_dependencies(casacpp_synthesis casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+  # the generated protobuf headers
+  target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+else()
+  target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
+  add_dependencies(casacpp_synthesis casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
+endif()
+
+# # the generated protobuf headers
+# target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+
 # Include directory for the generated flex/bison
 target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # the top level source directory, so that we can find all the includes

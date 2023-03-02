@@ -43,6 +43,11 @@ include(CTest)
 # Set a default build type if none was specified
 set(default_build_type RelWithDebInfo)
 
+# Variables to control dependency graph
+set(CMAKE_USE_GRPC OFF)         # Remove GRPC and protobuf dependency
+set(CMAKE_PYTHON_INTERFACE OFF) # Remove xml++ and xslt depdnency
+set(CMAKE_LIBIMAGING_ONLY ON)   # For future use (post code/synthesis refactoring)
+
 # Set C++ standard to c++11
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -60,27 +65,31 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 # protobuf/grpc dependency
-find_package(Protobuf REQUIRED)
-find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
-# Try to detect GRPC using native cmake support (for distributions like Fedora or source compilation)
-find_package(gRPC QUIET)
-# If that fails, try detecting GRPC with pkgconfig (for distributions like Ubuntu, Rocky Linux)
-if(NOT DEFINED gRPC_FOUND OR gRPC_FOUND EQUAL 0libprotobuf-dev:amd64)
-  pkg_check_modules(GRPC REQUIRED IMPORTED_TARGET grpc++)
-  set(gRPC_USES_FIND_PACKAGE OFF)
-else()
-  set(gRPC_USES_FIND_PACKAGE ON)
+if (CMAKE_USE_GRPC)
+	find_package(Protobuf REQUIRED)
+	find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+	# Try to detect GRPC using native cmake support (for distributions like Fedora or source compilation)
+	find_package(gRPC QUIET)
+	# If that fails, try detecting GRPC with pkgconfig (for distributions like Ubuntu, Rocky Linux)
+	if(NOT DEFINED gRPC_FOUND OR gRPC_FOUND EQUAL 0libprotobuf-dev:amd64)
+		pkg_check_modules(GRPC REQUIRED IMPORTED_TARGET grpc++)
+		set(gRPC_USES_FIND_PACKAGE OFF)
+	else()
+		set(gRPC_USES_FIND_PACKAGE ON)
+	endif()
+	add_definitions(-DUSE_GRPC)
 endif()
-add_definitions(-DUSE_GRPC)
 
 # GSL dependency
 find_package(GSL REQUIRED)
 
-# LIBXML dependecy
-#pkg_check_modules(LibXML++ REQUIRED IMPORTED_TARGET libxml++-2.6)
+if (CMAKE_PYTHON_INTERFACE)
+  # LIBXML dependecy
+  pkg_check_modules(LibXML++ REQUIRED IMPORTED_TARGET libxml++-2.6)
 
-# LIBXSLT dependecy
-#pkg_check_modules(XSLT REQUIRED IMPORTED_TARGET libxslt)
+  # LIBXSLT dependecy
+  pkg_check_modules(XSLT REQUIRED IMPORTED_TARGET libxslt)
+endif()
 
 # CFITSIO dependecy
 pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
@@ -108,32 +117,61 @@ pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 #  add_definitions(-DUSE_PARAFEED)
 #endif()
 
+
 # Create a list with all the components
-set(casacpp_all_components
-#  alma
-  asdmstman
-  atmosphere
-#  atnf
-#  calanalysis
-#  casadbus
-  casatools
-  casa_sakura
-  components
-  imageanalysis
-#  flagging
-#  graphics
-#  miriad
-  mstransform
-  msvis
-  nrao
-#  parallel
-  protobuf_generated
-#  singledish
-#  singledishfiller
-#  spectrallines
-  stdcasa
-  synthesis
-)
+if (CMAKE_LIBIMAGING_ONLY)
+  set(casacpp_all_components
+    #  alma
+    asdmstman
+    atmosphere
+    #  atnf
+    #  calanalysis
+    #  casadbus
+    casatools
+    casa_sakura
+    components
+    imageanalysis
+    #  flagging
+    #  graphics
+    #  miriad
+    mstransform
+    msvis
+    nrao
+    #  parallel
+    #  protobuf_generated
+    #  singledish
+    #  singledishfiller
+    #  spectrallines
+    stdcasa
+    synthesis
+    )
+else()
+  set(casacpp_all_components
+    alma
+    asdmstman
+    atmosphere
+    atnf
+    calanalysis
+    casadbus
+    casatools
+    casa_sakura
+    components
+    imageanalysis
+    flagging
+    graphics
+    miriad
+    mstransform
+    msvis
+    nrao
+    parallel
+    protobuf_generated
+    singledish
+    singledishfiller
+    spectrallines
+    stdcasa
+    synthesis
+    )
+endif()
 
 # Add a subdirectory per casacpp component
 foreach(_component IN LISTS casacpp_all_components)
