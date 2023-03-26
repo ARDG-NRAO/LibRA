@@ -154,6 +154,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		     "This call should go to a HPG-based inhereted class."));
       return false;
     }
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>&& /*rwdcfArray*/)
+    {
+      throw(AipsError("Internal Error: VisibilityResampler.h::set_cf(RWDeviceCFArray&&) called. "
+		     "This call should go to a HPG-based inhereted class."));
+      return false;
+    }
     //
     //------------------------------------------------------------------------------
     //

@@ -53,7 +53,7 @@ namespace casa{
 			      double& wVal, int& fndx, int& wndx,
 			      const casa::refim::PolMapType& mNdx,
 			      const casa::refim::PolMapType& conjMNdx,
-			      const int& ipol, const uint& mCol,
+			      const int& mRow, const uint& mCol,
 			      const double& paTolerance)
     {
       Bool Dummy;
@@ -70,11 +70,16 @@ namespace casa{
       
       int pndx;
       
-      if (wVal > 0.0) pndx=mNdx[ipol][mCol];
-      else            pndx=conjMNdx[ipol][mCol];
-      
+      if (wVal > 0.0) pndx=mNdx[mRow][mCol];
+      else            pndx=conjMNdx[mRow][mCol];
+
+      // Forcing pndx to 1 effectively disables squint correction.  This was required since the CFs
+      // per pol may have different sizes (due to numerical noise).  CFs for all pol in this case can't
+      // set in the same Group of a CFArray.
+      //
       //pndx=1;
-      //cerr << "CFC indexes(w,f,p),ipol: " << wndx << " " << fndx << " " << pndx << " " << ipol << endl;
+
+      //cerr << "CFC indexes(w,f,p),mRow: " << wndx << " " << fndx << " " << pndx << " " << mRow << endl;
       cfcell=&(*(cfb.getCFCellPtr(fndx,wndx,pndx)));
       
       convFuncV = &(*cfcell->getStorage());
@@ -87,6 +92,7 @@ namespace casa{
       
       // Load the CF if it not already loaded.  If a new CF is loaded,
       // check if it needs to be rotated.
+      //      cerr << cfcell->fileName_p << " " << endl;
       if (convFuncV->shape().product() == 0)
 	{
 	  Array<Complex>  tt=SynthesisUtils::getCFPixels(cfb.getCFCacheDir(), cfcell->fileName_p);
@@ -106,13 +112,13 @@ namespace casa{
 	  //   }
 	  convFuncV = &(*cfcell->getStorage());
 	}
+      //      cerr << convFuncV->shape() << " ";
       
       cfShape.assign(convFuncV->shape().asVector());
       
       // Always extract the Mueller element value from mNdx.  mNdx
       // carries the direct mapping between Mueller Matrix and
       // Visibility vector.
-      //     muellerElement=cfb->getCFCellPtr(fndx,wndx,mNdx[ipol][mRow])->muellerElement_p;
       muellerElement=cfcell->muellerElement_p;
 
       return convFuncV->getStorage(Dummy);
@@ -305,6 +311,22 @@ namespace casa{
       nMuellerElements++; // mndx_p has 0-based indices
       log_l << "No. of Mueller elements: " << nMuellerElements << LogIO::POST;
       
+      auto getMaxCFShape = [&cfb](Vector<int>& mRow,
+					const int& rowN,const int& fNdx, const int& wNdx) -> IPosition
+			   {
+			     IPosition cfShp=IPosition(4,0,0,0,0);
+			     for(size_t col=0; col<mRow.nelements(); col++)
+			       {
+				 int pndx=mRow[col];
+				 if (pndx >= 0)
+				   {
+				     //pndx=1;
+				     IPosition tcfShp=(cfb.getCFCellPtr(fNdx,wNdx,pndx))->shape_p;
+				     if (tcfShp[0] > cfShp[0]) cfShp=tcfShp;
+				   }
+			       }
+			     return cfShp;
+			   };
       //
       // Loops below just get the cfShapes and use them to set up cfArray
       //-------------------------------------------------------------------------------------------------
@@ -317,28 +339,46 @@ namespace casa{
     		  Int targetIMPol=polMap(ipol);
     		  if ((targetIMPol>=0) && (targetIMPol<nGridPol)) 
     		    {
-    		      Vector<int> mRow = mndx_p[targetIMPol];
-    		      for (uInt mCols=0;mCols<mRow.nelements(); mCols++) 
-    			{
-    			  if (mRow[mCols] < 0) break;
-    			  {
-    			    int fNdx=spwNdxList[iFreq],wNdx=wNdxList[iW],pndx;
-			    // if (wVal > 0.0) pndx=mNdx[ipol][mCols];
-			    // else            pndx=conjMNdx[ipol][mCols];
-			    pndx=1;
-			    IPosition cfShp=(cfb.getCFCellPtr(fNdx,wNdx,pndx))->shape_p;
+		      Vector<int> mRow = mndx_p[targetIMPol];
+		      int fNdx=spwNdxList[iFreq],wNdx=wNdxList[iW];
 
-    			    // hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,(mndx_p[targetIMPol][mCols]));
-    			    // std::array<unsigned, 3> tt=cfsi.cf_index(cfCellNdx);
-    			    cfArrayShape.resize(iGrp,cfShp(0), cfShp(1),nMuellerElements,1);//This only sets extents, but does not allocate memory
-    			  }
-    			}
-    		    }
-    		} // Pol loop
-    	      iGrp++;
+		      IPosition cfShp = getMaxCFShape(mRow,targetIMPol,fNdx,wNdx);
+		      //		      cerr << "CFSHP: " << cfShp << endl;
+		      cfArrayShape.resize(iGrp,cfShp(0), cfShp(1),nMuellerElements,1);//This only sets extents, but does not allocate memory
+
+		      // for (uInt mCols=0;mCols<mRow.nelements(); mCols++)
+		      // 	{
+		      // 	  if (mRow[mCols] < 0) break;
+		      // 	  {
+		      // 	    int fNdx=spwNdxList[iFreq],wNdx=wNdxList[iW],pndx;
+		      // 	    // if (wVal > 0.0) pndx=mNdx[ipol][mCols];
+		      // 	    // else            pndx=conjMNdx[ipol][mCols];
+		      // 	    pndx=1;
+		      // 	    IPosition cfShp=(cfb.getCFCellPtr(fNdx,wNdx,pndx))->shape_p;
+
+		      // 	    // hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,(mndx_p[targetIMPol][mCols]));
+		      // 	    // std::array<unsigned, 3> tt=cfsi.cf_index(cfCellNdx);
+		      // 	    cfArrayShape.resize(iGrp,cfShp(0), cfShp(1),nMuellerElements,1);//This only sets extents, but does not allocate memory
+		      // 	  }
+		      // 	}
+		    }
+		} // Pol loop
+	      iGrp++;
     	    } // W loop
     	  if (nWCF > 1) iGrp=0;
     	} // Freq loop
+      // cerr << "CFShape: ";
+      // {
+      // 	uint g=0;
+      // 	for(auto x : cfArrayShape.m_extent)
+      // 	  {
+      // 	    cerr << "[" << g++ << "] ";
+      // 	    for(auto v:x)
+      // 	      cerr << v << " " ;
+      // 	    cerr << "|";
+      // 	  }
+      // }
+      // cerr << endl;
       //-------------------------------------------------------------------------------------------------
       auto err_or_val = hpg::RWDeviceCFArray::create(hpg::Device::Cuda, cfArrayShape);
       if (!hpg::is_value(err_or_val))
@@ -348,6 +388,21 @@ namespace casa{
 
       double paTolerance = 360.0;
       iGrp=0; // HPG Group index
+
+      // cerr << endl << "--------------------------------" << endl;
+      // for (auto r:mndx_p)
+      // 	{
+      // 	  for(auto c:r) cerr << c << " ";
+      // 	  cerr << endl;
+      // 	}
+      // cerr << endl << "--------------------------------" << endl;
+      // for (auto r:conj_mndx_p)
+      // 	{
+      // 	  for(auto c:r) cerr << c << " ";
+      // 	  cerr << endl;
+      // 	}
+      // cerr << endl << "--------------------------------" << endl;
+
       for(int iFreq=0; iFreq < nFreqCF; iFreq++) // CASA CF Freq-index
     	{
     	  for(int iW=0; iW < nWCF; iW++)   // CASA CF W-index
@@ -363,11 +418,18 @@ namespace casa{
     		      // ipol determines the targetIMPol.  Each targetIMPol gets a row of CFs (mRow).
     		      // visVecElements is gridded using the convFuncV and added to the target grid.
 
+		      //		      cerr << ">>>>> " << mRow.nelements() << endl;
     		      for (uInt mCols=0;mCols<mRow.nelements(); mCols++) 
     			{
+			  //			  cerr << "(" << targetIMPol << "," << mCols <<") " << "|" << mRow[mCols] << endl;
     			  if (mRow[mCols] >= 0)
 			    {
 			      //int visVecElement=mCols;
+
+			      //			      cerr << "[[" << iFreq << "," << iW << "|";
+			      //			      for(auto m : mRow) cerr << m << ",";
+			      //			      cerr << "]]" << endl;
+
 			      int muellerElement;
 			      Complex* convFuncV=NULL;
 
@@ -378,8 +440,8 @@ namespace casa{
 							 cfb, dataWVal,
 							 fNdx, wNdx,
 							 mndx_p, conj_mndx_p,
-							 targetIMPol,//ipol,
-							 mCols,
+							 targetIMPol,//ipol, // This is Mueller Matrix Row index
+							 mCols, // This is the Mueller Matrix Column index
 							 paTolerance);
 			      //
 			      // Ref. for meaning of the indices in CFCellInex: (BL, PA, W, Freq, Pol)
@@ -392,13 +454,55 @@ namespace casa{
 			      // tt[1] ==> cube : should always be 0
 			      // tt[2] ==> group : linearized index from (BLType, PA, W, SPW)
 			      std::array<unsigned, 3> tt=cfsi.cf_index(cfCellNdx);
-			    
-			      uint k=0;
-			      for(auto x=0; x<cfShape(0); x++)
-				for(auto y=0; y<cfShape(1); y++)
-				  (*rwDCFArray)(x, y, tt[0]/*Mueller*/, tt[1]/*Cube*/, iGrp)=convFuncV[k++];
+			      //			      cerr << "[[" << mRow[mCols] << "," << tt[0] << "," << tt[1] << "," << iGrp << "]]" << endl;
 
-			      //			      if (ipol==0) cerr << support[0] << " ";
+			      //
+			      // The block below takes into account if the target buffer (rwDCFArray) is larger than the
+			      // the source buffer (convFuncV) and copies the pixels such that the extra pixels in the
+			      // target buffer are zero.  The target buffer is initialize (to zero) only when this state
+			      // is encountered.
+			      {
+				float integral_dN;
+				//float fractional = modff((cfArrayShape.m_extent[iGrp][0] - cfShape(0))/cfArrayShape.oversampling(), &integral_dN);
+				float fractional = modff((cfArrayShape.m_extent[iGrp][0] - cfShape(0))/2, &integral_dN);
+
+				if (fractional > 0.0)
+				  log_l << "MakeCFArray.cc: Internal error: Difference between CFArray "
+					<< "and CF shapes is fractional pixel!"
+					<< LogIO::EXCEPTION << LogIO::POST;
+
+				if (integral_dN > 0.0)
+				  {
+				    log_l << "Difference in CFA and CF shapes detected: "
+					  << cfArrayShape.m_extent[iGrp][0] << "-" <<  cfShape(0) << " "
+					  << "MuellerTerm: " << tt[0] << " Group: " << iGrp
+					  << LogIO::POST;
+
+				    // Intialize the target buffer for the (infrequent) case when it is larger than the
+				    // source buffer.
+				    //
+				    for(uint x=0; x < cfArrayShape.m_extent[iGrp][0]; x++)
+				      for(uint y=0; y < cfArrayShape.m_extent[iGrp][1]; y++)
+					(*rwDCFArray)(x,y,tt[0],tt[1],iGrp)=0.0;
+				  }
+				{
+				  auto dN = (uint)integral_dN;
+				  for(uint xcf=0,x=dN; xcf < (uint)cfShape(0); xcf++,x++)
+				    {
+				      uint offset=xcf*cfShape(1);
+				      for(uint ycf=0,y=dN; ycf < (uint)cfShape(1); ycf++,y++)
+					(*rwDCFArray)(x, y, tt[0]/*Mueller*/, tt[1]/*Cube*/, iGrp)=convFuncV[ycf+offset];
+				    }
+				}
+			      }
+			      // {
+			      // 	uint k=0;
+			      // 	for(auto x=0; x<cfShape(0); x++)
+			      // 	  for(auto y=0; y<cfShape(1); y++)
+			      // 	    (*rwDCFArray)(x, y, tt[0]/*Mueller*/, tt[1]/*Cube*/, iGrp)=convFuncV[k++];
+			      // 	//			      if (ipol==0) cerr << support[0] << " ";
+			      // 	//break;
+			      // }
 			    }
     			}
     		    }
@@ -407,7 +511,7 @@ namespace casa{
     	    } // W loop
     	  if (nWCF > 1) iGrp=0;
     	} // Freq loop
-      //      cerr << endl;
+      //cerr << endl;
       return std::make_tuple(cfsi,rwDCFArray);
     }
   } // NAMESPACE refin - END

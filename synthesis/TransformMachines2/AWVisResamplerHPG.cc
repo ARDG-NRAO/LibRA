@@ -44,7 +44,7 @@
 #include <hpg/hpg_indexing.hpp>
 #include <type_traits>
 #include <synthesis/TransformMachines2/HPGVisBuffer.inc>
-
+#include <thread>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -451,12 +451,14 @@ namespace casa{
   //-----------------------------------------------------------------------------------
   // Send CFs to the device
   //
-  void setCF(hpg::Gridder* hpgGridder,
+  void sendCF(hpg::Gridder* hpgGridder,
 	    std::shared_ptr<hpg::RWDeviceCFArray>& rwdcf_ptr)
   {
-    LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","setCF"));
+    LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","sendCF"));
 
     log_l << "Sending CFs..." << LogIO::POST;
+    //    cerr << "############# " << rwdcf_ptr << endl;
+    //    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     auto err=hpgGridder->set_convolution_function(hpg::Device::OpenMP, std::move(*rwdcf_ptr));
     log_l << "...done" << LogIO::POST;
     if (err)
@@ -484,10 +486,10 @@ namespace casa{
     // makeMuellerIndexes<HPGNPOL>(conjMNdx, conjMVals, (uInt)nGridPol, conjugate_mueller_indexes);
     
     uint nProcs = 2;
-    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
+    //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
+    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
 					 nVBAntenna, nVBChannels);
-    
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;
     do_degrid = sendModelImage(HPGModelImageName_p,gridSize);
@@ -552,7 +554,7 @@ namespace casa{
 						  mVals, mNdx, conjMVals, conjMNdx);
 
     if (reloadCFs)
-      setCF(hpgGridder_p, rwdcf_ptr_p);
+      sendCF(hpgGridder_p, rwdcf_ptr_p);
 
     return std::make_tuple(do_degrid,cfb);
   }
@@ -638,15 +640,19 @@ namespace casa{
 
 	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
 	    if (do_degrid)
-	      err = hpgGridder_p->degrid_grid_visibilities(
-							   hpg::Device::OpenMP,
-							   std::move(hpgVBList_p[i])
-							   );
+	      {
+		err = hpgGridder_p->degrid_grid_visibilities(
+							     hpg::Device::OpenMP,
+							     std::move(hpgVBList_p[i])
+							     );
+	      }
 	    else
-	      err = hpgGridder_p->grid_visibilities(
-						    hpg::Device::OpenMP,
-						    std::move(hpgVBList_p[i])
-						    );
+	      {
+		err = hpgGridder_p->grid_visibilities(
+						      hpg::Device::OpenMP,
+						      std::move(hpgVBList_p[i])
+						      );
+	      }
 	    
 	    if (err)
 	      {
