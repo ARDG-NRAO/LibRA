@@ -24,6 +24,7 @@
 //#
 //# $Id$
 
+#ifdef USE_GRPC
 #ifndef SYNTHESIS_GRPCINTERACTIVEITERATION_H
 #define SYNTHESIS_GRPCINTERACTIVEITERATION_H
 
@@ -201,3 +202,4 @@ namespace casa {
 
 #endif
 
+#endif

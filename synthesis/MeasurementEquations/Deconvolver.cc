@@ -96,7 +96,7 @@
 #include <synthesis/MeasurementEquations/CEMemModel.h>
 #include <synthesis/MeasurementEquations/ClarkCleanLatModel.h>
 #include <synthesis/MeasurementEquations/ClarkCleanProgress.h>
-#include <synthesis/DataSampling/ImageDataSampling.h>
+//#include <synthesis/DataSampling/ImageDataSampling.h>
 #include <synthesis/MeasurementEquations/LatConvEquation.h>
 #include <synthesis/MeasurementEquations/IPLatConvEquation.h>
 #include <synthesis/MeasurementEquations/Deconvolver.h>
