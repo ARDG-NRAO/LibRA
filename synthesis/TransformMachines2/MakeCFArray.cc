@@ -50,15 +50,17 @@ namespace casa{
 			      Vector<int>& support,
 			      int& muellerElement,
 			      casa::refim::CFBuffer& cfb,
-			      double& wVal, int& fndx, int& wndx,
-			      const casa::refim::PolMapType& mNdx,
-			      const casa::refim::PolMapType& conjMNdx,
-			      const int& mRow, const uint& mCol,
+			      //double& wVal,
+			      int& fndx, int& wndx, int& pndx,
+			      // const casa::refim::PolMapType& mNdx,
+			      // const casa::refim::PolMapType& conjMNdx,
+			      // const int& mRow, const uint& mCol,
 			      const double& paTolerance)
     {
       Bool Dummy;
       Array<Complex> *convFuncV;
       CFCell *cfcell;
+      //int pndx;
       //
       // Since we conjugate the CF depending on the sign of the w-value,
       // pick the appropriate element of the Mueller Matrix (see note on
@@ -68,10 +70,11 @@ namespace casa{
       //
       //timer_p.mark();
       
-      int pndx;
-      
-      if (wVal > 0.0) pndx=mNdx[mRow][mCol];
-      else            pndx=conjMNdx[mRow][mCol];
+      // if (wVal > 0.0) pndx=mNdx[mRow][mCol];
+      // else            pndx=conjMNdx[mRow][mCol];
+
+      // if (wVal > 0.0) pndx=pndx_l;
+      // else            pndx=cpndx_l;
 
       // Forcing pndx to 1 effectively disables squint correction.  This was required since the CFs
       // per pol may have different sizes (due to numerical noise).  CFs for all pol in this case can't
@@ -435,13 +438,23 @@ namespace casa{
 
 			      int fNdx=spwNdxList[iFreq];
 			      int wNdx=wNdxList[iW];
-			    
+			      int pndx;
+			      //
+			      // Since we conjugate the CF depending on the sign of the w-value,
+			      // pick the appropriate element of the Mueller Matrix (see note on
+			      // this for details). Without reading the note/understanding,
+			      // fiddle with this logic at your own risk (can easily lead to a
+			      // lot of grief. --Sanjay).
+			      //
+			      if (dataWVal > 0.0) pndx=mndx_p[targetIMPol][mCols];
+			      else                pndx=conj_mndx_p[targetIMPol][mCols];
+
 			      convFuncV=getConvFuncArray(vbPA,cfShape, support,muellerElement,
-							 cfb, dataWVal,
-							 fNdx, wNdx,
-							 mndx_p, conj_mndx_p,
-							 targetIMPol,//ipol, // This is Mueller Matrix Row index
-							 mCols, // This is the Mueller Matrix Column index
+							 cfb, 
+							 fNdx, wNdx, pndx,
+							 // mndx_p, conj_mndx_p,
+							 // targetIMPol,//ipol, // This is Mueller Matrix Row index
+							 // mCols, // This is the Mueller Matrix Column index
 							 paTolerance);
 			      //
 			      // Ref. for meaning of the indices in CFCellInex: (BL, PA, W, Freq, Pol)
