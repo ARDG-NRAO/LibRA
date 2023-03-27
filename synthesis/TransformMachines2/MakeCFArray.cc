@@ -46,36 +46,19 @@ namespace casa{
     //
     //--------------------------------------------------------------------------------------------
     //
-    Complex* getConvFuncArray(const double& vbPA, Vector<int>& cfShape,
+    Complex* getConvFuncArray(const double& vbPA, casa::refim::CFBuffer& cfb,
+			      Vector<int>& cfShape,
 			      Vector<int>& support,
 			      int& muellerElement,
-			      casa::refim::CFBuffer& cfb,
-			      //double& wVal,
-			      int& fndx, int& wndx, int& pndx,
-			      // const casa::refim::PolMapType& mNdx,
-			      // const casa::refim::PolMapType& conjMNdx,
-			      // const int& mRow, const uint& mCol,
+			      const int& fndx,
+			      const int& wndx,
+			      const int& pndx,
 			      const double& paTolerance)
     {
       Bool Dummy;
       Array<Complex> *convFuncV;
       CFCell *cfcell;
-      //int pndx;
       //
-      // Since we conjugate the CF depending on the sign of the w-value,
-      // pick the appropriate element of the Mueller Matrix (see note on
-      // this for details). Without reading the note/understanding,
-      // fiddle with this logic at your own risk (can easily lead to a
-      // lot of grief. --Sanjay).
-      //
-      //timer_p.mark();
-      
-      // if (wVal > 0.0) pndx=mNdx[mRow][mCol];
-      // else            pndx=conjMNdx[mRow][mCol];
-
-      // if (wVal > 0.0) pndx=pndx_l;
-      // else            pndx=cpndx_l;
-
       // Forcing pndx to 1 effectively disables squint correction.  This was required since the CFs
       // per pol may have different sizes (due to numerical noise).  CFs for all pol in this case can't
       // set in the same Group of a CFArray.
@@ -422,12 +405,12 @@ namespace casa{
     		      // visVecElements is gridded using the convFuncV and added to the target grid.
 
 		      //		      cerr << ">>>>> " << mRow.nelements() << endl;
-    		      for (uInt mCols=0;mCols<mRow.nelements(); mCols++) 
+		      for (uInt mCol=0;mCol<mRow.nelements(); mCol++)
     			{
-			  //			  cerr << "(" << targetIMPol << "," << mCols <<") " << "|" << mRow[mCols] << endl;
-    			  if (mRow[mCols] >= 0)
+			  //			  cerr << "(" << targetIMPol << "," << mCol <<") " << "|" << mRow[mCol] << endl;
+			  if (mRow[mCol] >= 0)
 			    {
-			      //int visVecElement=mCols;
+			      //int visVecElement=mCol;
 
 			      //			      cerr << "[[" << iFreq << "," << iW << "|";
 			      //			      for(auto m : mRow) cerr << m << ",";
@@ -438,7 +421,7 @@ namespace casa{
 
 			      int fNdx=spwNdxList[iFreq];
 			      int wNdx=wNdxList[iW];
-			      int pndx;
+			      int pNdx;
 			      //
 			      // Since we conjugate the CF depending on the sign of the w-value,
 			      // pick the appropriate element of the Mueller Matrix (see note on
@@ -446,28 +429,25 @@ namespace casa{
 			      // fiddle with this logic at your own risk (can easily lead to a
 			      // lot of grief. --Sanjay).
 			      //
-			      if (dataWVal > 0.0) pndx=mndx_p[targetIMPol][mCols];
-			      else                pndx=conj_mndx_p[targetIMPol][mCols];
+			      if (dataWVal > 0.0) pNdx=mndx_p[targetIMPol][mCol];
+			      else                pNdx=conj_mndx_p[targetIMPol][mCol];
 
-			      convFuncV=getConvFuncArray(vbPA,cfShape, support,muellerElement,
-							 cfb, 
-							 fNdx, wNdx, pndx,
-							 // mndx_p, conj_mndx_p,
-							 // targetIMPol,//ipol, // This is Mueller Matrix Row index
-							 // mCols, // This is the Mueller Matrix Column index
+			      convFuncV=getConvFuncArray(vbPA, cfb,
+							 cfShape, support,muellerElement,
+							 fNdx, wNdx, pNdx,
 							 paTolerance);
 			      //
 			      // Ref. for meaning of the indices in CFCellInex: (BL, PA, W, Freq, Pol)
-			      //hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,(mndx_p[targetIMPol][mCols]));
-			      hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,mRow[mCols]);
+			      //hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,(mndx_p[targetIMPol][mCol]));
+			      hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,mRow[mCol]);
 
-			      //			hpg::CFCellIndex cfCellNdx(0,0,dummyNdx,iCF,(mNdx[ipol][mCols])); 
-			      // SB: Check if p2m.at(mNdx[ipol][mCols] should go to mNdx[ipol][mCols]
+			      //			hpg::CFCellIndex cfCellNdx(0,0,dummyNdx,iCF,(mNdx[ipol][mCol]));
+			      // SB: Check if p2m.at(mNdx[ipol][mCol] should go to mNdx[ipol][mCol]
 			      // tt[0] ==> pol
 			      // tt[1] ==> cube : should always be 0
 			      // tt[2] ==> group : linearized index from (BLType, PA, W, SPW)
 			      std::array<unsigned, 3> tt=cfsi.cf_index(cfCellNdx);
-			      //			      cerr << "[[" << mRow[mCols] << "," << tt[0] << "," << tt[1] << "," << iGrp << "]]" << endl;
+			      //			      cerr << "[[" << mRow[mCol] << "," << tt[0] << "," << tt[1] << "," << iGrp << "]]" << endl;
 
 			      //
 			      // The block below takes into account if the target buffer (rwDCFArray) is larger than the
@@ -476,7 +456,6 @@ namespace casa{
 			      // is encountered.
 			      {
 				float integral_dN;
-				//float fractional = modff((cfArrayShape.m_extent[iGrp][0] - cfShape(0))/cfArrayShape.oversampling(), &integral_dN);
 				float fractional = modff((cfArrayShape.m_extent[iGrp][0] - cfShape(0))/2, &integral_dN);
 
 				if (fractional > 0.0)
