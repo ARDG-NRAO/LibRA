@@ -1,0 +1,183 @@
+# -*- makefile -*-
+# ifeq (0,${MAKELEVEL})
+# whoami    := $(shell whoami)
+# host-type := $(shell arch)
+# HOST := $(shell hostname)
+# endif
+#
+# HOSTNAME is defined by make with the OS command as the value, which
+# when executed, returns the name of the host.
+#
+HOST := $(shell $(HOSTNAME))
+include makefile.casacore.inc.$(HOST)
+
+CPPFLAGS = $(OPT) -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
+           $(DEFS64)                                        \
+           -DHAVE_QT4                                       \
+           -DAIPS_NEEDS_RETHROW                             \
+           -DAIPS_LINUX                                     \
+           -DAIPS_LITTLE_ENDIAN                             \
+           -DAIPS_STDLIB                                    \
+           -DAIPS_NO_LEA_MALLOC                             \
+           -D_GLIBCPP_DEPRECATED                            \
+	   -DAIPS_AUTO_STL                                  \
+	   -DAIPS_ARRAY_INDEX_CHECK                         \
+	   -DSIGNBIT                                        \
+	   -DAIPS_NO_TEMPLATE_SRC                           \
+	   -Wall -pipe -Wno-non-template-friend             \
+	   -Woverloaded-virtual -Wcast-align                \
+	   -Wno-comment -D_FILE_OFFSET_BITS=64              \
+	   -D_LARGEFILE_SOURCE   \
+           -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS
+
+#	   -DAIPS_DEBUG                                     
+
+PYFLAGS = -DPYTHONPATH=\"$(USRLIB)/casapy/bin/$(USRLIB)/casapy/bin/python\" \
+	  -DPYTHONVER=\"2.5\"                                               \
+
+PYLIBS  =  -L$(USRLIB)/casapy/lib/python2.5/config -L$(USRLIB)/casapy/lib
+
+#       -isystem /usr/include/dbus-1.0 -isystem /usr/lib64/dbus-1.0/include 
+INCL = -I.                                   \
+       -I$(SCIINCLDIR)                       \
+       -I$(CLHOME)/include \
+       -I$(COREROOT)/include/$(CASABASE) \
+       -I$(COREROOT)/include/$(CASACORENAME) \
+       -I$(CASAROOT)/include/$(CASACODENAME) \
+       -I$(CASAROOT)/include \
+       -I/usr/include/cfitsio                \
+       -I/usr/include/ATM                \
+       -I$(CASA_COMPILER_PATH)/include 
+
+DISPLAYLIBS = -L$(DISPLAYROOT)/lib -ldisplay \
+	  $(WCSPKG)/libwcs.so 
+#	  $(PGPLOTPKG)/libpgsbox.so              
+
+
+# SYNTHESISLIBS = $(SYNTHROOT)/lib/libsynthesis.a \
+# 	  $(SYNTHROOT)/lib/libcasadbus.a     \
+# 	  $(SYNTHROOT)/lib/libcalibration.a     \
+# 	  $(SYNTHROOT)/lib/libcasadbus.a \
+# 	  -laatm
+# #	  $(SYNTHROOT)/lib/libgraphics.a         
+#-lcasadbus $(CASA_COMPILER_PATH)/lib/libcasa-dbus-cpp.so.0.1 
+SYNTHESISLIBS = -L$(SYNTHROOT) \
+		-lcasacpp_synthesis -lcasacpp_msvis \
+                -lhpg -lkokkoscore
+#		-lsynthesis -lcasadbus -laatm
+#		-lsynthesis -lcasadbus -lcalibration -lcasadbus -laatm
+
+
+CORELIBS = -lcasa_msfits -lcasa_ms -lcasa_images \
+            -lcasa_coordinates -lcasa_lattices \
+            -lcasa_fits -lcasa_measures \
+	    -lcasa_tables -lcasa_scimath -lcasa_scimath_f        \
+            -lcasa_casa -lpthread
+
+#CASALIBS = $(CORELIBS) $(SYNTHESISLIBS) $(DISPLAYLIBS)
+CASALIBS = $(CORELIBS) $(SYNTHESISLIBS) 
+
+CAAPSLIBOBJS = casaChecks.o
+ifneq ($(strip $(SCILIBDIR)),)
+//CAAPSLIB = $(SCILIBDIR)/libcaaps.a
+CAAPSLIB = 
+endif
+#CASAAPPSLIBS = 
+
+ifneq ($(strip $(CLHOME)),)
+UILIBS = -L$(CLHOME)/lib -lparafeed \
+	 -lreadline -lhistory -ltermcap -lm -lc
+#	 -lreadline -lhistory -ltermcap -lm -lfl -lc
+endif
+# -lg2c  
+#HPGLIBS=/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-9.3.0-45gzrpiicmudfrmnyjvmrxt6r5xe3tue/lib64:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gcc-9.3.0-45gzrpiicmudfrmnyjvmrxt6r5xe3tue/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/zlib-1.2.11-vhzh5cfaki5lx5sjuth5iuojq5azdkbd/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/mpc-1.1.0-bmas2nmyudxlszaoasemkqbia5khd5d7/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/mpfr-3.1.6-dtuye2gzm4hj5azewnjirvbdhvpqsmku/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/isl-0.20-rxbbpu3n6s6dkhm3pg6aagexb7qja5de/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-x86_64/gcc-4.8.5/gmp-6.1.2-5odxtlxihbfjtj4dxo52oz5f7r6ir6jk/lib:/home/yaghan3/spack/opt/spack/linux-rhel7-cascadelake/gcc-9.3.0/kokkos-3.2.00-b2clmcpm57bwdi22olcdn3gx7jrzu772/lib64:$(USRLIB)
+LINKEROPTS = -Xlinker -rpath -Xlinker                       \
+	     $(X11LIB):$(USRLIB)/casapy/lib:/usr/local/lib: \
+	     -Wl,-rpath -Wl,$(QT4LIBD) -Wl,-rpath,$(LIBROOT) -Wl,-rpath,$(LIBROOT64) #-Wl,-rpath,$(HPGLIBS)
+#	     $(USRLIB):$(X11LIB):$(USRLIB)/casapy/lib:/usr/local/lib: \
+#	     -Wl,-rpath -Wl,$(QT4LIBD) -Wl,-rpath,$(LIBROOT) -Wl,-rpath,$(HPGLIBS)
+
+	     # $(CASAROOT)/$(ARCH)/lib:$(USRLIB):$(USRLIB)/casapy/lib:/usr/local/lib: \
+	     # -Wl,-rpath -Wl,$(QT4LIBD)
+
+#	     -Xlinker -rpath -Xlinker                       \
+#	     $(CASAROOT)/$(ARCH)/lib:$(USRLIB)/casapy/lib:$(USRLIB):/usr/X11R6/LessTif/Motif2.1/lib:$(X11LIB):/usr/local/lib: \
+
+#	  -lcfitsio -llapack -lblas              \
+	  -L/usr/local/lib -lcpgplot -lpgplot    \
+	  -L$(X11LIB) -lXt -lXmu -lX11 -lXext    
+LIBOPTS = -L$(COREROOT)/lib -L$(CASAROOT)/lib    \
+	  -L$(USRLIB)                            \
+	  -L$(QT4LIBD)                           \
+	  $(WCSPKG)/libwcs.so                     
+#	  $(PGPLOTPKG)/libpgsbox.so              
+
+# INCLUDE THE FOLLOWING FOR IMAGER!
+
+#	  -lQtCore -lQtGui -lQtDBus -lQtDBus_debug -ldbus-c++-1 -lQtXml -lqwt -lgomp
+
+#	  -lg2c -L/usr/local/lib -lcpgplot -lpgplot     \
+#
+#	  /usr/lib64/libcfitsio.so.0 -llapack -lblas    \
+#	  -lcfitsio -llapack -lblas                     \
+#-------------------------------------------------------------------------------------------------
+# Variables that control the generic targets below
+#
+#
+# The list of source file names 
+#
+#SOURCE  = timager.cc tEPJones.cc imasking.cc mssplit.cc tableinfo.cc 
+SOURCE  = imasking.cc mssplit.cc tableinfo.cc tLoadCFFromDisk.cc roadrunner.cc
+SOURCE  = $(wildcard *.cc)
+ifneq ($(strip $(SCILIBDIR)),)
+CAAPSLIBSRC = $(wildcard $(SCILIBDIR)/*.cc)
+endif
+#
+# The list of applications to be built derived from the list of source files in $(SOURCE)
+#
+APPS    = $(patsubst %.cc,%,$(SOURCE))
+#
+# The list object files derived from the list of application in $(APPS)
+#
+OBJECTS = $(patsubst %,%.o,$(APPS))
+ifneq ($(strip $(SCILIBDIR)),)
+CAAPSLIBOBJS = $(patsubst %.cc, %.o, $(CAAPSLIBSRC))
+endif
+#
+#-------------------------------------------------------------------------------------------------
+#
+# The actual tagets
+#
+all: $(APPS)	
+
+install: all
+	strip $(APPS); cp $(APPS) $(SCIBIN)
+
+$(CAAPSLIB): $(CAAPSLIBOBJS) 
+ifneq ($(strip $(SCILIBDIR)),)
+	ar r $(CAAPSLIB) $(CAAPSLIBOBJS)
+endif
+$(CAAPSLIBOBJS): %.o: %.cc
+	$(C++) -c $(PYFLAGS) $(CPPFLAGS) $(INCL) $(PYINCL) $< -o $@
+
+$(OBJECTS): %.o: %.cc 
+	 $(C++) -c $(PYFLAGS) $(CPPFLAGS) $(INCL) $(PYINCL) $< -o $@
+
+$(APPS): % : %.o $(CAAPSLIB)
+	 $(C++) -o $@ $< $(PYFLAGS) $(CPPFLAGS) $(LINKEROPTS) $(LIBOPTS) \
+	 $(CASALIBS) $(PYLIBS) $(UILIBS) $(CAAPSLIB)
+#	 $(C++) $< $(PYFLAGS) $(CPPFLAGS) $(LINKEROPTS) $(CASALIBS) $(LIBOPTS) $(PYLIBS) $(UILIBS) -o $@
+#
+#-------------------------------------------------------------------------------------------------
+#
+.PHONY: clean allclean
+
+depend:
+	makedepend $(INCL) $(SOURCE)
+
+clean: 
+	\rm -rf *.o
+	cd $(SCILIBDIR); \rm -rf *.{o,a}
+
+allclean: clean
+	\rm -f $(APPS)
