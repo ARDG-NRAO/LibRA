@@ -1,12 +1,48 @@
 # LibRA
 
+The LibRA is a project to develop a library of Radio Astronomy interferometric algorithms usable in other packages.
+
+The project includes a suite of standalone applications and a build system to build all the required dependencies.
 
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+A clone of this repository will get the ```src/apps``` directory with the source code for the standalone application, and the ```makefile.libra``` to compile this code and all the dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+```
+git clone gitlab@gitlab.nrao.edu:sbhatnag/libra.git
+cd libra
+make -f makefile.libra init
+make -f makefile.libra allclone
+make -f makefile.libra allbuild
+cd src/apps
+make -f makefile.casacore roadrunner tableinfo mssplit
+```
+If successful, this will produce the following tree:
+```
+.
+|-- build
+|-- |-- casacore
+|-- |-- casacpp
+|-- |-- hpg
+|-- |-- kokkos
+|-- |-- libsakura
+|-- |-- parafeed
+|-- linux_64b
+|-- |-- bin
+|-- |-- data
+|-- |-- include
+|-- |-- lib
+|-- |-- share
+|-- makefile.roadrunner
+|-- src
+|-- |-- apps
+|-- |-- dependencies
+|-- test
+```
+
+
+The binary applicaions will be in ```src/apps``` directory.
 
 ## Add your files
 
