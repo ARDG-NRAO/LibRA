@@ -5,6 +5,19 @@ The LibRA is a project to develop a library of Radio Astronomy interferometric a
 The project includes a suite of standalone applications and a build system to build all the required dependencies.
 
 
+## System requirements
+
+The following come default with RHEL8 or similar systems:
+
+- [ ] GCC 8.x or later
+- [ ] cmake 3.x or later
+- [ ] git gcc-gfortran gtest-devel ccache
+
+The following need to be installed as below:
+
+- [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
+
+
 ## Getting started
 
 A clone of this repository will get the ```src/apps``` directory with the source code for the standalone application, and the ```makefile.libra``` to compile this code and all the dependencies.  For now, follow the following sequence of commands to clone and build the system:
