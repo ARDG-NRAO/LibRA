@@ -34,23 +34,28 @@ If successful, this will produce the following tree:
 ```
 .
 |-- build
-|-- |-- casacore
-|-- |-- casacpp
-|-- |-- hpg
-|-- |-- kokkos
-|-- |-- libsakura
-|-- |-- parafeed
+|   |-- casacore
+|   |-- casacpp
+|   |-- hpg
+|   |-- kokkos
+|   |-- libsakura
+|   |-- parafeed
+|
 |-- linux_64b
-|-- |-- bin
-|-- |-- data
-|-- |-- include
-|-- |-- lib
-|-- |-- share
-|-- makefile.roadrunner
+|   |-- bin
+|   |-- data
+|   |-- include
+|   |-- lib
+|   |-- share
+|
 |-- src
-|-- |-- apps
-|-- |-- dependencies
+|   |-- apps
+|   |-- dependencies
+|
 |-- test
+|
+|-- makefile.libra
+|-- README.md
 ```
 
 The binary applicaions will be in ```src/apps``` directory.
