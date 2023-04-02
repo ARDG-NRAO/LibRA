@@ -50,19 +50,19 @@ NCORES=12
 #
 # Package-level dir structure
 #
-ROOT       = $(shell pwd)
-INSTALLDIR = ${ROOT}/linux_64b
-SRCDIR     = ${ROOT}/src/dependencies
-TESTDIR    = ${ROOT}/test
-BUILDDIR   = ${ROOT}/build
-APPSDIR    = ${ROOT}/apps
-CASASRC    = ${SRCDIR}/casa6
+ROOT         = $(shell pwd)
+INSTALLDIR   = ${ROOT}/linux_64b
+DEPENDSRCDIR = ${ROOT}/src/dependencies
+TESTDIR      = ${ROOT}/test
+BUILDDIR     = ${ROOT}/build
+APPSDIR      = ${ROOT}/apps
+CASASRC      = ${DEPENDSRCDIR}/casa6
 
 #
 # Common options to install artifacs of all packages in a single location
 #
-INSTALLOPTS=-DCMAKE_INSTALL_PREFIX=${INSTALLDIR} \
-	    -DCMAKE_INSTALL_LIBDIR=${INSTALLDIR}/lib 
+INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLDIR} \
+	      -DCMAKE_INSTALL_LIBDIR=${INSTALLDIR}/lib
 
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
@@ -74,10 +74,10 @@ init:
 #####  Kokkos build
 kokkos: kokkos-clone kokkos-build
 kokkos-clone:
-	cd ${SRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
+	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
 kokkos-build:
-	cd ${SRCDIR}/kokkos; \
-	sed -i 's/sm_35/sm_70/g' ${SRCDIR}/kokkos/bin/nvcc_wrapper; 
+	cd ${DEPENDSRCDIR}/kokkos; \
+	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${BUILDDIR}/kokkos; 
 	cd ${BUILDDIR}/kokkos; \
 	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
@@ -86,7 +86,7 @@ kokkos-build:
 	      -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
 	      ${INSTALLOPTS} \
-	      -DBUILD_SHARED_LIBS=ON ${SRCDIR}/kokkos; \
+	      -DBUILD_SHARED_LIBS=ON ${DEPENDSRCDIR}/kokkos; \
 	make -j ${NCORES} install
 kokkos-clean:
 	cd ${BUILDDIR}/kokkos; gmake clean
@@ -97,14 +97,14 @@ kokkos-clean:
 # On RHEL* machines with fftw-devel install it can't find it for libsynthesis so still useful
 fftw: fftw-clone fftw-build
 fftw-clone:
-	cd ${SRCDIR}; \
+	cd ${DEPENDSRCDIR}; \
 	curl -L ${FFTW_REPOS} | tar xz
 fftw-build:
-	cd ${SRCDIR}/fftw-${FFTW_VERSION}; \
+	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; \
 	./configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALLDIR}; \
 	make -j ${NCORES} install
 fftw-clean:
-	cd ${SRCDIR}/fftw-${FFTW_VERSION}; gmake clean
+	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; gmake clean
 
 #####----------------------------------------------------------------------------------------------------
 ####### Install HPG ########
@@ -113,7 +113,7 @@ fftw-clean:
 hpg: hpg-clone hpg-build
 
 hpg-clone: 
-	cd ${SRCDIR}; \
+	cd ${DEPENDSRCDIR}; \
 	git clone --branch ${HPG_VERSION} ${HPG_REPOS}
 
 hpg-cmake:
@@ -126,7 +126,7 @@ hpg-cmake:
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
 	-DFFTW_ROOT_DIR=${INSTALLDIR} \
 	${INSTALLOPTS} \
-	${SRCDIR}/hpg; 
+	${DEPENDSRCDIR}/hpg;
 
 hpg-build: hpg-cmake
 	cd ${BUILDDIR}/hpg; make -j 16 install
@@ -138,7 +138,7 @@ hpg-clean:
 parafeed: parafeed-clone parafeed-build
 
 parafeed-clone:
-	cd ${SRCDIR};\
+	cd ${DEPENDSRCDIR};\
 	git clone --branch ${PARAFEED_VERSION} ${PARAFEED_REPOS}
 #git clone https://github.com/sanbee/parafeed.git
 
@@ -148,7 +148,7 @@ parafeed-build:
 	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 	${INSTALLOPTS} \
 	-DBUILD_SHARED_LIBS=ON \
-	${SRCDIR}/parafeed; \
+	${DEPENDSRCDIR}/parafeed; \
 	make -j 16 install
 
 parafeed-clean:
@@ -158,7 +158,7 @@ parafeed-clean:
 sakura: sakura-clone sakura-build
 
 sakura-clone:
-	cd ${SRCDIR}; \
+	cd ${DEPENDSRCDIR}; \
 	curl -L ${SAKURA_REPOS} | gunzip | tar -xvf -
 
 sakura-build:
@@ -170,7 +170,7 @@ sakura-build:
 	    -DSIMD_ARCH=GENERIC \
 	    -DENABLE_TEST:BOOL=OFF \
 	    ${INSTALLOPTS} \
-	    ${SRCDIR}/sakura-libsakura-*/libsakura; \
+	    ${DEPENDSRCDIR}/sakura-libsakura-*/libsakura; \
 	make install -j ${NCORES}
 
 sakura-clean:
@@ -211,7 +211,7 @@ casacore-clean:
 
 casa: casa-clone casa-build
 casa-clone:
-	cd ${SRCDIR};\
+	cd ${DEPENDSRCDIR};\
 	git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
 casa-cmake:
