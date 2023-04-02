@@ -113,7 +113,13 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetIValp("wplanes", nW,i);  
       i=1;clgetSValp("ftm", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
       i=1;clgetSValp("cfcache", CFCache,i);
-      i=1;clgetSValp("mode", imagingMode,i); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
+
+      InitMap(watchPoints,exposedKeys);
+      exposedKeys.push_back("modelimagename");
+      watchPoints["residual"]=exposedKeys;
+      watchPoints["predict"]=exposedKeys;
+      i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
+
       i=1;clgetBValp("wbawp", WBAwp,i); 
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
