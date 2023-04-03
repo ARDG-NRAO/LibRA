@@ -33,7 +33,6 @@ make -f makefile.casacore roadrunner tableinfo mssplit
 If successful, this will produce the following tree:
 ```
 .
-├── apps
 ├── build
 │   ├── casacore
 │   ├── casacpp
