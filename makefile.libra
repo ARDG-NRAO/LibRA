@@ -50,13 +50,18 @@ NCORES=12
 #
 # Package-level dir structure
 #
-ROOT         = $(shell pwd)
-INSTALLDIR   = ${ROOT}/linux_64b
-DEPENDSRCDIR = ${ROOT}/src/dependencies
-TESTDIR      = ${ROOT}/test
-BUILDDIR     = ${ROOT}/build
-APPSDIR      = ${ROOT}/apps
-CASASRC      = ${DEPENDSRCDIR}/casa6
+ROOT           = $(shell pwd)
+INSTALLDIR     = ${ROOT}/linux_64b
+TESTDIR        = ${ROOT}/test
+
+DEPENDDIR      = ${ROOT}/dependencies
+DEPENDSRCDIR   = ${DEPENDDIR}/src
+DEPENDBUILDDIR = ${DEPENDDIR}/build
+CASASRC        = ${DEPENDSRCDIR}/casa6
+
+APPSDIR        = ${ROOT}/apps
+APPSSRCDIR     = ${APPSDIR}/src
+APPSBUILDDIR   = ${APPSDIR}/build
 
 #
 # Common options to install artifacs of all packages in a single location
@@ -67,7 +72,7 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLDIR} \
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
-	mkdir -p ${ROOT} ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${BUILDDIR}
+	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR}
 
 
 #####----------------------------------------------------------------------------------------------------
@@ -78,8 +83,8 @@ kokkos-clone:
 kokkos-build:
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
-	mkdir -p ${BUILDDIR}/kokkos; 
-	cd ${BUILDDIR}/kokkos; \
+	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
+	cd ${DEPENDBUILDDIR}/kokkos; \
 	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
 	      -D${Kokkos_CUDA_ARCH}=ON \
 	      -DKokkos_ENABLE_CUDA=ON \
@@ -89,7 +94,7 @@ kokkos-build:
 	      -DBUILD_SHARED_LIBS=ON ${DEPENDSRCDIR}/kokkos; \
 	make -j ${NCORES} install
 kokkos-clean:
-	cd ${BUILDDIR}/kokkos; gmake clean
+	cd ${DEPENDBUILDDIR}/kokkos; gmake clean
 
 #####----------------------------------------------------------------------------------------------------
 ###### Install FFTW for HPG ########
@@ -117,22 +122,22 @@ hpg-clone:
 	git clone --branch ${HPG_VERSION} ${HPG_REPOS}
 
 hpg-cmake:
-	mkdir -p ${BUILDDIR}/hpg;
-	cd ${BUILDDIR}/hpg; \
+	mkdir -p ${DEPENDBUILDDIR}/hpg;
+	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=ON \
 	-DCMAKE_CXX_COMPILER=${INSTALLDIR}/bin/nvcc_wrapper \
-	-DCMAKE_PREFIX_PATH=${BUILDDIR} \
+	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
 	-DFFTW_ROOT_DIR=${INSTALLDIR} \
 	${INSTALLOPTS} \
 	${DEPENDSRCDIR}/hpg;
 
 hpg-build: hpg-cmake
-	cd ${BUILDDIR}/hpg; make -j 16 install
+	cd ${DEPENDBUILDDIR}/hpg; make -j 16 install
 
 hpg-clean:
-	cd ${BUILDDIR}/hpg; gmake clean
+	cd ${DEPENDBUILDDIR}/hpg; gmake clean
 #####----------------------------------------------------------------------------------------------------
 #### Install parafeed
 parafeed: parafeed-clone parafeed-build
@@ -143,8 +148,8 @@ parafeed-clone:
 #git clone https://github.com/sanbee/parafeed.git
 
 parafeed-build:
-	mkdir -p ${BUILDDIR}/parafeed
-	cd ${BUILDDIR}/parafeed; \
+	mkdir -p ${DEPENDBUILDDIR}/parafeed
+	cd ${DEPENDBUILDDIR}/parafeed; \
 	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 	${INSTALLOPTS} \
 	-DBUILD_SHARED_LIBS=ON \
@@ -152,7 +157,7 @@ parafeed-build:
 	make -j 16 install
 
 parafeed-clean:
-	cd ${BUILDDIR}/parafeed; gmake clean
+	cd ${DEPENDBUILDDIR}/parafeed; gmake clean
 #####----------------------------------------------------------------------------------------------------
 ####### Install libsakura #######
 sakura: sakura-clone sakura-build
@@ -162,8 +167,8 @@ sakura-clone:
 	curl -L ${SAKURA_REPOS} | gunzip | tar -xvf -
 
 sakura-build:
-	mkdir -p ${BUILDDIR}/libsakura
-	cd ${BUILDDIR}/libsakura;\
+	mkdir -p ${DEPENDBUILDDIR}/libsakura
+	cd ${DEPENDBUILDDIR}/libsakura;\
 	cmake  \
 	    -DBUILD_DOC:BOOL=OFF \
 	    -DPYTHON_BINDING:BOOL=OFF \
@@ -174,7 +179,7 @@ sakura-build:
 	make install -j ${NCORES}
 
 sakura-clean:
-	cd ${BUILDDIR}/libsakura; gmake clean
+	cd ${DEPENDBUILDDIR}/libsakura; gmake clean
 #####----------------------------------------------------------------------------------------------------
 ####### Install Measures Data & Build CASACORE ######
 
@@ -185,8 +190,8 @@ casacore-clone:
 	curl ${CASACORE_DATA_REPOS} | tar -C ${INSTALLDIR}/data -xzf -
 
 casacore-cmake:
-	mkdir -p ${BUILDDIR}/casacore
-	cd ${BUILDDIR}/casacore; \
+	mkdir -p ${DEPENDBUILDDIR}/casacore
+	cd ${DEPENDBUILDDIR}/casacore; \
 	cmake \
 	${INSTALLOPTS} \
 	-DDATA_DIR=${INSTALLDIR}/data \
@@ -202,10 +207,10 @@ casacore-cmake:
 	${CASASRC}/casatools/casacore
 
 casacore-build:casacore-cmake
-	cd ${BUILDDIR}/casacore; make install -j ${NCORES}
+	cd ${DEPENDBUILDDIR}/casacore; make install -j ${NCORES}
 
 casacore-clean:
-	cd ${BUILDDIR}/casacore; gmake clean
+	cd ${DEPENDBUILDDIR}/casacore; gmake clean
 #####----------------------------------------------------------------------------------------------------
 ##### Build casa libsynthesis
 
@@ -215,21 +220,21 @@ casa-clone:
 	git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
 casa-cmake:
-	mkdir -p ${BUILDDIR}/casacpp
-	cd ${BUILDDIR}/casacpp; \
+	mkdir -p ${DEPENDBUILDDIR}/casacpp
+	cd ${DEPENDBUILDDIR}/casacpp; \
 	PKG_CONFIG_PATH=${INSTALLDIR}/lib/pkgconfig cmake \
-	-DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=${BUILDDIR} \
+	-DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DFFTW_ROOT_DIR=${ROOT}/fftw-${FFTW_VERSION} \
 	-DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} \
 	${INSTALLOPTS} \
 	${CASASRC}/casatools/src/code 
 
 casa-build: casa-cmake
-#	cd ${BUILDDIR}/casacpp/synthesis; make install -j ${NCORES}
-	cd ${BUILDDIR}/casacpp; make install -j ${NCORES}
+#	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make install -j ${NCORES}
+	cd ${DEPENDBUILDDIR}/casacpp; make install -j ${NCORES}
 
 casa-clean:
-	cd ${BUILDDIR}/casacpp; gmake clean
+	cd ${DEPENDBUILDDIR}/casacpp; gmake clean
 
 
 
@@ -237,15 +242,17 @@ casa-clean:
 ##### Build roadrunner
 
 just-build-rr:
-	cd ${BUILDDIR}/casacpp/synthesis; make -j ${NCORES} tRoadRunner
+	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} tRoadRunner
 roadrunner: allclone allbuild just-build-rr
 roadrunner-build:  allbuild just-build-rr
 roadrunner-clean:
-	cd ${BUILDDIR}/casacpp/synthesis; make -j ${NCORES} clean
+	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} clean
 
 allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
 allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean roadrunner-clean
 allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build
+bak2sq1:
+	\rm -rf ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDDIR} 
 
 .PHONY: list
 list:
