@@ -33,25 +33,38 @@ make -f makefile.casacore roadrunner tableinfo mssplit
 If successful, this will produce the following tree:
 ```
 .
-├── build
-│   ├── casacore
-│   ├── casacpp
-│   ├── hpg
-│   ├── kokkos
-│   ├── libsakura
-│   └── parafeed
+├── apps
+│   └── src
+│       ├── RoadRunner
+│       ├── makefile.casacore
+│       ├── makefile.casacore.inc.dhruva
+│       ├── mssplit.cc
+│       ├── roadrunner.cc
+│       └── tableinfo.cc
+├── dependencies
+│   ├── build
+│   │   ├── casacore
+│   │   ├── casacpp
+│   │   ├── hpg
+│   │   ├── kokkos
+│   │   ├── libsakura
+│   │   └── parafeed
+│   └── src
+│       ├── casa6
+│       ├── fftw-3.3.10
+│       ├── hpg
+│       ├── kokkos
+│       ├── parafeed
+│       └── sakura-libsakura-5.1.3
 ├── linux_64b
 │   ├── bin
 │   ├── data
 │   ├── include
 │   ├── lib
 │   └── share
-├── src
-│   ├── apps
-│   └── dependencies
 ├── test
 ├── makefile.libra
-└── README.md
+├── README.md
 ```
 
 The binary applicaions will be in ```src/apps``` directory.
