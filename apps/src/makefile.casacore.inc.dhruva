@@ -10,7 +10,7 @@ ARCH         = linux_64b
 # The instance of CASA pacakge that you want to link to
 #
 PWD          = $(shell pwd)
-CASAHOME     = ${PWD}/../..
+CASAHOME     = ${PWD}/../../dependencies
 LIBROOT      = $(CASAHOME)/linux_64b/lib
 LIBROOT64      = $(CASAHOME)/linux_64b/lib64
 #
