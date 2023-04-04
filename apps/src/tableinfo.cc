@@ -71,6 +71,8 @@ int main(int argc, char **argv)
       MSNBuf=OutBuf="";
       UI(restartUI,argc, argv, MSNBuf,OutBuf,verbose);
       restartUI = False;
+      if (MSNBuf=="")
+	throw(AipsError("Input table name not set."));
       //
       //---------------------------------------------------
       //
