@@ -35,6 +35,7 @@ If successful, this will produce the following tree:
 .
 ├── apps
 │   └── src
+│       ├── bosque
 │       ├── RoadRunner
 │       ├── makefile.casacore
 │       ├── makefile.casacore.inc.dhruva
@@ -49,6 +50,13 @@ If successful, this will produce the following tree:
 │   │   ├── kokkos
 │   │   ├── libsakura
 │   │   └── parafeed
+│   ├── linux_64b
+│   │   ├── bin
+│   │   ├── data
+│   │   ├── include
+│   │   ├── lib
+│   │   ├── sbin
+│   │   └── share
 │   └── src
 │       ├── casa6
 │       ├── fftw-3.3.10
@@ -56,15 +64,9 @@ If successful, this will produce the following tree:
 │       ├── kokkos
 │       ├── parafeed
 │       └── sakura-libsakura-5.1.3
-├── linux_64b
-│   ├── bin
-│   ├── data
-│   ├── include
-│   ├── lib
-│   └── share
 ├── test
 ├── makefile.libra
-├── README.md
+└── README.md
 ```
 
 The binary applicaions will be in ```apps/src``` directory.
