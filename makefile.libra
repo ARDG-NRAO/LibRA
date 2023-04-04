@@ -51,12 +51,12 @@ NCORES=12
 # Package-level dir structure
 #
 ROOT           = $(shell pwd)
-INSTALLDIR     = ${ROOT}/linux_64b
 TESTDIR        = ${ROOT}/test
 
 DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
+INSTALLDIR     = ${DEPENDDIR}/linux_64b
 CASASRC        = ${DEPENDSRCDIR}/casa6
 
 APPSDIR        = ${ROOT}/apps
