@@ -63,11 +63,14 @@ APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
 APPSBUILDDIR   = ${APPSDIR}/build
 
+INSTALLPREFIX  = ${INSTALLDIR}
+INSTALLSBINDIR = ${INSTALLPREFIX}/sbin
 #
 # Common options to install artifacs of all packages in a single location
 #
-INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLDIR} \
-	      -DCMAKE_INSTALL_LIBDIR=${INSTALLDIR}/lib
+INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
+	      -DCMAKE_INSTALL_BINDIR=sbin \
+	      -DCMAKE_INSTALL_LIBDIR=lib
 
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
@@ -126,7 +129,7 @@ hpg-cmake:
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=ON \
-	-DCMAKE_CXX_COMPILER=${INSTALLDIR}/bin/nvcc_wrapper \
+	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
 	-DFFTW_ROOT_DIR=${INSTALLDIR} \
