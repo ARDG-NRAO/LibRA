@@ -67,7 +67,7 @@ If successful, this will produce the following tree:
 ├── README.md
 ```
 
-The binary applicaions will be in ```src/apps``` directory.
+The binary applicaions will be in ```apps/src``` directory.
 
 ### Setting up the various variables in the `makefile`
 
