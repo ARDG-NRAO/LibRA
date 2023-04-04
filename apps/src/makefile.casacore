@@ -9,7 +9,7 @@
 # when executed, returns the name of the host.
 #
 HOST := $(shell $(HOSTNAME))
-include makefile.casacore.inc.$(HOST)
+include makefile.casacore.inc
 
 CPPFLAGS = $(OPT) -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            $(DEFS64)                                        \
