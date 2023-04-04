@@ -59,7 +59,16 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	string& fieldStr, string& spwStr,
 	Bool& doPBCorr,
 	Bool& conjBeams,
-	Float& pbLimit)
+	Float& pbLimit,
+  string& deconvolver,
+  float& scales,
+  float& largestscale, float& fusedthreshold,
+  /*int& nterms,*/
+  float& gain, float& threshold,
+  float& nsigma,
+  int& cycleniter, float& cyclefactor
+// how about min/maxpsffraction, smallscalbias?
+  )
 {
   if (!restart)
     {
@@ -108,6 +117,30 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetBValp("pbcor", doPBCorr,i);
       i=1;clgetBValp("conjbeams", conjBeams,i);
       i=1;clgetFValp("pblimit", pbLimit,i);
+
+      InitMap(watchPoints,exposedKeys);
+      exposedKeys.push_back("scales");
+      watchPoints["multiscale"]=exposedKeys;
+      
+      //InitMap(watchPoints,exposedKeys);
+      exposedKeys.push_back("largestscale");
+      exposedKeys.push_back("fusedthreshold");
+      watchPoints["asp"]=exposedKeys;
+
+      i=1;clgetSValp("deconvolver", deconvolver, i ,watchPoints);
+      clSetOptions("deconvolver",{"hogbom","mtmfs","clark", "multiscale","asp"}); //genie todo: add full list
+
+      i=1;clgetFValp("scales", scales,i);
+
+      i=1;clgetFValp("largestscale", largestscale,i);
+      i=1;clgetFValp("fusedthreshold", fusedthreshold,i);
+
+      /*i=1;clgetIValp("nterms", nterms,i);*/
+      i=1;clgetFValp("gain", gain,i);
+      i=1;clgetFValp("nsigma", nsigma,i);
+      i=1;clgetFValp("threshold", threshold,i);
+      i=1;clgetIValp("cycleniter", cycleniter,i);
+      i=1;clgetFValp("cyclefactor", cyclefactor,i);
     
      EndCL();
 
@@ -167,7 +200,7 @@ int main(int argc, char **argv)
   string MSNBuf,
     cfCache, fieldStr="", spwStr="*",
     imageName, modelImageName,phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural";
+    refFreqStr="3.0e9", weighting="natural", deconvolver="hogbom";
 
   float cellSize;//refFreq=3e09, freqBW=3e9;
   float robust=0.0;
@@ -178,12 +211,28 @@ int main(int argc, char **argv)
   bool doPBCorr= true;
   bool conjBeams= true;
   float pbLimit=1e-3;
+  float scales;
+  float largestscale = -1;
+  float fusedthreshold = 0;
+  /*int nterms=2;*/
+  float gain=0.1; 
+  float threshold=0.0;
+  float nsigma=0.0;
+  int cycleniter=-1;
+  float cyclefactor=1.0;
 
   UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName, 
     NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, robust,
      cfCache, fieldStr,spwStr
-     ,doPBCorr, conjBeams, pbLimit);
+     ,doPBCorr, conjBeams, pbLimit, 
+    deconvolver,
+    scales,
+    largestscale, fusedthreshold,
+    /*nterms,*/
+    gain, threshold,
+    nsigma,
+    cycleniter, cyclefactor);
 
   set_terminate(NULL);
 
@@ -193,8 +242,15 @@ int main(int argc, char **argv)
                  NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, robust,
                  cfCache, fieldStr,spwStr,
-                 doPBCorr, conjBeams, pbLimit
-                 );
+                 doPBCorr, conjBeams, pbLimit,
+                 deconvolver,
+                 scales,
+                 largestscale, fusedthreshold,
+                 /*nterms,*/
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor
+                 ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     }
   catch(AipsError& er)
     {

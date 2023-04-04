@@ -52,8 +52,208 @@
 
 #include<synthesis/ImagerObjects/SynthesisUtilMethods.h>
 
+#include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
+#include <synthesis/ImagerObjects/grpcInteractiveClean.h>
+
 using namespace casa;
 using namespace casacore;
+
+/*bool synthesisimager::setupdeconvolution(const casac::record& decpars)
+{
+  Bool rstat(false);
+
+  try 
+    {
+      casacore::Record rec = *toRecord( decpars );
+      itsDeconvolver->setupDeconvolution( rec );
+    } 
+  catch  (AipsError x) 
+    {
+      RETHROW(x);
+    }
+  
+  return rstat;
+}
+
+bool synthesisimager::runminorcycle()
+{
+  Bool rstat(false);
+  
+  try 
+    {
+      // This is a convenience function for tool-level usage, for the non-parallel case.
+      // Duplicates the code from getsubiterbot(), executeminorcycle(), endminorcycle().
+      casacore::Record iterbotrec = itsIterBot->getSubIterBot();
+
+      # Get iteration control parameters
+      #  iterbotrec = self.IBtool.getminorcyclecontrols()
+      #  self.IBtool.resetminorcycleinfo()
+
+
+      iterbotrec = itsDeconvolver->executeMinorCycle(iterbotrec);
+      itsImager->endMinorCycle(iterbotrec);
+
+      #exrec = self.SDtools[immod].executeminorcycle( iterbotrecord = iterbotrec )
+      #print('.... iterdone for ', immod, ' : ' , exrec['iterdone'])
+      #self.IBtool.mergeexecrecord( exrec ) # this is the same as endMinorCycle
+      #
+     } 
+  catch  (AipsError x) 
+    {
+      RETHROW(x);
+    }
+
+  return rstat;
+}
+
+casac::record* synthesisimager::getsubiterbot()
+{
+  casac::record* rstat(0);
+  try {
+    rstat=fromRecord(itsImager->getSubIterBot());
+  } catch  (AipsError x) 
+    {
+      RETHROW(x);
+    }
+
+  return rstat;
+}  
+
+casac::record* synthesisimager::setupiteration(const casac::record& iterpars)
+{
+
+  try 
+    {
+      casacore::Record recpars = *toRecord( iterpars );
+      itsIterBot->setupIteration( recpars );
+    } 
+  catch  (AipsError x) 
+    {
+      RETHROW(x);
+    }
+  
+  return getiterationdetails();
+}
+
+bool synthesisiterbot::resetminorcycleinfo()
+{
+  Bool rstat(false);
+
+  try
+    {
+      itsIterBot->resetMinorCycleInfo();
+     }
+  catch  (AipsError x)
+    {
+      RETHROW(x);
+    }
+
+  return rstat;
+}
+
+
+
+  casac::record* synthesisiterbot::getminorcyclecontrols()
+{
+  casac::record* rstat(0);
+  try {
+    rstat=fromRecord(itsIterBot->getSubIterBot());
+  } catch  (AipsError x)
+    {
+      RETHROW(x);
+    }
+
+  return rstat;
+}
+
+
+ def initializeIterationControl(self):
+        # note that in CASA5 this is casac.synthesisiterbot
+        self.IBtool = iterbotsink()
+        itbot = self.IBtool.setupiteration(iterpars=self.iterpars)
+
+#I don't need this
+def _scatter(self, imtype, partname):
+        imgname = self.allimpars['0']['imagename'];
+        partlist = self._mkImagePartList(imgname, imtype, partname);
+
+        for immod in range(self.NF):
+            normpars = self.allnormpars[str(immod)];
+            if len(partlist) > 1:
+                normpars['partimagenames'] = partlist;
+            print('gather_normpars: {}'.format(normpars))
+
+        self.PStools.append(synthesisnormalizer())
+
+        for immod in range(self.NF):
+            self.PStools[immod].setupnormalizer(normpars=normpars)
+            self.PStools[immod].dividemodelbyweight()
+            self.PStools[immod].scattermodel()
+
+
+ def hasConverged(self):
+         # Merge peak-res info from all fields to decide iteration parameters
+         time0=time.time()
+         self.IBtool.resetminorcycleinfo()
+         self.initrecs = []
+         for immod in range(0,self.NF):
+              initrec =  self.SDtools[immod].initminorcycle()
+              self.IBtool.mergeinitrecord( initrec );
+              self.initrecs.append(initrec)
+
+         # Check with the iteration controller about convergence.
+         #print("check convergence")
+         stopflag = self.IBtool.cleanComplete()
+         #print('Converged : ', stopflag)
+         if( stopflag>0 ):
+             stopreasons = ['iteration limit', 'threshold', 'force stop','no change in peak residual across two major cycles', 'peak residual increased by more than 3 times from the previous major cycle','peak residual increased by more than 3 times from the minimum reached','zero mask', 'any combination of n-sigma and other valid exit criterion']
+             casalog.post("Reached global stopping criterion : " + stopreasons[stopflag-1], "INFO")
+
+             # revert the current automask to the previous one 
+             #if self.iterpars['interactive']:
+             for immod in range(0,self.NF):
+                     if self.alldecpars[str(immod)]['usemask'].count('auto')>0:
+                        prevmask = self.allimpars[str(immod)]['imagename']+'.prev.mask'
+                        if os.path.isdir(prevmask):
+                          # Try to force rmtree even with an error as an nfs mounted disk gives an error 
+                          #shutil.rmtree(self.allimpars[str(immod)]['imagename']+'.mask')
+                          shutil.rmtree(self.allimpars[str(immod)]['imagename']+'.mask', ignore_errors=True)
+                          # For NFS mounted disk it still leave .nfs* file(s) 
+                          if os.path.isdir(self.allimpars[str(immod)]['imagename']+'.mask'):
+                            import glob
+                              if glob.glob(self.allimpars[str(immod)]['imagename']+'.mask/.nfs*'):
+                                  for item in os.listdir(prevmask):
+                                      src = os.path.join(prevmask,item)
+                                      dst = os.path.join(self.allimpars[str(immod)]['imagename']+'.mask',item)
+                                      if os.path.isdir(src):
+                                          shutil.move(src, dst)
+                                      else:
+                                          shutil.copy2(src,dst)
+                              shutil.rmtree(prevmask)
+                          else:
+                              shutil.move(prevmask,self.allimpars[str(immod)]['imagename']+'.mask')
+                          casalog.post("[" + str(self.allimpars[str(immod)]['imagename']) + "] : Reverting output mask to one that was last used ", "INFO")
+
+         casalog.post("***Time taken in checking hasConverged "+str(time.time()-time0), "INFO3")
+         return (stopflag>0)
+
+
+
+// prob don't need this since takeOneStep called in deconvolve() handles it already
+int cleanComplete()
+{  
+
+}
+
+//at cycle 0, cyclethreshold = threshold
+
+ # Assign cyclethreshold explicitly to threshold
+        threshold = threshold if (type(threshold) == str) else (str(threshold*1000)+'mJy')
+        paramList.setIterPars({'cyclethreshold': threshold, 'cyclethresholdismutable': False})
+*/
+
+
+
 
 
 void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
@@ -66,7 +266,14 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
         string& fieldStr, string& spwStr,
         Bool& doPBCorr,
         Bool& conjBeams,
-        Float& pbLimit)
+        Float& pbLimit,
+        string& deconvolver,
+        float& scales,
+        float& largestscale, float& fusedthreshold,
+        /*int& nterms,*/
+        float& gain, float& threshold,
+        float& nsigma,
+        int& cycleniter, float& cyclefactor)
 {
   LogIO os(LogOrigin("contact","hummbee_func"));
 
@@ -74,6 +281,116 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
     {
       std::cout << "ImSize " << ImSize << std::endl;
       std::cout <<"done" << std::endl;
+
+      SynthesisParamsDeconv decPars_p;
+      decPars_p.setDefaults();
+
+      //deconvolution params
+      decPars_p.imageName=imageName;
+      decPars_p.algorithm=deconvolver;
+      decPars_p.startModel=modelImageName;
+      decPars_p.deconvolverId=0;
+      decPars_p.nTaylorTerms=1; //deconvolve task does not have this genie
+      decPars_p.scales=scales;
+      decPars_p.scalebias=0.6; //genie
+      decPars_p.maskType="none"; //genie
+      decPars_p.maskString=""; //genie
+      decPars_p.maskList.resize(1); decPars_p.maskList[0]="";
+      decPars_p.pbMask=0.0; //genie
+      decPars_p.autoMaskAlgorithm="thresh";
+      decPars_p.maskThreshold=""; //genie
+      decPars_p.maskResolution=""; //genie
+      decPars_p.fracOfPeak=0.0; //genie
+      decPars_p.nMask=0; //genie
+      decPars_p.interactive=false;
+      decPars_p.autoAdjust=False; //genie
+      decPars_p.fusedThreshold = fusedthreshold;
+      decPars_p.specmode="mfs"; //deconvolve task does not have this
+      decPars_p.largestscale = largestscale;
+      //decPars_p.nterms=nterms;
+
+      // iteration parameters
+      Record iterBotRec_p;
+      iterBotRec_p.define("cycleniter", Int(cycleniter));
+      iterBotRec_p.define("loopgain", Float(gain));
+      iterBotRec_p.define("cyclethreshold", Float(threshold)); //at cycle 0, cyclethreshold = threshold 
+      iterBotRec_p.define("nsigma", Float(nsigma));
+      iterBotRec_p.define("thresholdreached", false);
+      /*iterPars.cyclefactor=cyclefactor;*/
+
+
+   
+      SynthesisDeconvolver itsDeconvolver;
+      Record iterBotRec;
+      itsDeconvolver.setupDeconvolution(decPars_p);
+      itsDeconvolver.initMinorCycle(); // makeImageStore and StartModel, originally part of hasConverged
+      //itsDeconvolver.setIterDone(); // don't need this. Controlled by cycleniter
+      itsDeconvolver.setMinorCycleControl(iterBotRec_p);
+
+      //int stopflag = cleanComplete(); //prob don't need this
+
+      itsDeconvolver.setupMask(); // don't need to updateMask because not interactive
+
+      // this is equivelant to runminorcycle()
+      // don't need state sharing for interactive GUI and science code
+  
+      //itsIterBot.resetMinorCycleInfo(); // prob don't need this - reset interactive state (peak res etc) to 0 
+      iterBotRec_p = itsDeconvolver.executeMinorCycle(iterBotRec_p);
+      //itsIterBot.endMinorCycle(iterbotrec); // prob don't need this - mergeCycleExecutionRecord (peakres, etc)
+                                                // & getDetailsRecord from "state"
+
+      //don't need this. Handled by SynthesisDeconvolver already.
+      /*stopflag = cleanComplete();
+      if(stopflag > 0)
+      {
+         stopreasons = ['iteration limit', 'threshold', 'force stop','no change in peak residual across two major cycles', 'peak residual increased by more than 3 times from the previous major cycle','peak residual increased by more than 3 times from the minimum reached','zero mask', 'any combination of n-sigma and other valid exit criterion']
+         casalog.post("Reached global stopping criterion : " + stopreasons[stopflag-1], "INFO")
+      }*/
+
+
+
+      /**** Felipe's htclean runModelCycle
+      def runModelCycle(self, imtype = 'residual', partname = 'SPW'):
+        self.initializeDeconvolvers()
+        self.initializeIterationControl() -- see above def. This calls iterbotsink().setupiteration
+
+        stop = self.hasConverged()
+
+        self.updateMask()
+
+        print('modelCycle:parameters: {}'.format(self.allimpars['0']))
+
+        self.runMinorCycle()
+        self._scatter(imtype, partname) # don't need this 
+
+        if self.hasConverged():
+            os.system('touch stopIMCycles')
+      */
+
+
+       /* ## Get summary from iterbot -- don't need this
+        if type(interactive) != bool and niter>0:
+            retrec=decon.getSummary();
+
+        #################################################
+        #### Teardown -- don't need this. In makeFinalImage
+        #################################################
+
+        ## Get records from iterbot, to be used in the next call to deconvolve
+        iterrec = decon.getIterRecords()
+
+        ## Restore images.
+        if restoration==True:
+            t0=time.time();
+            decon.restoreImages()
+            t1=time.time();
+            casalog.post("***Time for restoring images: "+"%.2f"%(t1-t0)+" sec", "INFO3", "task_deconvolve");
+
+        ##close tools
+        decon.deleteTools()
+
+      */
+
     }
   catch(AipsError& er)
     {
@@ -82,164 +399,5 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
 
 
 }
-/*namespace casacore{
-
-class MeasurementSet;
-template<class T> class ImageInterface;
-}
-
-namespace casa { //# NAMESPACE CASA - BEGIN
-
-// Forward declarations
-
-// <summary> Class that contains functions needed for imager </summary>
-
-class SynthesisDeconvolver 
-{
- public:
-  // Default constructor
-
-  SynthesisDeconvolver();
-  ~SynthesisDeconvolver();
-
-  // Copy constructor and assignment operator
-
-  // make all pure-inputs const
-
-  void setupDeconvolution(const SynthesisParamsDeconv& decpars);
-
-  //  void setupDeconvolution(casacore::Record recpars);
-
-  casacore::Record initMinorCycle();
-  casacore::Record initMinorCycle(std::shared_ptr<SIImageStore> imstor); 
-  casacore::Record executeMinorCycle(casacore::Record& subIterBot);
-  casacore::Record executeCoreMinorCycle(casacore::Record& subIterBot);
-  //minor cycle for cubes
-  //doDeconvAndAutoMask=1 //do automask without deconv
-  //doDeconvAndAutoMask=0 //do deconv no automask
-  //doDeconvAndAutoMask=-1 //do automask then deconv
-  casacore::Record executeCubeMinorCycle(casacore::Record& minorCycleControlRec, const casacore::Int doDeconvAndAutomask=-1);
-
-  casacore::Record interactiveGUI(casacore::Record& iterRec);
-
-  // Helpers
- 
-  // Restoration (and post-restoration PB-correction)
-  void restore();
-  void pbcor();// maybe add a way to take in arbitrary PBs here.
-
-  // For interaction
-  void getCopyOfResidualAndMask( casacore::TempImage<casacore::Float> &/*residual* /, casacore::TempImage<casacore::Float>& /*mask* / );
-  void setMask( casacore::TempImage<casacore::Float> &/*mask* / );
-
-  void setStartingModel();
-  casacore::Bool setupMask();
-  void setAutoMask();
-  void checkRestoringBeam();
-  ///in case one wants this deconvolver object to start from where another deconvolver left.
-  void setIterDone(const casacore::Int iterdone);
-  ////set the posmask image that is used in automasking...needed for restarting deconvolver
-  void setPosMask(std::shared_ptr<casacore::ImageInterface<casacore::Float> > posmaskim);
-  ////return estimate of memory usage in kB
-  casacore::Long estimateRAM(const std::vector<int>& imsize);
-  ///automask parameters that can be needed for cubes
-  void setChanFlag(const casacore::Vector<casacore::Bool>& chanflag);
-  casacore::Vector<casacore::Bool> getChanFlag();
-  void setRobustStats(const casacore::Record& rec);
-  casacore::Record getRobustStats();
-  void setMinorCycleControl(const casacore::Record& minorCycleControlRec);
-protected:
-
-  std::shared_ptr<SIImageStore> makeImageStore( casacore::String imagename, casacore::Bool noRequireSumwt );
-  //Merge the outputRecord from channels into one that looks like the cube one
-  void mergeReturnRecord(const casacore::Record& chanRec, casacore::Record& outRec, const casacore::Int chan);
-  casacore::Record getSubsetRobustStats(const casacore::Int chanBeg, const casacore::Int chanEnd);
-  void setSubsetRobustStats(const casacore::Record& inrec, const casacore::Int chanBeg, const casacore::Int chanEnd, const casacore::Int numchan);
-  //for parallel cube partition in block of channels to reduce lock load on model image
-  casacore::Int numblockchans(casacore::Vector<casacore::Int>& startch, casacore::Vector<casacore::Int>& endch); 
-
-  // Gather all part images to the 'full' one
-  //void gatherImages();
-  //void scatterModel();
-
-
-  // For the deconvolver, decide how many sliced deconvolution calls to make
-  //  casacore::Vector<casacore::Slicer> partitionImages();
-
-  // Check if images exist on disk and are all the same shape
-  //casacore::Bool setupImagesOnDisk();
-  // casacore::Bool doImagesExist( casacore::String imagename );
-
-  /////////////// Member Objects
-
-  std::shared_ptr<SDAlgorithmBase> itsDeconvolver;
-  std::shared_ptr<SDMaskHandler> itsMaskHandler;
-
-  std::shared_ptr<SIImageStore> itsImages;
-
-  casacore::IPosition itsImageShape;
-  
-  casacore::String itsImageName;
-  casacore::Vector<casacore::String> itsStartingModelNames;
-  casacore::Bool itsAddedModel;
-
-
-  casacore::Float itsBeam;
-
-  SIMinorCycleController itsLoopController;
-
-  /////////////// All input parameters
-
-  casacore::uInt itsDeconvolverId;
-  casacore::Vector<casacore::Float> itsScales;
-
-  casacore::String itsUseBeam;
-
-  ///// for mask
-  casacore::String itsMaskType;
-  casacore::Vector<casacore::String> itsMaskList;
-  casacore::String itsMaskString;
-  casacore::Float itsPBMask;
-  casacore::String itsAutoMaskAlgorithm;
-  casacore::String itsMaskThreshold;
-  casacore::Float itsFracOfPeak;
-  casacore::String itsMaskResolution;
-  casacore::Float itsMaskResByBeam;
-  casacore::Int itsNMask;
-  casacore::Bool itsAutoAdjust;
-  
-  //// for new automasking algorithm
-  casacore::Float itsSidelobeThreshold;
-  casacore::Float itsNoiseThreshold;
-  casacore::Float itsLowNoiseThreshold;
-  casacore::Float itsNegativeThreshold;
-  casacore::Float itsSmoothFactor;
-  casacore::Float itsMinBeamFrac;
-  casacore::Float itsCutThreshold;
-  casacore::Int itsIterDone;
-  casacore::Int itsGrowIterations;
-  casacore::Bool itsDoGrowPrune;
-  casacore::Float  itsMinPercentChange;
-  casacore::Bool itsVerbose;  
-  casacore::Bool itsFastNoise;  
-  casacore::Vector<casacore::Bool> itsChanFlag;
-  casacore::Record itsRobustStats;
-  casacore::Bool initializeChanMaskFlag; 
-  std::shared_ptr<casacore::ImageInterface<casacore::Float> > itsPosMask;
-  
-  casacore::Bool itsIsMaskLoaded; // Try to get rid of this state variable ! 
-  casacore::Bool itsIsInteractive;
-
-  casacore::Float itsMaskSum;
-
-  casacore::Float itsNsigma;
-  casacore::Bool itsNoRequireSumwt;
-  SynthesisParamsDeconv itsDecPars;
-  casacore::Float itsPreviousFutureRes;
-  casacore::Record itsPreviousIterBotRec_p;
-};
-
-
-} //# NAMESPACE CASA - END*/
 
 #endif
