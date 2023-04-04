@@ -251,6 +251,7 @@ roadrunner-clean:
 allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
 allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean roadrunner-clean
 allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build
+
 bak2sq1:
 	\rm -rf ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDDIR} 
 
