@@ -20,14 +20,14 @@ The following need to be installed as below:
 
 ## Getting started
 
-A clone of this repository will get the ```src/apps``` directory with the source code for the standalone application, and the ```makefile.libra``` to compile this code and all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
+A clone of this repository will get the ```apps/src``` directory with the source code for the standalone application, and the ```makefile.libra``` to compile this code and all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
 ```
 git clone gitlab@gitlab.nrao.edu:sbhatnag/libra.git
 cd libra
 make -f makefile.libra allclone
 make -f makefile.libra allbuild
-cd src/apps
+cd apps/src
 make -f makefile.casacore roadrunner tableinfo mssplit
 ```
 If successful, this will produce the following tree:
