@@ -162,7 +162,7 @@ int main(int argc, char **argv)
     {
       cerr << "###AipsError: " << x.getMesg() << endl;
       restartUI=True;
-      exit(0);
+      //      exit(0);
     }
   if (restartUI) RestartUI(RENTER);
 }
