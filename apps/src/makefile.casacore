@@ -127,7 +127,7 @@ LIBOPTS = -L$(COREROOT)/lib -L$(CASAROOT)/lib    \
 # The list of source file names 
 #
 #SOURCE  = timager.cc tEPJones.cc imasking.cc mssplit.cc tableinfo.cc 
-SOURCE  = imasking.cc mssplit.cc tableinfo.cc tLoadCFFromDisk.cc roadrunner.cc
+#SOURCE  = imasking.cc mssplit.cc tableinfo.cc subms.cc roadrunner.cc
 SOURCE  = $(wildcard *.cc)
 ifneq ($(strip $(SCILIBDIR)),)
 CAAPSLIBSRC = $(wildcard $(SCILIBDIR)/*.cc)
