@@ -53,6 +53,8 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, b
       x << x << endl;
       clRetry();
     }
+  if (MSNBuf=="")
+    throw(AipsError("Input table name not set."));
 }
 //
 //-------------------------------------------------------------------------
@@ -127,26 +129,24 @@ int main(int argc, char **argv)
   Bool restartUI=False;;
 
  RENTER:// UI re-entry point.
-  MSNBuf=OutMSBuf=fieldStr=timeStr=spwStr=baselineStr=
-    uvdistStr=taqlStr=scanStr=arrayStr=polnStr=stateObsModeStr=observationStr="";
-  deepCopy=0;
-  fieldStr=spwStr="*";
-  fieldStr=spwStr="";
-  UI(restartUI,argc, argv, MSNBuf,OutMSBuf, deepCopy,
-     fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,
-     uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
-  restartUI = False;
   //
   //---------------------------------------------------
-  //
-  //      MS ms(MSNBuf,Table::Update),selectedMS(ms);
-  
   //
   // Make a new scope, outside of which there should be no tables left open.
   //
   {
     try
       {
+	MSNBuf=OutMSBuf=fieldStr=timeStr=spwStr=baselineStr=
+	  uvdistStr=taqlStr=scanStr=arrayStr=polnStr=stateObsModeStr=observationStr="";
+	deepCopy=0;
+	fieldStr=spwStr="*";
+	fieldStr=spwStr="";
+	UI(restartUI,argc, argv, MSNBuf,OutMSBuf, deepCopy,
+	   fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,
+	   uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
+	restartUI = False;
+
 	MS ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);
 	//
 	// Setup the MSSelection thingi
@@ -180,8 +180,10 @@ int main(int argc, char **argv)
     	  }
     	else
     	  if (OutMSBuf != "")
-    	    if (deepCopy) selectedMS.deepCopy(OutMSBuf,Table::New);
-    	    else          selectedMS.rename(OutMSBuf,Table::New);
+	    {
+	      if (deepCopy) selectedMS.deepCopy(OutMSBuf,Table::New);
+	      else          selectedMS.rename(OutMSBuf,Table::New);
+	    }
     	cerr << "Number of selected rows: " << selectedMS.nrow() << endl;
       }
     catch (clError& x)
