@@ -31,6 +31,7 @@
 //
 #include <cl.h> // C++ized version
 #include <clinteract.h>
+#include <clgetBaseCode.h>
 
 #ifdef ROADRUNNER_USE_MPI
 # include <mpi.h>
@@ -80,22 +81,22 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
   // else
   //   clRetry();
  REENTER:
-      try
+  try
     {
       SMap watchPoints; VString exposedKeys;
       int i;
       MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);  
-      i=1;clgetSValp("imagename", imageName,i);  
-      i=1;clgetSValp("modelimagename", modelImageName,i);  
-      i=1;clgetSValp("sowimageext", sowImageExt,i);  
-      i=1;clgetSValp("complexgrid", cmplxGridName,i);  
+      i=1;clgetSValp("ms", MSNBuf,i);
+      i=1;clgetSValp("imagename", imageName,i);
+      i=1;clgetSValp("modelimagename", modelImageName,i);
+      i=1;clgetSValp("sowimageext", sowImageExt,i);
+      i=1;clgetSValp("complexgrid", cmplxGridName,i);
 
-      i=1;clgetIValp("imsize", ImSize,i);  
-      i=1;clgetFValp("cellsize", cellSize,i);  
+      i=1;clgetValp("imsize", ImSize,i);
+      i=1;clgetValp("cellsize", cellSize,i);
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);  
-      i=1;clgetSValp("phasecenter", phaseCenter,i);  
+      i=1;clgetSValp("reffreq", refFreqStr,i);
+      i=1;clgetSValp("phasecenter", phaseCenter,i);
 
       InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("rmode");
@@ -106,11 +107,10 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("weighting", weighting, i ,watchPoints);
       clSetOptions("weighting",{"natural","uniform","briggs"});
 
-      i=1;clgetSValp("rmode", rmode,i);  
-      i=1;clgetFValp("robust", robust,i);  
-      
+      i=1;clgetSValp("rmode", rmode,i);
+      i=1;clgetValp("robust", robust,i);
 
-      i=1;clgetIValp("wplanes", nW,i);  
+      i=1;clgetValp("wplanes", nW,i);
       i=1;clgetSValp("ftm", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
       i=1;clgetSValp("cfcache", CFCache,i);
 
@@ -120,20 +120,20 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       watchPoints["predict"]=exposedKeys;
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
 
-      i=1;clgetBValp("wbawp", WBAwp,i); 
+      i=1;clgetValp("wbawp", WBAwp,i);
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
       i=1;clgetSValp("uvdist", uvDistStr,i);
-      i=1;clgetBValp("pbcor", doPBCorr,i);
-      i=1;clgetBValp("conjbeams", conjBeams,i);
-      i=1;clgetFValp("pblimit", pbLimit,i);
+      i=1;clgetValp("pbcor", doPBCorr,i);
+      i=1;clgetValp("conjbeams", conjBeams,i);
+      i=1;clgetValp("pblimit", pbLimit,i);
       InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("pointingoffsetsigdev");
       watchPoints["1"]=exposedKeys;
 
 
-      i=1;clgetBValp("dopointing", doPointing,i,watchPoints);
-      i=2;clgetNFValp("pointingoffsetsigdev", posigdev,i);
+      i=1;clgetValp("dopointing", doPointing,i,watchPoints);
+      i=2;i=clgetNValp("pointingoffsetsigdev", posigdev,i);
 
       i=1;dbgclgetBValp("normalize",normalize,i);
       i=1;dbgclgetBValp("spwdataiter",doSPWDataIter,i);
@@ -142,16 +142,16 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
      // do some input parameter checking now.
      string mesgs;
      if (phaseCenter == "")
-       mesgs += "The phasecenter parameter needs to be set. ";
+       mesgs += "The phasecenter parameter needs to be set.\n";
 
      if (refFreqStr == "")
-       mesgs += "The reffreq parameter needs to be set. ";
+       mesgs += "The reffreq parameter needs to be set.\n";
 
      if (ImSize <= 0)
-       mesgs += "The imsize parameter needs to be set to a positive finite value. ";
+       mesgs += "The imsize parameter needs to be set to a positive finite value.\n";
 
      if (cellSize <= 0)
-       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
+       mesgs += "The cellsize parameter needs to be set to a positive finite value.\n";
 
      if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
