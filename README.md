@@ -75,7 +75,7 @@ The binary applications will be in ```apps/src``` directory.
 
 ### Setting up the various variables in `makefile.libra`
 
-- [ ] `Kokkos_CUDA_ARCH`: Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  See list of supported values at the [Kokkos web page](https://github.com/kokkos/kokkos/wiki/Compiling){:target="_blank"}.
+- [ ] `Kokkos_CUDA_ARCH`: Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  See list of supported values at the [Kokkos web page](https://kokkos.github.io/kokkos-core-wiki/keywords.html).
 - [ ] `CASA_BULD_TYPE`, `CASACORE_BUILD_TYPE`: The `cmake` build-type setting for CASA and CASACore code.
 - [ ] `{CASA,FFTW,KOKKOS,HPG,PARAFEED}_VERSION`: Names of the specific version or branch for the various packages.
 - [ ] `{CASA,CASACORE_DATA,FFTW,KOKKOS,HPG,PARAFEED,SAKURA}_REPS`: URL for the repository of the various packages.
