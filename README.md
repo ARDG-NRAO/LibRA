@@ -13,7 +13,7 @@ The following come default with RHEL8 or similar systems:
 
 - [ ] GCC 8.x or later
 - [ ] cmake 3.x or later
-- [ ] git gcc-gfortran gtest-devel ccache
+- [ ] git 2.0 or later, gcc-gfortran gtest-devel ccache
 
 The following need to be installed as below:
 
