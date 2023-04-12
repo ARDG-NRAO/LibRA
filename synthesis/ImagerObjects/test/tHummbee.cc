@@ -61,12 +61,13 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	Bool& conjBeams,
 	Float& pbLimit,
   string& deconvolver,
-  float& scales,
+  vector<float>& scales,
   float& largestscale, float& fusedthreshold,
-  /*int& nterms,*/
+  int& nterms,
   float& gain, float& threshold,
   float& nsigma,
-  int& cycleniter, float& cyclefactor
+  int& cycleniter, float& cyclefactor,
+  vector<string>& mask
 // how about min/maxpsffraction, smallscalbias?
   )
 {
@@ -130,17 +131,20 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("deconvolver", deconvolver, i ,watchPoints);
       clSetOptions("deconvolver",{"hogbom","mtmfs","clark", "multiscale","asp"}); //genie todo: add full list
 
-      i=1;clgetFValp("scales", scales,i);
+      int N;
+      N=0; N=clgetNFValp("scales", scales, N);
 
       i=1;clgetFValp("largestscale", largestscale,i);
       i=1;clgetFValp("fusedthreshold", fusedthreshold,i);
 
-      /*i=1;clgetIValp("nterms", nterms,i);*/
+      i=1;clgetIValp("nterms", nterms,i);
       i=1;clgetFValp("gain", gain,i);
       i=1;clgetFValp("nsigma", nsigma,i);
       i=1;clgetFValp("threshold", threshold,i);
       i=1;clgetIValp("cycleniter", cycleniter,i);
       i=1;clgetFValp("cyclefactor", cyclefactor,i);
+      //i=1;clgetSValp("mask", mask,i);
+      N=0; N=clgetNSValp("mask", mask, N);
     
      EndCL();
 
@@ -200,7 +204,7 @@ int main(int argc, char **argv)
   string MSNBuf,
     cfCache, fieldStr="", spwStr="*",
     imageName, modelImageName,phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural", deconvolver="hogbom";
+    refFreqStr="3.0e9", weighting="natural", deconvolver="hogbom"; //, mask="";
 
   float cellSize;//refFreq=3e09, freqBW=3e9;
   float robust=0.0;
@@ -211,15 +215,16 @@ int main(int argc, char **argv)
   bool doPBCorr= true;
   bool conjBeams= true;
   float pbLimit=1e-3;
-  float scales;
+  vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  /*int nterms=2;*/
+  int nterms=2;
   float gain=0.1; 
   float threshold=0.0;
   float nsigma=0.0;
   int cycleniter=-1;
   float cyclefactor=1.0;
+  vector<string> mask; 
 
   UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName, 
     NX, nW, cellSize,
@@ -229,10 +234,11 @@ int main(int argc, char **argv)
     deconvolver,
     scales,
     largestscale, fusedthreshold,
-    /*nterms,*/
+    nterms,
     gain, threshold,
     nsigma,
-    cycleniter, cyclefactor);
+    cycleniter, cyclefactor,
+    mask);
 
   set_terminate(NULL);
 
@@ -246,10 +252,11 @@ int main(int argc, char **argv)
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 /*nterms,*/
+                 nterms,
                  gain, threshold,
                  nsigma,
-                 cycleniter, cyclefactor
+                 cycleniter, cyclefactor,
+                 mask
                  ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     }
   catch(AipsError& er)

@@ -268,20 +268,18 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
         Bool& conjBeams,
         Float& pbLimit,
         string& deconvolver,
-        float& scales,
+        vector<float>& scales,
         float& largestscale, float& fusedthreshold,
-        /*int& nterms,*/
+        int& nterms,
         float& gain, float& threshold,
         float& nsigma,
-        int& cycleniter, float& cyclefactor)
+        int& cycleniter, float& cyclefactor,
+        vector<string>& mask)
 {
   LogIO os(LogOrigin("contact","hummbee_func"));
 
   try
     {
-      std::cout << "ImSize " << ImSize << std::endl;
-      std::cout <<"done" << std::endl;
-
       SynthesisParamsDeconv decPars_p;
       decPars_p.setDefaults();
 
@@ -291,11 +289,20 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       decPars_p.startModel=modelImageName;
       decPars_p.deconvolverId=0;
       decPars_p.nTaylorTerms=1; //deconvolve task does not have this genie
-      decPars_p.scales=scales;
-      decPars_p.scalebias=0.6; //genie
-      decPars_p.maskType="none"; //genie
-      decPars_p.maskString=""; //genie
-      decPars_p.maskList.resize(1); decPars_p.maskList[0]="";
+      decPars_p.scales = Vector<Float>(scales);
+      decPars_p.maskType="user"; //genie
+      decPars_p.maskString=mask[0]; //genie
+      //decPars_p.maskList.resize(1); decPars_p.maskList[0]=mask;
+      
+      if(mask.size() <= 1)
+      {
+        decPars_p.maskList.resize(1);
+        decPars_p.maskList[0] = mask[0];
+      }
+      else
+        decPars_p.maskList = Vector<String>(mask);
+       
+
       decPars_p.pbMask=0.0; //genie
       decPars_p.autoMaskAlgorithm="thresh";
       decPars_p.maskThreshold=""; //genie
@@ -307,10 +314,43 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       decPars_p.fusedThreshold = fusedthreshold;
       decPars_p.specmode="mfs"; //deconvolve task does not have this
       decPars_p.largestscale = largestscale;
-      //decPars_p.nterms=nterms;
+      decPars_p.scalebias = 0.0;
+      decPars_p.nTaylorTerms = nterms;
 
+      SynthesisDeconvolver itsDeconvolver;
+      itsDeconvolver.setupDeconvolution(decPars_p);
+      
       // iteration parameters
       Record iterBotRec_p;
+
+      float minpsffraction = 0.05;
+      float maxpsffraction = 0.8;
+      float CycleFactor = 1.0;
+      std::shared_ptr<SIImageStore> itsImages;
+      if( deconvolver == "mtmfs" )
+        {  itsImages.reset( new SIImageStoreMultiTerm( imageName, nterms, true, true ) ); }
+      else
+        {  itsImages.reset( new SIImageStore( imageName, true, true) ); }
+
+      float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel();
+
+      Float masksum;
+      if( ! itsImages->hasMask() ) // i.e. if there is no existing mask to re-use...
+      { masksum = -1.0; }
+      else
+      { 
+        masksum = itsImages->getMaskSum();
+        itsImages->mask()->unlock();
+      }
+      Bool validMask = ( masksum > 0 );
+      Float PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
+
+      Float psffraction = MaxPsfSidelobe * CycleFactor;
+      psffraction = max(psffraction, minpsffraction);
+      psffraction = min(psffraction, maxpsffraction);
+      Float cyclethreshold = PeakResidual * psffraction;
+      threshold = max(threshold, cyclethreshold);   
+
       iterBotRec_p.define("cycleniter", Int(cycleniter));
       iterBotRec_p.define("loopgain", Float(gain));
       iterBotRec_p.define("cyclethreshold", Float(threshold)); //at cycle 0, cyclethreshold = threshold 
@@ -320,9 +360,9 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
 
 
    
-      SynthesisDeconvolver itsDeconvolver;
+      //SynthesisDeconvolver itsDeconvolver;
       Record iterBotRec;
-      itsDeconvolver.setupDeconvolution(decPars_p);
+      //itsDeconvolver.setupDeconvolution(decPars_p);
       itsDeconvolver.initMinorCycle(); // makeImageStore and StartModel, originally part of hasConverged
       //itsDeconvolver.setIterDone(); // don't need this. Controlled by cycleniter
       itsDeconvolver.setMinorCycleControl(iterBotRec_p);
