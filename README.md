@@ -30,7 +30,7 @@ cd libra
 make -f makefile.libra allclone
 make -f makefile.libra allbuild
 cd apps/src
-make -f makefile.casacore roadrunner tableinfo mssplit
+make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html> -f makefile.casacore roadrunner tableinfo mssplit
 ```
 If successful, this will produce the following tree:
 ```
