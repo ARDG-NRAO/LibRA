@@ -37,10 +37,9 @@ If successful, this will produce the following tree:
 .
 ├── apps
 │   └── src
-│       ├── bosque
 │       ├── RoadRunner
 │       ├── makefile.casacore
-│       ├── makefile.casacore.inc.dhruva
+│       ├── makefile.casacore.inc
 │       ├── mssplit.cc
 │       ├── roadrunner.cc
 │       └── tableinfo.cc
