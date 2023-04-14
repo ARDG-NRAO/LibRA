@@ -279,7 +279,7 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
   LogIO os(LogOrigin("contact","hummbee_func"));
 
   try
-    {
+    { 
       SynthesisParamsDeconv decPars_p;
       decPars_p.setDefaults();
 
@@ -288,19 +288,29 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       decPars_p.algorithm=deconvolver;
       decPars_p.startModel=modelImageName;
       decPars_p.deconvolverId=0;
-      decPars_p.nTaylorTerms=1; //deconvolve task does not have this genie
+      decPars_p.nTaylorTerms=1; 
       decPars_p.scales = Vector<Float>(scales);
       decPars_p.maskType="user"; //genie
-      decPars_p.maskString=mask[0]; //genie
+      //decPars_p.maskString=mask[0]; 
       //decPars_p.maskList.resize(1); decPars_p.maskList[0]=mask;
       
-      if(mask.size() <= 1)
+      if (mask.size() == 0)
       {
+        decPars_p.maskString = "";
+        decPars_p.maskList.resize(1);
+        decPars_p.maskList[0] = "";
+      }
+      else if(mask.size() == 1)
+      {
+        decPars_p.maskString = mask[0];
         decPars_p.maskList.resize(1);
         decPars_p.maskList[0] = mask[0];
       }
       else
+      {
+        decPars_p.maskString = mask[0];
         decPars_p.maskList = Vector<String>(mask);
+      }
        
 
       decPars_p.pbMask=0.0; //genie
@@ -357,7 +367,6 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       iterBotRec_p.define("nsigma", Float(nsigma));
       iterBotRec_p.define("thresholdreached", false);
       /*iterPars.cyclefactor=cyclefactor;*/
-
 
    
       //SynthesisDeconvolver itsDeconvolver;
