@@ -31,7 +31,7 @@
 //
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-#include <casacore/casa/namespace.h>
+//#include <casacore/casa/namespace.h>
 
 #ifdef CONTACT_USE_MPI
 # include <mpi.h>
@@ -43,8 +43,8 @@
 //-------------------------------------------------------------------------
 //
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
-using namespace casacore;
-using namespace std;
+//using namespace casacore;
+//using namespace std;
 
 #include <synthesis/ImagerObjects/test/hummbee_func.h>
 
