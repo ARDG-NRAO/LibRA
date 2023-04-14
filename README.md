@@ -32,18 +32,30 @@ make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html> -f makefile.libra allbuild
 cd apps/src
 make -f makefile.casacore roadrunner tableinfo mssplit
+make -f makefile.casacore hummbee
 ```
 If successful, this will produce the following tree:
 ```
 .
 ├── apps
 │   └── src
-│       ├── RoadRunner
+│       ├── hummbee
+│       ├── Hummbee
+│       ├── hummbee.cc
+│       ├── hummbee.o
 │       ├── makefile.casacore
 │       ├── makefile.casacore.inc
+│       ├── mssplit
 │       ├── mssplit.cc
+│       ├── mssplit.o
+│       ├── roadrunner
+│       ├── RoadRunner
 │       ├── roadrunner.cc
-│       └── tableinfo.cc
+│       ├── roadrunner.o
+│       ├── subms.cc
+│       ├── tableinfo
+│       ├── tableinfo.cc
+│       └── tableinfo.o
 ├── dependencies
 │   ├── build
 │   │   ├── casacore
@@ -66,9 +78,10 @@ If successful, this will produce the following tree:
 │       ├── kokkos
 │       ├── parafeed
 │       └── sakura-libsakura-5.1.3
-├── test
 ├── makefile.libra
-└── README.md
+├── README.md
+└── test
+
 ```
 
 The binary applications will be in ```apps/src``` directory.
