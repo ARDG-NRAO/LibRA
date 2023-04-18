@@ -41,20 +41,16 @@ If successful, this will produce the following tree:
 │       ├── hummbee
 │       ├── Hummbee
 │       ├── hummbee.cc
-│       ├── hummbee.o
 │       ├── makefile.casacore
 │       ├── makefile.casacore.inc
 │       ├── mssplit
 │       ├── mssplit.cc
-│       ├── mssplit.o
 │       ├── roadrunner
 │       ├── RoadRunner
 │       ├── roadrunner.cc
-│       ├── roadrunner.o
 │       ├── subms.cc
 │       ├── tableinfo
 │       ├── tableinfo.cc
-│       └── tableinfo.o
 ├── dependencies
 │   ├── build
 │   │   ├── casacore
