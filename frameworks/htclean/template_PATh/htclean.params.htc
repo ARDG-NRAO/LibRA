@@ -1,0 +1,12 @@
+nparts      = 32
+datadir     = hudf_convergence_test_$(nparts)parts
+initialdir  = /home/felipe.madsen/tests/$(datadir)
+stashdir    = stash:///path-facility/data/felipe.madsen
+cfcache     = cfc.test_w32_imsize9216_0.2arcsec_psT
+msname      = hudf
+imagename   = hudf_d32
+partaxis    = row
+softwaredir = $(stashdir)/software
+imagesdir   = $(stashdir)/imagingdata/$(datadir)/working_3sigma_newbuild
+cfcachedir  = $(stashdir)/cfcache
+msdir       = $(stashdir)/data/$(datadir)

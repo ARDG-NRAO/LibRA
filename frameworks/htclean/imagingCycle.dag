@@ -1,0 +1,16 @@
+JOB               runModelCycle      runModelCycle.htc
+SUBDAG EXTERNAL   runResidualCycle   runResidualCycle_IMCycle.dag
+JOB               gather             gather.htc
+
+
+VARS              gather             python_state="$(JOB)"
+VARS              gather             input_file="../bin/htclean.params"
+VARS              gather             partId="n"
+
+VARS              runModelCycle      python_state="$(JOB)"
+VARS              runModelCycle      input_file="../bin/htclean.params"
+VARS              runModelCycle      partId="n"
+
+
+PARENT            runModelCycle      CHILD runResidualCycle
+PARENT            runResidualCycle   CHILD gather

@@ -1,0 +1,14 @@
+# File: MSPartition.htc
+# Author: F. Madsen
+
+include: htclean.htc
+
+request_memory = 20 G
+
+#requirements = PoolName == "TESTPOST"
+
+should_transfer_files = YES
+transfer_input_files = ../../bin
+
+queue
+

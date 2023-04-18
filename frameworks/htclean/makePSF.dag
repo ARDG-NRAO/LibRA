@@ -1,0 +1,81 @@
+JOB         makePSF_n1          makePSF.htc 
+JOB         makePSF_n2          makePSF.htc 
+JOB         makePSF_n3          makePSF.htc 
+JOB         makePSF_n4          makePSF.htc 
+JOB         makePSF_n5          makePSF.htc 
+JOB         makePSF_n6          makePSF.htc 
+JOB         makePSF_n7          makePSF.htc 
+JOB         makePSF_n8          makePSF.htc 
+JOB         makePSF_n9          makePSF.htc 
+JOB         makePSF_n10         makePSF.htc 
+JOB         makePSF_n11         makePSF.htc 
+JOB         makePSF_n12         makePSF.htc 
+JOB         makePSF_n13         makePSF.htc 
+JOB         makePSF_n14         makePSF.htc 
+JOB         makePSF_n15         makePSF.htc 
+JOB         makePSF_n16         makePSF.htc 
+
+
+VARS        makePSF_n1          python_state="makePSF"
+VARS        makePSF_n1          input_file="../bin/htclean.params"
+VARS        makePSF_n1          partId="n1"
+
+VARS        makePSF_n2          python_state="makePSF"
+VARS        makePSF_n2          input_file="../bin/htclean.params"
+VARS        makePSF_n2          partId="n2"
+
+VARS        makePSF_n3          python_state="makePSF"
+VARS        makePSF_n3          input_file="../bin/htclean.params"
+VARS        makePSF_n3          partId="n3"
+
+VARS        makePSF_n4          python_state="makePSF"
+VARS        makePSF_n4          input_file="../bin/htclean.params"
+VARS        makePSF_n4          partId="n4"
+
+VARS        makePSF_n5          python_state="makePSF"
+VARS        makePSF_n5          input_file="../bin/htclean.params"
+VARS        makePSF_n5          partId="n5"
+
+VARS        makePSF_n6          python_state="makePSF"
+VARS        makePSF_n6          input_file="../bin/htclean.params"
+VARS        makePSF_n6          partId="n6"
+
+VARS        makePSF_n7          python_state="makePSF"
+VARS        makePSF_n7          input_file="../bin/htclean.params"
+VARS        makePSF_n7          partId="n7"
+
+VARS        makePSF_n8          python_state="makePSF"
+VARS        makePSF_n8          input_file="../bin/htclean.params"
+VARS        makePSF_n8          partId="n8"
+
+VARS        makePSF_n9          python_state="makePSF"
+VARS        makePSF_n9          input_file="../bin/htclean.params"
+VARS        makePSF_n9          partId="n9"
+
+VARS        makePSF_n10         python_state="makePSF"
+VARS        makePSF_n10         input_file="../bin/htclean.params"
+VARS        makePSF_n10         partId="n10"
+
+VARS        makePSF_n11         python_state="makePSF"
+VARS        makePSF_n11         input_file="../bin/htclean.params"
+VARS        makePSF_n11         partId="n11"
+
+VARS        makePSF_n12         python_state="makePSF"
+VARS        makePSF_n12         input_file="../bin/htclean.params"
+VARS        makePSF_n12         partId="n12"
+
+VARS        makePSF_n13         python_state="makePSF"
+VARS        makePSF_n13         input_file="../bin/htclean.params"
+VARS        makePSF_n13         partId="n13"
+
+VARS        makePSF_n14         python_state="makePSF"
+VARS        makePSF_n14         input_file="../bin/htclean.params"
+VARS        makePSF_n14         partId="n14"
+
+VARS        makePSF_n15         python_state="makePSF"
+VARS        makePSF_n15         input_file="../bin/htclean.params"
+VARS        makePSF_n15         partId="n15"
+
+VARS        makePSF_n16         python_state="makePSF"
+VARS        makePSF_n16         input_file="../bin/htclean.params"
+VARS        makePSF_n16         partId="n16"

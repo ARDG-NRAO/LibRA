@@ -1,0 +1,26 @@
+ms                   =  /lustre/sbhatnag/SciTests/HPG/BArray/hudf.ms
+imagename            = htclean_gpu.weight
+modelimagename       = 
+complexgrid          = 
+imsize               = 9216
+cellsize             = 0.2
+stokes               = I
+reffreq              = 6.0
+phasecenter          = J2000 03:32:38.601000 -27.46.59.83001
+weighting            = natural
+wplanes              = 32
+ftm                  = awphpg
+cfcache              = /lustre/sbhatnag/SciTests/HPG/BArray/cfc.test_w32_imsize9216_0.2arcsec_psT
+mode                 = weight
+wbawp                = 1
+field                = 0
+spw                  = 
+uvdist               = 
+pbcor                = 1
+conjbeams            = 0
+pblimit              = -0.005
+dopointing           = 0
+pointingoffsetsigdev = 0,0
+normalize            = 0
+spwdataiter          = 1
+

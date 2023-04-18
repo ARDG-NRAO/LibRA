@@ -1,0 +1,26 @@
+# File: makePSF.htc
+# Author: F. Madsen
+
+include: htclean.htc
+
+request_memory = 50 G
+#request_disk = 20 G
+
+#requirements = PoolName == "TESTPOST"
+#requirements = (Target.HasCHTCStaging == true)
+
+arguments = "'$(python_state)' '$(input_file)' '$(partId)$(part)' '$(msname)' '$(imagename)' '$(cfcache)' '$(user)' '$(ssh_key)' '$(initialdir)'"
+
+output = $(python_state)_$(partId)$(part).stdout
+error = $(python_state)_$(partId)$(part).stderr
+log = $(python_state)_$(partId)$(part).condor.log
+
+should_transfer_files = YES
+transfer_input_files = /users/$(user)/.ssh/$(ssh_key), bin, nraorsync://$(initialdir)/data/$(msname)_$(partId)$(part).ms
+
+transfer_output_files = _condor_stdout
++nrao_output_files = "working/casalogs working/$(imagename).workdirectory"
+output_destination = nraorsync://$(initialdir)/working/
+
+queue part from seq 1 16 |
+

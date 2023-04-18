@@ -1,0 +1,32 @@
+JOB               makePSF            makePSF.htc              
+JOB               gatherPSF          gatherPSF.htc           
+JOB               makePrimaryBeam    makePrimaryBeam.htc              
+JOB               makeDirtyImage     makeDirtyImage.htc      
+JOB               gather             gather.htc              
+
+
+VARS              makePSF            python_state="$(JOB)"
+VARS              makePSF            input_file="../bin/htclean.params"
+VARS              makePSF            partId="n"
+
+VARS              makeDirtyImage     python_state="runResidualCycle"
+VARS              makeDirtyImage     input_file="../bin/htclean.params"
+VARS              makeDirtyImage     partId="n"
+
+VARS              gatherPSF          python_state="$(JOB)"
+VARS              gatherPSF          input_file="../bin/htclean.params"
+VARS              gatherPSF          partId="n"
+
+VARS              gather             python_state="$(JOB)"
+VARS              gather             input_file="../bin/htclean.params"
+VARS              gather             partId="n"
+
+VARS              makePrimaryBeam    python_state="$(JOB)"
+VARS              makePrimaryBeam    input_file="../bin/htclean.params"
+VARS              makePrimaryBeam    partId="n"
+
+
+PARENT            makePSF            CHILD gatherPSF
+PARENT            gatherPSF          CHILD makePrimaryBeam
+PARENT            makePrimaryBeam    CHILD makeDirtyImage
+PARENT            makeDirtyImage     CHILD gather

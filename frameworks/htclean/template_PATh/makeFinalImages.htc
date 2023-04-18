@@ -1,0 +1,17 @@
+# File: step05-runModelCycle_iter1.htc
+# Author: F. Madsen
+
+include: htclean.htc
+include: imcycle.htc
+
+request_memory = 50 G
+request_disk = 50 G
+
+requirements = OSGVO_OS_STRING == "RHEL 7"
+
+should_transfer_files = YES
+transfer_input_files = bin, $(softwaredir)/casa-6.5.0-15-py3.6.tar.xz, $(imagesdir)/$(imagename).psf.tar, $(imagesdir)/$(imagename).sumwt.tar, $(imagesdir)/$(imagename).weight.tar, $(imagesdir)/$(imagename).residual.imcycle$(imcycle).tar, $(imagesdir)/$(imagename).pb.tar, $(imagesdir)/$(imagename).model.imcycle$(imcycle).tar, $(imagesdir)/$(imagename).mask.imcycle$(imcycle).tar
+
+transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(python_state).tgz; $(imagename).image.tar = $(imagesdir)/$(imagename).image.tar; $(imagename).image.pbcor.tar = $(imagesdir)/$(imagename).image.pbcor.tar; $(imagename).psf.tar = $(imagesdir)/$(imagename).psf.tar; $(imagename).weight.tar = $(imagesdir)/$(imagename).weight.tar; $(imagename).sumwt.tar = $(imagesdir)/$(imagename).sumwt.tar; $(imagename).residual.tar = $(imagesdir)/$(imagename).residual.tar; $(imagename).pb.tar = $(imagesdir)/$(imagename).pb.tar; $(imagename).model.tar = $(imagesdir)/$(imagename).model.tar; $(imagename).mask.tar = $(imagesdir)/$(imagename).mask.tar"
+
+queue

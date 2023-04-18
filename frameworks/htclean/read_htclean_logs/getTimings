@@ -1,0 +1,81 @@
+#!/bin/bash
+
+Usage()
+{
+    echo ""
+    echo "$0 get start/end times for htclean logs."
+    echo ""
+    echo "USAGE: $0 <MODE>"
+    echo "    Allowed values for MODE are 'hpg' or 'htcondor'."
+    echo ""
+}
+
+getTimings_hpg()
+{
+    echo ""
+    echo "Gridding times reported on Roadrunner logs:"
+    for FILE in weight.out psf.out dirty.out runResidual*.out
+    do
+        echo ${FILE}, `grep Gridding ${FILE} | grep roadrunner | awk '{print $1,$7,$12}'`
+    done
+    echo ""
+
+    echo "Runtimes reported on Roadrunner logs:"
+    for FILE in weight.out psf.out dirty.out runResidual*.out
+    do
+        echo ${FILE}, `grep roadrunner ${FILE} | grep runtime\:`
+    done
+    echo ""
+
+    echo "Start/end times from timestamps on Roadrunner logs:"
+    for FILE in weight.out psf.out dirty.out runResidual*.out
+    do
+        echo ${FILE},`grep Opening ${FILE} | awk '{print $1,$2}'`,`grep '\.\.\.done' ${FILE} | grep roadrunner | awk '{print $1,$2}'`
+    done
+    echo ""
+   
+    echo "Start/end times from timestamps on CASA logs:" 
+    for FILE in *.log
+    do
+        echo ${FILE},`awk '{if (NR == 1){print $1,$2}}' ${FILE}`,`tail -1 ${FILE} | awk '{print $1,$2}'`
+    done
+    echo ""
+}
+
+getTimings_htcondor()
+{
+    echo ""
+    echo "Start/end times from timestamps on CASA logs:"
+    for type in runResidual runModel gather makePSF makePB makeFinalImages
+    do
+        for FILE in ${type}*.log
+        do
+            echo ${FILE},`awk '{if (NR == 1) {print $1,$2}}' ${FILE}`,`tail -1 ${FILE} | awk '{print $1,$2}'`
+        done
+        echo ""
+    done
+}
+
+# Begin execution block
+if [ $# -ne 1 ]
+then
+    Usage
+    echo "Error in $0: wrong number of arguments."
+    exit 1
+fi
+
+# Current modes are "hpg" or "htcondor"
+MODE=$1
+
+#echo $MODE | grep 'hpg\|htcondor'
+#if [ $? -ne 0 ]
+#fi
+
+case "$MODE" in
+    hpg)      getTimings_hpg                           ;;
+    htcondor) getTimings_htcondor                      ;;
+    *)        Usage                                    ; 
+              echo "Error in $0: unknown mode $MODE"   ; 
+              exit 1                                   ;;
+esac
+

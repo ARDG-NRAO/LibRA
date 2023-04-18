@@ -1,0 +1,21 @@
+SUBDAG EXTERNAL   makePSF            makePSF.dag             
+JOB               gatherPSF          gatherPSF.htc           
+SUBDAG EXTERNAL   makeDirtyImage     makeDirtyImage.dag      
+JOB               gatherDirtyImage   gatherDirtyImage.htc    
+
+
+SCRIPT PRE        makePSF            writeGriddingDAGs.sh htclean.params.htc
+SCRIPT PRE        gatherPSF          makeInputFileList.sh htclean.params.htc imcycle.htc psf
+SCRIPT PRE        gatherDirtyImage   makeInputFileList.sh htclean.params.htc imcycle.htc dirty
+
+
+VARS              ALL_NODES          python_state="$(JOB)"
+VARS              ALL_NODES          input_file="../bin/htclean.params"
+VARS              ALL_NODES          partId="n"
+
+VARS              makeDirtyImage     python_state="runResidualCycle"
+VARS              gatherDirtyImage   python_state="gather"
+
+PARENT            makePSF            CHILD gatherPSF
+PARENT            makePSF            CHILD makeDirtyImage
+PARENT            makeDirtyImage     CHILD gatherDirtyImage

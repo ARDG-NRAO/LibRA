@@ -1,0 +1,44 @@
+#!/bin/bash
+
+Usage()
+{
+    echo ""
+    echo "$0 writes DAGs for N-way distributed gridding in htclean."
+    echo ""
+    echo "USAGE: $0 <number of distributed gridding processes>"
+    echo ""
+}
+
+# Begin execution block
+if [ $# != 1 ]
+then
+    Usage
+    echo "Error in $0: wrong number of arguments."
+    exit 1
+fi
+
+njobs=$1
+
+DAGlist="makePSF runResidualCycle runResidualCycle_IMCycle"
+
+for DAG in ${DAGlist}
+do
+    JOBtext=""
+    VARStext=""
+    TEXT=""
+    if [ "${DAG}" = "runResidualCycle_IMCycle" ]
+    then
+        python_state="runResidualCycle"
+    else
+        python_state=${DAG}
+    fi
+    for i in `seq 1 ${njobs}`
+    do
+        JOBtext+="JOB         ${DAG}_n${i}          ${DAG}.htc"$'\n'
+        VARStext+="VARS        ${DAG}_n${i}          python_state=\"${python_state}\""$'\n'
+        VARStext+="VARS        ${DAG}_n${i}          input_file=\"../bin/htclean.params\""$'\n'
+        VARStext+="VARS        ${DAG}_n${i}          partId=\"n${i}\""$'\n\n'
+    done
+    TEXT=${JOBtext}$'\n\n'${VARStext}
+    echo "${TEXT}" > ${DAG}.dag
+done

@@ -1,0 +1,9 @@
+initialdir = /lustre/aoc/sciops/fmadsen/tickets/scg-202/hudf/htclean_d32byspw-row_newbuild
+user       = fmadsen
+ssh_key    = condor_transfer
+cfcache    = cfc.test_w32_imsize9216_0.2arcsec_psT
+msname     = hudf
+imagename  = htclean_gpu
+partaxis   = spw-row
+nparts     = 32
+

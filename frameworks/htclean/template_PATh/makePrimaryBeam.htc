@@ -1,0 +1,17 @@
+# File: step05-runModelCycle_iter1.htc
+# Author: F. Madsen
+
+include: htclean.htc
+
+request_memory = 50 G
+request_disk = 50 G
+
+requirements = OSGVO_OS_STRING == "RHEL 7"
+
+should_transfer_files = YES
+transfer_input_files = bin, $(softwaredir)/casa-6.5.0-15-py3.6.tar.xz, $(imagesdir)/$(imagename).workdirectory.makePSF.tgz, $(imagesdir)/$(imagename).psf.gatherPSF.tgz, $(imagesdir)/$(imagename).sumwt.gatherPSF.tgz, $(imagesdir)/$(imagename).weight.gatherPSF.tgz
+
+
+transfer_output_remaps = "$(imagename).pb.tgz = $(imagesdir)/$(imagename).pb.tgz"
+
+queue
