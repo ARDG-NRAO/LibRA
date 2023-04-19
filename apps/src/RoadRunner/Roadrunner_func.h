@@ -52,6 +52,7 @@
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 #include <synthesis/TransformMachines2/ThreadCoordinator.h>
 #include <hpg/hpg.hpp>
+
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -752,11 +753,16 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 	    };
 	  //-------------------------------------------------------------------------------------------
 
+	  try{
 	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
 				 waitForCFReady, notifyCFSent);
-
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);
+	  }
+	  catch (AipsError &er)
+	    {
+	      throw(er);
+	    }
 	  // Trying to ensure that the CFServer thread gets the signal
 	  // that EoD has been reached in the main thread.
 	  thcoord.setEoD(true);

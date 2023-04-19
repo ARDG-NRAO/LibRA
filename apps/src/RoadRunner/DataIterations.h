@@ -72,6 +72,7 @@ public:
 	  {
 	    ftm->get(*vb,0);
 	    vi2->writeVisModel(vb->visCubeModel());
+	    //vi2->writeVisModel(vb->visCube());
 	  }
 	else
 	  ftm->put(*vb,-1,doPSF);
@@ -108,14 +109,24 @@ public:
     double griddingEngine_time=0;
 
     casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
-    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+    if (imagingMode=="predict")
+      {
+	if (!vi2->ms().tableDesc().isColumn("MODEL_DATA"))
+	  {
+	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup." << LogIO::EXCEPTION << LogIO::POST;
+	  }
+      }
     else
       {
-	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
-	dataCol_l = casa::refim::FTMachine::OBSERVED;
+        if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+	else
+	  {
+	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+	    log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
+	    dataCol_l = casa::refim::FTMachine::OBSERVED;
+	  }
       }
-    
     ProgressMeter pm(1.0, vi2->ms().nrow(),
 		     "dataIter", "","","",true);
 
