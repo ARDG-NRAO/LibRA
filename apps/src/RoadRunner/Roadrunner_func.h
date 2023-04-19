@@ -753,12 +753,13 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 	    };
 	  //-------------------------------------------------------------------------------------------
 
-	  try{
-	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
-				 waitForCFReady, notifyCFSent);
-	  griddingEngine_time += std::get<2>(ret);
-	  vol+= std::get<1>(ret);
-	  }
+	  try
+	    {
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
+				     waitForCFReady, notifyCFSent);
+	      griddingEngine_time += std::get<2>(ret);
+	      vol+= std::get<1>(ret);
+	    }
 	  catch (AipsError &er)
 	    {
 	      throw(er);
