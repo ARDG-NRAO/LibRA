@@ -409,6 +409,7 @@ makeMNdx(const string& fileName,
 
 void Roadrunner(bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
+		string& dataColumnName,
 		string& sowImageExt, string& cmplxGridName,
 		int& NX, int& nW, float& cellSize,
 		string& stokes, string& refFreqStr, string& phaseCenter,
@@ -426,16 +427,15 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 
   try
     {
+      casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
+      if (dataColumnName=="data")       dataCol_l=casa::refim::FTMachine::OBSERVED;
+      else if ((dataColumnName=="model") ||
+	       (imagingMode=="predict")) dataCol_l=casa::refim::FTMachine::MODEL;
+
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
       // scope.
       LibHPG libhpg(ftmName=="awphpg");
-      // if (!libhpg.initialize())
-      // 	{
-      // 	  throw(AipsError("LibHPG::initialize() failed"));
-      // 	  exit(-1);
-      // 	}
-
       //  std::atexit(tpl_finalize);
 
       bool const doSow = sowImageExt != "";
@@ -478,9 +478,21 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       Vector<int> spwidList, fieldidList;
       Vector<double> spwRefFreqList;
 
+      //
+      // A plug-in lambda function for DataBase to run soon after opening the MS.
+      //
+      auto verifyMS=[&dataCol_l](const MeasurementSet& ms)
+		    {
+		      if (
+			  ((dataCol_l == casa::refim::FTMachine::MODEL) && !(ms.tableDesc().isColumn("MODEL_DATA"))) ||
+			  ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
+			  ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
+			  )
+			throw(AipsError("MS verification error: The requested data column not found.  Bailing out."));
+		    };
 
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
-		  doSPWDataIter);
+		  doSPWDataIter,verifyMS);
 
       // spwidList      = db.spwidList;
       // fieldidList    = db.fieldidList;
@@ -640,7 +652,7 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       unsigned long vol=0;
       ProgressMeter pm(1.0, db.vi2_l->ms().nrow(),
 		       "Gridding", "","","",true);
-      DataIterator di(isRoot);
+      DataIterator di(isRoot,dataCol_l);
       
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{

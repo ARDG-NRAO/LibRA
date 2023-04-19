@@ -53,7 +53,8 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 void UI(Bool restart, int argc, char **argv, string& MSNBuf,
-	string& imageName, string& modelImageName,string& sowImageExt,
+	string& imageName, string& modelImageName,string& dataColumnName,
+	string& sowImageExt,
 	string& cmplxGridName, int& ImSize, int& nW,
 	float& cellSize, string& stokes, string& refFreqStr,
 	string& phaseCenter, string& weighting,
@@ -89,6 +90,10 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("ms", MSNBuf,i);
       i=1;clgetSValp("imagename", imageName,i);
       i=1;clgetSValp("modelimagename", modelImageName,i);
+
+      i=1;clgetSValp("datacolumn", dataColumnName,i);
+      //      clSetOptions("datacolumn",{"data","model","corrected"});
+
       i=1;clgetSValp("sowimageext", sowImageExt,i);
       i=1;clgetSValp("complexgrid", cmplxGridName,i);
 
@@ -118,6 +123,9 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       exposedKeys.push_back("modelimagename");
       watchPoints["residual"]=exposedKeys;
       watchPoints["predict"]=exposedKeys;
+
+      exposedKeys.push_back("datacolumn");
+      watchPoints["residual"]=exposedKeys;
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
 
       i=1;clgetValp("wbawp", WBAwp,i);
@@ -202,12 +210,12 @@ int main(int argc, char **argv)
   //
   // The Factory Settings.
   string MSNBuf,ftmName=defaultFtmName,
-    cfCache, fieldStr="", spwStr="*", uvDistStr="",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
     imagingMode="residual",rmode="none";
 
-  float cellSize;//refFreq=3e09, freqBW=3e9;
+  float cellSize=0;//refFreq=3e09, freqBW=3e9;
   float robust=0.0;
   int NX=0, nW=1;//cfBufferSize=512, cfOversampling=20, nW=1;
   bool WBAwp=true;
@@ -220,7 +228,7 @@ int main(int argc, char **argv)
   bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
 
-  UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+  UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName, dataColumnName,
      sowImageExt, cmplxGridName, NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
      ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
@@ -231,7 +239,7 @@ int main(int argc, char **argv)
 
   try
     {
-      Roadrunner(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+      Roadrunner(restartUI, argc, argv, MSNBuf,imageName, modelImageName,dataColumnName,
 		 sowImageExt, cmplxGridName, NX, nW, cellSize,
 		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
 		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,

@@ -44,13 +44,16 @@ std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
 					     const String& uvDistStr,
 					     MeasurementSet& thems,
 					     MeasurementSet& selectedMS,
-					     MSSelection& msSelection)
+					     MSSelection& msSelection,
+					     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
+					     )
 {
   //MeasurementSet thems;
   if (Table::isReadable(msname))
     thems=MeasurementSet(msname, Table::Update);
   else
-    throw(AipsError(msname+" does exist or not readable"));
+    throw(AipsError(msname+" does exist or is not readable"));
+  verifyMS(thems);
   //
   //-------------------------------------------------------------------
   //
@@ -97,7 +100,9 @@ class DataBase
 public:
   DataBase(const string& MSNBuf, const string& fieldStr, const string& spwStr,
 	   const string& uvDistStr, const bool& WBAwp, const int& nW,
-	   bool& doSPWDataIter):
+	   bool& doSPWDataIter,
+	   std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}//NoOp
+	   ):
     msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
   {
     LogIO log_l(LogOrigin("roadrunner","DataBase"));
@@ -110,7 +115,7 @@ public:
 			uvDistStr,
 			theMS,
 			selectedMS,
-			msSelection);
+			msSelection,verifyMS);
     spwidList=std::get<0>(lists);
     fieldidList=std::get<1>(lists);
 
