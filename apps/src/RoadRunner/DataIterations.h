@@ -46,8 +46,11 @@ using namespace std;
 class DataIterator
 {
 public:
-  DataIterator(const bool isroot):isRoot_p(isroot) {};
+  DataIterator(const bool isroot,casa::refim::FTMachine::Type dataCol)
+    :isRoot_p(isroot), dataCol_l(dataCol) {};
+
   ~DataIterator() {};
+
   int iterVB(vi::VisibilityIterator2 *vi2,
 	     vi::VisBuffer2 *vb,
 	     const casacore::CountedPtr<casa::refim::FTMachine>& ftm,
@@ -65,6 +68,8 @@ public:
 	//cerr << "interVB: vol=" << vol << " " << nVB << endl;
 	if (dataCol==casa::refim::FTMachine::CORRECTED)
 	  vb->setVisCube(vb->visCubeCorrected());
+	else if (dataCol==casa::refim::FTMachine::MODEL)
+	  vb->setVisCube(vb->visCubeModel());
 	else
 	  vb->setVisCube(vb->visCube());
 
@@ -108,23 +113,31 @@ public:
     int spwNdx=0;
     double griddingEngine_time=0;
 
-    casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
+    //    casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
     if (imagingMode=="predict")
       {
 	if (!vi2->ms().tableDesc().isColumn("MODEL_DATA"))
 	  {
 	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup." << LogIO::EXCEPTION << LogIO::POST;
+	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup."
+	      //<< LogIO::EXCEPTION
+		  << LogIO::POST;
+	    exit(0);
 	  }
       }
     else
       {
-        if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+	if (dataCol_l == casa::refim::FTMachine::MODEL)
+	  log_l << "Using MODEL_DATA column." << LogIO::POST;
 	else
 	  {
-	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	    log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
-	    dataCol_l = casa::refim::FTMachine::OBSERVED;
+	    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+	    else
+	      {
+		log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
+		dataCol_l = casa::refim::FTMachine::OBSERVED;
+	      }
 	  }
       }
     ProgressMeter pm(1.0, vi2->ms().nrow(),
@@ -181,5 +194,6 @@ public:
   };
 private:
   bool isRoot_p;
+  casa::refim::FTMachine::Type dataCol_l;
 };
 #endif
