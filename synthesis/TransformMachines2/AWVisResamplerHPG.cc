@@ -204,9 +204,16 @@ namespace casa{
   {
     String hpgDevice="cuda";
     hpg::Device Device=hpg::Device::Cuda;
-    //hpgDevice=refim::SynthesisUtils::getenv("HPGDEVICE",hpgDevice); // SB: Why was this diabled?!!
-    if (hpgDevice=="serial") Device=hpg::Device::Serial;
-    
+
+    hpgDevice=refim::SynthesisUtils::getenv("HPGDEVICE",hpgDevice);
+    if      (hpgDevice=="cuda")    Device=hpg::Device::Cuda;
+    else if (hpgDevice=="serial")  Device=hpg::Device::Serial;
+    else
+      throw(
+	    SynthesisFTMachineError("HPGDEVICE env. var. setting incorrect: " +
+				    hpgDevice)
+	    );
+
     return std::make_tuple(hpgDevice,Device);
   }
   //
