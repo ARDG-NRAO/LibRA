@@ -119,11 +119,14 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("ftm", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
       i=1;clgetSValp("cfcache", CFCache,i);
 
+      // Expose the modelimagename parameter only for mode=residual or
+      // mode=predict
       InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("modelimagename");
       watchPoints["residual"]=exposedKeys;
       watchPoints["predict"]=exposedKeys;
-
+      
+      // Expose the datacolumn parameter only for mode=residual
       exposedKeys.push_back("datacolumn");
       watchPoints["residual"]=exposedKeys;
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});

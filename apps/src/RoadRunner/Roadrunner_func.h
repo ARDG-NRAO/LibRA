@@ -428,9 +428,10 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
   try
     {
       casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
-      if (dataColumnName=="data")       dataCol_l=casa::refim::FTMachine::OBSERVED;
-      else if ((dataColumnName=="model") ||
-	       (imagingMode=="predict")) dataCol_l=casa::refim::FTMachine::MODEL;
+
+      if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
+      else if (dataColumnName=="data")  dataCol_l=casa::refim::FTMachine::OBSERVED;
+      else if (dataColumnName=="model") dataCol_l=casa::refim::FTMachine::MODEL;
 
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
