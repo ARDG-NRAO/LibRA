@@ -92,7 +92,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("modelimagename", modelImageName,i);
 
       i=1;clgetSValp("datacolumn", dataColumnName,i);
-      //      clSetOptions("datacolumn",{"data","model","corrected"});
+      clSetOptions("datacolumn",{"data","model","corrected"});
 
       i=1;clgetSValp("sowimageext", sowImageExt,i);
       i=1;clgetSValp("complexgrid", cmplxGridName,i);
