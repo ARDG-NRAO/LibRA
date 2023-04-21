@@ -94,5 +94,5 @@ The binary applications will be in ```apps/src``` directory.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
 
 ### Resources
-- [ ] [LibRA Singularity Container](gitlab@gitlab.nrao.edu:pjaganna/libra-singularity.git)
+- [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/pjaganna/libra-singularity)
 ***
