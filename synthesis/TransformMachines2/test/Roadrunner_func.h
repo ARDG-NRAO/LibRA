@@ -735,9 +735,12 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 	      if (thcoord.newCF)
 		{
 		  visResampler->setCFSI(cfsi_g);
-
-		  if (visResampler->set_cf(dcfa_sptr_g)==false)
+		  
+		  //if (visResampler->set_cf(dcfa_sptr_g)==false)
+		  //		  cerr << "WFCFR: " << dcfa_sptr_g << endl;
+		  if (visResampler->set_cf(std::move(dcfa_sptr_g))==false)
 		    throw(AipsError("Device CFArray pointer is null in CFServer"));
+		  thcoord.newCF=false;
 		}
 	    };
 	  //-------------------------------------------------------------------------------------------

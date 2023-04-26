@@ -26,6 +26,33 @@ public:
     nFills_p=rowCounter_p=nPol_p=nChan_p=nRow_p=0;
   };
 
+  // Move constructor
+  HPGVisBufferBucket(HPGVisBufferBucket&& other) noexcept
+  {
+    hpgVB_p=std::move(other.hpgVB_p);
+    cout << "HPGVBB.move constructor\n";
+  }
+
+  // assignment operator
+  // HPGVisBufferBucket& operator=(const HPGVisBufferBucket& rhs)
+  // {
+  //   cout << "HPGVBB.copy operator\n";
+  //   if (&rhs != this) {
+  //     HPGVisBufferBucket tmp(rhs);
+  //     this->hpgVB_p.swap(rhs);
+  //   }
+  //   return *this;
+  // }
+  
+  // move assignment operator
+  HPGVisBufferBucket& operator=(HPGVisBufferBucket&& rhs) noexcept
+  {
+    cout << "HPGVBB.move= operator\n";
+    this->hpgVB_p.swap(rhs.hpgVB_p);
+    return *this;
+  }
+
+
   ~HPGVisBufferBucket() {};
   //
   // -------------------------------------------------------------------------------

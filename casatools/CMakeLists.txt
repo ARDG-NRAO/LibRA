@@ -24,10 +24,17 @@ declare_casacpp_component("casatools")
 
 # External dependencies
 target_link_libraries(casacpp_casatools PUBLIC PkgConfig::CASACORE)
-target_link_libraries(casacpp_casatools PRIVATE casacpp_protobuf)
+if (CMAKE_USE_GRPC)
+#   target_link_libraries(casacpp_casatools PRIVATE casacpp_protobuf)
+# else()
+  target_link_libraries(casacpp_casatools PRIVATE casacpp_protobuf)
+  # the generated protobuf headers
+  target_include_directories(casacpp_casatools PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+endif()
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes
 target_include_directories(casacpp_casatools PUBLIC ${CMAKE_SOURCE_DIR})
+
 # the generated protobuf headers
-target_include_directories(casacpp_casatools PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+#target_include_directories(casacpp_casatools PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)

@@ -223,6 +223,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       rwdcf_ptr_p = rwdcfArray;
       return (rwdcf_ptr_p!=NULL);
     }
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>&& rwdcfArray)// Can't figure out how to create hpg::opt_t<hpg::Error> to return!
+    {
+      std::swap(rwdcf_ptr_p , rwdcfArray);
+      return (rwdcf_ptr_p!=NULL);
+    }
     virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const override;
     virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const override;
     bool createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,

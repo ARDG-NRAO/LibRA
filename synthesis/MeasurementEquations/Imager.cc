@@ -125,9 +125,9 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines/HetArrayConvFunc.h>
 
-#include <synthesis/DataSampling/SynDataSampling.h>
-#include <synthesis/DataSampling/SDDataSampling.h>
-#include <synthesis/DataSampling/ImageDataSampling.h>
+//#include <synthesis/DataSampling/SynDataSampling.h>
+//#include <synthesis/DataSampling/SDDataSampling.h>
+//#include <synthesis/DataSampling/ImageDataSampling.h>
 
 #include <casacore/lattices/LRegions/LattRegionHolder.h>
 #include <casacore/lattices/Lattices/TiledLineStepper.h> 

@@ -154,6 +154,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual bool set_cf(casa::refim::MyCFArray& ) = 0;
     virtual bool set_cf(std::shared_ptr<hpg::DeviceCFArray>& dcfArray) = 0;
     virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>& rwdcfArray) = 0;
+    virtual bool set_cf(std::shared_ptr<hpg::RWDeviceCFArray>&& rwdcfArray) = 0;
    // get pointers to storage for gridded visibilities or weight;
     // size to number of elements in storage; may not be implemented
     // by all sub-classes, if not, will return empty shared_ptr and

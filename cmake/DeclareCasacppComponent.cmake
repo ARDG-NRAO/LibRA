@@ -29,7 +29,7 @@ macro(declare_casacpp_component name)
   list(FILTER ${name}_library_sources EXCLUDE REGEX "/test/")
   
   # List the header files and template header files, also recursive
-  file(GLOB_RECURSE ${name}_public_headers CONFIGURE_DEPENDS "*.h" "*.tcc")
+  file(GLOB_RECURSE ${name}_public_headers CONFIGURE_DEPENDS "*.h" "*.tcc" "*.INC")
 
   # Add the library target to cmake
   add_library(casacpp_${name} SHARED)
@@ -90,6 +90,6 @@ macro(declare_casacpp_component name)
   install(DIRECTORY ${CMAKE_SOURCE_DIR}/${name}
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/casacpp
       FILES_MATCHING
-      REGEX "/.*(h|tcc)$")
+      REGEX "/.*(h|tcc|INC)$")
 
 endmacro()
