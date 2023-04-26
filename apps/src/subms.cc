@@ -33,7 +33,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf,
       MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr="";
       i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("outms",OutMSBuf,i);  
-      clgetFullValp("whichcol",WhichColStr);
+      clgetFullValp("datacolumn",WhichColStr);
       //      i=1;clgetIValp("deepcopy",deepCopy,i);
       clgetFullValp("field",fieldStr);
       clgetFullValp("time",timeStr);  
@@ -44,11 +44,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf,
       clgetFullValp("array",arrayStr);  
       clgetFullValp("uvdist",uvdistStr);  
       dbgclgetFullValp("taql",taqlStr);  
-      VString options;
-      options.resize(5);
-      options[0]="data"; options[1]="model"; options[2]="corrected";
-      options[3]="all"; options[4]="(a list of comma-separated column names)";
-      clSetOptions("whichcol", options);
+      clSetOptions("datacolumn", {"data","model","corrected","all","(a list of comma-separated names)"});
 
       EndCL();
     }

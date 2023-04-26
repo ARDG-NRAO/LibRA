@@ -170,9 +170,10 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
   catch (clError& x)
     {
       x << x << endl;
-      if (x.Severity() == CL_FATAL) exit(1);
+      //      if (x.Severity() == CL_FATAL)
+	exit(1);
       //clRetry();
-      RestartUI(REENTER);
+      //RestartUI(REENTER);
     }
 }
 //
