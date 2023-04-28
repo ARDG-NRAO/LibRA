@@ -54,15 +54,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
 
   public:
-    AWVisResamplerHPG(bool hpgInitAndFin=false): AWVisResampler(), hpgGridder_p(NULL), vis(), grid_cubes(), cf_cubes(), weights(), frequencies(),
-						 cf_phase_screens(), hpgPhases(), visUVW(),
-						 nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
-						 hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
-						 cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
-						 mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0)
+    AWVisResamplerHPG(bool hpgInitAndFin=false,const int vbBucketSize=1/*un-used*/):
+      AWVisResampler(), hpgGridder_p(NULL), vis(), grid_cubes(), cf_cubes(), weights(), frequencies(),
+      cf_phase_screens(), hpgPhases(), visUVW(),
+      nVBS_p(0),  maxVBList_p(1), cachedVBSpw_p(-1),
+      hpgVBList_p(), HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),isHPGCustodian_p(hpgInitAndFin),
+      cfsi_p({1,false},{1,false},{1,true},{1,true}, 1), cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
+      mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0)
 
     {
       hpgVBList_p.reserve(maxVBList_p);
+      (int)vbBucketSize; //Unused input variable in this branch.
 
       String hpgDevice="cuda";
       std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
