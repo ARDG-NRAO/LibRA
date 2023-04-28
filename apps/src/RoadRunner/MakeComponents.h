@@ -92,7 +92,8 @@ createAWPFTMachine(const String ftmName,
   // Construct the appropriate re-sampler.
   //
   CountedPtr<refim::VisibilityResamplerBase> visResampler;
-  if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false);
+  int vbBucketSize = refim::SynthesisUtils::getenv("VBBUCKETSIZE",1);
+  if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false,vbBucketSize);
   else visResampler = new refim::AWVisResampler();
   visResampler->setModelImage(modelImageName);
   //
