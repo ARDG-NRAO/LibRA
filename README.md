@@ -29,32 +29,37 @@ git clone gitlab@gitlab.nrao.edu:sbhatnag/libra.git
 cd libra
 make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html> -f makefile.libra allbuild
-cd apps/src
-make -f makefile.casacore roadrunner tableinfo mssplit
-make -f makefile.casacore hummbee
+cd apps
+mkdir build
+mkdir install
+cd build
+cmake ..
+make
+make install
 ```
 If successful, this will produce the following tree:
 ```
 .
 ├── apps
+│   ├── build
+│   │   ├── CMakeCache.txt
+│   │   ├── CMakeFiles
+│   │   ├── cmake_install.cmake
+│   │   ├── install_manifest.txt
+│   │   ├── Makefile
+│   │   └── src
+│   ├── CMakeLists.txt
+│   ├── install
+│   │   ├── hummbee
+│   │   ├── mssplit
+│   │   ├── roadrunner
+│   │   └── tableinfo
 │   └── src
-│       ├── hummbee
 │       ├── Hummbee
-│       ├── hummbee.cc
-│       ├── hummbee.o
-│       ├── makefile.casacore
-│       ├── makefile.casacore.inc
-│       ├── mssplit
-│       ├── mssplit.cc
-│       ├── mssplit.o
-│       ├── roadrunner
+│       ├── MSSplit
 │       ├── RoadRunner
-│       ├── roadrunner.cc
-│       ├── roadrunner.o
 │       ├── subms.cc
-│       ├── tableinfo
-│       ├── tableinfo.cc
-│       └── tableinfo.o
+│       └── TableInfo
 ├── dependencies
 │   ├── build
 │   │   ├── casacore
@@ -83,7 +88,7 @@ If successful, this will produce the following tree:
 
 ```
 
-The binary applications will be in ```apps/src``` directory.
+The binary applications will be install in ```apps/install``` directory.
 
 ### Setting up the various variables in `makefile.libra`
 
