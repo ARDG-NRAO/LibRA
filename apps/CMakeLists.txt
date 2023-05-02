@@ -32,10 +32,6 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
 
 
 set(ARCH "linux_64b")
-#set(SCIHOME "/home/dhruva/disk1/sanjay/bin/")
-#set(SCISRC "/home/dhruva/disk1/sanjay/Projects/capps/SCI")
-#set(SCILIBDIR "$(SCISRC)/src/lib")
-#set(SCIINCLDIR "$(SCISRC)/src/include")
 set(CASAHOME "${CMAKE_CURRENT_LIST_DIR}/../dependencies")
 set(CLHOME "${CASAHOME}/linux_64b")
 set(COREROOT "${CASAHOME}/${ARCH}")
@@ -80,27 +76,16 @@ set(CMAKE_INSTALL_PREFIX )
 #	  -L$(USRLIB)                            
                  
 
-#-------------------------------------------------------------------------------------------------
-# Variables that control the generic targets below
-#
-#
-# The list of source file names 
-#
-#SOURCE  = timager.cc tEPJones.cc imasking.cc mssplit.cc tableinfo.cc 
-#SOURCE  = imasking.cc mssplit.cc tableinfo.cc subms.cc roadrunner.cc
-
-
 
 # collect up the source files
-#file(GLOB SOURCE "*.cc")
-set(ROADRUNNER_SOURCES "src/roadrunner.cc")
-set(MSSPLIT_SOURCES "src/mssplit.cc")
-set(TABLEINFO_SOURCES "src/tableinfo.cc")
-set(HUMMBEE_SOURCES "src/hummbee.cc")
+#set(ROADRUNNER_SOURCES "src/roadrunner.cc")
+#set(MSSPLIT_SOURCES "src/mssplit.cc")
+#set(TABLEINFO_SOURCES "src/tableinfo.cc")
+#set(HUMMBEE_SOURCES "src/hummbee.cc")
 
 
-include_directories(${CLHOME}/include ${COREROOT}/include/casacore ${CASAROOT}/include/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
-link_directories(${CLHOME}/lib ${CASAHOME}/linux_64b/lib /usr/local/lib ${LIBROOT} ${COREROOT}/lib ${USRLIB})
+#include_directories(${CLHOME}/include ${COREROOT}/include/casacore ${CASAROOT}/include/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
+#link_directories(${CLHOME}/lib ${CASAHOME}/linux_64b/lib /usr/local/lib ${LIBROOT} ${COREROOT}/lib ${USRLIB})
 
 # for runtime linking. Needs to be before add_executable
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -108,24 +93,29 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CASAHOME}/linux_64b/lib")
 
+add_subdirectory(src/RoadRunner)
+add_subdirectory(src/Hummbee)
+add_subdirectory(src/MSSplit)
+add_subdirectory(src/TableInfo)
+
 # create the executables
-add_executable(roadrunner ${ROADRUNNER_SOURCES})
-add_executable(mssplit ${MSSPLIT_SOURCES})
-add_executable(tableinfo ${TABLEINFO_SOURCES})
-add_executable(hummbee ${HUMMBEE_SOURCES})
+#add_executable(roadrunner ${ROADRUNNER_SOURCES})
+#add_executable(mssplit ${MSSPLIT_SOURCES})
+#add_executable(tableinfo ${TABLEINFO_SOURCES})
+#add_executable(hummbee ${HUMMBEE_SOURCES})
 
 
 # target_include_directories(roadrunner PRIVATE "src/")
-target_link_libraries(roadrunner casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-target_link_libraries(tableinfo casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-target_link_libraries(mssplit casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-target_link_libraries(hummbee casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+#target_link_libraries(roadrunner casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+#target_link_libraries(tableinfo casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+#target_link_libraries(mssplit casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+#target_link_libraries(hummbee casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
 
 #install
-install(TARGETS roadrunner DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-install(TARGETS mssplit DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-install(TARGETS tableinfo DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-install(TARGETS hummbee DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+#install(TARGETS roadrunner DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+#install(TARGETS mssplit DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+#install(TARGETS tableinfo DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+#install(TARGETS hummbee DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
 
 
 
