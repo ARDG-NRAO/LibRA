@@ -94,20 +94,15 @@ set(CMAKE_INSTALL_PREFIX )
 # collect up the source files
 #file(GLOB SOURCE "*.cc")
 set(ROADRUNNER_SOURCES "src/roadrunner.cc")
+set(MSSPLIT_SOURCES "src/mssplit.cc")
+set(TABLEINFO_SOURCES "src/tableinfo.cc")
+set(HUMMBEE_SOURCES "src/hummbee.cc")
 
-
-#
-# The list of applications to be built derived from the list of source files in $(SOURCE)
-#
-# APPS    = $(patsubst %.cc,%,$(SOURCE))
 
 include_directories(${CLHOME}/include ${COREROOT}/include/casacore ${CASAROOT}/include/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
-message(STATUS)
-message("CLHOME/include=${CLHOME}/include")
-
 link_directories(${CLHOME}/lib ${CASAHOME}/linux_64b/lib /usr/local/lib ${LIBROOT} ${COREROOT}/lib ${USRLIB})
-#set(PROJECT_LINK_LIBS )
 
+# for runtime linking. Needs to be before add_executable
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -115,44 +110,23 @@ set(CMAKE_INSTALL_RPATH "${CASAHOME}/linux_64b/lib")
 
 # create the executables
 add_executable(roadrunner ${ROADRUNNER_SOURCES})
+add_executable(mssplit ${MSSPLIT_SOURCES})
+add_executable(tableinfo ${TABLEINFO_SOURCES})
+add_executable(hummbee ${HUMMBEE_SOURCES})
 
-#
-# The list object files derived from the list of application in $(APPS)
-#
-#OBJECTS = $(patsubst %,%.o,$(APPS))
 
-#target_include_directories(roadrunner PRIVATE "src/")
-
+# target_include_directories(roadrunner PRIVATE "src/")
 target_link_libraries(roadrunner casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-#
-#-------------------------------------------------------------------------------------------------
-#
-# The actual tagets
-#
-#all: $(APPS)	
+target_link_libraries(tableinfo casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+target_link_libraries(mssplit casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
+target_link_libraries(hummbee casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
 
-#install: all
-#	strip $(APPS); 
-#find_library(DEPNS_LIBS_PATH 
-#  NAMES casacpp_synthesis
-#  PATHS ${CASAHOME}/linux_64b/lib)
-#message("DEPNS_LIBS_PATH = ${DEPNS_LIBS_PATH}")
-
-#set(CMAKE_INSTALL_RPATH "/home/tesla/mhsieh/work/libra/dependencies/linux_64b/lib")
+#install
 install(TARGETS roadrunner DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-#install(TARGETS roadrunner RUNTIME DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install")
+install(TARGETS mssplit DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+install(TARGETS tableinfo DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+install(TARGETS hummbee DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
 
 
-#$(OBJECTS): %.o: %.cc 
-#	 $(C++) -c $(CPPFLAGS) $(INCL) $< -o $@
 
-#$(APPS): % : %.o 
-#	 $(C++) -o $@ $< $(CPPFLAGS) $(LINKEROPTS) $(LIBOPTS) \
-#	 $(CASALIBS) $(UILIBS) #$(CAAPSLIB)
-#
-#-------------------------------------------------------------------------------------------------
-#
-#.PHONY: clean allclean
 
-#depend:
-#	makedepend $(INCL) $(SOURCE)
