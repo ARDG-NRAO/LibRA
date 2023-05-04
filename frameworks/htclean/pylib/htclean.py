@@ -4,7 +4,7 @@ import sys
 
 pylib_dir = '../pylib'
 
-sys.path.insert(0, bin_dir)
+sys.path.insert(0, pylib_dir)
 from HTCSynthesisImager import HTCSynthesisImager
 
 from htclean_helperfunctions import *
