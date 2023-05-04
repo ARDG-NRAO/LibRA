@@ -6,11 +6,6 @@ include: htclean.params.htc
 executable = htclean_condor.sh
 arguments  = "'$(python_state)' '$(input_file)' '$(partId)' '$(msname)' '$(imagename)' '$(cfcache)' '$(initialdir)'"
 
-#requirements = (HasLustre =!= True)
-#requirements = (GPUHOST == True)
-#+partition   = "GPUHOST"
-#Rank = (TARGET.VLASS == True) + (TARGET.VLASSTEST =!= True)
-#requirements = Machine != "SYRA-PATH-EP-osgvo-docker-pilot-gpu-5bfdd8d474-zbtfl"
 
 output = $(python_state).imcycle$(imcycle).stdout
 error  = $(python_state).imcycle$(imcycle).stderr

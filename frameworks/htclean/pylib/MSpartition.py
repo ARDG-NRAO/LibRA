@@ -1,10 +1,7 @@
-#File: MSpartition.py
-#Author: F. Madsen
-
 import os
 import sys
 
-bin_dir = '../bin'
+pylib_dir = '../pylib'
 
 sys.path.insert(0, bin_dir)
 

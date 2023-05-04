@@ -7,6 +7,10 @@
 
 OMP_NUM_THREADS=1
 
+#############################################################################################
+#      Following needs review to work with relocatable roadrunner and parameter file        #
+#############################################################################################
+
 # CASA for gpuhost00x
 #CASABUILD="CASA-HPG-TEST-GPUFFT"	# stable build used with scg-136/145
 #CASABUILD="CAS-13581-Raw"		# oriented to OTF mosaic (VLASS)
@@ -20,6 +24,8 @@ source /home/yaghan3/setup-spack.bash && source /home/yaghan3/sanjay/HPG/libhpg/
 CASABIN=/home/casa/packages/RHEL7/release/casa-release-5.8.0-109.el7/bin/casa
 CUDACAP=8x
 RRBIN=${CASAHOME}/code/build-linux_64b/synthesis/roadrunner${CUDACAP}
+
+#############################################################################################
 
 # Input arguments
 parfile=$1

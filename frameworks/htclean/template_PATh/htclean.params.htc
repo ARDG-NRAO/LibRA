@@ -1,5 +1,6 @@
 nparts      = 32
 datadir     = hudf_convergence_test_$(nparts)parts
+htclean_dir = /home/felipe.madsen/libra/frameworks/htclean
 initialdir  = /home/felipe.madsen/tests/$(datadir)
 stashdir    = stash:///path-facility/data/felipe.madsen
 cfcache     = cfc.test_w32_imsize9216_0.2arcsec_psT
@@ -7,6 +8,6 @@ msname      = hudf
 imagename   = hudf_d32
 partaxis    = row
 softwaredir = $(stashdir)/software
-imagesdir   = $(stashdir)/imagingdata/$(datadir)/working_3sigma_newbuild
+imagesdir   = $(stashdir)/imagingdata/$(datadir)/working_rr_80_sh
 cfcachedir  = $(stashdir)/cfcache
 msdir       = $(stashdir)/data/$(datadir)

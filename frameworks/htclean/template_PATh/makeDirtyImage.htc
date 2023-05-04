@@ -1,5 +1,3 @@
-# File: makeDirtyImage.htc
-# Author: F. Madsen
 
 include: htclean.htc
 include: imcycle.htc
@@ -12,20 +10,14 @@ requirements = GLIDEIN_ResourceName != "FIU-PATH-EP"
 
 arguments = "'$(python_state)' '$(input_file)' '$(partId)$(part)' '$(msname)' '$(imagename)' '$(cfcache)' '$(user)' '$(ssh_key)' '$(initialdir)'"
 
-#output = $(python_state)_$(partId)$(part).imcycle$(imcycle).stdout
-#error = $(python_state)_$(partId)$(part).imcycle$(imcycle).stderr
-#log = $(python_state)_$(partId)$(part).imcycle$(imcycle).condor.log
 
 output = makeDirtyImage_$(partId).stdout
 error  = makeDirtyImage_$(partId).stderr
 log    = makeDirtyImage_$(partId).condor.log
 
 should_transfer_files = YES
-#transfer_input_files = bin, $(softwaredir)/rr80.tgz, $(softwaredir)/casa-data.tgz, $(cfcachedir)/$(cfcache).tgz, $(msdir)/$(msname)_$(partId)$(part).ms.tgz, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId)$(part).weight.tgz, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId)$(part).sumwt.tgz, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId)$(part).psf.tgz
-transfer_input_files = bin, $(softwaredir)/rr_80_sing.tar, $(softwaredir)/casa-data.tgz, $(cfcachedir)/$(cfcache).tar, $(msdir)/$(msname)_$(partId).ms.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).weight.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).sumwt.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).psf.tar
+transfer_input_files = bin, $(softwaredir)/rr_80.sh, $(softwaredir)/casa-data.tgz, $(cfcachedir)/$(cfcache).tar, $(msdir)/$(msname)_$(partId).ms.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).weight.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).sumwt.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).psf.tar
 
-#transfer_output_remaps = "casalogs.$(partId)$(part).$(python_state).tgz = $(initialdir)/casalogs.$(partId)$(part).$(python_state).imcycle$(imcycle).tgz; $(imagename).$(partId)$(part).residual.tgz = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId)$(part).residual.tgz; $(imagename).$(partId)$(part).weight.tgz = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId)$(part).weight.tgz; $(imagename).$(partId)$(part).sumwt.tgz = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId)$(part).sumwt.tgz"
 transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(partId).$(python_state).imcycle$(imcycle).tgz; $(imagename).$(partId).residual.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).residual.tar; $(imagename).$(partId).weight.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).weight.tar; $(imagename).$(partId).sumwt.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).sumwt.tar; $(imagename).$(partId).psf.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).psf.tar"
 
-#queue part from seq 1 $(nparts) |
 queue

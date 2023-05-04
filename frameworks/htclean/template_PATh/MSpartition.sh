@@ -33,4 +33,4 @@ cdate=$(date +%Y%m%d-%H%M%S)
 CASABIN=/home/casa/packages/RHEL7/release/casa-6.5.0-15-py3.6/bin/
 
 logname="MSpartition-${cdate}"
-${CASABIN}/casa --nologger --nogui --logfile ${logname}.log -c ../bin/MSpartition.py ../${msname}.ms ${partaxis} ${nparts} &> ${logname}.out
+${CASABIN}/casa --nologger --nogui --logfile ${logname}.log -c ../pylib/MSpartition.py ../${msname}.ms ${partaxis} ${nparts} &> ${logname}.out

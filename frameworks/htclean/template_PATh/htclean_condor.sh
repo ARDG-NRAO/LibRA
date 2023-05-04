@@ -6,7 +6,9 @@
 setupRoadRunner()
 {
 #    tar xf rr_80.tar; rm -rf rr_80.tar
-    tar xf rr_80_sing.tar; rm -rf rr_80_sing.tar
+#    tar xf rr_80_sing.tar; rm -rf rr_80_sing.tar
+    chmod a+x rr_80.sh
+    ${PWD}/rr_80.sh ${PWD}/rr_80
 
     tar xzf casa-data.tgz; rm -rf casa-data.tgz
 
@@ -16,7 +18,7 @@ setupRoadRunner()
 
 #    find ${PWD}/exodus -name 'libcuda.so.1' -exec rm -rf {} \+
 #    find ${PWD}/exodus -name 'libcuda.so.1' -exec cp -f /.singularity.d/libs/libcuda.so.1 {} \;
-    cp -f /.singularity.d/libs/libcuda.so.1 ${PWD}/rr_sing/bundles/1738d12843cbea76303ea3029d202a084d1ed64c900b7b5090511aa6798ae8b3/.singularity.d/libs/
+#    cp -f /.singularity.d/libs/libcuda.so.1 ${PWD}/rr_sing/bundles/1738d12843cbea76303ea3029d202a084d1ed64c900b7b5090511aa6798ae8b3/.singularity.d/libs/
 
     echo "measures.directory:${PWD}/casa-data" > ~/.casarc
 
@@ -33,7 +35,7 @@ setupRoadRunner()
     # more than one instance of roadrunner runs on the same execute host
     export OMP_PROC_BIND=false
 
-    RRBIN=${PWD}/rr_sing/bin/roadrunner
+    RRBIN=${PWD}/rr_80/bin/roadrunner
 
     mkdir -p working/${imagename}.workdirectory
 }
@@ -149,43 +151,13 @@ case ${python_state} in
         echo "`ls ${imagename}.workdirectory`"
 
 
-#        mv ${imagename}.workdirectory.* ${imagename}.workdirectory
-#        find . -maxdepth 1 -name "${imagename}.workdirectory*" -exec mv {} ${imagename}.workdirectory \;
-#        if [ $? -ne 0 ]
-#        then
-#            echo "Error in find ${imagename}.workdirectory* on ${PWD}"
-#            exit 10
-#        fi
-
-#        echo ""
-#        echo "Now listing contents of ${PWD}:"
-#        echo "`ls`"
-#
-#        cd ${imagename}.workdirectory
-#        if [ $? -ne 0 ]
-#        then
-#            echo "Check input tarballs - ${imagename}.workdirectory not present"
-#            exit 10
-#        fi
-#
-#        for IMG in `find . -name "${imagename}.*.tgz"`
-#        do
-#            echo "Extracting $IMG"
-#            tar xzf $IMG; rm -rf $IMG
-#        done
-#
-#        echo ""
-#        echo "Now listing contents of ${PWD}:"
-#        echo "`ls`"
-#        
-#        cd ..
         logname="casalogs/${python_state}-${cdate}"
 
         echo ""
         echo "Starting CASA"
         echo ""
 
-        ${CASABIN}/casa --nologger --nogui --logfile ${logname}.log -c ../bin/htclean.py ${python_state} ${input_file} ${partId} &> ${logname}.out
+        ${CASABIN}/casa --nologger --nogui --logfile ${logname}.log -c ../pylib/htclean.py ${python_state} ${input_file} ${partId} &> ${logname}.out
         for IMG in `find . -maxdepth 1 \( -name "${imagename}.*" -a ! -name "${imagename}.workdirectory" \)`
         do
             echo "Adding ${IMG} to ${IMG}.tar"

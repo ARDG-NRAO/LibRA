@@ -117,6 +117,26 @@ class HTCSynthesisImager(PySynthesisImager):
             self.PStools[immod].dividemodelbyweight()
             self.PStools[immod].scattermodel()
 
+    def scatter(self, imtype = 'residual', partname = 'SPW'):
+        self.initializeDeconvolvers()
+        self.initializeIterationControl()
+
+        imgname = self.allimpars['0']['imagename'];
+        partlist = self._mkImagePartList(imgname, imtype, partname);
+
+        for immod in range(self.NF):
+            normpars = self.allnormpars[str(immod)];
+            if len(partlist) > 1:
+                normpars['partimagenames'] = partlist;
+            print('scatter_normpars: {}'.format(normpars))
+
+        self.PStools.append(synthesisnormalizer())
+
+        for immod in range(self.NF):
+            self.PStools[immod].setupnormalizer(normpars=normpars)
+            self.PStools[immod].dividemodelbyweight()
+            self.PStools[immod].scattermodel()
+
     def makePSF(self):
         self.initializeImagers()
         self.initializeNormalizers()
@@ -142,7 +162,7 @@ class HTCSynthesisImager(PySynthesisImager):
         self.runMajorCycleCore(lastcycle)
 
 
-    def runModelCycle(self, imtype = 'residual', partname = 'SPW'):
+    def runModelCycle(self, imtype = 'residual', partname = 'SPW', scatter = True):
         self.initializeDeconvolvers()
         self.initializeIterationControl()
 
@@ -153,7 +173,8 @@ class HTCSynthesisImager(PySynthesisImager):
         print('modelCycle:parameters: {}'.format(self.allimpars['0']))
     
         self.runMinorCycle()
-        self._scatter(imtype, partname)
+        if scatter:
+            self._scatter(imtype, partname)
 
         if self.hasConverged():
             os.system('touch stopIMCycles')

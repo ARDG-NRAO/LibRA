@@ -1,10 +1,8 @@
-#File: step01-make_iter0_psf.py
-#Author: F. Madsen
 
 import os
 import sys
 
-bin_dir = '../bin'
+pylib_dir = '../pylib'
 
 sys.path.insert(0, bin_dir)
 from HTCSynthesisImager import HTCSynthesisImager
@@ -38,11 +36,11 @@ if 'SPW' in partId:
     spw = partId.replace('SPW', '')
 
 # Adjust parameter values according to mode
-if mode in ['makePSF', 'makePrimaryBeam', 'runResidualCycle']:
+if mode in ['makePSF', 'runResidualCycle']:
     if not 'serial' in partId:
         inpars['msname'] = vis.split('.ms')[0] + '_' + partId + '.ms' # think about the serial case
         inpars['imagename'] = imagename + '.workdirectory/' + imagename + '.' + partId
-elif mode in ['gatherPSF', 'gather', 'runModelCycle', 'makeFinalImages']:
+elif mode in ['gatherPSF', 'gather', 'scatter', 'runModelCycle', 'makeFinalImages', 'makePrimaryBeam']:
     inpars['msname'] = ''
 else:
     raise Exception('unknown mode: ' + mode + '. Check inputs.')
@@ -62,5 +60,7 @@ elif mode == 'gatherPSF':
     imager.gather(partname = partId, imtype = 'psf')
 elif mode == 'gather':
     imager.gather(partname = partId)
+elif mode == 'scatter':
+    imager.scatter(partname = partId)
 else:
     raise Exception('unknown mode: ' + mode + '. Check inputs.')

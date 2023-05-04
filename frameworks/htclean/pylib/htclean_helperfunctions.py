@@ -1,7 +1,3 @@
-#!/usr/bin/python
-#Author: Felipe Madsen 
-
-
 import os
 import re
 import shutil
@@ -173,17 +169,26 @@ def getRowRanges(msname,nparts):
     return r;
 
 
+def getSPWrange(msname):
+    tb.open(msname + '/SPECTRAL_WINDOW')
+    SPWrange = tb.rownumbers()
+    tb.close()
+
+    return SPWrange
+
+
 def partitionByRow(msname, nparts, dryrun=False):
-    r=getRowRanges(msname, nparts);
-    namelist = msname.partition('.ms')
+    r = getRowRanges(msname, nparts);
+    _msname = msname.split('/')[-1]
+    _msname = _msname.partition('.ms')[0]
 
     msnames=[];
     print("Making {} partitions".format(str(nparts)))
     for i in range(len(r)):
-        sBeg=str(r[i][0]);
-        sEnd=str(r[i][1]);
+        sBeg = str(r[i][0]);
+        sEnd = str(r[i][1]);
         #        mslet=os.path.basename(msname)+"#"+sBeg+'-'+sEnd;
-        mslet= namelist[0] + "_n" + str(i+1) + ".ms"
+        mslet = _msname + '_n' + str(i+1) + '.ms'
         msnames.append(mslet);
         taqlStr="ROWNUMBER() >= "+sBeg+" && ROWNUMBER() <= "+sEnd;
 
@@ -195,16 +200,43 @@ def partitionByRow(msname, nparts, dryrun=False):
 
 def partitionBySPW(msname):
     msnames = []
-    namelist = msname.partition('.ms')
+    _msname = msname.partition('/')[-1]
+    _msname = _msname.partition('.ms')[0]
+    SPWrange = getSPWrange(msname)
 
     print('Partitioning the original MS by Spectral Window...')
-    for i in range(2,18):
+    for i in SPWrange:
         spw = str(i)
-        mslet = namelist[0] + '_SPW' + str(i) + namelist[1]
+        mslet = _msname + '_SPW' + str(i) + '.ms'
         msnames.append(mslet)
 
         print('{}, {}'.format(mslet, spw))
         mstransform(vis=msname,outputvis=mslet,createmms=False,separationaxis="auto",numsubms="auto",tileshape=[0],field="",spw=spw,scan="",antenna="",correlation="",timerange="",intent="",array="",uvrange="",observation="",feed="",datacolumn="data",realmodelcol=False,keepflags=True,usewtspectrum=False,combinespws=False,chanaverage=False,chanbin=1,hanning=False,regridms=False,mode="channel",nchan=-1,start=0,width=1,nspw=1,interpolation="linear",phasecenter="",restfreq="",outframe="",veltype="radio",preaverage=False,timeaverage=False,timebin="0s",timespan="",maxuvwdistance=0.0,docallib=False,callib="",douvcontsub=False,fitspw="",fitorder=0,want_cont=False,denoising_lib=True,nthreads=1,niter=1,disableparallel=False,ddistart=-1,taql='',monolithic_processing=True,reindex=False)
+
+
+def partitionBySPW_Row(msname, nparts, dryrun=False):
+    SPWrange = getSPWrange(msname)
+    nSPW = len(SPWrange)    
+    nprows = int(nparts / nSPW)		# correct to only accept integer multiples of nSPW
+    r = getRowRanges(msname, nprows);
+    _msname = msname.split('/')[-1]
+    _msname = _msname.partition('.ms')[0]
+
+    msnames=[];
+    print("Making {} partitions".format(str(nparts)))
+    for i, spw in enumerate(SPWrange):
+        for j in range(nprows):
+            sBeg = str(r[j][0]);
+            sEnd = str(r[j][1]);
+
+            mslet = _msname + '_n' + str((i * nprows) + j + 1) + '.ms'
+            msnames.append(mslet);
+            taqlStr="ROWNUMBER() >= "+sBeg+" && ROWNUMBER() <= "+sEnd;
+    
+            if (not dryrun):
+                print(mslet + " taql=" + taqlStr);
+    
+                mstransform(vis=msname,outputvis=mslet,createmms=False,separationaxis="auto",numsubms="auto",tileshape=[0],field="",spw=str(spw),scan="",antenna="",correlation="",timerange="",intent="",array="",uvrange="",observation="",feed="",datacolumn="data",realmodelcol=False,keepflags=True,usewtspectrum=False,combinespws=False,chanaverage=False,chanbin=1,hanning=False,regridms=False,mode="channel",nchan=-1,start=0,width=1,nspw=1,interpolation="linear",phasecenter="",restfreq="",outframe="",veltype="radio",preaverage=False,timeaverage=False,timebin="0s",timespan="",maxuvwdistance=0.0,docallib=False,callib="",douvcontsub=False,fitspw="",fitorder=0,want_cont=False,denoising_lib=True,nthreads=1,niter=1,disableparallel=False,ddistart=-1,taql=taqlStr,monolithic_processing=True,reindex=False);
 
 
 def partitionMS(msname, partaxis, nparts = 1, dryrun = False):
@@ -212,5 +244,7 @@ def partitionMS(msname, partaxis, nparts = 1, dryrun = False):
         partitionBySPW(msname)
     elif partaxis == 'row':
         partitionByRow(msname, nparts = nparts, dryrun = dryrun)
+    elif partaxis == 'spw-row':
+        partitionBySPW_Row(msname, nparts = nparts, dryrun = dryrun)
     else:
-        raise Exception("unknown parameter value: partaxis allowed values are 'spw', 'row'.")
+        raise Exception("unknown parameter value: partaxis allowed values are 'spw', 'row', 'spw-row'.")
