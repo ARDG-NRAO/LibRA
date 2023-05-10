@@ -99,7 +99,7 @@ set(CMAKE_INSTALL_RPATH "${CASAHOME}/install/linux_64b/lib")
 set(APP_LIST RoadRunner Hummbee MSSplit TableInfo SubMS)
 
 foreach (APP_DIR IN LISTS APP_LIST)
-  set(APP_NAME string(TOLOWER ${APP_DIR}))
+  string(TOLOWER ${APP_DIR} APP_NAME)
   add_subdirectory(src/${APP_DIR})
 endforeach()
 
