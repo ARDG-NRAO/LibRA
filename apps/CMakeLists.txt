@@ -48,11 +48,13 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CASAHOME}/install/linux_64b/lib")
 
-add_subdirectory(src/RoadRunner)
-add_subdirectory(src/Hummbee)
-add_subdirectory(src/MSSplit)
-add_subdirectory(src/TableInfo)
-add_subdirectory(src/SubMS)
+set(APP_LIST RoadRunner Hummbee MSSplit TableInfo SubMS)
+
+foreach (APP_DIR IN LISTS APP_LIST)
+  set(APP_NAME string(TOLOWER ${APP_DIR}))
+  add_subdirectory(src/${APP_DIR})
+endforeach()
+
 
 # create the executables
 #add_executable(roadrunner ${ROADRUNNER_SOURCES})
