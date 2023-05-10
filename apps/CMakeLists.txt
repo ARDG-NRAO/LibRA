@@ -32,13 +32,16 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
 
 
 set(ARCH "linux_64b")
+set(INSTALLDIR "install/${ARCH}")
 set(CASAHOME "${CMAKE_CURRENT_LIST_DIR}/../dependencies")
-set(CLHOME "${CASAHOME}/linux_64b")
-set(COREROOT "${CASAHOME}/${ARCH}")
-set(CASAROOT "${CASAHOME}/${ARCH}")
+set(CLHOME "${CASAHOME}/${INSTALLDIR}")
+set(COREROOT "${CASAHOME}/${INSTALLDIR}")
+set(CASAROOT "${CASAHOME}/${INSTALLDIR}")
 set(USRLIB "/usr/lib64")
-set(LIBROOT "${CASAHOME}/linux_64b/lib")
+set(LIBROOT "${CASAHOME}/${INSTALLDIR}/lib")
 set(CMAKE_INSTALL_PREFIX )
+
+set(APP_LINK_LIBRARIES casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
 
 #[[INCL = -I.                                   \
        -I$(CLHOME)/include \
@@ -91,7 +94,7 @@ set(CMAKE_INSTALL_PREFIX )
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CASAHOME}/linux_64b/lib")
+set(CMAKE_INSTALL_RPATH "${CASAHOME}/install/linux_64b/lib")
 
 add_subdirectory(src/RoadRunner)
 add_subdirectory(src/Hummbee)
