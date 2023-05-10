@@ -56,12 +56,13 @@ TESTDIR        = ${ROOT}/test
 DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
-INSTALLDIR     = ${DEPENDDIR}/linux_64b
+INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
 CASASRC        = ${DEPENDSRCDIR}/casa6
 
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
 APPSBUILDDIR   = ${APPSDIR}/build
+APPSINSTALLDIR = ${APPSDIR}/install
 
 INSTALLPREFIX  = ${INSTALLDIR}
 INSTALLSBINDIR = ${INSTALLPREFIX}/sbin
@@ -75,7 +76,7 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
-	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR}
+	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSINSTALLDIR} ${APPSBUILDDIR}
 
 
 #####----------------------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ fftw-clone:
 	curl -L ${FFTW_REPOS} | tar xz
 fftw-build:
 	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; \
-	./configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALLDIR}; \
+	./configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALLPREFIX}; \
 	make -j ${NCORES} install
 fftw-clean:
 	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; gmake clean
