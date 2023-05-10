@@ -45,7 +45,6 @@ If successful, this will produce the following tree:
 │   │   ├── src
 │   │   ├── CMakeCache.txt
 │   │   ├── cmake_install.cmake
-│   │   ├── install_manifest.txt
 │   │   └── Makefile
 │   ├── install
 │   │   ├── hummbee
@@ -68,13 +67,8 @@ If successful, this will produce the following tree:
 │   │   ├── kokkos
 │   │   ├── libsakura
 │   │   └── parafeed
-│   ├── linux_64b
-│   │   ├── bin
-│   │   ├── data
-│   │   ├── include
-│   │   ├── lib
-│   │   ├── sbin
-│   │   └── share
+│   ├── install
+│   │   └── linux_64b
 │   └── src
 │       ├── casa6
 │       ├── fftw-3.3.10
