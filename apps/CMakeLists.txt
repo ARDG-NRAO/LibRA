@@ -97,6 +97,7 @@ add_subdirectory(src/RoadRunner)
 add_subdirectory(src/Hummbee)
 add_subdirectory(src/MSSplit)
 add_subdirectory(src/TableInfo)
+add_subdirectory(src/SubMS)
 
 # create the executables
 #add_executable(roadrunner ${ROADRUNNER_SOURCES})
