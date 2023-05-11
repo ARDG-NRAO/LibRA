@@ -243,18 +243,9 @@ casa-clean:
 
 
 
-#####----------------------------------------------------------------------------------------------------
-##### Build roadrunner
-
-just-build-rr:
-	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} tRoadRunner
-roadrunner: allclone allbuild just-build-rr
-roadrunner-build:  allbuild just-build-rr
-roadrunner-clean:
-	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} clean
 
 allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
-allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean roadrunner-clean
+allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean
 allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build
 
 bak2sq1:
