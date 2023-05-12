@@ -242,11 +242,26 @@ casa-clean:
 	cd ${DEPENDBUILDDIR}/casacpp; gmake clean
 
 
+###### --------------------------------
+##### Build the apps
+apps: casa-clone casa-build
+
+apps-cmake:
+	cd ${APPSBUILDDIR}/
+	cmake ${APPSDIR}
+
+apps-build: apps-cmake
+	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
+
+apps-clean:
+	cd ${APPSBUILDDIR}/; gmake clean
+
+##################### ---------------------------
 
 
 allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
-allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean
-allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build
+allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean apps-clean
+allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
 
 bak2sq1:
 	\rm -rf ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDDIR} 
