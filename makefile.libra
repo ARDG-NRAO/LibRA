@@ -244,7 +244,7 @@ casa-clean:
 
 ###### --------------------------------
 ##### Build the apps
-apps: casa-clone casa-build
+apps: apps-build
 
 apps-cmake:
 	cd ${APPSBUILDDIR}/
