@@ -58,6 +58,7 @@ DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
 INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
 CASASRC        = ${DEPENDSRCDIR}/casa6
+PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
 
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
@@ -244,9 +245,10 @@ casa-clean:
 
 ###### --------------------------------
 ##### Build the apps
-apps: casa-clone casa-build
+apps: apps-build
 
 apps-cmake:
+	mkdir -p ${APPSBUILDDIR}/
 	cd ${APPSBUILDDIR}/
 	cmake ${APPSDIR}
 
