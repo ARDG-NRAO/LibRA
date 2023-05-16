@@ -195,7 +195,6 @@ static const string defaultFtmName = "awphpg";
 #else // !ROADRUNNER_USE_HPG
 static const string defaultFtmName = "awproject";
 #endif // ROADRUNNER_USE_HPG
-
 int main(int argc, char **argv)
 {
   //
@@ -243,5 +242,7 @@ int main(int argc, char **argv)
     {
       cerr << er.what() << endl;
     }
+
+
   return 0;
 }
