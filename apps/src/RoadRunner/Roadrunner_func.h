@@ -431,7 +431,7 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
 
-  try
+  //  try
     {
       casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
 
@@ -882,10 +882,10 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       //out of scope here.
       log_l << "...done" << LogIO::POST;
     }
-  catch(AipsError& er)
-    {
-      log_l << er.what() << LogIO::SEVERE;
-    }
+  // catch(AipsError& er)
+  //   {
+  //     log_l << er.what() << LogIO::SEVERE;
+  //   }
 }
 
 #endif
