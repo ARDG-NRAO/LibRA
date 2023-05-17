@@ -12,10 +12,14 @@ void test(std::string& name)
 }
 PYBIND11_MODULE(roadrunner2py, m)
 {
-  m.doc() = "pybind11-based roadrunner python plugin"; // optional module docstring
-
   //    m.def("test",&test, "A test function", "test"_a);
 
+
+  // Using the simplest helper function to translate AipsError exceptions (from C++) to
+  // PyAipsError (in Python).
+  pybind11::register_exception<AipsError>(m, "PyAipsError");
+
+  m.doc() = "pybind11-based roadrunner python plugin"; // optional module docstring
   std::vector<float> posigdev_def(2); posigdev_def[0]=posigdev_def[1]=300.0;
   m.def("Roadrunner", &Roadrunner, "A task-level interface for the imaging derivative component",
 	"msnbuf"_a, "imagename"_a,
