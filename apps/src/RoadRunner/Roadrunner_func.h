@@ -53,6 +53,12 @@
 #include <RoadRunner/ThreadCoordinator.h>
 #include <hpg/hpg.hpp>
 
+#include <RoadRunner/rWeightor.h>
+#include <RoadRunner/DataIterations.h>
+#include <RoadRunner/DataBase.h>
+#include <RoadRunner/MakeComponents.h>
+
+
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -407,7 +413,7 @@ makeMNdx(const string& fileName,
   return make_tuple(mndx,conj_mndx);
 }
 
-void Roadrunner(bool& restartUI, int& argc, char** argv,
+void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
 		string& sowImageExt, string& cmplxGridName,
@@ -881,4 +887,6 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       log_l << er.what() << LogIO::SEVERE;
     }
 }
+
 #endif
+

@@ -206,7 +206,6 @@ static const string defaultFtmName = "awphpg";
 #else // !ROADRUNNER_USE_HPG
 static const string defaultFtmName = "awproject";
 #endif // ROADRUNNER_USE_HPG
-
 int main(int argc, char **argv)
 {
   //
@@ -243,7 +242,8 @@ int main(int argc, char **argv)
 
   try
     {
-      Roadrunner(restartUI, argc, argv, MSNBuf,imageName, modelImageName,dataColumnName,
+      Roadrunner(//restartUI, argc, argv,
+		 MSNBuf,imageName, modelImageName,dataColumnName,
 		 sowImageExt, cmplxGridName, NX, nW, cellSize,
 		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
 		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
@@ -254,5 +254,7 @@ int main(int argc, char **argv)
     {
       cerr << er.what() << endl;
     }
+
+
   return 0;
 }

@@ -35,6 +35,7 @@ HPG_REPOS           = https://gitlab.nrao.edu/mpokorny/hpg.git
 PARAFEED_REPOS      = https://github.com/sanbee/parafeed.git
 SAKURA_REPOS        = https://github.com/tnakazato/sakura/archive/refs/tags/libsakura-5.1.3.tar.gz
 CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
+PYBIND11_REPOS      = https://github.com/pybind/pybind11.git
 CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
 
 #
@@ -58,6 +59,7 @@ DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
 INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
 CASASRC        = ${DEPENDSRCDIR}/casa6
+
 
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
@@ -243,12 +245,35 @@ casa-clean:
 
 
 ###### --------------------------------
+##### Build pybind11
+
+pybind11: pybind11-clone pybind11-build
+pybind11-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone -b stable ${PYBIND11_REPOS}
+
+pybind11-cmake:
+	mkdir -p ${DEPENDBUILDDIR}/pybind11
+	cd ${DEPENDBUILDDIR}/pybind11; \
+	PKG_CONFIG_PATH=${INSTALLDIR}/lib/pkgconfig cmake -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
+ ${DEPENDSRCDIR}/pybind11\
+
+pybind11-build: pybind11-cmake
+	cd ${DEPENDBUILDDIR}/pybind11; make install -j ${NCORES}
+
+pybind11-clean:
+	cd ${DEPENDBUILDDIR}/pybind11; gmake clean
+
+
+###### --------------------------------
+
 ##### Build the apps
-apps: casa-clone casa-build
+apps: apps-cmake apps-build
 
 apps-cmake:
+	mkdir -p ${APPSBUILDDIR}
 	cd ${APPSBUILDDIR}/
-	cmake ${APPSDIR}
+	cmake --debug-find ${APPSDIR}
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
