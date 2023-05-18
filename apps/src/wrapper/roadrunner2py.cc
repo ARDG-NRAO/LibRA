@@ -6,13 +6,8 @@
 using namespace pybind11;
 using namespace std;
 
-void test(std::string& name)
-{
-  cerr << name << endl;
-}
 PYBIND11_MODULE(roadrunner2py, m)
 {
-  //    m.def("test",&test, "A test function", "test"_a);
 
 
   // Using the simplest helper function to translate AipsError exceptions (from C++) to

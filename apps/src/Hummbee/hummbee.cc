@@ -244,7 +244,7 @@ int main(int argc, char **argv)
 
   try
     {
-      Hummbee(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+      Hummbee(MSNBuf,imageName, modelImageName,
                  NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, robust,
                  cfCache, fieldStr,spwStr,
