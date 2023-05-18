@@ -3,8 +3,8 @@ project(libra)
 cmake_minimum_required(VERSION 3.12.0)
 set (CMAKE_CXX_STANDARD 11)
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
-set(OPT "-g -O2 $(python3.6-config --includes) \
-$(python3.6 -m pybind11 --includes) ")
+set(OPT "-g -O2 $(python3.8-config --includes) \
+$(python3.8 -m pybind11 --includes) ")
 
 set(ARCH "linux_64b")
 set(INSTALLDIR "install/${ARCH}")
@@ -54,5 +54,12 @@ foreach(APP IN LISTS APP_LIST)
   string(TOLOWER ${APP_DIR} APP_NAME)
   add_subdirectory(src/${APP_DIR})
 endforeach()
+
+
+# add and build the wrapper
+set(BUILD_WRAPPER ON)
+if(BUILD_WRAPPER)
+  add_subdirectory(src/wrapper)
+endif()
 
 
