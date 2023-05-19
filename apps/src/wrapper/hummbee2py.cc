@@ -13,7 +13,7 @@ PYBIND11_MODULE(hummbee2py, m)
     pybind11::register_exception<AipsError>(m, "PyAipsError");
 
     m.doc() = "pybind11-based hummbee python plugin"; // optional module docstring
-    m.def("Hummbee", &Hummbee, "A task-level interface for the deconvolution component",
+    m.def("Hummbee", &Hummbee, "A task-level interface for the model update component",
     "msnbuf"_a, "imagename"_a,
     "modelimagename"_a="",
     "imsize"_a,", nw"_a=1,
@@ -39,6 +39,6 @@ PYBIND11_MODULE(hummbee2py, m)
     "nsigma"_a=0.0,
     "cycleniter"_a=1000,
     "cyclefactor"_a=1.5,
-    "mask"_a="",
-    )
+    "mask"_a=""
+    );
 }
