@@ -2,9 +2,10 @@ project(libra)
 
 cmake_minimum_required(VERSION 3.12.0)
 set (CMAKE_CXX_STANDARD 11)
+
+include(FetchContent)
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
-set(OPT "-g -O2 $(python3.8-config --includes) \
-$(python3.8 -m pybind11 --includes) ")
+set(OPT "-g -O2 ")
 
 set(ARCH "linux_64b")
 set(INSTALLDIR "install/${ARCH}")
@@ -84,9 +85,9 @@ endforeach()
 
 
 # add and build the wrapper
-set(BUILD_WRAPPER ON)
-if(BUILD_WRAPPER)
-  add_subdirectory(src/wrapper)
+set(BUILD_PYWRAPPER ON)
+if(BUILD_PYWRAPPER)
+  add_subdirectory(src/interface/python_wrapper)
 endif()
 
 
