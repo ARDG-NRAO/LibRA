@@ -88,6 +88,9 @@ kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
 kokkos-build:
+	ifndef Kokkos_CUDA_ARCH
+		$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+	endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
