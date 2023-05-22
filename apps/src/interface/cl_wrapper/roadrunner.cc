@@ -236,20 +236,20 @@ int main(int argc, char **argv)
 
   set_terminate(NULL);
 
-  // try
-    // {
-      // Roadrunner(//restartUI, argc, argv,
-		//  MSNBuf,imageName, modelImageName,dataColumnName,
-		//  sowImageExt, cmplxGridName, NX, nW, cellSize,
-		//  stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-		//  ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-		//  doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-		//  doSPWDataIter);
-    // }
-  // catch(AipsError& er)
-    // {
-      // cerr << er.what() << endl;
-    // }
+  try
+    {
+      Roadrunner(//restartUI, argc, argv,
+		 MSNBuf,imageName, modelImageName,dataColumnName,
+		 sowImageExt, cmplxGridName, NX, nW, cellSize,
+		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+		 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+		 doSPWDataIter);
+    }
+  catch(AipsError& er)
+    {
+      cerr << er.what() << endl;
+    }
 
 
   return 0;
