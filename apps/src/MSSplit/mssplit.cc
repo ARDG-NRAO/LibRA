@@ -7,7 +7,7 @@
 #include <tables/Tables/PlainTable.h>
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-
+#include <MSSplit/MSSplit_func.h>
 using namespace std;
 using namespace casacore;
 //
@@ -59,60 +59,60 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, b
 //
 //-------------------------------------------------------------------------
 //
-void showTableCache()
-{
-  const TableCache& cache = PlainTable::tableCache();
-  Vector<String> lockedTables = cache.getTableNames();
+// void showTableCache()
+// {
+//   const TableCache& cache = PlainTable::tableCache();
+//   Vector<String> lockedTables = cache.getTableNames();
 
-  Int n=lockedTables.nelements();
-  if(n > 0)
-    cout << endl << "####WARNING!!!!: The Table Cache has the following " << n << " entries:"  << endl;
+//   Int n=lockedTables.nelements();
+//   if(n > 0)
+//     cout << endl << "####WARNING!!!!: The Table Cache has the following " << n << " entries:"  << endl;
   
-  for (Int i=0; i<n; ++i) 
-    cout << "    " << i << ": \"" <<  lockedTables(i) << "\"" << endl;
-}
-//
-//-------------------------------------------------------------------------
-//
-void printBaselineList(Matrix<Int> list,ostream& os)
-{
-  os << "Baselines = ";
-  IPosition shp=list.shape();
-  for(Int j=0;j<shp(1);j++)
-    {
-      for(Int i=0;i<shp(0);i++)
-	os << list(i,j) << " ";
-      os << endl << "            " ;
-    }
-  os << endl;
-}
-//
-//-------------------------------------------------------------------------
-//
-void printInfo(casacore::MSSelection& msSelection)
-{
-  cout << "Ant1         = " << msSelection.getAntenna1List() << endl;
-  cout << "Ant2         = " << msSelection.getAntenna2List() << endl;
-  //  cout << "Baselines    = " << msSelection.getBaselineList() << endl;
-  cout << "Field        = " << msSelection.getFieldList()    << endl;
-  cout << "SPW          = " << msSelection.getSpwList()      << endl;
-  cout << "Chan         = " << msSelection.getChanList(NULL,1,True)     << endl;
-  cout << "Freq         = " << msSelection.getChanFreqList(NULL,True)     << endl;
-  cout << "Scan         = " << msSelection.getScanList()     << endl;
-  cout << "StateObsMode = " << msSelection.getStateObsModeList()     << endl;
-  cout << "Array        = " << msSelection.getSubArrayList() << endl;
-  cout << "Time         = " << msSelection.getTimeList()     << endl;
-  cout << "UVRange      = " << msSelection.getUVList()       << endl;
-  cout << "UV in meters = " << msSelection.getUVUnitsList()  << endl;
-  cout << "DDIDs(Poln)  = " << msSelection.getDDIDList()     << endl;
-  cout << "DDIDs(SPW)   = " << msSelection.getSPWDDIDList()     << endl;
-  cout << "PolMap       = "; for(auto m : msSelection.getPolMap()) cout << m.first << " " << m.second << endl;cout << endl;
-  cout << "CorrMap       = "; for(auto m : msSelection.getCorrMap()) cout << m.first << " " << m.second << endl;cout << endl;
-  //  cout << "CorrMap      = " << msSelection.getCorrMap( )     << endl;
-  cout << "StateList    = " << msSelection.getStateObsModeList() << endl;
-  cout << "ObservationIDList    = " << msSelection.getObservationList() << endl;
-  //  printBaselineList(msSelection.getBaselineList(),cout);
-}
+//   for (Int i=0; i<n; ++i) 
+//     cout << "    " << i << ": \"" <<  lockedTables(i) << "\"" << endl;
+// }
+// //
+// //-------------------------------------------------------------------------
+// //
+// void printBaselineList(Matrix<Int> list,ostream& os)
+// {
+//   os << "Baselines = ";
+//   IPosition shp=list.shape();
+//   for(Int j=0;j<shp(1);j++)
+//     {
+//       for(Int i=0;i<shp(0);i++)
+// 	os << list(i,j) << " ";
+//       os << endl << "            " ;
+//     }
+//   os << endl;
+// }
+// //
+// //-------------------------------------------------------------------------
+// //
+// void printInfo(casacore::MSSelection& msSelection)
+// {
+//   cout << "Ant1         = " << msSelection.getAntenna1List() << endl;
+//   cout << "Ant2         = " << msSelection.getAntenna2List() << endl;
+//   //  cout << "Baselines    = " << msSelection.getBaselineList() << endl;
+//   cout << "Field        = " << msSelection.getFieldList()    << endl;
+//   cout << "SPW          = " << msSelection.getSpwList()      << endl;
+//   cout << "Chan         = " << msSelection.getChanList(NULL,1,True)     << endl;
+//   cout << "Freq         = " << msSelection.getChanFreqList(NULL,True)     << endl;
+//   cout << "Scan         = " << msSelection.getScanList()     << endl;
+//   cout << "StateObsMode = " << msSelection.getStateObsModeList()     << endl;
+//   cout << "Array        = " << msSelection.getSubArrayList() << endl;
+//   cout << "Time         = " << msSelection.getTimeList()     << endl;
+//   cout << "UVRange      = " << msSelection.getUVList()       << endl;
+//   cout << "UV in meters = " << msSelection.getUVUnitsList()  << endl;
+//   cout << "DDIDs(Poln)  = " << msSelection.getDDIDList()     << endl;
+//   cout << "DDIDs(SPW)   = " << msSelection.getSPWDDIDList()     << endl;
+//   cout << "PolMap       = "; for(auto m : msSelection.getPolMap()) cout << m.first << " " << m.second << endl;cout << endl;
+//   cout << "CorrMap       = "; for(auto m : msSelection.getCorrMap()) cout << m.first << " " << m.second << endl;cout << endl;
+//   //  cout << "CorrMap      = " << msSelection.getCorrMap( )     << endl;
+//   cout << "StateList    = " << msSelection.getStateObsModeList() << endl;
+//   cout << "ObservationIDList    = " << msSelection.getObservationList() << endl;
+//   //  printBaselineList(msSelection.getBaselineList(),cout);
+// }
 //
 //-------------------------------------------------------------------------
 //
@@ -147,44 +147,9 @@ int main(int argc, char **argv)
 	   uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
 	restartUI = False;
 
-	MS ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);
-	//
-	// Setup the MSSelection thingi
-	//
-    
-	MSInterface msInterface(ms);
-	casacore::MSSelection msSelection;
-	casacore::MSSelectionLogError mssLEA,mssLES;
-	msSelection.setErrorHandler(casacore::MSSelection::ANTENNA_EXPR, &mssLEA);
-	msSelection.setErrorHandler(casacore::MSSelection::STATE_EXPR, &mssLES);
-
-    	// msSelection.reset(ms,MSSelection::PARSE_NOW,
-    	// 			timeStr,baselineStr,fieldStr,spwStr,
-    	// 			uvdistStr,taqlStr,polnStr,scanStr,arrayStr,
-    	// 			stateObsModeStr,observationStr);
-    	msSelection.reset(msInterface,MSSelection::PARSE_NOW,
-    			  timeStr,baselineStr,fieldStr,spwStr,
-    			  uvdistStr,taqlStr,polnStr,scanStr,arrayStr,
-    			  stateObsModeStr,observationStr);
-    	// TableExprNode ten=msSelection.toTableExprNode(&msInterface);
-    	// cerr << "TEN rows = " << ten.nrow() << endl;
-    	printInfo(msSelection);
-	
-    	if (!msSelection.getSelectedMS(selectedMS))
-    	  {
-    	    cerr << "###Informational:  Nothing selected.  ";
-    	    if (OutMSBuf != "")
-    	      cout << "New MS not written." << endl;
-    	    else
-    	      cout << endl;
-    	  }
-    	else
-    	  if (OutMSBuf != "")
-	    {
-	      if (deepCopy) selectedMS.deepCopy(OutMSBuf,Table::New);
-	      else          selectedMS.rename(OutMSBuf,Table::New);
-	    }
-    	cerr << "Number of selected rows: " << selectedMS.nrow() << endl;
+	MSSplit_func(MSNBuf,OutMSBuf, deepCopy,fieldStr,timeStr,
+		     spwStr,baselineStr,scanStr,arrayStr,uvdistStr,
+		     taqlStr,polnStr,stateObsModeStr,observationStr);
       }
     catch (clError& x)
       {
