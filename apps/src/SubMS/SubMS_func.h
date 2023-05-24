@@ -3,8 +3,6 @@
 #include <ms/MSSel/MSSelectionError.h>
 #include <ms/MSSel/MSSelectionTools.h>
 #include <msvis/MSVis/SubMS.h>
-#include <cl.h> // C++ized version
-#include <clinteract.h>
 
 using namespace std;
 using namespace casa;
@@ -16,12 +14,12 @@ using namespace casacore;
 //-------------------------------------------------------------------------
 //
 void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
-	       const string& WhichColStr="data", const bool& deepCopy=false,
-	       const string& fieldStr="*",const string& timeStr="",
-	       const string& spwStr="*", const string& baselineStr="",
-	       const string& scanStr="", const string& arrayStr="",
-	       const string& uvdistStr="",const string& taqlStr="",
-	       const float integ=-1)
+		const string& WhichColStr="data", const bool& deepCopy=false,
+		const string& fieldStr="*",const string& timeStr="",
+		const string& spwStr="*", const string& baselineStr="",
+		const string& scanStr="", const string& arrayStr="",
+		const string& uvdistStr="",const string& taqlStr="",
+		const float integ=-1)
 {
   //
   //---------------------------------------------------
