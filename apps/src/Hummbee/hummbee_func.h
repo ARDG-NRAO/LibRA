@@ -256,7 +256,7 @@ int cleanComplete()
 
 
 
-void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
+void Hummbee(string& MSNBuf,
         string& imageName, string& modelImageName,
         int& ImSize, int& nW,
         float& cellSize, string& stokes, string& refFreqStr,

@@ -45,15 +45,19 @@ If successful, this will produce the following tree:
 │   │   ├── src
 │   │   ├── CMakeCache.txt
 │   │   ├── cmake_install.cmake
+│   │   ├── install_manifest.txt
 │   │   └── Makefile
 │   ├── install
 │   │   ├── hummbee
+│   │   ├── hummbee2py.cpython-36m-x86_64-linux-gnu.so
 │   │   ├── mssplit
 │   │   ├── roadrunner
+│   │   ├── roadrunner2py.cpython-36m-x86_64-linux-gnu.so
 │   │   ├── subms
 │   │   └── tableinfo
 │   ├── src
 │   │   ├── Hummbee
+│   │   ├── interface
 │   │   ├── MSSplit
 │   │   ├── RoadRunner
 │   │   ├── SubMS
@@ -75,11 +79,11 @@ If successful, this will produce the following tree:
 │       ├── hpg
 │       ├── kokkos
 │       ├── parafeed
+│       ├── py_local_env
 │       └── sakura-libsakura-5.1.3
 ├── test
 ├── makefile.libra
 └── README.md
-
 ```
 
 The binary applications will be install in ```apps/install``` directory.

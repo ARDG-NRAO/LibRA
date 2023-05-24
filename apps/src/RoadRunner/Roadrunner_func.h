@@ -50,8 +50,14 @@
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <synthesis/TransformMachines2/ThreadCoordinator.h>
+#include <RoadRunner/ThreadCoordinator.h>
 #include <hpg/hpg.hpp>
+
+#include <RoadRunner/rWeightor.h>
+#include <RoadRunner/DataIterations.h>
+#include <RoadRunner/DataBase.h>
+#include <RoadRunner/MakeComponents.h>
+
 
 using namespace casa;
 using namespace casa::refim;
@@ -407,7 +413,7 @@ makeMNdx(const string& fileName,
   return make_tuple(mndx,conj_mndx);
 }
 
-void Roadrunner(bool& restartUI, int& argc, char** argv,
+void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
 		string& sowImageExt, string& cmplxGridName,
@@ -425,7 +431,7 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
 
-  try
+  //  try
     {
       casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
 
@@ -657,9 +663,8 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  // auto waitForCFReady = [](int&, int&){}; // NoOp
-	  // auto notifyCFSent   = [](const int&){}; //NoOp
-	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
+				 doPSF,imagingMode);
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);
 	}
@@ -768,7 +773,8 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 
 	  try
 	    {
-	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g,doPSF,imagingMode,
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
+				     doPSF,imagingMode,
 				     waitForCFReady, notifyCFSent);
 	      griddingEngine_time += std::get<2>(ret);
 	      vol+= std::get<1>(ret);
@@ -789,11 +795,8 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 
       cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
       unsigned long allVol=vol;
-      // #ifdef ROADRUNNER_USE_MPI 
-      //   allVol=0;
-      //   mpi_reduce(&vol, &allVol, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-      // #endif
       log_l << "Total rows processed: " << allVol << LogIO::POST;
+
       {
 	// NB: to be safe, we ensure that value returned by getGridPtr()
 	// (a shared_ptr) releases its managed object as soon as we're
@@ -802,32 +805,16 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
 	size_t gridValuesCount;
 	auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
 	assert((size_t)((int)gridValuesCount) == gridValuesCount);
-	// mpi_reduce(
-	//   (isRoot ? MPI_IN_PLACE : gridValuesPtr.get()),
-	//   gridValuesPtr.get(),
-	//   static_cast<int>(gridValuesCount),
-	//   gridValueDatatype,
-	//   MPI_SUM,
-	//   0,
-	//   MPI_COMM_WORLD);
-	if (doSow) {
-	  // NB: similar caution (as getSumWeightsPtr() value) is
-	  // warranted for value returned by getGridPtr()
-	  size_t gridWeightsCount;
-	  auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
-	  // mpi_reduce(
-	  //   (isRoot ? MPI_IN_PLACE : gridWeightsPtr.get()),
-	  //   gridWeightsPtr.get(),
-	  //   static_cast<int>(gridWeightsCount),
-	  //   gridWeightDatatype,
-	  //   MPI_SUM,
-	  //   0,
-	  //   MPI_COMM_WORLD);
-	}
+
+	if (doSow)
+	  {
+	    // NB: similar caution (as getSumWeightsPtr() value) is
+	    // warranted for value returned by getGridPtr()
+	    size_t gridWeightsCount;
+	    auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
+	  }
       }
 
-      // complete the gridding only on the root, after reduction
-      //if (isRoot && (imagingMode!="predict"))
       if (imagingMode!="predict")
 	{
 	  griddingTime += timer.real();
@@ -895,9 +882,11 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       //out of scope here.
       log_l << "...done" << LogIO::POST;
     }
-  catch(AipsError& er)
-    {
-      log_l << er.what() << LogIO::SEVERE;
-    }
+  // catch(AipsError& er)
+  //   {
+  //     log_l << er.what() << LogIO::SEVERE;
+  //   }
 }
+
 #endif
+

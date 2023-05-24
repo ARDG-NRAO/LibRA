@@ -5,57 +5,9 @@
 #include <ms/MSSel/MSSelectableTable.h>
 #include <tables/Tables/Table.h>
 #include <tables/Tables/PlainTable.h>
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <string>
 using namespace std;
 using namespace casacore;
-//
-//-------------------------------------------------------------------------
-//
-#define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
-//#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
-//
-void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, bool& deepCopy,
-	string& fieldStr, string& timeStr, string& spwStr, string& baselineStr,
-	string& scanStr, string& arrayStr, string& uvdistStr,string& taqlStr, string& polnStr,
-	string& stateObsModeStr, string& observationStr)
-{
-  if (!restart)
-    {
-      BeginCL(argc,argv);
-      clInteractive(0);
-    }
-  else
-   clRetry();
-  try
-    {
-      int i;
-      MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr=polnStr=stateObsModeStr="";
-      i=1;clgetSValp("ms", MSNBuf,i);  
-      i=1;clgetSValp("outms",OutMSBuf,i);  
-      i=1;clgetBValp("deepcopy",deepCopy,i);
-      clgetFullValp("field",fieldStr);
-      clgetFullValp("time",timeStr);  
-      clgetFullValp("spw",spwStr);  
-      clgetFullValp("poln",polnStr);  
-      clgetFullValp("baseline",baselineStr);  
-      clgetFullValp("scan",scanStr);  
-      clgetFullValp("array",arrayStr);  
-      clgetFullValp("uvdist",uvdistStr);  
-      clgetFullValp("stateobsmode",stateObsModeStr);  
-      clgetFullValp("observation",observationStr);  
-      dbgclgetFullValp("taql",taqlStr);  
-      EndCL();
-    }
-  catch (clError x)
-    {
-      x << x << endl;
-      clRetry();
-    }
-  if (MSNBuf=="")
-    throw(AipsError("Input table name not set."));
-}
 //
 //-------------------------------------------------------------------------
 //
@@ -116,37 +68,19 @@ void printInfo(casacore::MSSelection& msSelection)
 //
 //-------------------------------------------------------------------------
 //
-int main(int argc, char **argv)
-{
-  //
-  //---------------------------------------------------
-  //
-  //  MSSelection msSelection;
-  string MSNBuf,OutMSBuf,fieldStr,timeStr,spwStr,baselineStr,
-    uvdistStr,taqlStr,scanStr,arrayStr, polnStr,stateObsModeStr,
-    observationStr;
-  Bool deepCopy=0;
-  Bool restartUI=False;;
+void MSSplit_func(const string& MSNBuf="", const string& OutMSBuf="", const bool& deepCopy=0, const string& fieldStr="",
+		 const string& timeStr="", const string &spwStr="", const string& baselineStr="",
+		 const string& uvdistStr="", const string& taqlStr="", const string& scanStr="",
+		 const string& arrayStr="", const string& polnStr="", const string& stateObsModeStr="",
+		 const string& observationStr="")
 
- RENTER:// UI re-entry point.
-  //
-  //---------------------------------------------------
+{
   //
   // Make a new scope, outside of which there should be no tables left open.
   //
   {
-    try
-      {
-	MSNBuf=OutMSBuf=fieldStr=timeStr=spwStr=baselineStr=
-	  uvdistStr=taqlStr=scanStr=arrayStr=polnStr=stateObsModeStr=observationStr="";
-	deepCopy=0;
-	fieldStr=spwStr="*";
-	fieldStr=spwStr="";
-	UI(restartUI,argc, argv, MSNBuf,OutMSBuf, deepCopy,
-	   fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,
-	   uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
-	restartUI = False;
-
+    // try
+    //   {
 	MS ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);
 	//
 	// Setup the MSSelection thingi
@@ -186,16 +120,10 @@ int main(int argc, char **argv)
 	    }
     	cerr << "Number of selected rows: " << selectedMS.nrow() << endl;
       }
-    catch (clError& x)
-      {
-    	x << x.what() << endl;
-    	restartUI=True;
-      }
-    catch (MSSelectionError& x)
-      {
-    	cerr << "###MSSelectionError: " << x.getMesg() << endl;
-    	restartUI=True;
-      }
+    // catch (MSSelectionError& x)
+    //   {
+    // 	cerr << "###MSSelectionError: " << x.getMesg() << endl;
+    //   }
     //
     // Catch any exception thrown by AIPS++ libs.  Do your cleanup here
     // before returning to the UI (if you choose to).  Without this, all
@@ -203,14 +131,11 @@ int main(int argc, char **argv)
     // exception handler (which is installed by the CLLIB as the
     // clDefaultErrorHandler).
     //
-    catch (AipsError& x)
-      {
-    	cerr << "###AipsError: " << x.getMesg() << endl;
-    	restartUI=True;
-      }
-  }
-
-  showTableCache();
-  //if (restartUI) 
-  restartUI=True;RestartUI(RENTER);
+    // catch (AipsError& x)
+    //   {
+    // 	cerr << "###AipsError: " << x.getMesg() << endl;
+    // 	restartUI=True;
+    //   }
+  //}
+  //  showTableCache();
 }
