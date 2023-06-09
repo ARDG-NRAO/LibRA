@@ -8,7 +8,7 @@
 # Kokkos string for the GPU architecture.
 #
 # V100
-Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
@@ -41,7 +41,7 @@ CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
-PATH:=/usr/local/cuda-12.0/bin/:/usr/lib64/openmpi/bin/:${PATH}
+PATH:=/usr/local/cuda-12.1/bin/:/usr/lib64/openmpi/bin/:${PATH}
 
 # No. of cores to use for compiling
 NCORES=12
@@ -87,10 +87,13 @@ init:
 kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
+#
+# Do not indent the following three lines!
+#
 kokkos-build:
-#ifndef Kokkos_CUDA_ARCH
-#$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
-#endif
+ifndef Kokkos_CUDA_ARCH
+$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
@@ -135,6 +138,7 @@ hpg-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/hpg;
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+	-Hpg_API=11 \
 	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
