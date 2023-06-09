@@ -83,7 +83,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       SMap watchPoints; VString exposedKeys;
       int i;
       MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);
+      i=1;clgetSValp("vis", MSNBuf,i);
       i=1;clgetSValp("imagename", imageName,i);
       i=1;clgetSValp("modelimagename", modelImageName,i);
 
@@ -94,7 +94,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("complexgrid", cmplxGridName,i);
 
       i=1;clgetValp("imsize", ImSize,i);
-      i=1;clgetValp("cellsize", cellSize,i);
+      i=1;clgetValp("cell", cellSize,i);
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
       i=1;clgetSValp("reffreq", refFreqStr,i);
       i=1;clgetSValp("phasecenter", phaseCenter,i);
@@ -111,8 +111,8 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("rmode", rmode,i);
       i=1;clgetValp("robust", robust,i);
 
-      i=1;clgetValp("wplanes", nW,i);
-      i=1;clgetSValp("ftm", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
+      i=1;clgetValp("wprojplanes", nW,i);
+      i=1;clgetSValp("gridder", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
       i=1;clgetSValp("cfcache", CFCache,i);
 
       // Expose the modelimagename parameter only for mode=residual or
@@ -130,7 +130,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetValp("wbawp", WBAwp,i);
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetSValp("uvdist", uvDistStr,i);
+      i=1;clgetSValp("uvrange", uvDistStr,i);
       i=1;clgetValp("pbcor", doPBCorr,i);
       i=1;clgetValp("conjbeams", conjBeams,i);
       i=1;clgetValp("pblimit", pbLimit,i);
@@ -139,7 +139,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       watchPoints["1"]=exposedKeys;
 
 
-      i=1;clgetValp("dopointing", doPointing,i,watchPoints);
+      i=1;clgetValp("usepointing", doPointing,i,watchPoints);
       i=2;i=clgetNValp("pointingoffsetsigdev", posigdev,i);
 
       i=1;dbgclgetBValp("normalize",normalize,i);
