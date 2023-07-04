@@ -19,3 +19,4 @@ VARS              gatherDirtyImage   python_state="gather"
 PARENT            makePSF            CHILD gatherPSF
 PARENT            makePSF            CHILD makeDirtyImage
 PARENT            makeDirtyImage     CHILD gatherDirtyImage
+PARENT            gatherPSF          CHILD gatherDirtyImage
