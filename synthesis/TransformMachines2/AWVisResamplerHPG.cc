@@ -495,8 +495,13 @@ namespace casa{
     // makeMuellerIndexes<HPGNPOL>(mNdx, mVals, (uInt)nGridPol, mueller_indexes);
     // makeMuellerIndexes<HPGNPOL>(conjMNdx, conjMVals, (uInt)nGridPol, conjugate_mueller_indexes);
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","createHPG"));
-    
-    uint nProcs = 2;
+
+    int nProcs=2;
+
+    nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
+    log_l << "NPROCS: " << nProcs << endl;
+
+    // uint nProcs = 2;
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,

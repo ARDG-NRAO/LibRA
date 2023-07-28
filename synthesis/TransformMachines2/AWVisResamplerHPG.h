@@ -47,6 +47,7 @@
 #include <tuple>
 #define HPGNPOL 2
 #define VBS_IN_THE_BUCKET 1
+#define NPROCS 2
 #include <chrono>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
