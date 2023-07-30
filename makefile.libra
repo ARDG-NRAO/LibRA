@@ -8,9 +8,9 @@
 # Kokkos string for the GPU architecture.
 #
 # V100
-#Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
+Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
-Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
@@ -23,7 +23,7 @@ CASACORE_BUILD_TYPE = RelWithDebInfo
 # Specific branches used for the various components
 #
 #CASA_BRANCH=ARD-33-DR
-CASA_BRANCH      = rattler_get_6
+CASA_BRANCH      = visdata_bucket
 FFTW_VERSION     = 3.3.10
 KOKKOS_VERSION   = release-candidate-4.0.01
 HPG_VERSION      = v2.0.0
