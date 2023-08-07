@@ -89,35 +89,35 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       SMap watchPoints; VString exposedKeys;
       int i;
       MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);  
+      // i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("modelimagename", modelImageName,i);  
 
-      i=1;clgetIValp("imsize", ImSize,i);  
-      i=1;clgetFValp("cellsize", cellSize,i);  
-      i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);  
-      i=1;clgetSValp("phasecenter", phaseCenter,i);  
+      // i=1;clgetIValp("imsize", ImSize,i);  
+      // i=1;clgetFValp("cellsize", cellSize,i);  
+      // i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
+      // i=1;clgetSValp("reffreq", refFreqStr,i);  
+      // i=1;clgetSValp("phasecenter", phaseCenter,i);  
 
-      InitMap(watchPoints,exposedKeys);
-      exposedKeys.push_back("robust");
-      watchPoints["briggs"]=exposedKeys;
+      // InitMap(watchPoints,exposedKeys);
+      // exposedKeys.push_back("robust");
+      // watchPoints["briggs"]=exposedKeys;
 
-      //Add watchpoints for exposing robust parameter when weight=briggs
-      i=1;clgetSValp("weighting", weighting, i ,watchPoints);
-      clSetOptions("weighting",{"natural","uniform","briggs"});
+      // //Add watchpoints for exposing robust parameter when weight=briggs
+      // i=1;clgetSValp("weighting", weighting, i ,watchPoints);
+      // clSetOptions("weighting",{"natural","uniform","briggs"});
 
-      i=1;clgetFValp("robust", robust,i);  
+      // i=1;clgetFValp("robust", robust,i);  
       
 
-      i=1;clgetIValp("wplanes", nW,i);  
-      i=1;clgetSValp("cfcache", CFCache,i);
+      // i=1;clgetIValp("wplanes", nW,i);  
+      // i=1;clgetSValp("cfcache", CFCache,i);
     
-      i=1;clgetSValp("field", fieldStr,i);
-      i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetBValp("pbcor", doPBCorr,i);
-      i=1;clgetBValp("conjbeams", conjBeams,i);
-      i=1;clgetFValp("pblimit", pbLimit,i);
+      // i=1;clgetSValp("field", fieldStr,i);
+      // i=1;clgetSValp("spw", spwStr,i);
+      // i=1;clgetBValp("pbcor", doPBCorr,i);
+      // i=1;clgetBValp("conjbeams", conjBeams,i);
+      // i=1;clgetFValp("pblimit", pbLimit,i);
 
       InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("scales");
