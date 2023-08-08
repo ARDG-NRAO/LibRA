@@ -256,9 +256,9 @@ int cleanComplete()
 
 
 
-void Hummbee(string& MSNBuf,
+void Hummbee(//string& MSNBuf,
         string& imageName, string& modelImageName,
-        int& ImSize, int& nW,
+        /*int& ImSize, int& nW,
         float& cellSize, string& stokes, string& refFreqStr,
         string& phaseCenter, string& weighting,
         float& robust,
@@ -266,7 +266,7 @@ void Hummbee(string& MSNBuf,
         string& fieldStr, string& spwStr,
         Bool& doPBCorr,
         Bool& conjBeams,
-        Float& pbLimit,
+        Float& pbLimit,*/
         string& deconvolver,
         vector<float>& scales,
         float& largestscale, float& fusedthreshold,
