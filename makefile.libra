@@ -8,7 +8,7 @@
 # Kokkos string for the GPU architecture.
 #
 # V100
-#Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
+Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100

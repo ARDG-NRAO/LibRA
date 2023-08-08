@@ -49,9 +49,9 @@
 #include <Hummbee/hummbee_func.h>
 
 //
-void UI(bool restart, int argc, char **argv, string& MSNBuf,
+void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
 	string& imageName, string& modelImageName,
-	int& ImSize, int& nW,
+	/*int& ImSize, int& nW,
 	float& cellSize, string& stokes, string& refFreqStr,
 	string& phaseCenter, string& weighting,
 	float& robust,
@@ -59,7 +59,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	string& fieldStr, string& spwStr,
 	Bool& doPBCorr,
 	Bool& conjBeams,
-	Float& pbLimit,
+	Float& pbLimit,*/
   string& deconvolver,
   vector<float>& scales,
   float& largestscale, float& fusedthreshold,
@@ -88,36 +88,36 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
     {
       SMap watchPoints; VString exposedKeys;
       int i;
-      MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);  
+      //MSNBuf="";
+      // i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("modelimagename", modelImageName,i);  
 
-      i=1;clgetIValp("imsize", ImSize,i);  
-      i=1;clgetFValp("cellsize", cellSize,i);  
-      i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);  
-      i=1;clgetSValp("phasecenter", phaseCenter,i);  
+      // i=1;clgetIValp("imsize", ImSize,i);  
+      // i=1;clgetFValp("cellsize", cellSize,i);  
+      // i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
+      // i=1;clgetSValp("reffreq", refFreqStr,i);  
+      // i=1;clgetSValp("phasecenter", phaseCenter,i);  
 
-      InitMap(watchPoints,exposedKeys);
-      exposedKeys.push_back("robust");
-      watchPoints["briggs"]=exposedKeys;
+      // InitMap(watchPoints,exposedKeys);
+      // exposedKeys.push_back("robust");
+      // watchPoints["briggs"]=exposedKeys;
 
-      //Add watchpoints for exposing robust parameter when weight=briggs
-      i=1;clgetSValp("weighting", weighting, i ,watchPoints);
-      clSetOptions("weighting",{"natural","uniform","briggs"});
+      // //Add watchpoints for exposing robust parameter when weight=briggs
+      // i=1;clgetSValp("weighting", weighting, i ,watchPoints);
+      // clSetOptions("weighting",{"natural","uniform","briggs"});
 
-      i=1;clgetFValp("robust", robust,i);  
+      // i=1;clgetFValp("robust", robust,i);  
       
 
-      i=1;clgetIValp("wplanes", nW,i);  
-      i=1;clgetSValp("cfcache", CFCache,i);
+      // i=1;clgetIValp("wplanes", nW,i);  
+      // i=1;clgetSValp("cfcache", CFCache,i);
     
-      i=1;clgetSValp("field", fieldStr,i);
-      i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetBValp("pbcor", doPBCorr,i);
-      i=1;clgetBValp("conjbeams", conjBeams,i);
-      i=1;clgetFValp("pblimit", pbLimit,i);
+      // i=1;clgetSValp("field", fieldStr,i);
+      // i=1;clgetSValp("spw", spwStr,i);
+      // i=1;clgetBValp("pbcor", doPBCorr,i);
+      // i=1;clgetBValp("conjbeams", conjBeams,i);
+      // i=1;clgetFValp("pblimit", pbLimit,i);
 
       InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("scales");
@@ -151,11 +151,11 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
      // do some input parameter checking now.
      string mesgs;
 
-     if (ImSize <= 0)
+     /*if (ImSize <= 0)
        mesgs += "The imsize parameter needs to be set to a positive finite value. ";
 
      if (cellSize <= 0)
-       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
+       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";*/
 
      if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
@@ -201,20 +201,21 @@ int main(int argc, char **argv)
   // -------------------------------------- Just the UI -------------------------------------------------------------------
   //
   // The Factory Settings.
-  string MSNBuf,
+  /*string MSNBuf,
     cfCache, fieldStr="", spwStr="*",
     imageName, modelImageName,phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural", deconvolver="hogbom"; //, mask="";
+    refFreqStr="3.0e9", weighting="natural";*/ 
+  string imageName, modelImageName, deconvolver="hogbom"; //, mask="";
 
-  float cellSize;//refFreq=3e09, freqBW=3e9;
-  float robust=0.0;
-  int NX=0, nW=1;//cfBufferSize=512, cfOversampling=20, nW=1;
+ // float cellSize;//refFreq=3e09, freqBW=3e9;
+  //float robust=0.0;
+  //int NX=0, nW=1;//cfBufferSize=512, cfOversampling=20, nW=1;
 
   bool restartUI=false;
 
-  bool doPBCorr= true;
+  /*bool doPBCorr= true;
   bool conjBeams= true;
-  float pbLimit=1e-3;
+  float pbLimit=1e-3;*/
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
@@ -226,11 +227,11 @@ int main(int argc, char **argv)
   float cyclefactor=1.0;
   vector<string> mask; 
 
-  UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName, 
-    NX, nW, cellSize,
+  UI(restartUI, argc, argv, /*MSNBuf,*/imageName, modelImageName, 
+    /*NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, robust,
      cfCache, fieldStr,spwStr
-     ,doPBCorr, conjBeams, pbLimit, 
+     ,doPBCorr, conjBeams, pbLimit,*/ 
     deconvolver,
     scales,
     largestscale, fusedthreshold,
@@ -244,11 +245,11 @@ int main(int argc, char **argv)
 
   try
     {
-      Hummbee(MSNBuf,imageName, modelImageName,
-                 NX, nW, cellSize,
+      Hummbee(/*MSNBuf,*/imageName, modelImageName,
+                 /*NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, robust,
                  cfCache, fieldStr,spwStr,
-                 doPBCorr, conjBeams, pbLimit,
+                 doPBCorr, conjBeams, pbLimit,*/
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
