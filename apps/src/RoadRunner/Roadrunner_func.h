@@ -488,14 +488,14 @@ void Roadrunner(bool& restartUI, int& argc, char** argv,
       //
       // A plug-in lambda function for DataBase to run soon after opening the MS.
       //
-      auto verifyMS=[&dataCol_l](const MeasurementSet& ms)
+      auto verifyMS=[&dataCol_l,&dataColumnName,&imagingMode](const MeasurementSet& ms)
 		    {
 		      if (
 			  ((dataCol_l == casa::refim::FTMachine::MODEL) && !(ms.tableDesc().isColumn("MODEL_DATA"))) ||
 			  ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
 			  ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
 			  )
-			throw(AipsError("MS verification error: The requested data column not found.  Bailing out."));
+			throw(AipsError("MS verification error: The requested data column (\""+dataColumnName+"\") for mode="+imagingMode+" not found.  Bailing out."));
 		    };
 
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
