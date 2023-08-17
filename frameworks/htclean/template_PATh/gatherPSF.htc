@@ -3,13 +3,13 @@ include: htclean.htc
 include: imcycle.htc
 include: input_files.htc
 
-request_memory = 30 G
-request_disk = 50 G
+request_memory = $(memModel)
+request_disk   = $(diskModel)
 
-requirements = OSGVO_OS_STRING == "RHEL 7"
++UNDESIRED_SITES = "WISC-PATH" 
 
 should_transfer_files = YES
-transfer_input_files = bin, $(htclean_dir)/pylib, $(softwaredir)/casa-6.5.0-15-py3.6.tar.xz, $(input_files)
+transfer_input_files = bin, $(htclean_dir)/pylib, $(CASA), $(softwaredir)/libnsl.so.1, $(input_files)
 
 
 transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(python_state).imcycle$(imcycle).tgz; $(imagename).psf.tar = $(imagesdir)/$(imagename).psf.tar; $(imagename).weight.tar = $(imagesdir)/$(imagename).weight.tar; $(imagename).sumwt.tar = $(imagesdir)/$(imagename).sumwt.tar"

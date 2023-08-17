@@ -3,12 +3,12 @@ include: htclean.htc
 include: imcycle.htc
 
 request_gpus = 1
-request_memory = 12 G
-request_disk = 23 G
+request_memory = $(memResidual)
+request_disk = $(diskResidual)
 
-requirements = GLIDEIN_ResourceName != "FIU-PATH-EP"
++UNDESIRED_Sites = "FIU-PATH"
 
-arguments = "'$(python_state)' '$(input_file)' '$(partId)$(part)' '$(msname)' '$(imagename)' '$(cfcache)' '$(user)' '$(ssh_key)' '$(initialdir)'"
+arguments = "'$(python_state)' '$(input_file)' '$(partId)$(part)' '$(msname)' '$(imagename)' '$(cfcache)' '$(initialdir)'"
 
 
 output = makeDirtyImage_$(partId).stdout

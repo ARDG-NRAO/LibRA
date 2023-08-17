@@ -5,21 +5,22 @@ include: input_files.htc
 include: output_files.htc
 
 
-request_memory = 50 G
-request_disk = 60 G
+request_memory = $(memModel)
+request_disk   = $(diskModel)
 
-input_images = $(imagesdir)/$(imagename).psf.tar, $(imagesdir)/$(imagename).sumwt.tar, $(imagesdir)/$(imagename).weight.tar, $(imagesdir)/$(imagename).residual.imcycle$(noderetry).tar, $(imagesdir)/$(imagename).pb.tar
++UNDESIRED_SITES = "WISC-PATH"
+
+input_images = $(imagesdir)/$(imagename).psf.tar, $(imagesdir)/$(imagename).sumwt.tar, $(imagesdir)/$(imagename).weight.tar
 
 if $(copy_model)
-    input_images = $(input_images), $(imagesdir)/$(imagename).model.imcycle$(noderetry).tar, $(imagesdir)/$(imagename).mask.imcycle$(noderetry).tar
+    input_images = $(input_images), $(imagesdir)/$(imagename).residual.imcycle$(noderetry).tar, $(imagesdir)/$(imagename).pb.tar, $(imagesdir)/$(imagename).model.imcycle$(noderetry).tar, $(imagesdir)/$(imagename).mask.imcycle$(noderetry).tar
 endif
 
-requirements = OSGVO_OS_STRING == "RHEL 7"
 
 should_transfer_files = YES
-transfer_input_files = bin, $(htclean_dir)/pylib, $(softwaredir)/casa-6.5.0-15-py3.6.tar.xz, $(input_images), $(input_files)
+transfer_input_files = bin, $(htclean_dir)/pylib, $(CASA), $(softwaredir)/libnsl.so.1, $(input_images), $(input_files)
 
-transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(python_state).imcycle$(imcycle).tgz; $(imagename).mask.tar = $(imagesdir)/$(imagename).mask.imcycle$(imcycle).tar; $(imagename).psf.tar = $(imagesdir)/$(imagename).psf.tar; $(imagename).weight.tar = $(imagesdir)/$(imagename).weight.tar; $(imagename).sumwt.tar = $(imagesdir)/$(imagename).sumwt.tar; $(imagename).pb.tar = $(imagesdir)/$(imagename).pb.tar; $(imagename).residual.tar = $(imagesdir)/$(imagename).residual.runModelCycle.imcycle$(imcycle).tar; $(imagename).model.tar = $(imagesdir)/$(imagename).model.runModelCycle.imcycle$(imcycle).tar; $(output_files)"
+transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(python_state).imcycle$(imcycle).tgz; $(imagename).mask.tar = $(imagesdir)/$(imagename).mask.imcycle$(imcycle).tar; $(imagename).psf.tar = $(imagesdir)/$(imagename).psf.tar; $(imagename).weight.tar = $(imagesdir)/$(imagename).weight.tar; $(imagename).sumwt.tar = $(imagesdir)/$(imagename).sumwt.tar; $(imagename).pb.tar = $(imagesdir)/$(imagename).pb.tar; $(imagename).residual.tar = $(imagesdir)/$(imagename).residual.imcycle$(imcycle).tar; $(imagename).model.tar = $(imagesdir)/$(imagename).model.imcycle$(imcycle).tar; $(output_files)"
 
 
 queue

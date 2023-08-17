@@ -52,7 +52,7 @@ imager = HTCSynthesisImager(params = paramList)
 if 'serial' in partId: partId = ''
 
 # Mode selection
-if mode in ['makePSF', 'makePrimaryBeam', 'runResidualCycle', 'makeFinalImages']:
+if mode in ['makePSF', 'makePrimaryBeam', 'runResidualCycle']:
     eval('imager.' + mode + '()')
 elif mode == 'runModelCycle':
     imager.runModelCycle(partname = partId)
@@ -62,5 +62,7 @@ elif mode == 'gather':
     imager.gather(partname = partId)
 elif mode == 'scatter':
     imager.scatter(partname = partId)
+elif mode == 'makeFinalImages':
+    imager.makeFinalImages(partname = partId)
 else:
     raise Exception('unknown mode: ' + mode + '. Check inputs.')

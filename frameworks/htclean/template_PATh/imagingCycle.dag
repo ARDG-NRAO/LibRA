@@ -1,16 +1,15 @@
 JOB               runModelCycle      runModelCycle.htc                       
 SUBDAG EXTERNAL   runResidualCycle   runResidualCycle.dag                    
-JOB               gather             gather.htc                              
 
 
 SCRIPT PRE        runModelCycle      makeOutputFileList.sh htclean.params.htc imcycle.htc
-SCRIPT PRE        gather             makeInputFileList.sh htclean.params.htc imcycle.htc residual
+SCRIPT POST       runResidualCycle   makeInputFileList.sh htclean.params.htc imcycle.htc residual
 
 
 VARS              ALL_NODES          python_state="$(JOB)"
 VARS              ALL_NODES          input_file="../bin/htclean.params"
 VARS              ALL_NODES          partId="n"
 
+RETRY             runModelCycle      2
 
 PARENT            runModelCycle      CHILD runResidualCycle
-PARENT            runResidualCycle   CHILD gather

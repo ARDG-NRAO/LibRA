@@ -24,12 +24,6 @@ JOB         makePSF_n23          makePSF.htc
 JOB         makePSF_n24          makePSF.htc
 JOB         makePSF_n25          makePSF.htc
 JOB         makePSF_n26          makePSF.htc
-JOB         makePSF_n27          makePSF.htc
-JOB         makePSF_n28          makePSF.htc
-JOB         makePSF_n29          makePSF.htc
-JOB         makePSF_n30          makePSF.htc
-JOB         makePSF_n31          makePSF.htc
-JOB         makePSF_n32          makePSF.htc
 
 
 VARS        makePSF_n1          partId="n1"
@@ -58,12 +52,6 @@ VARS        makePSF_n23          partId="n23"
 VARS        makePSF_n24          partId="n24"
 VARS        makePSF_n25          partId="n25"
 VARS        makePSF_n26          partId="n26"
-VARS        makePSF_n27          partId="n27"
-VARS        makePSF_n28          partId="n28"
-VARS        makePSF_n29          partId="n29"
-VARS        makePSF_n30          partId="n30"
-VARS        makePSF_n31          partId="n31"
-VARS        makePSF_n32          partId="n32"
 VARS        ALL_NODES          python_state="makePSF"
 VARS        ALL_NODES          input_file="../bin/htclean.params"
-
+RETRY       ALL_NODES          2

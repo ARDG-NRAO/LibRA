@@ -53,12 +53,7 @@ class HTCSynthesisImager(PySynthesisImager):
         return partnames;
 
 
-    def gather(self, imtype = 'residual', partname = 'SPW'):
-#        self.initializeImagers()
-#        self.setWeighting()
-        self.initializeDeconvolvers()
-        self.initializeIterationControl()
-
+    def _gather(self, imtype, partname, scatter):
         imgname = self.allimpars['0']['imagename'];
         partlist = self._mkImagePartList(imgname, imtype, partname);
 
@@ -72,12 +67,7 @@ class HTCSynthesisImager(PySynthesisImager):
 
         for immod in range(self.NF):
             self.PStools[immod].setupnormalizer(normpars=normpars)
-
-#            self.PStools[immod].gatherweightdensity();
-
             self.IBtool.endmajorcycle()
-
-#            if not os.path.isdir(imgname + '.psf') and not os.path.isdir(imgname + '.psf.tt0'):
             if imtype == 'psf':
                 self.PStools[immod].gatherpsfweight();
                 self.PStools[immod].dividepsfbyweight();
@@ -96,31 +86,17 @@ class HTCSynthesisImager(PySynthesisImager):
                     self.PStools[immod].normalizeprimarybeam();
                 else:
                     print('Reusing existing primary beam')
+        if not scatter:
+            for immod in range(self.NF):
+                self.PStools[immod].done()
 
-        for immod in range(self.NF):
-            self.PStools[immod].done()
-
-    def _scatter(self, imtype, partname):
-        imgname = self.allimpars['0']['imagename'];
-        partlist = self._mkImagePartList(imgname, imtype, partname);
-
-        for immod in range(self.NF):
-            normpars = self.allnormpars[str(immod)];
-            if len(partlist) > 1:
-                normpars['partimagenames'] = partlist;
-            print('gather_normpars: {}'.format(normpars))
-
-        self.PStools.append(synthesisnormalizer())
-
-        for immod in range(self.NF):
-            self.PStools[immod].setupnormalizer(normpars=normpars)
-            self.PStools[immod].dividemodelbyweight()
-            self.PStools[immod].scattermodel()
-
-    def scatter(self, imtype = 'residual', partname = 'SPW'):
+    def gather(self, imtype = 'residual', partname = 'SPW', scatter = False):
         self.initializeDeconvolvers()
         self.initializeIterationControl()
 
+        self._gather(imtype, partname, scatter)
+
+    def _scatter(self, imtype, partname, gather):
         imgname = self.allimpars['0']['imagename'];
         partlist = self._mkImagePartList(imgname, imtype, partname);
 
@@ -129,13 +105,24 @@ class HTCSynthesisImager(PySynthesisImager):
             if len(partlist) > 1:
                 normpars['partimagenames'] = partlist;
             print('scatter_normpars: {}'.format(normpars))
-
-        self.PStools.append(synthesisnormalizer())
+    
+        if not gather:
+            self.PStools.append(synthesisnormalizer())
 
         for immod in range(self.NF):
             self.PStools[immod].setupnormalizer(normpars=normpars)
             self.PStools[immod].dividemodelbyweight()
             self.PStools[immod].scattermodel()
+
+        if gather:
+            for immod in range(self.NF):
+                self.PStools[immod].done()
+
+    def scatter(self, imtype = 'residual', partname = 'SPW', gather = False):
+        self.initializeDeconvolvers()
+        self.initializeIterationControl()
+
+        self._scatter(imtype, partname, gather)
 
     def makePSF(self):
         self.initializeImagers()
@@ -162,9 +149,12 @@ class HTCSynthesisImager(PySynthesisImager):
         self.runMajorCycleCore(lastcycle)
 
 
-    def runModelCycle(self, imtype = 'residual', partname = 'SPW', scatter = True):
+    def runModelCycle(self, imtype = 'residual', partname = 'SPW', gather = True, scatter = True):
         self.initializeDeconvolvers()
         self.initializeIterationControl()
+
+        if gather:
+            self._gather(imtype, partname, scatter)
 
         stop = self.hasConverged()
 
@@ -174,14 +164,17 @@ class HTCSynthesisImager(PySynthesisImager):
     
         self.runMinorCycle()
         if scatter:
-            self._scatter(imtype, partname)
+            self._scatter(imtype, partname, gather)
 
         if self.hasConverged():
             os.system('touch stopIMCycles')
 
-    def makeFinalImages(self):
+    def makeFinalImages(self, imtype = 'residual', partname = 'SPW', gather = True, scatter = False):
         self.initializeDeconvolvers()
         self.initializeIterationControl()
+
+        if gather:
+            self._gather(imtype, partname, scatter = False)
 
         self.restoreImages()
         self.pbcorImages()

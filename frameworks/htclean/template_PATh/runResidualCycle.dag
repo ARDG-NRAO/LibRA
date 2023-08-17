@@ -24,12 +24,6 @@ JOB         runResidualCycle_n23          runResidualCycle.htc
 JOB         runResidualCycle_n24          runResidualCycle.htc
 JOB         runResidualCycle_n25          runResidualCycle.htc
 JOB         runResidualCycle_n26          runResidualCycle.htc
-JOB         runResidualCycle_n27          runResidualCycle.htc
-JOB         runResidualCycle_n28          runResidualCycle.htc
-JOB         runResidualCycle_n29          runResidualCycle.htc
-JOB         runResidualCycle_n30          runResidualCycle.htc
-JOB         runResidualCycle_n31          runResidualCycle.htc
-JOB         runResidualCycle_n32          runResidualCycle.htc
 
 
 VARS        runResidualCycle_n1          partId="n1"
@@ -58,12 +52,6 @@ VARS        runResidualCycle_n23          partId="n23"
 VARS        runResidualCycle_n24          partId="n24"
 VARS        runResidualCycle_n25          partId="n25"
 VARS        runResidualCycle_n26          partId="n26"
-VARS        runResidualCycle_n27          partId="n27"
-VARS        runResidualCycle_n28          partId="n28"
-VARS        runResidualCycle_n29          partId="n29"
-VARS        runResidualCycle_n30          partId="n30"
-VARS        runResidualCycle_n31          partId="n31"
-VARS        runResidualCycle_n32          partId="n32"
 VARS        ALL_NODES          python_state="runResidualCycle"
 VARS        ALL_NODES          input_file="../bin/htclean.params"
-
+RETRY       ALL_NODES          2

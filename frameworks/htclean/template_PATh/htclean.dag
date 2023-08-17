@@ -16,6 +16,6 @@ PARENT              initialCycle       CHILD                 imagingCycle
 PARENT              imagingCycle       CHILD                 makeFinalImages
 
 
-VARS                makeFinalImages    python_state="$(JOB)"
-VARS                makeFinalImages    input_file="../bin/htclean.params"
-VARS                makeFinalImages    partId="n"
+VARS                ALL_NODES          python_state="$(JOB)"
+VARS                ALL_NODES          input_file="../bin/htclean.params"
+VARS                ALL_NODES          partId="n"

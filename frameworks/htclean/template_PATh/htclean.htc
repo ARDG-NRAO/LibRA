@@ -11,7 +11,9 @@ output = $(python_state).imcycle$(imcycle).stdout
 error  = $(python_state).imcycle$(imcycle).stderr
 log    = $(python_state).imcycle$(imcycle).condor.log
 
-#getenv = true
+
+request_cpus = 1
+
 
 +WantIOProxy = True
 

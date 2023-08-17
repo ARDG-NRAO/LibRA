@@ -25,6 +25,7 @@ do
     done
     VARStext+="VARS        ALL_NODES          python_state=\"${python_state}\""$'\n'
     VARStext+="VARS        ALL_NODES          input_file=\"../bin/htclean.params\""$'\n'
+    VARStext+="RETRY       ALL_NODES          2"
     TEXT=${JOBtext}$'\n\n'${VARStext}
     echo "${TEXT}" > ${DAG}.dag
 done
