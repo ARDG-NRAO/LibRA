@@ -326,6 +326,7 @@ void Hummbee(//string& MSNBuf,
       decPars_p.largestscale = largestscale;
       decPars_p.scalebias = 0.0;
       decPars_p.nTaylorTerms = nterms;
+      decPars_p.nsigma = nsigma; // default is 0 which indicates no PB is required
 
       SynthesisDeconvolver itsDeconvolver;
       itsDeconvolver.setupDeconvolution(decPars_p);
