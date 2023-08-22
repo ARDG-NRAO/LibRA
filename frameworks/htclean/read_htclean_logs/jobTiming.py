@@ -8,8 +8,11 @@ import pandas as pd
 time_fmt = '%Y-%m-%d %H:%M:%S'
 
 
-def getCondorLogTimeStr(line):
-    return line[19:38]
+def getCondorLogTimeStr(line, index):
+    end   = index - 1
+    start = end - 19
+
+    return line[start:end]
 
 
 def getCASALogTimeStr(line):
@@ -37,9 +40,10 @@ class jobTiming(object):
         with open(logfile, 'r') as log:
             for line in log.readlines():
                 if 'Job submitted' in line:
-                    time_str = getCondorLogTimeStr(line)
+                    index = line.find('Job submitted')
+                    time_str = getCondorLogTimeStr(line, index)
                     submitted_time = getTime(time_str)
-                    return submitted_time
+        return submitted_time
 
 
     def _readTransferTime(self, direction):
@@ -49,13 +53,15 @@ class jobTiming(object):
         with open(logfile, 'r') as log:
             for line in log.readlines():
                 if start_str in line:
-                    time_str = getCondorLogTimeStr(line)
+                    index = line.find(start_str)
+                    time_str = getCondorLogTimeStr(line, index)
                     transfer_start_time = getTime(time_str)
                 elif end_str in line:
-                    time_str = getCondorLogTimeStr(line)
+                    index = line.find(end_str)
+                    time_str = getCondorLogTimeStr(line, index)
                     transfer_end_time = getTime(time_str)
                     transfer_time = { 'start': transfer_start_time, 'end' : transfer_end_time }
-                    return transfer_time
+        return transfer_time
 
 
     def _readJobExecutionTime(self):
@@ -63,13 +69,15 @@ class jobTiming(object):
         with open(logfile, 'r') as log:
             for line in log.readlines():
                 if 'Job executing' in line:
-                    time_str = getCondorLogTimeStr(line)
+                    index = line.find('Job executing')
+                    time_str = getCondorLogTimeStr(line, index)
                     execution_start_time = getTime(time_str)
                 elif 'Started transferring output files' in line:
-                    time_str = getCondorLogTimeStr(line)
+                    index = line.find('Started transferring output files')
+                    time_str = getCondorLogTimeStr(line, index)
                     execution_end_time = getTime(time_str)
                     jobExecuting = { 'start' : execution_start_time , 'end' : execution_end_time }
-                    return jobExecuting
+        return jobExecuting
 
 
     def _readAppExecutionTime(self, applogfile):
@@ -83,9 +91,10 @@ class jobTiming(object):
         elif 'makePSF' in jobname or 'makeDirtyImage' in jobname or 'runResidualCycle' in jobname:
             # Roadrunner job - read timestamps from .out file; 1st line and line containing roadrunner::main.*done
             with open(applogfile, 'r') as log:
-                start_time_str = getCASALogTimeStr(log.readline())
-                for line in log.readlines()[1:-1]:
-                    if 'roadrunner::main' in line and '...done' in line:
+                loglines = log.readlines()
+                start_time_str = getCASALogTimeStr(loglines[1])
+                for line in loglines[1:-1]:
+                    if ('roadrunner::main' in line or 'roadrunner::Roadrunner_func' in line) and '...done' in line:
                         end_time_str = getCASALogTimeStr(line)
 
         app_start_time = getTime(start_time_str)
@@ -132,8 +141,13 @@ class jobTiming(object):
     def getIdleTime(self):
         return (self.transferIn['start'] - self.jobSubmitted).total_seconds()
 
+    def getTransferTime(self):
+        transfer_in = (self.transferIn['end'] - self.transferIn['start']).total_seconds()
+        transfer_out = (self.transferOut['end'] - self.transferOut['start']).total_seconds()
+        return (transfer_in + transfer_out)
+
     def getTotalTime(self):
-        return (self.transferOut['end'] - self.transferIn['start'])
+        return (self.transferOut['end'] - self.transferIn['start']).total_seconds()
 
     def _local2UTC(self):
         utc = self.appExecuting['start']

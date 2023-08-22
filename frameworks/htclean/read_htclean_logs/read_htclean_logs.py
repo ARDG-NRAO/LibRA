@@ -12,14 +12,13 @@ import plotly.express as px
 from glob import glob
 
 
-# Location of jobTiming class
-bin_dir = '/users/fmadsen/htclean/read_htclean_logs'
-
-sys.path.insert(0, bin_dir)
 from jobTiming import jobTiming
 
 # Read input arguments
-logdir = sys.argv[1]
+try:
+    logdir = sys.argv[1]
+except:
+    logdir = '.'
 
 
 # Function definitions
@@ -41,7 +40,7 @@ os.chdir(logdir)
 print('Analyzing contents of input directory: ' + logdir)
 
 n_parts  = len(glob('makePSF*.condor.log'))
-imcycles = len(glob('gather.*.condor.log'))
+imcycles = len(glob('runModelCycle.*.condor.log'))
 
 print('Processing logs from ' + str(n_parts) + ' partitions and ' + str(imcycles) + ' imaging cycles.')
 
@@ -61,24 +60,28 @@ for i in range(1, n_parts + 1):
     applog = glob('casalogs/dirty-*.n' + str(i) + '.out')
     app_logs += applog
 
-# Append gather.imcycle0 to log lists
-condor_logs += ['gather.imcycle0']
-app_logs += [sortAppLogList('casalogs/gather-*.log')[0]]
+# If separate gather, append gather.imcycle0 to log lists
+if len(glob('gather.imcycle*')) > 0:
+    condor_logs += ['gather.imcycle0']
+    app_logs += [sortAppLogList('casalogs/gather-*.log')[0]]
 
 # Iterate on imaging cycles to append logs to log lists
-for imcycle in range(1, imcycles):
+for imcycle in range(1, imcycles + 1):
     list_index = imcycle - 1
     condor_logs += ['runModelCycle.imcycle' + str(imcycle)]
     app_logs += [sortAppLogList('casalogs/runModelCycle-*.log')[list_index]]
     for i in range(1, n_parts + 1):
         condor_logs += ['runResidualCycle_n' + str(i) + '.imcycle' + str(imcycle)]
         app_logs += [sortAppLogList('casalogs/runResidualCycle-*.n' + str(i) + '.out')[list_index]]
-    condor_logs += ['gather.imcycle' + str(imcycle)]
-    app_logs += [sortAppLogList('casalogs/gather-*.log')[imcycle]]
+    # If separate gather, append gather.imcycle0 to log lists
+    if len(glob('gather.imcycle*')) > 0:
+        condor_logs += ['gather.imcycle' + str(imcycle)]
+        app_logs += [sortAppLogList('casalogs/gather-*.log')[imcycle]]
 
 # Append makeFinalImages to log lists
-condor_logs += ['makeFinalImages']
-app_logs += glob('casalogs/makeFinalImages-*.log')
+if len(glob('makeFinalImages.*.condor.log')) > 0:
+    condor_logs += ['makeFinalImages.imcycle' + str(imcycle)]
+    app_logs += glob('casalogs/makeFinalImages-*.log')
 
 
 for i, jobname in enumerate(condor_logs):
@@ -100,7 +103,3 @@ fig = px.timeline(df, x_start = 'Start', x_end = 'Finish', y = 'Task', color = '
 fig.update_yaxes(autorange = 'reversed')
 fig.show()
 
-
-#print(condor_logs)
-#print()
-#print(app_logs)
