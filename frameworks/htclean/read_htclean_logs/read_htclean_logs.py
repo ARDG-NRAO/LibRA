@@ -99,7 +99,8 @@ colors = {'Transfer In': 'rgb(251, 188, 4)',
           'App executing': 'rgb(183, 225, 205)',
           'Gridding': 'rgb(234, 67, 53)'}
 
-fig = px.timeline(df, x_start = 'Start', x_end = 'Finish', y = 'Task', color = 'Action', color_discrete_map = colors)
+fig = px.timeline(df, x_start = 'Start', x_end = 'Finish', y = 'Task', color = 'Action', color_discrete_map = colors, text = 'SiteName')
 fig.update_yaxes(autorange = 'reversed')
+fig.update_traces(textposition='outside')
 fig.show()
 

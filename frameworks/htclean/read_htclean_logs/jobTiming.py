@@ -22,10 +22,15 @@ def getCASALogTimeStr(line):
 def getTime(timestr):
     return datetime.strptime(timestr, time_fmt)
 
+def getSiteName(line):
+    siteName = ((line.partition('@')[2]).partition('osgvo')[0])[:-1]
+    return siteName
+
 
 class jobTiming(object):
     def __init__(self, jobname, applogfile):
         self.jobname                  = jobname
+        self.sitename                 = self._readSiteName()
         self.jobSubmitted             = self._readSubmissionTime()
         self.transferIn               = self._readTransferTime(direction = 'input')
         self.jobExecuting             = self._readJobExecutionTime()
@@ -34,6 +39,15 @@ class jobTiming(object):
         self.transferOut              = self._readTransferTime(direction = 'output')
         self._local2UTC()
 
+
+    def _readSiteName(self):
+        logfile = self.jobname + '.condor.log'
+        with open(logfile, 'r') as log:
+            for line in log.readlines():
+                if 'SlotName' in line:
+                    siteName = getSiteName(line)
+        return siteName
+        
 
     def _readSubmissionTime(self):
         logfile = self.jobname + '.condor.log'
@@ -161,6 +175,7 @@ class jobTiming(object):
 
     def getDataFrame(self):
         jobname = self.jobname
+        siteName = self.sitename
         startTransferIn   = datetime.strftime(self.transferIn['start'], time_fmt)
         endTransferIn     = datetime.strftime(self.transferIn['end'], time_fmt)
         startTransferOut  = datetime.strftime(self.transferOut['start'], time_fmt)
@@ -174,14 +189,18 @@ class jobTiming(object):
             endGridding   = datetime.strftime(self.gridding['end'], time_fmt)
 
         df = pd.DataFrame([
-            dict(Task = jobname, Start = startTransferIn, Finish= endTransferIn, Action = 'Transfer In'),
-            dict(Task = jobname, Start = startTransferOut, Finish = endTransferOut, Action = 'Transfer Out'),
-            dict(Task = jobname, Start = startJobExecuting, Finish = endJobExecuting, Action = 'Job executing'),
-            dict(Task = jobname, Start = startAppExecuting, Finish = endAppExecuting, Action = 'App executing'),
+            dict(Task = jobname, Start = startTransferIn, Finish= endTransferIn, Action = 'Transfer In',
+                SiteName = ''),
+            dict(Task = jobname, Start = startTransferOut, Finish = endTransferOut, Action = 'Transfer Out',
+                SiteName = siteName),
+            dict(Task = jobname, Start = startJobExecuting, Finish = endJobExecuting, Action = 'Job executing',
+                SiteName = ''),
+            dict(Task = jobname, Start = startAppExecuting, Finish = endAppExecuting, Action = 'App executing',
+                SiteName = ''),
         ])
         if 'startGridding' in dir():
             df = df.append(dict(Task = jobname,
-                Start = startGridding, Finish = endGridding, Action = 'Gridding'),
+                Start = startGridding, Finish = endGridding, Action = 'Gridding', SiteName = ''),
                 ignore_index = True)
 
         return df
