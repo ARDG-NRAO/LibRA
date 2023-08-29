@@ -155,10 +155,15 @@ class jobTiming(object):
     def getIdleTime(self):
         return (self.transferIn['start'] - self.jobSubmitted).total_seconds()
 
-    def getTransferTime(self):
+    def getTransferTime(self, direction = ''):
         transfer_in = (self.transferIn['end'] - self.transferIn['start']).total_seconds()
         transfer_out = (self.transferOut['end'] - self.transferOut['start']).total_seconds()
-        return (transfer_in + transfer_out)
+        if direction.lower() in ['input', 'in']:
+            return transfer_in
+        elif direction.lower() in ['output', 'out']:
+            return transfer_out
+        else:
+            return (transfer_in + transfer_out)
 
     def getTotalTime(self):
         return (self.transferOut['end'] - self.transferIn['start']).total_seconds()
