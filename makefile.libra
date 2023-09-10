@@ -275,9 +275,9 @@ pybind11-clean:
 apps: apps-cmake apps-build
 
 apps-cmake:
-	mkdir -p ${APPSBUILDDIR}/
+	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake --debug-find ${APPSDIR}
+	cmake -B ${APPSBUILDDIR} -H ${APPSINSTALLDIR} -S ${APPSDIR} 
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
