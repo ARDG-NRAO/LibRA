@@ -282,7 +282,7 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -H ${APPSINSTALLDIR} -S ${APPSDIR} 
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  ${APPSDIR} 
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
