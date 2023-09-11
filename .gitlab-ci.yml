@@ -25,6 +25,6 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compiling the code..."
     - echo "Compile complete."
     - make -f makefile.libra allclone
-    - make -f Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 makefile.libra allbuild
+    - make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 -f makefile.libra allbuild
 
 
