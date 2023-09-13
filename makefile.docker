@@ -278,7 +278,7 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR}/
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -S ${APPSDIR}
+	cmake -B ${APPSBUILDDIR}/ -S ${APPSDIR}/
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
