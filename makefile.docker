@@ -52,7 +52,7 @@ NCORES=12
 #
 # Package-level dir structure
 #
-ROOT           = /libra
+ROOT           = /data/libra
 TESTDIR        = ${ROOT}/test
 
 DEPENDDIR      = ${ROOT}/dependencies
