@@ -9,6 +9,21 @@ time_fmt = '%Y-%m-%d %H:%M:%S'
 
 
 def getCondorLogTimeStr(line, index):
+    """
+    Gets the time string (in format defined in time_fmt) from a line of an HTCondor log
+
+    Parameters
+    ----------
+    line : str
+        The input line from the HTCondor log
+    index : int
+        A reference index representing the end of the time string
+
+    Returns
+    -------
+    str
+        a time string as defined in time_fmt
+    """
     end   = index - 1
     start = end - 19
 
@@ -16,19 +31,112 @@ def getCondorLogTimeStr(line, index):
 
 
 def getCASALogTimeStr(line):
+    """
+    Gets the time string (in format defined in time_fmt) from a line of a CASA or roadrunner log
+
+    Parameters
+    ----------
+    line : str
+        The input line from the CASA/roadrunner log
+
+    Returns
+    -------
+    str
+        a time string as defined in time_fmt
+
+    """
     return line[0:19]
 
 
 def getTime(timestr):
+    """
+    Creates a datetime object from a time string (format defined in time_fmt)
+
+    Parameters
+    ----------
+    timestr : str
+        A time string as defined in time_fmt
+
+    Returns
+    -------
+    datetime
+        A datetime object
+    """
     return datetime.strptime(timestr, time_fmt)
 
 def getSiteName(line):
+    """
+    Gets the site name from the line containing 'SlotName' in the HTCondor logs (current implementation
+    will only work with PATh slot names)
+
+    Parameters
+    ----------
+    line : str
+        Input line from the HTCondor log that contains 'SlotName'
+
+    Returns
+    -------
+    siteName : str
+        The name of the PATh site where the job ran
+    """
     siteName = ((line.partition('@')[2]).partition('osgvo')[0])[:-1]
     return siteName
 
 
 class jobTiming(object):
+    """
+    Class used to collect timestamps that enable profiling of htclean runs
+
+    Attributes
+    ----------
+    jobname : str
+        Name of the job
+    sitename : str
+        Name of the site where the job ran
+    jobSubmitted : datetime
+        Job submission time as a datetime object
+    transferIn : dict('start' : datetime, 'end' : datetime)
+        Transfer input files start/end as a dictionary of datetime objects
+    jobExecuting : dict('start' : datetime, 'end' : datetime)
+        Job execution start/end as a dictionary of datetime objects
+    appExecuting : dict('start' : datetime, 'end' : datetime)
+        Application (eg. CASA/roadrunner) execution start/end as a dictionary of datetime objects
+    gridding : dict('start' : datetime, 'end' : datetime)
+        Gridding start/end (roadrunner only) as a dictionary of datetime objects
+    transferOut : dict('start' : datetime, 'end' : datetime)
+        Transfer output files start/end as a dictionary of datetime objects
+
+    Methods
+    -------
+    getAppExecuting(key)
+        Returns the start/end of application execution as defined in key
+    getDataFrame()
+        Returns a Pandas DataFrame object with job timing information
+    getGridding(key)
+        Returns the start/end of gridding (roadrunner only) as defined in key
+    getIdleTime()
+        Returns the elapsed time in seconds for which the job was idle
+    getJobExecuting(key)
+        Returns the start/end of job execution as defined in key
+    getTotalTime()
+        Retuns the total duration of the job in seconds
+    getTransferIn(key)
+        Returns the start/end of transfer of input files as defined in key
+    getTransferOut(key)
+        Returns the start/end of transfer of output files as defined in key
+    getTransferTime(direction='')
+        Returns the transfer time in seconds, for input, output or both
+    """
+
     def __init__(self, jobname, applogfile):
+        """
+        Parameters
+        ----------
+        jobname : str
+            The name of the job (as defined in the DAG definitions - htclean.dag and subDAGs)
+        applogfile : str
+            The name of the application (CASA/roadrunner) logfile
+        """
         self.jobname                  = jobname
         self.sitename                 = self._readSiteName()
         self.jobSubmitted             = self._readSubmissionTime()
@@ -41,6 +149,9 @@ class jobTiming(object):
 
 
     def _readSiteName(self):
+        """
+        Reads the name of the site where the job executed from the HTCondor log
+        """
         logfile = self.jobname + '.condor.log'
         with open(logfile, 'r') as log:
             for line in log.readlines():
@@ -50,6 +161,9 @@ class jobTiming(object):
         
 
     def _readSubmissionTime(self):
+        """
+        Reads the job submission time from the HTCondor log
+        """
         logfile = self.jobname + '.condor.log'
         with open(logfile, 'r') as log:
             for line in log.readlines():
@@ -61,6 +175,19 @@ class jobTiming(object):
 
 
     def _readTransferTime(self, direction):
+        """
+        Reads the start/end times of a transfer of input or output files from the HTCondor log
+
+        Parmeters
+        ---------
+        direction : str
+            The direction of the transfer. Allowed values are 'input' and 'output'
+
+        Returns
+        -------
+        dict('start' : datetime, 'end' : datetime)
+            The start/end of the transfer as defined in direction
+        """
         logfile =  self.jobname + '.condor.log'
         start_str = 'Started transferring ' + direction + ' files'
         end_str = 'Finished transferring ' + direction + ' files'
@@ -79,6 +206,14 @@ class jobTiming(object):
 
 
     def _readJobExecutionTime(self):
+        """
+        Reads the start/end times of job execution from the HTCondor log
+
+        Returns
+        -------
+        dict('start' : datetime, 'end' : datetime)
+            The start/end of the job execution
+        """
         logfile = self.jobname + '.condor.log'
         with open(logfile, 'r') as log:
             for line in log.readlines():
@@ -95,6 +230,14 @@ class jobTiming(object):
 
 
     def _readAppExecutionTime(self, applogfile):
+        """
+        Reads the start/end times of app (CASA/roadrunner) execution from the app log
+
+        Returns
+        -------
+        dict('start' : datetime, 'end' : datetime)
+            The start/end of the app execution
+        """
         jobname = self.jobname
         if 'runModelCycle' in jobname or 'gather' in jobname or 'makeFinalImages' in jobname:
             # CASA job - read timestamps from .log file; 1st and last line
@@ -118,6 +261,14 @@ class jobTiming(object):
 
 
     def _readGriddingTime(self, applogfile):
+        """
+        Reads the start/end times of gridding from the app (roadrunner) log
+
+        Returns
+        -------
+        dict('start' : datetime, 'end' : datetime)
+            The start/end of gridding
+        """
         jobname = self.jobname
         if 'makePSF' in jobname or 'makeDirtyImage' in jobname or 'runResidualCycle' in jobname:
             with open(applogfile, 'r') as log:
@@ -134,28 +285,113 @@ class jobTiming(object):
         return gridding
 
 
-    def getJobSubmitted(self):
-        return self.jobSubmitted
-
     def getTransferIn(self, key):
+        """
+        Returns the start/end of transfer of input files as defined in key
+
+        Parameters
+        ----------
+        key : str
+            A keyword specifying the timestamp. Use 'start' or 'end'.
+
+        Returns
+        -------
+        datetime
+            A datetime object containing the specified timestamp (start/end) of the input transfer
+        """
         return self.transferIn[key]
 
     def getTransferOut(self, key):
+        """
+        Returns the start/end of transfer of output files as defined in key
+
+        Parameters
+        ----------
+        key : str
+            A keyword specifying the timestamp. Use 'start' or 'end'.
+
+        Returns
+        -------
+        datetime
+            A datetime object containing the specified timestamp (start/end) of the output transfer
+        """
         return self.transferOut[key]
 
     def getJobExecuting(self, key):
+        """
+        Returns the start/end of job execution as defined in key
+
+        Parameters
+        ----------
+        key : str
+            A keyword specifying the timestamp. Use 'start' or 'end'.
+
+        Returns
+        -------
+        datetime
+            A datetime object containing the specified timestamp (start/end) of the job execution
+        """
         return self.jobExecuting[key]
 
     def getAppExecuting(self, key):
+        """
+        Returns the start/end of application execution as defined in key
+
+        Parameters
+        ----------
+        key : str
+            A keyword specifying the timestamp. Use 'start' or 'end'.
+
+        Returns
+        -------
+        datetime
+            A datetime object containing the specified timestamp (start/end) of the app execution
+        """
         return self.appExecuting[key]
 
     def getGridding(self, key):
+        """
+        Returns the start/end of gridding (roadrunner only) as defined in key
+
+        Parameters
+        ----------
+        key : str
+            A keyword specifying the timestamp. Use 'start' or 'end'.
+
+        Returns
+        -------
+        datetime
+            A datetime object containing the specified timestamp (start/end) of gridding
+        """
         return self.gridding[key]
 
     def getIdleTime(self):
+        """
+        Returns the elapsed time in seconds for which the job was idle
+
+        Returns
+        -------
+        float
+            Elapsed seconds for which the job was idle (between submission time and transfer in start)
+        """
         return (self.transferIn['start'] - self.jobSubmitted).total_seconds()
 
     def getTransferTime(self, direction = ''):
+        """
+        Returns the transfer time in seconds, for input, output or both
+
+        Parameters
+        ----------
+        direction : str
+            A keyword specifying the direction of the transfer.
+            Allowed values are 'input', 'output' and ''.
+            Default is '', which means aggregate (input + output)
+
+        Returns
+        -------
+        float
+            Duration of the transfer (or aggregate transfer time if direction='') in seconds
+        """
         transfer_in = (self.transferIn['end'] - self.transferIn['start']).total_seconds()
         transfer_out = (self.transferOut['end'] - self.transferOut['start']).total_seconds()
         if direction.lower() in ['input', 'in']:
@@ -166,9 +402,20 @@ class jobTiming(object):
             return (transfer_in + transfer_out)
 
     def getTotalTime(self):
+        """
+        Retuns the total duration of the job in seconds
+
+        Returns
+        -------
+        float
+            Duration of the job in seconds
+        """
         return (self.transferOut['end'] - self.transferIn['start']).total_seconds()
 
     def _local2UTC(self):
+        """
+        Converts local times from the HTCondor log to UTC
+        """
         utc = self.appExecuting['start']
         local = self.jobExecuting['start']
         local2UTC = int((local - utc).total_seconds() / 3600 )
@@ -179,6 +426,14 @@ class jobTiming(object):
 
 
     def getDataFrame(self):
+        """
+        Returns a Pandas DataFrame object with job timing information
+
+        Returns
+        -------
+        pandas.DataFrame
+            DataFrame object. Fields are Task, Start, End, Action, SiteName.
+        """
         jobname = self.jobname
         siteName = self.sitename
         startTransferIn   = datetime.strftime(self.transferIn['start'], time_fmt)
