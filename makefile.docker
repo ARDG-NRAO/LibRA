@@ -11,7 +11,7 @@
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_TURING75
 # A4000/A5000
-Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
@@ -42,7 +42,7 @@ CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
-PATH:=/usr/local/cuda-12.0/bin/:/usr/lib64/openmpi/bin/:${PATH}
+PATH:=/usr/lib64/openmpi/bin/:${PATH}
 
 # No. of cores to use for compiling
 NCORES=12
@@ -89,17 +89,10 @@ kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
 kokkos-build:
-ifndef Kokkos_CUDA_ARCH
-$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
-endif
 	cd ${DEPENDSRCDIR}/kokkos; \
-	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
 	cd ${DEPENDBUILDDIR}/kokkos; \
-	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
-	      -D$(Kokkos_CUDA_ARCH)=ON \
-	      -DKokkos_ENABLE_CUDA=ON \
-	      -DKokkos_ENABLE_OPENMP=ON \
+	cmake -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
 	      ${INSTALLOPTS} \
 	      -DBUILD_SHARED_LIBS=ON ${DEPENDSRCDIR}/kokkos; \
@@ -137,7 +130,7 @@ hpg-cmake:
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=ON \
-	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
+	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/gcc \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
 	-DFFTW_ROOT_DIR=${INSTALLDIR} \
