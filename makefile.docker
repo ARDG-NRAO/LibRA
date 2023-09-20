@@ -17,9 +17,8 @@
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER32
 
-CASA_BUILD_TYPE     = RelWithDebInfo
-CASACORE_BUILD_TYPE = RelWithDebInfo
-
+CASA_BUILD_TYPE     = Release
+CASACORE_BUILD_TYPE = Release
 #
 # Specific branches used for the various components
 #
@@ -77,6 +76,9 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
 	      -DCMAKE_INSTALL_BINDIR=sbin \
 	      -DCMAKE_INSTALL_LIBDIR=lib
 
+# Creating some CXX Flags and Compile time options.
+CXXFLAGS="-ffunction-sections -fdata-sections"
+LDFLAGS="-Wl,--gc-sections"
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
@@ -153,7 +155,7 @@ parafeed-clone:
 parafeed-build:
 	mkdir -p ${DEPENDBUILDDIR}/parafeed
 	cd ${DEPENDBUILDDIR}/parafeed; \
-	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	cmake -DCMAKE_BUILD_TYPE=Release \
 	${INSTALLOPTS} \
 	-DBUILD_SHARED_LIBS=ON \
 	${DEPENDSRCDIR}/parafeed; \
