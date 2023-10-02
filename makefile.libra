@@ -8,9 +8,9 @@
 # Kokkos string for the GPU architecture.
 #
 # V100
-Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
-#Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
+Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
@@ -28,6 +28,7 @@ FFTW_VERSION     = 3.3.10
 KOKKOS_VERSION   = release-candidate-4.0.01
 HPG_VERSION      = v2.0.0
 PARAFEED_VERSION = activedev
+CASACORE_VERSION = v3.5.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
 FFTW_REPOS          = http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz
@@ -37,7 +38,7 @@ SAKURA_REPOS        = https://github.com/tnakazato/sakura/archive/refs/tags/libs
 CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
 PYBIND11_REPOS      = https://github.com/pybind/pybind11.git
 CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
-
+CASACORE_REPOS      = https://github.com/casacore/casacore.git
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
@@ -59,6 +60,7 @@ DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
 INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
 CASASRC        = ${DEPENDSRCDIR}/casa6
+CASACORESRC    = ${DEPENDSRCDIR}/casacore
 PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
 
 
@@ -201,6 +203,8 @@ sakura-clean:
 casacore: casa-clone casacore-clone casacore-build
 
 casacore-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone --branch ${CASACORE_VERSION} --recursive ${CASACORE_REPOS}
 	mkdir -p ${INSTALLDIR}/data
 	curl ${CASACORE_DATA_REPOS} | tar -C ${INSTALLDIR}/data -xzf -
 
@@ -220,7 +224,8 @@ casacore-cmake:
 	-DBUILD_PYTHON3=OFF \
 	-DBUILD_DYSCO=ON \
 	-DUseCcache=1 \
-	${CASASRC}/casatools/casacore
+	${CASACORESRC}
+#	${CASASRC}/casatools/casacore
 
 casacore-build:casacore-cmake
 	cd ${DEPENDBUILDDIR}/casacore; make install -j ${NCORES}
