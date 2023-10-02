@@ -279,10 +279,14 @@ apps-cmake:
 	mkdir -p ${APPSBUILDDIR}/
 	cd ${APPSBUILDDIR}/
 <<<<<<< HEAD
+<<<<<<< HEAD
 	cmake -B ${APPSBUILDDIR}/ -S ${APPSDIR}/
 =======
 	cmake ${APPSDIR}
 >>>>>>> 7cae23e (fixing some app path build issue)
+=======
+	cmake -B ${APPSBUILDDIR} -S ${APPSDIR}
+>>>>>>> 515555c (fixing some app path build issue)
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
