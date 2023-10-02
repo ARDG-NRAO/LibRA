@@ -240,6 +240,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //
   protected:
     hpg::Gridder* hpgGridder_p;
+    double sendData(HPGVisBufferBucket<HPGNPOL>& VBBucket,
+		    double& nVisGridded, long unsigned int& nDataBytes,
+		    //const uint& hpgVBNRows,
+		    const uint& sizeofVisData,
+		    const bool& do_degrid);
+
     template <class T>
     void DataToGridImpl_p(casacore::Array<T>& griddedData, VBStore& vb,
 			  casacore::Matrix<casacore::Double>& sumwt,const casacore::Bool& /*dopsf*/,

@@ -232,7 +232,14 @@ namespace casa{
   {
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","finalizeToSky(DCompelx)"));
     log_l << "Finalizing gridding..." << LogIO::POST;
-    
+    if (hpgVBBucket_p.size() != 0)
+      {
+	log_l << "Sending the last of " << hpgVBBucket_p.size() << " VBs!!!" << LogIO::POST;
+	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+				 sizeofVisData_p, (HPGModelImageName_p != ""));
+	hpgGridder_p->fence();
+	assert(hpgVBBucket_p.size()==0);
+      }
     
     hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
     hpgGridder_p->apply_grid_fft();
@@ -583,6 +590,50 @@ namespace casa{
   }
   //
   //-----------------------------------------------------------------------------------
+  // Method to send the data to HPG
+  //
+  double AWVisResamplerHPG::sendData(HPGVisBufferBucket<HPGNPOL>& VBBucket,
+				     double& nVisGridded, long unsigned int& nDataBytes,
+				     //const uint& hpgVBNRows,
+				     const uint& sizeofVisData,
+				     const bool& do_degrid)
+  {
+    //if (VBBucket.isFull() && (hpgVBNRows>0))
+    if (VBBucket.isFull() && (VBBucket.counter()>0))
+      {
+	timer_p.mark();
+	unsigned nHPGVBRows = VBBucket.size();
+
+	nVisGridded += nHPGVBRows*HPGNPOL;
+	nDataBytes += sizeofVisData*nHPGVBRows;
+
+	hpg::opt_t<hpg::Error> err;
+	//cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
+	if (do_degrid)
+	  err = hpgGridder_p->degrid_grid_visibilities(
+						       hpg::Device::OpenMP,
+						       //std::move(hpgVBList_p[i])
+						       std::move(VBBucket.hpgVB_p)
+						       );
+	else
+	  err = hpgGridder_p->grid_visibilities(
+						hpg::Device::OpenMP,
+						//std::move(hpgVBList_p[i])
+						std::move(VBBucket.hpgVB_p)
+						);
+	VBBucket.reset();
+	    
+	if (err)
+	  {
+	    LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","sendData"));
+	    log_l << "Failed hpg::" << ((do_degrid)?"degrid_grid_visibilities()":"grid_visibilities()")
+		  << " Error type: " << static_cast<int>(err->type()) << LogIO::SEVERE;
+	  }
+      }
+    return timer_p.real();
+  }
+  //
+  //-----------------------------------------------------------------------------------
   // Template implementation for DataToGrid
   //
   template <class T>
@@ -675,43 +726,47 @@ namespace casa{
     // std::move() empties the storage of its argument.
     //
     //    if (hpgVBList_p.size() >= maxVBList_p)
-    if (hpgVBBucket_p.isFull() && (hpgVBNRows>0))
-      {
-	timer_p.mark();
-	// for(unsigned i=0;i<hpgVBList_p.size();i++)
-	  {
-	    //	    unsigned nHPGVBRows = hpgVBList_p[i].size()
-	    unsigned nHPGVBRows = hpgVBBucket_p.size();
+    griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+			     //hpgVBNRows,
+			     sizeofVisData_p, do_degrid);
+    
+    // if (hpgVBBucket_p.isFull() && (hpgVBNRows>0))
+    //   {
+    // 	timer_p.mark();
+    // 	// for(unsigned i=0;i<hpgVBList_p.size();i++)
+    // 	  {
+    // 	    //	    unsigned nHPGVBRows = hpgVBList_p[i].size()
+    // 	    unsigned nHPGVBRows = hpgVBBucket_p.size();
 
-	    nVisGridded_p += nHPGVBRows*HPGNPOL;
-	    nDataBytes_p += sizeofVisData_p*nHPGVBRows;
+    // 	    nVisGridded_p += nHPGVBRows*HPGNPOL;
+    // 	    nDataBytes_p += sizeofVisData_p*nHPGVBRows;
 
-	    hpg::opt_t<hpg::Error> err;
-	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
-	    if (do_degrid)
-	      err = hpgGridder_p->degrid_grid_visibilities(
-							   hpg::Device::OpenMP,
-							   //std::move(hpgVBList_p[i])
-							   std::move(hpgVBBucket_p.hpgVB_p)
-							   );
-	    else
-	      err = hpgGridder_p->grid_visibilities(
-						    hpg::Device::OpenMP,
-						    //std::move(hpgVBList_p[i])
-						    std::move(hpgVBBucket_p.hpgVB_p)
-						    );
-	    hpgVBBucket_p.reset();
+    // 	    hpg::opt_t<hpg::Error> err;
+    // 	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
+    // 	    if (do_degrid)
+    // 	      err = hpgGridder_p->degrid_grid_visibilities(
+    // 							   hpg::Device::OpenMP,
+    // 							   //std::move(hpgVBList_p[i])
+    // 							   std::move(hpgVBBucket_p.hpgVB_p)
+    // 							   );
+    // 	    else
+    // 	      err = hpgGridder_p->grid_visibilities(
+    // 						    hpg::Device::OpenMP,
+    // 						    //std::move(hpgVBList_p[i])
+    // 						    std::move(hpgVBBucket_p.hpgVB_p)
+    // 						    );
+    // 	    hpgVBBucket_p.reset();
 	    
-	    if (err)
-	      {
-		LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
-		log_l << "Failed hpg::" << ((do_degrid)?"degrid_grid_visibilities()":"grid_visibilities()")
-		      << " Error type: " << static_cast<int>(err->type()) << LogIO::SEVERE;
-	      }
-	    griddingTime += timer_p.real();
-	  }
-	hpgVBList_p.resize(0);
-      }
+    // 	    if (err)
+    // 	      {
+    // 		LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
+    // 		log_l << "Failed hpg::" << ((do_degrid)?"degrid_grid_visibilities()":"grid_visibilities()")
+    // 		      << " Error type: " << static_cast<int>(err->type()) << LogIO::SEVERE;
+    // 	      }
+    // 	    griddingTime += timer_p.real();
+    // 	  }
+    // 	  //	hpgVBList_p.resize(0);
+    //   }
     return;
   }
   //
