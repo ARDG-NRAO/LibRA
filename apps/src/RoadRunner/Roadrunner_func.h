@@ -47,11 +47,13 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 //#include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
-#include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
-#include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 #include <RoadRunner/ThreadCoordinator.h>
+#ifdef ROADRUNNER_USE_HPG
+#include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
+#include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <hpg/hpg.hpp>
+#endif
 
 #include <RoadRunner/rWeightor.h>
 #include <RoadRunner/DataIterations.h>
@@ -797,23 +799,6 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       unsigned long allVol=vol;
       log_l << "Total rows processed: " << allVol << LogIO::POST;
 
-      {
-	// NB: to be safe, we ensure that value returned by getGridPtr()
-	// (a shared_ptr) releases its managed object as soon as we're
-	// done with it by assigning the value to a variable with block
-	// scope
-	size_t gridValuesCount;
-	auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
-	assert((size_t)((int)gridValuesCount) == gridValuesCount);
-
-	if (doSow)
-	  {
-	    // NB: similar caution (as getSumWeightsPtr() value) is
-	    // warranted for value returned by getGridPtr()
-	    size_t gridWeightsCount;
-	    auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
-	  }
-      }
 
       if (imagingMode!="predict")
 	{
@@ -832,6 +817,25 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // griddedData object, which is set to be the cgrid
 	  // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
 	  ftm_g->finalizeToSky();
+
+	  // Is the following block of code required?
+	  {
+	    // NB: to be safe, we ensure that value returned by getGridPtr()
+	    // (a shared_ptr) releases its managed object as soon as we're
+	    // done with it by assigning the value to a variable with block
+	    // scope
+	    size_t gridValuesCount;
+	    auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
+	    assert((size_t)((int)gridValuesCount) == gridValuesCount);
+
+	    if (doSow)
+	      {
+		// NB: similar caution (as getSumWeightsPtr() value) is
+		// warranted for value returned by getGridPtr()
+		size_t gridWeightsCount;
+		auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
+	      }
+	  }
 
 	  // Normalize the image.  normalize=True will divide the FFT'ed 
 	  // image by the weights (which is SoW)
