@@ -234,9 +234,12 @@ namespace casa{
     log_l << "Finalizing gridding..." << LogIO::POST;
     if (hpgVBBucket_p.size() != 0)
       {
+	hpgVBBucket_p.shrink();
 	log_l << "Sending the last of " << hpgVBBucket_p.size() << " VBs!!!" << LogIO::POST;
+	// log_l << "nVisGridded_p<--in: " << nVisGridded_p << LogIO::POST;
 	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
 				 sizeofVisData_p, (HPGModelImageName_p != ""));
+	// log_l << "nVisGridded_p-->out: " << nVisGridded_p << LogIO::POST;
 	hpgGridder_p->fence();
 	assert(hpgVBBucket_p.size()==0);
       }
@@ -716,20 +719,20 @@ namespace casa{
 	//   hpgVBList_p.push_back(hpgVBBucket_p.hpgVB_p);
 
 	// hpgVBBucket_p.reset();
-      }
-    std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
-    
-    mkHPGVB_duration += thisVB_duration;
 
-    //
-    // If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
-    // std::move() empties the storage of its argument.
-    //
-    //    if (hpgVBList_p.size() >= maxVBList_p)
-    griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
-			     //hpgVBNRows,
-			     sizeofVisData_p, do_degrid);
+	std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
+	mkHPGVB_duration += thisVB_duration;
+
+	//
+	// If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
+	// std::move() empties the storage of its argument.
+	//
+	//    if (hpgVBList_p.size() >= maxVBList_p)
+	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+				 //hpgVBNRows,
+				 sizeofVisData_p, do_degrid);
+      }    
     // if (hpgVBBucket_p.isFull() && (hpgVBNRows>0))
     //   {
     // 	timer_p.mark();
