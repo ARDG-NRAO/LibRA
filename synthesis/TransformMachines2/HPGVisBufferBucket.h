@@ -22,7 +22,7 @@ public:
     :hpgVB_p()
   {
     //    cerr << "HPGVBB.ctor()" << endl;
-    nVBs_p=nVBs;
+    nVBs_p=(nVBs > 0 ? nVBs : 1);
     nFills_p=rowCounter_p=nPol_p=nChan_p=nRow_p=0;
   };
 
@@ -112,13 +112,13 @@ public:
   {return resize(nPol_p, nChan_p, nRow_p);}
 
   inline unsigned shrink()
-  {hpgVB_p.resize(rowCounter_p-1); return hpgVB_p.size();}
+  {if (rowCounter_p > 0) hpgVB_p.resize(rowCounter_p); return hpgVB_p.size();}
   //
   // -------------------------------------------------------------------------------
   //
   inline bool append(const hpg::VisData<NCorr>& visData)
   {
-    hpgVB_p[rowCounter_p++]=visData;
+    hpgVB_p[rowCounter_p]=visData;rowCounter_p++;
     return rowCounter_p==size();
   }
   //

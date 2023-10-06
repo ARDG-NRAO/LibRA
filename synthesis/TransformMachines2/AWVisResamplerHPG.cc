@@ -232,10 +232,9 @@ namespace casa{
   {
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","finalizeToSky(DCompelx)"));
     log_l << "Finalizing gridding..." << LogIO::POST;
-    if (hpgVBBucket_p.size() != 0)
+    if (hpgVBBucket_p.counter() != 0)
       {
-	hpgVBBucket_p.shrink();
-	log_l << "Sending the last of " << hpgVBBucket_p.size() << " VBs!!!" << LogIO::POST;
+	log_l << "Sending the last of the " << hpgVBBucket_p.counter() << " data points!!!" << LogIO::POST;
 	// log_l << "nVisGridded_p<--in: " << nVisGridded_p << LogIO::POST;
 	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
 				 sizeofVisData_p, (HPGModelImageName_p != ""));
@@ -602,11 +601,19 @@ namespace casa{
 				     const bool& do_degrid)
   {
     //if (VBBucket.isFull() && (hpgVBNRows>0))
-    if (VBBucket.isFull() && (VBBucket.counter()>0))
+    //if (VBBucket.isFull() && (VBBucket.counter()>0))
+    if (VBBucket.counter()>0)
       {
-	timer_p.mark();
-	unsigned nHPGVBRows = VBBucket.size();
+	// Shrink the internal storage of the bucket to be length to
+	// which it is filled (so that unfilled content does not reach
+	// the gridder).
+	hpgVBBucket_p.shrink();
 
+
+	timer_p.mark();
+	unsigned nHPGVBRows = VBBucket.counter();
+
+	// cerr << nHPGVBRows << " " << VBBucket.totalUnits() << " " << VBBucket.size() << endl;
 	nVisGridded += nHPGVBRows*HPGNPOL;
 	nDataBytes += sizeofVisData*nHPGVBRows;
 
@@ -702,11 +709,6 @@ namespace casa{
       }
     else
       {
-	// Shrink the internal storage of the bucket to be length to
-	// which it is filled (so that unfilled content does not reach
-	// the gridder).
-	hpgVBBucket_p.shrink();
-
 	// Add to the list only if the hpgVB holds any data. This guard
 	// is required since in the loop below we also count the number
 	// visibilities gridded (the nVisGridded_p).
