@@ -802,21 +802,21 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
       if (imagingMode!="predict")
 	{
-	  griddingTime += timer.real();
-	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
-
-	  if (cmplxGridName!="")
-	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
-
 	  // Do the FFT of the grid on the device and get the grid and
 	  // weights to the CPU memory.
 	  //
 	  // The call sequence is is
 	  // AWProjectWBFT->finalizeToSky()-->AWVisResamplerHPG::finalizeToSky()-->[GPU
-	  // FFT + gatherGrids()].  This gets the image to the FMT
+	  // FFT + gatherGrids()].  This gets the image to the FTM
 	  // griddedData object, which is set to be the cgrid
 	  // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
 	  ftm_g->finalizeToSky();
+
+	  griddingTime += timer.real();
+	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
+
+	  if (cmplxGridName!="")
+	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
 
 	  // Is the following block of code required?
 	  {
