@@ -76,7 +76,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       nVBsPerBucket_p=hpgVBBucket_p.totalUnits();
 
       hpgVBList_p.reserve(maxVBList_p);
-      (int)vbBucketSize; //Unused input variable in this branch.
+      // (int)vbBucketSize; //Unused input variable in this branch.
 
       String hpgDevice="cuda";
       std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
