@@ -21,7 +21,6 @@ public:
   HPGVisBufferBucket(const unsigned& nVBs)
     :hpgVB_p()
   {
-    //    cerr << "HPGVBB.ctor()" << endl;
     nVBs_p=(nVBs > 0 ? nVBs : 1);
     nFills_p=rowCounter_p=nPol_p=nChan_p=nRow_p=0;
   };

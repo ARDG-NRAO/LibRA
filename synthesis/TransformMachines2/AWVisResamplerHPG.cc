@@ -518,10 +518,10 @@ namespace casa{
 
     
     unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
-      log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
-	    << " x " << nVBsPerBucket_p << endl;
+    log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
+	  << " x " << nVBsPerBucket_p << endl;
 
-      hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*nVBsPerBucket_p);
+    hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*nVBsPerBucket_p);
 
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;

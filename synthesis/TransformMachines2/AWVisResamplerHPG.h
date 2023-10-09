@@ -70,7 +70,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),
       hpgVB_p(),hpgVBBucket_p(nVBsPerBucket)
     {
-      nVBsPerBucket_p=nVBsPerBucket;
+      //Get the bucket size in units of the number of VBs it can hold.
+      //The supplied size is sanatized to the [1,n] range in the
+      //VisBufferBucket object.
+      nVBsPerBucket_p=hpgVBBucket_p.totalUnits();
+
       hpgVBList_p.reserve(maxVBList_p);
 
       String hpgDevice="cuda";
