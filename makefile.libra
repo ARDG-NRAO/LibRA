@@ -282,9 +282,17 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
+<<<<<<< HEAD
 	cmake -S${APPSDIR} -B${APPSBUILDDIR}
 #	cmake -B ${APPSBUILDDIR} -H ${APPSINSTALLDIR} -S ${APPSDIR} 
 #	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  ${APPSDIR} 
+=======
+<<<<<<< HEAD
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  ${APPSDIR} 
+=======
+	cmake -S${APPSDIR} -B${APPSBUILDDIR}
+>>>>>>> 36309cd (fix to ensure that cmake write apps build into build dir rather than in the main source)
+>>>>>>> 62cce06 (fix to ensure that cmake write apps build into build dir rather than in the main source)
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
