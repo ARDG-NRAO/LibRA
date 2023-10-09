@@ -50,8 +50,8 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
 		 bool useFlaggedData=false
 		 )
 {
-  unsigned nVisChan=endChan - startChan;
-  unsigned nVisRow=endRow - startRow;
+  //unsigned nVisChan=endChan - startChan;
+  //gunsigned nVisRow=endRow - startRow;
   unsigned targetIMChan, targetIMPol;
   const casa::VisBuffer2& casaVB = *(casaVBS.vb_p);
   IPosition dataShape = casaVB.visCube().shape();
