@@ -15,6 +15,12 @@
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER32
+Kokkos_CUDA_ARCH=""
+ifeq ($(Kokkos_CUDA_ARCH),"")
+Kokkos_CUDA_ARCH_STR=""
+else
+Kokkos_CUDA_ARCH_STR="-D$(Kokkos_CUDA_ARCH)=ON"
+endif
 
 CASA_BUILD_TYPE     = RelWithDebInfo
 CASACORE_BUILD_TYPE = RelWithDebInfo
@@ -91,15 +97,16 @@ kokkos-clone:
 # Do not indent the following three lines!
 #
 kokkos-build:
-ifndef Kokkos_CUDA_ARCH
-$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
-endif
+# ifndef Kokkos_CUDA_ARCH
+# #$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+# Kokkos_CUDA_ARCH_STR=""
+# endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
 	cd ${DEPENDBUILDDIR}/kokkos; \
 	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
-	      -D$(Kokkos_CUDA_ARCH)=ON \
+	      $(Kokkos_CUDA_ARCH_STR) \
 	      -DKokkos_ENABLE_CUDA=ON \
 	      -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
