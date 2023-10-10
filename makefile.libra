@@ -15,6 +15,10 @@
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER32
+
+# Initialize the Kokkos_CUDA_ARCH string to blank.
+# If this is not set on the commandline, the Kokkos
+# build will be for the local CUDA capability
 Kokkos_CUDA_ARCH=""
 ifeq ($(Kokkos_CUDA_ARCH),"")
 Kokkos_CUDA_ARCH_STR=""
