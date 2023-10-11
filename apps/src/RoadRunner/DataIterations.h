@@ -24,6 +24,11 @@
 //#
 //# $Id$
 
+/**
+ * @file DataIterations.h
+ * @brief Contains classes for iterating over visibility data.
+ */
+
 #ifndef ROADRUNNER_DATAITERATOR_H
 #define ROADRUNNER_DATAITERATOR_H
 
@@ -42,15 +47,45 @@
 #include <hpg/hpg.hpp>
 
 using namespace std;
-
+/**
+ * @brief A class for iterating over visibility data.
+ *
+ * This class provides functions for iterating over visibility data.
+ */
 class DataIterator
 {
 public:
+  /**
+   * @brief Constructs a DataIterator object with the specified parameters.
+   *
+   * This constructor constructs a DataIterator object with the specified parameters.
+   *
+   * @param isroot Whether this is the root DataIterator object.
+   * @param dataCol The type of data column to use.
+   */
   DataIterator(const bool isroot,casa::refim::FTMachine::Type dataCol)
     :isRoot_p(isroot), dataCol_l(dataCol) {};
-
+  /**
+   * @brief Destroys the DataIterator object.
+   *
+   * This destructor destroys the DataIterator object.
+   */
   ~DataIterator() {};
-
+  /**
+   * @brief Iterates over a VisibilityIterator2 object.
+   *
+   * This function iterates over a VisibilityIterator2 object, applying the specified FTMachine to each VisBuffer2 object and writing the results to the specified data column.
+   *
+   * @param vi2 The VisibilityIterator2 object to iterate over.
+   * @param vb The VisBuffer2 object to use for the iteration.
+   * @param ftm The FTMachine object to apply to each VisBuffer2 object.
+   * @param doPSF Whether to calculate the PSF.
+   * @param dataCol The type of data column to use.
+   * @param nVB The number of VisBuffer2 objects processed.
+   * @param imagingMode The imaging mode to use.
+   * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
+   * @return The total number of rows processed.
+   */
   int iterVB(vi::VisibilityIterator2 *vi2,
 	     vi::VisBuffer2 *vb,
 	     const casacore::CountedPtr<casa::refim::FTMachine>& ftm,
@@ -91,12 +126,21 @@ public:
 
     return vol;
   };
-  //
-  //------------------------------------------------------------------------------------------
-  // By default this method does the normal, single-threaded
-  // iterations. The waitForCFReady function is exectured in the chunk
-  // iterations.  cfSentNotifier is exectued in the VB iterations.
-  //
+
+   /**
+   * @brief Iterates over a VisibilityIterator2 object with chunking.
+   *
+   * This function iterates over a VisibilityIterator2 object with chunking, applying the specified FTMachine to each VisBuffer2 object and writing the results to the specified data column.
+   *
+   * @param vi2 The VisibilityIterator2 object to iterate over.
+   * @param vb2 The VisBuffer2 object to use for the iteration.
+   * @param ftm The FTMachine object to apply to each VisBuffer2 object.
+   * @param doPSF Whether to calculate the PSF.
+   * @param imagingMode The imaging mode to use.
+   * @param waitForCFReady A function to call when a chunk has been processed.
+   * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
+   * @return A tuple containing the total number of rows processed, the number of VisBuffer2 objects processed, and the time spent in the gridding engine.
+   */
   std::tuple<int, int, double>
   dataIter(vi::VisibilityIterator2 *vi2,
 	   vi::VisBuffer2 *vb2,
@@ -194,6 +238,9 @@ public:
   };
 private:
   bool isRoot_p;
+    /**
+   * @brief The type of data column to use.
+   */
   casa::refim::FTMachine::Type dataCol_l;
 };
 #endif

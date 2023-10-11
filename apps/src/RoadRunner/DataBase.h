@@ -38,6 +38,21 @@ using namespace std;
 //
 //-------------------------------------------------------------------
 //
+/**
+ * @brief Loads a measurement set and applies a selection.
+ *
+ * This function loads a measurement set from the specified file, applies a selection based on the specified spw, field, and uvDist expressions, and returns the selected measurement set along with the spw and field IDs.
+ *
+ * @param msname The name of the measurement set file to load.
+ * @param spwStr The spw expression to use for the selection.
+ * @param fieldStr The field expression to use for the selection.
+ * @param uvDistStr The uvDist expression to use for the selection.
+ * @param thems The measurement set to load.
+ * @param selectedMS The selected measurement set.
+ * @param msSelection The MSSelection object to use for the selection.
+ * @param verifyMS A function to verify the loaded measurement set.
+ * @return A tuple containing the spw and field IDs of the selected measurement set.
+ */
 std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
 					     const String& spwStr,
 					     const String& fieldStr,
@@ -74,9 +89,15 @@ std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
     }
   return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
 }
-//
-// Remove duplicate entries from a std::vector without sorting.
-//
+
+/**
+ * @brief Removes duplicate entries from a vector without sorting.
+ *
+ * This function removes duplicate entries from a vector without sorting.
+ *
+ * @tparam T The type of the vector elements.
+ * @param vec The vector to remove duplicates from.
+ */
 template <typename ForwardIterator>
 ForwardIterator remove_duplicates( ForwardIterator first,
 				   ForwardIterator last )
@@ -94,10 +115,28 @@ ForwardIterator remove_duplicates( ForwardIterator first,
 
     return new_last;
 }
-
+/**
+ * @brief A class for loading and manipulating measurement sets.
+ *
+ * This class provides functions for loading and manipulating measurement sets.
+ */
 class DataBase
 {
 public:
+  /**
+   * @brief Constructs a Database object with the specified parameters.
+   *
+   * This constructor constructs a Database object with the specified parameters.
+   *
+   * @param MSNBuf The name of the measurement set file to load.
+   * @param fieldStr The field expression to use for the selection.
+   * @param spwStr The spw expression to use for the selection.
+   * @param uvDistStr The uvDist expression to use for the selection.
+   * @param WBAwp Whether to use AW-Projection.
+   * @param nW The number of W-planes to use for AW-Projection.
+   * @param doSPWDataIter Whether to use spectral window data iteration.
+   * @param verifyMS A function to verify the loaded measurement set.
+   */
   DataBase(const string& MSNBuf, const string& fieldStr, const string& spwStr,
 	   const string& uvDistStr, const bool& WBAwp, const int& nW,
 	   bool& doSPWDataIter,
