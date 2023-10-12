@@ -18,6 +18,11 @@ using namespace casacore;
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void TableInfo_func(const std::string& tableName)
+ * @brief Prints information about a given table.
+ * @param tableName The name of the table to print information about.
+ */
 void TableInfo_func(const string& MSNBuf="",
 		    const string& OutBuf="",
 		    const bool& verbose=false)

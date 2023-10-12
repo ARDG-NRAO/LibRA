@@ -72,6 +72,12 @@ bool isRoot=true;
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn std::string remove_extension(const std::string& path)
+ * @brief Removes the extension from a file path.
+ * @param path The input file path.
+ * @return The file path without the extension.
+ */
 std::string remove_extension(const std::string& path) {
     if (path == "." || path == "..")
         return path;
@@ -97,14 +103,28 @@ std::string remove_extension(const std::string& path) {
 // hpg::finalize() in the destructor.  This also reports, via the
 // destructor, the time elapsed between contruction and destruction.
 //
+/**
+ * @class LibHPG
+ * @brief Manages the HPG initialize/finalize scope.
+ *
+ * This class is responsible for initializing and finalizing the HPG library. 
+ * It also reports the time elapsed between construction and destruction.
+ */
 class LibHPG
 {
 public:
+  /**
+   * @brief Constructor for the LibHPG class.
+   * @param usingHPG A boolean indicating whether to use HPG. Default is true.
+   */
   LibHPG(const bool usingHPG=true): init_hpg(usingHPG)
   {
     initialize();
   }
-
+  /**
+   * @brief Initializes the HPG library.
+   * @return A boolean indicating whether the initialization was successful.
+   */
   bool initialize()
   {
     bool ret = true;
@@ -116,7 +136,9 @@ public:
       throw(AipsError("LibHPG::initialize() failed"));
     return ret;
   };
-
+  /**
+   * @brief Finalizes the HPG library.
+   */
   void finalize()
   {
 #ifdef ROADRUNNER_USE_HPG
@@ -127,7 +149,9 @@ public:
       }	
 #endif
   };
-
+  /**
+   * @brief Destructor for the LibHPG class.
+   */
   ~LibHPG()
   {
     finalize();
@@ -148,6 +172,20 @@ public:
 //-------------------------------------------------------------------------
 // The engine that loads the required CFs from the cache and copies
 // them to the hpg::CFArray.
+/**
+ * @fn std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>> prepCFEngine(casa::refim::MakeCFArray& mkCF, bool WBAwp, int nW, int ispw, double spwRefFreq, int nDataPol, casacore::ImageInterface<casacore::Float>& skyImage, casacore::Vector<Int>& polMap, casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l)
+ * @brief Prepares the CF Engine.
+ * @param mkCF A reference to the MakeCFArray object.
+ * @param WBAwp A boolean indicating whether to use wideband AWP.
+ * @param nW The number of w-projection planes.
+ * @param ispw The spectral window index.
+ * @param spwRefFreq The reference frequency of the spectral window.
+ * @param nDataPol The number of data polarizations.
+ * @param skyImage A reference to the sky image.
+ * @param polMap A reference to the polarization map.
+ * @param cfs2_l A reference to the CFStore2 object.
+ * @return A tuple containing a boolean indicating whether a new CF was created and a shared pointer to the RWDeviceCFArray.
+ */
 std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>>
 prepCFEngine(casa::refim::MakeCFArray& mkCF,
 	     bool WBAwp, int nW,
@@ -198,6 +236,20 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 // thread than the gridder-thread (the main thread).  Coordination
 // between the thread is managed by the ThreadCoordinator object.
 //
+/**
+ * @fn void CFServer(ThreadCoordinator& thcoord, casa::refim::MakeCFArray& mkCF, bool& WBAwp, int& nW, casacore::ImageInterface<casacore::Float>& skyImage, casacore::Vector<Int>& polMap, casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l, casacore::Vector<int>& spwidList, casacore::Vector<double>& spwRefFreqList, int& nDataPol)
+ * @brief Server function that triggers the prepCFEngine() for each SPW in the spwidList.
+ * @param thcoord A reference to the ThreadCoordinator object.
+ * @param mkCF A reference to the MakeCFArray object.
+ * @param WBAwp A boolean indicating whether to use wideband AWP.
+ * @param nW The number of w-projection planes.
+ * @param skyImage A reference to the sky image.
+ * @param polMap A reference to the polarization map.
+ * @param cfs2_l A reference to the CFStore2 object.
+ * @param spwidList A reference to the list of spectral window indices.
+ * @param spwRefFreqList A reference to the list of reference frequencies for the spectral windows.
+ * @param nDataPol The number of data polarizations.
+ */
 void CFServer(ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
 	      bool& WBAwp, int& nW,
@@ -270,6 +322,12 @@ void CFServer(ThreadCoordinator& thcoord,
 // matrix.  For production this should be generalized and perhaps
 // internally build using the user stokes setup and visibility vector
 // from the MS.
+/**
+ * @fn std::vector<std::vector<int>> readMNdxText(const std::string& fileName)
+ * @brief Reads a text file and returns a 2D vector of integers.
+ * @param fileName The name of the file to read.
+ * @return A 2D vector of integers read from the file.
+ */
 std::vector<std::vector<int>>
 readMNdxText(const string& fileName)
 {
@@ -314,6 +372,14 @@ readMNdxText(const string& fileName)
 // The maps constructed here are translated in HPGVisBuffer to be
 // consistent with the minimum-set visibility data that is transported
 // to the GPU.
+/**
+ * @fn std::tuple<PolMapType, PolMapType> makeMNdx(const std::string& fileName, const Vector<int>& polMap, const int& nGridPlanes)
+ * @brief Builds the vis-to-imageplane map (and its conjugate).
+ * @param fileName The name of the file to read.
+ * @param polMap The polarization map.
+ * @param nGridPlanes The number of grid planes.
+ * @return A tuple containing the vis-to-imageplane map and its conjugate.
+ */
 std::tuple<PolMapType, PolMapType>
 makeMNdx(const string& fileName,
 	 const Vector<int>& polMap,
@@ -412,7 +478,39 @@ makeMNdx(const string& fileName,
 
   return make_tuple(mndx,conj_mndx);
 }
-
+/**
+ * @fn void Roadrunner(string& MSNBuf, string& imageName, string& modelImageName, string& dataColumnName, string& sowImageExt, string& cmplxGridName, int& NX, int& nW, float& cellSize, string& stokes, string& refFreqStr, string& phaseCenter, string& weighting, string& rmode,  float& robust, string& ftmName, string& cfCache, string& imagingMode, bool& WBAwp, string& fieldStr, string& spwStr, string& uvDistStr, bool& doPointing, bool& normalize, bool& doPBCorr, bool& conjBeams, float& pbLimit, vector<float>& posigdev, bool& doSPWDataIter)
+ * @brief Main function for the Roadrunner application.
+ * @param MSNBuf The measurement set name buffer.
+ * @param imageName The name of the image.
+ * @param modelImageName The name of the model image.
+ * @param dataColumnName The name of the data column.
+ * @param sowImageExt The extension of the sow image.
+ * @param cmplxGridName The name of the complex grid.
+ * @param NX The number of X-direction grid points.
+ * @param nW The number of w-projection planes.
+ * @param cellSize The size of the cell.
+ * @param stokes The Stokes parameters.
+ * @param refFreqStr The reference frequency string.
+ * @param phaseCenter The phase center.
+ * @param weighting The weighting scheme.
+ * @param rmode The robustness mode.
+ * @param robust The robustness parameter.
+ * @param ftmName The name of the FT machine.
+ * @param cfCache The CF cache.
+ * @param imagingMode The imaging mode.
+ * @param WBAwp A boolean indicating whether to use wideband AWP.
+ * @param fieldStr The field string.
+ * @param spwStr The spectral window string.
+ * @param uvDistStr The UV distance string.
+ * @param doPointing A boolean indicating whether to do pointing.
+ * @param normalize A boolean indicating whether to normalize.
+ * @param doPBCorr A boolean indicating whether to do PB correction.
+ * @param conjBeams A boolean indicating whether to conjugate the beams.
+ * @param pbLimit The limit for the primary beam.
+ * @param posigdev The position sigma deviation.
+ * @param doSPWDataIter A boolean indicating whether to do SPW data iteration.
+ */
 void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
