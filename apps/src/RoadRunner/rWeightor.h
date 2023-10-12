@@ -46,7 +46,16 @@
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
-
+/**
+ * @fn void Weightor(casacore::MeasurementSet& ms, const std::string& dataColumnName, const std::string& weighting, const std::string& rmode, const float& robust, const std::string& uvDistStr)
+ * @brief Applies weighting to the data in a MeasurementSet.
+ * @param ms A reference to the MeasurementSet.
+ * @param dataColumnName The name of the data column.
+ * @param weighting The weighting scheme.
+ * @param rmode The robustness mode.
+ * @param robust The robustness parameter.
+ * @param uvDistStr The UV distance string.
+ */
 void
 weightor(vi::VisibilityIterator2& vi_p,
 	 const CoordinateSystem& itsMaxCoordSys, // CSys of the sky image

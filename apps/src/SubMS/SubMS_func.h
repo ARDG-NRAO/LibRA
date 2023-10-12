@@ -13,6 +13,15 @@ using namespace casacore;
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void SubMS_func(const std::string& MSName, const std::string& subMSName, const std::string& fieldStr, const std::string& spwStr, const std::string& uvDistStr)
+ * @brief Creates a subset of a MeasurementSet.
+ * @param MSName The name of the original MeasurementSet.
+ * @param subMSName The name of the subset MeasurementSet to be created.
+ * @param fieldStr The field string to select specific fields.
+ * @param spwStr The spectral window string to select specific spectral windows.
+ * @param uvDistStr The UV distance string to select specific UV distances.
+ */
 void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
 		const string& WhichColStr="data", const bool& deepCopy=false,
 		const string& fieldStr="*",const string& timeStr="",
