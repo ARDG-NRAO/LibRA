@@ -1,7 +1,7 @@
 # LibRA
 
 ## Description
-This is the repository for the LibRA project to develop a library of algorithms used for Radio Astronomy (RA) interferometric calibration and imaging.  The intent is that such a library can be treated as a third-party library and usable in other packages.  The API will be C++ STL based with the intention of it being easily usable in the RA community in general and for indirect imaging in other fields (like some medical imaging techniques). A containerized means of building the LibRA project is available [here](https://gitlab.nrao.edu/pjaganna/libra-singularity)
+This is the repository for the LibRA project to develop a library of algorithms used for Radio Astronomy (RA) interferometric calibration and imaging.  The intent is that such a library can be treated as a third-party library and usable in other packages.  The API will be C++ STL based with the intention of it being easily usable in the RA community in general and for indirect imaging in other fields (like some medical imaging techniques). A containerized means of building the LibRA project is available [here](https://gitlab.nrao.edu/ardg/libra-containers)
 
 The repository includes
 
@@ -102,5 +102,5 @@ The binary applications will be install in ```apps/install``` directory.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
 
 ### Resources
-- [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/pjaganna/libra-containers)
+- [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers)
 ***
