@@ -32,7 +32,7 @@ make -f makefile.libra init
 make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html> -f makefile.libra allbuild
 # E.g., the following command to build with support for AMPERE family of NVIDIA GPUs at CUDA Capability 80
-# make Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80 -f makefile.libra allbuild
+# make Kokkos_CUDA_ARCH=Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80 -f makefile.libra allbuild
 cd apps/build
 cmake ..
 make
