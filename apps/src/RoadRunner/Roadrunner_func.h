@@ -441,11 +441,27 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       else if (dataColumnName=="data")  dataCol_l=casa::refim::FTMachine::OBSERVED;
       else if (dataColumnName=="model") dataCol_l=casa::refim::FTMachine::MODEL;
 
+      // Install a terminate handler to inform that Libhpg() RAII
+      // class could not be instnaciated (typically because of CUDA
+      // issues. E.g. when gridder=awphpg, but there is not CUDA and
+      // or a GPU).
+      std::set_terminate([]()
+			 {
+			   std::cout << "Unhandled exception from Libhpg::Libhpg()"
+				     << endl << std::flush;
+			   std::abort();
+			 });
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
       // scope.
       LibHPG libhpg(ftmName=="awphpg");
       //  std::atexit(tpl_finalize);
+      std::set_terminate([]()
+			 {
+			   std::cout << "Unhandled exception of unknown origin"
+				     << endl << std::flush;
+			   std::abort();
+			 });
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert
