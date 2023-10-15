@@ -280,6 +280,7 @@ apps-cmake:
 	cd ${APPSBUILDDIR}/
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	cmake -B ${APPSBUILDDIR}/ -S ${APPSDIR}/
 =======
 	cmake ${APPSDIR}
@@ -287,6 +288,9 @@ apps-cmake:
 =======
 	cmake -B ${APPSBUILDDIR} -S ${APPSDIR}
 >>>>>>> 515555c (fixing some app path build issue)
+=======
+	cmake -B ${APPSBUILDDIR}/ -S ${APPSDIR}/
+>>>>>>> main
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
