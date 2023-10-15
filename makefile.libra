@@ -25,8 +25,8 @@ CASACORE_BUILD_TYPE = RelWithDebInfo
 #CASA_BRANCH=ARD-33-DR
 CASA_BRANCH      = rattler_get_6
 FFTW_VERSION     = 3.3.10
-KOKKOS_VERSION   = release-candidate-3.7.02
-HPG_VERSION      = v1.2.2
+KOKKOS_VERSION   = release-candidate-4.0.01
+HPG_VERSION      = v2.0.0
 PARAFEED_VERSION = activedev
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
@@ -88,9 +88,9 @@ kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
 kokkos-build:
-ifndef Kokkos_CUDA_ARCH
-$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
-endif
+#ifndef Kokkos_CUDA_ARCH
+#$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+#endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
@@ -135,6 +135,7 @@ hpg-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/hpg;
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
