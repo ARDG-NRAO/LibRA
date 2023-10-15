@@ -88,7 +88,7 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
     {
       SMap watchPoints; VString exposedKeys;
       int i;
-      //MSNBuf="";
+      MSNBuf="";
       // i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("modelimagename", modelImageName,i);  
