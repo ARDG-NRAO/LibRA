@@ -1,3 +1,10 @@
+/**
+ * @file
+ * This file contains the implementation of the main function and UI function for the TableInfo application.
+ * The TableInfo application is a command-line tool that provides information about a MeasurementSet table.
+ * It takes input table name and output file name as command-line arguments.
+ * It uses the TableInfo_func function to extract information from the input table and write it to the output file.
+ */
 #include <casa/aips.h>
 #include <ms/MSOper/MSSummary.h>
 #include <ms/MeasurementSets/MeasurementSet.h>
@@ -26,6 +33,19 @@ using namespace casacore;
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
+
+/**
+ * @brief This function retrieves command-line arguments using the cl library and sets the input and output file names.
+ * 
+ * @param restart A boolean flag indicating whether the function is being called for the first time or being restarted.
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line arguments.
+ * @param MSNBuf A string reference to store the input table name.
+ * @param OutBuf A string reference to store the output file name.
+ * @param verbose A boolean reference to store the verbosity flag.
+ * 
+ * @throws AipsError if the input table name is not set.
+ */
 void UI(Bool restart, int argc, char **argv, 
 	string& MSNBuf, string& OutBuf,
 	bool& verbose)
