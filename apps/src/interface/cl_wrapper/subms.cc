@@ -16,6 +16,26 @@ using namespace casacore;
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
+/**
+ * @brief This function provides a user interface for the command line interface (CLI) of the subms program.
+ * 
+ * @param restart A boolean flag indicating whether to restart the CLI or not.
+ * @param argc The number of command line arguments.
+ * @param argv An array of command line arguments.
+ * @param MSNBuf A string reference to store the input MS name.
+ * @param OutMSBuf A string reference to store the output MS name.
+ * @param WhichColStr A string reference to store the data column name.
+ * @param deepCopy An integer reference to store the deep copy flag.
+ * @param fieldStr A string reference to store the field name.
+ * @param timeStr A string reference to store the time range.
+ * @param spwStr A string reference to store the spectral window name.
+ * @param baselineStr A string reference to store the baseline name.
+ * @param scanStr A string reference to store the scan name.
+ * @param arrayStr A string reference to store the array name.
+ * @param uvdistStr A string reference to store the uv distance range.
+ * @param taqlStr A string reference to store the TAQL query.
+ * @param integ A float reference to store the integration time.
+ */
 void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, 
 	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
 	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
