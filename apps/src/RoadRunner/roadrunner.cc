@@ -48,123 +48,6 @@
 //
 //-------------------------------------------------------------------------
 //
-#define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
-
-//#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
-//
-void UI(Bool restart, int argc, char **argv, string& MSNBuf,
-	string& imageName, string& modelImageName,string& sowImageExt,
-	string& cmplxGridName, int& ImSize, int& nW,
-	float& cellSize, string& stokes, string& refFreqStr,
-	string& phaseCenter, string& weighting,
-	string& rmode, float& robust,
-	string& FTMName, string& CFCache, string& imagingMode,
-	Bool& WBAwp,string& fieldStr, string& spwStr,
-	string& uvDistStr,
-	Bool& doPointing, Bool& normalize,
-	Bool& doPBCorr,
-	Bool& conjBeams,
-	Float& pbLimit,
-	vector<float> &posigdev,
-	Bool& doSPWDataIter)
-{
-  if (!restart)
-    {
-	BeginCL(argc,argv);
-	clInteractive(0);
-      //clCmdLineFirst(0);//In an interactive session, this is supposed
-			//to keep the order of the keywords presented
-			//the same as in the code.  But it does not!
-			//The library always behaves like
-			//clCmdLineFirst(1).
-      }
-  // else
-  //   clRetry();
- REENTER:
-  try
-    {
-      SMap watchPoints; VString exposedKeys;
-      int i;
-      MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);
-      i=1;clgetSValp("imagename", imageName,i);
-      i=1;clgetSValp("modelimagename", modelImageName,i);
-      i=1;clgetSValp("sowimageext", sowImageExt,i);
-      i=1;clgetSValp("complexgrid", cmplxGridName,i);
-
-      i=1;clgetValp("imsize", ImSize,i);
-      i=1;clgetValp("cellsize", cellSize,i);
-      i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);
-      i=1;clgetSValp("phasecenter", phaseCenter,i);
-
-      InitMap(watchPoints,exposedKeys);
-      exposedKeys.push_back("rmode");
-      exposedKeys.push_back("robust");
-      watchPoints["briggs"]=exposedKeys;
-
-      //Add watchpoints for exposing rmode and robust parameters when weight=briggs
-      i=1;clgetSValp("weighting", weighting, i ,watchPoints);
-      clSetOptions("weighting",{"natural","uniform","briggs"});
-
-      i=1;clgetSValp("rmode", rmode,i);
-      i=1;clgetValp("robust", robust,i);
-
-      i=1;clgetValp("wplanes", nW,i);
-      i=1;clgetSValp("ftm", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
-      i=1;clgetSValp("cfcache", CFCache,i);
-
-      InitMap(watchPoints,exposedKeys);
-      exposedKeys.push_back("modelimagename");
-      watchPoints["residual"]=exposedKeys;
-      watchPoints["predict"]=exposedKeys;
-      i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
-
-      i=1;clgetValp("wbawp", WBAwp,i);
-      i=1;clgetSValp("field", fieldStr,i);
-      i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetSValp("uvdist", uvDistStr,i);
-      i=1;clgetValp("pbcor", doPBCorr,i);
-      i=1;clgetValp("conjbeams", conjBeams,i);
-      i=1;clgetValp("pblimit", pbLimit,i);
-      InitMap(watchPoints,exposedKeys);
-      exposedKeys.push_back("pointingoffsetsigdev");
-      watchPoints["1"]=exposedKeys;
-
-
-      i=1;clgetValp("dopointing", doPointing,i,watchPoints);
-      i=2;i=clgetNValp("pointingoffsetsigdev", posigdev,i);
-
-      i=1;dbgclgetBValp("normalize",normalize,i);
-      i=1;dbgclgetBValp("spwdataiter",doSPWDataIter,i);
-     EndCL();
-
-     // do some input parameter checking now.
-     string mesgs;
-     if (phaseCenter == "")
-       mesgs += "The phasecenter parameter needs to be set.\n";
-
-     if (refFreqStr == "")
-       mesgs += "The reffreq parameter needs to be set.\n";
-
-     if (ImSize <= 0)
-       mesgs += "The imsize parameter needs to be set to a positive finite value.\n";
-
-     if (cellSize <= 0)
-       mesgs += "The cellsize parameter needs to be set to a positive finite value.\n";
-
-     if (mesgs != "")
-       clThrowUp(mesgs,"###Fatal", CL_FATAL);
-    }
-  catch (clError& x)
-    {
-      x << x << endl;
-      //      if (x.Severity() == CL_FATAL)
-	exit(1);
-      //clRetry();
-      //RestartUI(REENTER);
-    }
-}
 //
 //-------------------------------------------------------------------------
 //
@@ -219,15 +102,6 @@ int main(int argc, char **argv)
   float pbLimit=1e-3;
   bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
-
-  UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
-     sowImageExt, cmplxGridName, NX, nW, cellSize,
-     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-     doSPWDataIter);
-
-  set_terminate(NULL);
 
   try
     {
