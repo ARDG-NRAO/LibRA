@@ -45,34 +45,7 @@ link_directories(${DEPLIB} /usr/local/lib  ${USRLIB})
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CASAHOME}/install/linux_64b/lib")
-
-set(APP_LIST RoadRunner Hummbee MSSplit TableInfo SubMS)
-
-foreach (APP_DIR IN LISTS APP_LIST)
-  string(TOLOWER ${APP_DIR} APP_NAME)
-  add_subdirectory(src/${APP_DIR})
-endforeach()
-
-
-# create the executables
-#add_executable(roadrunner ${ROADRUNNER_SOURCES})
-#add_executable(mssplit ${MSSPLIT_SOURCES})
-#add_executable(tableinfo ${TABLEINFO_SOURCES})
-#add_executable(hummbee ${HUMMBEE_SOURCES})
-
-
-# target_include_directories(roadrunner PRIVATE "src/")
-#target_link_libraries(roadrunner casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-#target_link_libraries(tableinfo casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-#target_link_libraries(mssplit casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-#target_link_libraries(hummbee casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-
-#install
-#install(TARGETS roadrunner DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-#install(TARGETS mssplit DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-#install(TARGETS tableinfo DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
-#install(TARGETS hummbee DESTINATION "${CMAKE_CURRENT_LIST_DIR}/install") 
+set(CMAKE_INSTALL_RPATH "${DEPLIB}")
 
 
 # add and build each APP
