@@ -5,6 +5,7 @@
 #include <msvis/MSVis/SubMS.h>
 #include <cl.h> // C++ized version
 #include <clinteract.h>
+#include <SubMS/SubMS_func.h>
 
 using namespace std;
 using namespace casa;
@@ -79,40 +80,44 @@ int main(int argc, char **argv)
   //
   try
     {
-  MSNBuf=OutMSBuf=WhichColStr=fieldStr=timeStr=spwStr=baselineStr=uvdistStr=
-    taqlStr=scanStr=corrStr=arrayStr="";
-  WhichColStr="data"; fieldStr="*"; spwStr="*";
-  deepCopy=0;
-  UI(restartUI,argc, argv, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
-     fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
-  restartUI = false;
-  corrStr.resize(0);
+      MSNBuf=OutMSBuf=WhichColStr=fieldStr=timeStr=spwStr=baselineStr=uvdistStr=
+	taqlStr=scanStr=corrStr=arrayStr="";
+      WhichColStr="data"; fieldStr="*"; spwStr="*";
+      deepCopy=0;
+      UI(restartUI,argc, argv, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
+	 fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
+      restartUI = false;
+      corrStr.resize(0);
 
-  //MS ms(MSNBuf,Table::Update),selectedMS(ms);
-  MeasurementSet ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);
+      SubMS_func(MSNBuf,OutMSBuf, WhichColStr, deepCopy,
+		 fieldStr,timeStr,spwStr,baselineStr,
+		 scanStr,arrayStr,uvdistStr,taqlStr,integ);
+      
+      // //MS ms(MSNBuf,Table::Update),selectedMS(ms);
+      // MeasurementSet ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);
 
-  if (OutMSBuf != "")
-    {
-      //
-      // Damn CASA::Strings!
-      //
-      String OutMSName(OutMSBuf), WhichCol(WhichColStr);
-      //	    SubMS splitter(selectedMS);
-      //
-      // SubMS class is not msselection compliant (it's a strange
-      // mix of msselection and selection-by-hand)!
-      //
-      SubMS splitter(ms);
-      Vector<int> nchan(1,10), start(1,0), step(1,1);
-      String CspwStr(spwStr), CfieldStr(fieldStr), CbaselineStr(baselineStr),
-	CscanStr(scanStr), CuvdistStr(uvdistStr), CtaqlStr(taqlStr), CtimeStr(timeStr);
-      splitter.setmsselect(CspwStr, CfieldStr, CbaselineStr, CscanStr, CuvdistStr,
-			   CtaqlStr);//, nchan,start, step);
+      // if (OutMSBuf != "")
+      // 	{
+      // 	  //
+      // 	  // Damn CASA::Strings!
+      // 	  //
+      // 	  String OutMSName(OutMSBuf), WhichCol(WhichColStr);
+      // 	  //	    SubMS splitter(selectedMS);
+      // 	  //
+      // 	  // SubMS class is not msselection compliant (it's a strange
+      // 	  // mix of msselection and selection-by-hand)!
+      // 	  //
+      // 	  SubMS splitter(ms);
+      // 	  Vector<int> nchan(1,10), start(1,0), step(1,1);
+      // 	  String CspwStr(spwStr), CfieldStr(fieldStr), CbaselineStr(baselineStr),
+      // 	    CscanStr(scanStr), CuvdistStr(uvdistStr), CtaqlStr(taqlStr), CtimeStr(timeStr);
+      // 	  splitter.setmsselect(CspwStr, CfieldStr, CbaselineStr, CscanStr, CuvdistStr,
+      // 			       CtaqlStr);//, nchan,start, step);
 
-      splitter.selectTime(integ,CtimeStr);
-      splitter.makeSubMS(OutMSName, WhichCol);
-    }
-  //      cerr << "Number of selected rows: " << selectedMS.nrow() << endl;
+      // 	  splitter.selectTime(integ,CtimeStr);
+      // 	  splitter.makeSubMS(OutMSName, WhichCol);
+      // 	}
+      //      cerr << "Number of selected rows: " << selectedMS.nrow() << endl;
     }
   catch (clError& x)
     {
