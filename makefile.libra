@@ -59,7 +59,8 @@ DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
 INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
-CASASRC        = ${DEPENDSRCDIR}/casa6
+#CASASRC        = ${DEPENDSRCDIR}/casa6
+CASASRC        = ${ROOT}/src
 CASACORESRC    = ${DEPENDSRCDIR}/casacore
 PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
 
@@ -202,7 +203,8 @@ sakura-clean:
 #####----------------------------------------------------------------------------------------------------
 ####### Install Measures Data & Build CASACORE ######
 
-casacore: casa-clone casacore-clone casacore-build
+#casacore: casa-clone casacore-clone casacore-build
+casacore: casacore-clone casacore-build
 
 casacore-clone:
 	cd ${DEPENDSRCDIR};\
@@ -250,7 +252,8 @@ casa-cmake:
 	-DFFTW_ROOT_DIR=${ROOT}/fftw-${FFTW_VERSION} \
 	-DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} \
 	${INSTALLOPTS} \
-	${CASASRC}/casatools/src/code 
+	${CASASRC}
+#	${CASASRC}/casatools/src/code 
 
 casa-build: casa-cmake
 #	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make install -j ${NCORES}
