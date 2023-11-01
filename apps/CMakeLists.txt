@@ -76,7 +76,7 @@ endforeach()
 
 
 # add and build each APP
-set(APP_LIST RoadRunner Hummbee MSSplit TableInfo SubMS)
+set(APP_LIST MSSplit TableInfo SubMS)
 foreach(APP IN LISTS APP_LIST)
   set(APP_DIR ${APP})
   string(TOLOWER ${APP_DIR} APP_NAME)
