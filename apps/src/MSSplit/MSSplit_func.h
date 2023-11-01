@@ -11,6 +11,10 @@ using namespace casacore;
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void showTableCache()
+ * @brief Displays the current state of the table cache.
+ */
 void showTableCache()
 {
   const TableCache& cache = PlainTable::tableCache();
@@ -26,6 +30,11 @@ void showTableCache()
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void printBaselineList(const casacore::MeasurementSet& ms)
+ * @brief Prints the list of baselines in the given MeasurementSet.
+ * @param ms The MeasurementSet to print baselines from.
+ */
 void printBaselineList(Matrix<Int> list,ostream& os)
 {
   os << "Baselines = ";
@@ -41,6 +50,12 @@ void printBaselineList(Matrix<Int> list,ostream& os)
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void printInfo(const casacore::MeasurementSet& ms)
+ * @brief Prints information about the given MeasurementSet.
+ * @param ms The MeasurementSet to print information about.
+ */
+
 void printInfo(casacore::MSSelection& msSelection)
 {
   cout << "Ant1         = " << msSelection.getAntenna1List() << endl;
@@ -68,6 +83,15 @@ void printInfo(casacore::MSSelection& msSelection)
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn void MSSplit_func(const std::string& MSName, const std::string& subMSName, const std::string& fieldStr, const std::string& spwStr, const std::string& uvDistStr)
+ * @brief Splits a MeasurementSet into a subset.
+ * @param MSName The name of the original MeasurementSet.
+ * @param subMSName The name of the subset MeasurementSet to be created.
+ * @param fieldStr The field string to select specific fields.
+ * @param spwStr The spectral window string to select specific spectral windows.
+ * @param uvDistStr The UV distance string to select specific UV distances.
+ */
 void MSSplit_func(const string& MSNBuf="", const string& OutMSBuf="", const bool& deepCopy=0, const string& fieldStr="",
 		 const string& timeStr="", const string &spwStr="", const string& baselineStr="",
 		 const string& uvdistStr="", const string& taqlStr="", const string& scanStr="",

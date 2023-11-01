@@ -41,6 +41,40 @@
 #include <synthesis/TransformMachines2/ThreadCoordinator.h>
 #include <hpg/hpg.hpp>
 
+
+/**
+ * @file MakeComponents.h
+ * @brief Contains the definition of the createAWPFTMachine function.
+ */
+
+/**
+ * @fn std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>> createAWPFTMachine(const String ftmName, const String modelImageName, CountedPtr<refim::FTMachine>& theFT, const String& telescopeName, MPosition& observatoryLocation, const String cfCache= "testCF.cf", const Bool wbAWP= true, const Int wprojPlane=1, const Bool useDoublePrec=true, const Bool aTermOn= true, const Bool psTermOn= false, const Bool mTermOn= false, const Bool doPointing= true, const Bool doPBCorr= true, const Bool conjBeams= true, Float pbLimit_l=1e-3, vector<float> posigdev = {300.0,300.0}, const String imageNamePrefix=String(""), const String imagingMode="residual", const Float computePAStep=360.0, const Float rotatePAStep=360.0, const Int cache=1000000000, const Int tile=16)
+ * @brief Creates an AWP FT Machine.
+ * @param ftmName The name of the FT machine.
+ * @param modelImageName The name of the model image.
+ * @param theFT A reference to the FT machine.
+ * @param telescopeName The name of the telescope.
+ * @param observatoryLocation The location of the observatory.
+ * @param cfCache The CF cache.
+ * @param wbAWP A boolean indicating whether to use wideband AWP.
+ * @param wprojPlane The number of w-projection planes.
+ * @param useDoublePrec A boolean indicating whether to use double precision.
+ * @param aTermOn A boolean indicating whether to turn on the A-term.
+ * @param psTermOn A boolean indicating whether to turn on the PS-term.
+ * @param mTermOn A boolean indicating whether to turn on the M-term.
+ * @param doPointing A boolean indicating whether to do pointing.
+ * @param doPBCorr A boolean indicating whether to do PB correction.
+ * @param conjBeams A boolean indicating whether to conjugate the beams.
+ * @param pbLimit_l The limit for the primary beam.
+ * @param posigdev The position sigma deviation.
+ * @param imageNamePrefix The prefix for the image name.
+ * @param imagingMode The mode for imaging.
+ * @param computePAStep The compute PA step.
+ * @param rotatePAStep The rotate PA step.
+ * @param cache The cache size.
+ * @param tile The tile size.
+ * @return A tuple containing a pointer to the CF cache and a pointer to the visibility resampler base.
+ */
 std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>>
 createAWPFTMachine(const String ftmName,
 		   const String modelImageName,
@@ -161,6 +195,13 @@ createAWPFTMachine(const String ftmName,
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
+ * @brief Converts a string to a casacore::MDirection object.
+ * @param theDir A reference to the casacore::MDirection object to be filled.
+ * @param in The input string to be converted.
+ * @return A boolean indicating whether the conversion was successful.
+ */
 bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
 {
    bool rstat(false);
@@ -211,6 +252,12 @@ bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > > makeTheChanSelMap(MSSelection& mss)
+ * @brief Creates a map of channel selections.
+ * @param mss A reference to the MSSelection object.
+ * @return A map of channel selections.
+ */
 std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > >
 makeTheChanSelMap(MSSelection& mss)
 {
@@ -234,6 +281,21 @@ makeTheChanSelMap(MSSelection& mss)
 //
 //-------------------------------------------------------------------------
 //
+/**
+ * @fn PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2, const MeasurementSet& selectedMS, MSSelection& msSelection, const String& imageName, const String& startModelImageName, const Vector<Int>& imSize, const float& cellSize, const String& phaseCenter, const String& stokes, const String& refFreq)
+ * @brief Creates an empty sky image.
+ * @param vi2 A reference to the VisibilityIterator2 object.
+ * @param selectedMS A reference to the selected MeasurementSet.
+ * @param msSelection A reference to the MSSelection object.
+ * @param imageName The name of the image.
+ * @param startModelImageName The name of the start model image.
+ * @param imSize The size of the image.
+ * @param cellSize The size of the cell.
+ * @param phaseCenter The phase center.
+ * @param stokes The Stokes parameters.
+ * @param refFreq The reference frequency.
+ * @return A PagedImage object representing the empty sky image.
+ */
 PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
 				      const MeasurementSet& selectedMS,
 				      MSSelection& msSelection,
