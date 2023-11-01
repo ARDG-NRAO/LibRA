@@ -28,12 +28,10 @@ A clone of this repository will get the ```apps/src``` directory with the source
 ```
 git clone gitlab@gitlab.nrao.edu:sbhatnag/libra.git
 cd libra
+make -f makefile.libra init
 make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html> -f makefile.libra allbuild
-cd apps
-mkdir build
-mkdir install
-cd build
+cd apps/build
 cmake ..
 make
 make install
@@ -43,24 +41,25 @@ If successful, this will produce the following tree:
 .
 ├── apps
 │   ├── build
-│   │   ├── CMakeCache.txt
 │   │   ├── CMakeFiles
+│   │   ├── src
+│   │   ├── CMakeCache.txt
 │   │   ├── cmake_install.cmake
 │   │   ├── install_manifest.txt
-│   │   ├── Makefile
-│   │   └── src
-│   ├── CMakeLists.txt
+│   │   └── Makefile
 │   ├── install
 │   │   ├── hummbee
 │   │   ├── mssplit
 │   │   ├── roadrunner
+│   │   ├── subms
 │   │   └── tableinfo
-│   └── src
-│       ├── Hummbee
-│       ├── MSSplit
-│       ├── RoadRunner
-│       ├── subms.cc
-│       └── TableInfo
+│   ├── src
+│   │   ├── Hummbee
+│   │   ├── MSSplit
+│   │   ├── RoadRunner
+│   │   ├── SubMS
+│   │   └── TableInfo
+│   └── CMakeLists.txt
 ├── dependencies
 │   ├── build
 │   │   ├── casacore
@@ -83,9 +82,9 @@ If successful, this will produce the following tree:
 │       ├── kokkos
 │       ├── parafeed
 │       └── sakura-libsakura-5.1.3
+├── test
 ├── makefile.libra
-├── README.md
-└── test
+└── README.md
 
 ```
 

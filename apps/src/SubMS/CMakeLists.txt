@@ -1,4 +1,4 @@
-set(APP_NAME "mssplit")
+set(APP_NAME "subms")
 include_directories(${CLHOME}/include ${COREROOT}/include/casacore ${CASAROOT}/include/casacpp /usr/include/cfitsio ${CMAKE_SOURCE_DIR}/src)
 link_directories(${CLHOME}/lib ${CASAHOME}/linux_64b/lib /usr/local/lib ${LIBROOT} ${COREROOT}/lib ${USRLIB})
 
