@@ -45,6 +45,7 @@ If successful, this will produce the following tree:
 │   │   ├── src
 │   │   ├── CMakeCache.txt
 │   │   ├── cmake_install.cmake
+│   │   ├── install_manifest.txt
 │   │   └── Makefile
 │   ├── install
 │   │   ├── hummbee
