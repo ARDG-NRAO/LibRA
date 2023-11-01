@@ -25,8 +25,8 @@ CASACORE_BUILD_TYPE = RelWithDebInfo
 #CASA_BRANCH=ARD-33-DR
 CASA_BRANCH      = visdata_bucket
 FFTW_VERSION     = 3.3.10
-KOKKOS_VERSION   = release-candidate-4.0.01
-HPG_VERSION      = v2.0.0
+KOKKOS_VERSION   = 4.1.00
+HPG_VERSION      = v2.0.1
 PARAFEED_VERSION = activedev
 CASACORE_VERSION = v3.5.0
 
@@ -42,7 +42,7 @@ CASACORE_REPOS      = https://github.com/casacore/casacore.git
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
-PATH:=/usr/local/cuda-12.1/bin/:/usr/lib64/openmpi/bin/:${PATH}
+PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 
 # No. of cores to use for compiling
 NCORES=12
@@ -143,6 +143,8 @@ hpg-cmake:
 	-Hpg_API=11 \
 	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
+	-Hpg_API=11 \
+	-DHpg_BUILD_TESTS=OFF \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
