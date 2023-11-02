@@ -85,12 +85,12 @@ int main(int argc, char **argv)
   //
   // The Factory Settings.
   string MSNBuf,ftmName=defaultFtmName,
-    cfCache, fieldStr="", spwStr="*", uvDistStr="",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
     imagingMode="residual",rmode="none";
 
-  float cellSize;//refFreq=3e09, freqBW=3e9;
+  float cellSize=0;//refFreq=3e09, freqBW=3e9;
   float robust=0.0;
   int NX=0, nW=1;//cfBufferSize=512, cfOversampling=20, nW=1;
   bool WBAwp=true;
@@ -105,7 +105,8 @@ int main(int argc, char **argv)
 
   try
     {
-      Roadrunner(restartUI, argc, argv, MSNBuf,imageName, modelImageName,
+      Roadrunner(//restartUI, argc, argv,
+		 MSNBuf,imageName, modelImageName,dataColumnName,
 		 sowImageExt, cmplxGridName, NX, nW, cellSize,
 		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
 		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,

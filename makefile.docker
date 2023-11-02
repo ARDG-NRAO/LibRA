@@ -52,11 +52,7 @@ NCORES=12
 #
 # Package-level dir structure
 #
-<<<<<<< HEAD
-ROOT           = /libra
-=======
 ROOT           = /data/libra
->>>>>>> 6e5105df (updating docker makefile into main branch)
 TESTDIR        = ${ROOT}/test
 
 DEPENDDIR      = ${ROOT}/dependencies
@@ -280,9 +276,9 @@ pybind11-clean:
 apps: apps-cmake apps-build
 
 apps-cmake:
-	mkdir -p ${APPSBUILDDIR}/
-	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR}/ -S ${APPSDIR}/
+	mkdir -p ${APPSBUILDDIR}
+	cd ${APPSBUILDDIR}; \
+	cmake -B ${APPSBUILDDIR} -S ${APPSDIR}
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
