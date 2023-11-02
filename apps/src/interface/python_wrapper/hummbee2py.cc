@@ -5,7 +5,18 @@
 
 using namespace pybind11;
 using namespace std;
-
+/**
+ * @file hummbee2py.cc
+ * @brief pybind11-based hummbee python plugin
+ */
+/**
+ * @brief This module provides a pybind11-based hummbee python plugin.
+ * 
+ * The module provides a task-level interface for the model update component.
+ * It registers an exception handler for AipsError exceptions (from C++) to PyAipsError (in Python).
+ * 
+ * @param m The pybind11 module object.
+ */
 PYBIND11_MODULE(hummbee2py, m)
 {
     // Using the simplest helper function to translate AipsError exceptions (from C++) to

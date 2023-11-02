@@ -7,6 +7,18 @@
 using namespace pybind11;
 using namespace std;
 
+/**
+ * @file roadrunner2py.cc
+ * @brief pybind11-based roadrunner python plugin
+ */
+/**
+ * @brief This module provides a pybind11-based roadrunner python plugin.
+ * 
+ * The module defines a function "Roadrunner" which is a task-level interface for the imaging derivative component.
+ * It also registers an exception handler for AipsError exceptions from C++ to PyAipsError in Python.
+ * 
+ * @param m A pybind11 module object.
+ */
 PYBIND11_MODULE(roadrunner2py, m)
 {
   // Using the simplest helper function to translate AipsError exceptions (from C++) to

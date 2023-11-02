@@ -39,6 +39,7 @@ KOKKOS_VERSION   = 4.1.00
 HPG_VERSION      = v2.0.1
 PARAFEED_VERSION = activedev
 CASACORE_VERSION = v3.5.0
+EIGEN_VERSION	 = 3.4.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
 FFTW_REPOS          = http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz
@@ -49,6 +50,7 @@ CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
 PYBIND11_REPOS      = https://github.com/pybind/pybind11.git
 CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
 CASACORE_REPOS      = https://github.com/casacore/casacore.git
+EIGEN_REPOS	    = https://gitlab.com/libeigen/eigen.git
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
@@ -156,6 +158,8 @@ hpg-cmake:
 	-Hpg_API=11 \
 	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
+	-Hpg_API=11 \
+	-DHpg_BUILD_TESTS=OFF \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
@@ -188,6 +192,26 @@ parafeed-build:
 
 parafeed-clean:
 	cd ${DEPENDBUILDDIR}/parafeed; gmake clean
+
+######  Install Eigen #########
+eigen: eigen-clone eigen-build
+
+eigen-clone:
+	cd ${DEPENDSRCDIR}; \
+	git clone --branch ${EIGEN_VERSION} ${EIGEN_REPOS}
+
+eigen-build:
+	mkdir -p ${DEPENDBUILDDIR}/eigen
+	cd ${DEPENDBUILDDIR}/eigen;\
+	cmake  \
+	    ${INSTALLOPTS} \
+	    ${DEPENDSRCDIR}/eigen; \
+	make install -j ${NCORES}
+
+eigen-clean:
+	cd ${DEPENDBUILDDIR}/eigen; gmake clean
+
+
 #####----------------------------------------------------------------------------------------------------
 ####### Install libsakura #######
 sakura: sakura-clone sakura-build
