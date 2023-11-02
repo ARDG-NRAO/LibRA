@@ -5,26 +5,17 @@
 #
 
 #
-# Kokkos string for the GPU architecture.
+# Example Kokkos string for the GPU architecture.
+# Full list is found at https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 #
 # V100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
-Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER32
-
-# Initialize the Kokkos_CUDA_ARCH string to blank.
-# If this is not set on the commandline, the Kokkos
-# build will be for the local CUDA capability
-Kokkos_CUDA_ARCH=""
-ifeq ($(Kokkos_CUDA_ARCH),"")
-Kokkos_CUDA_ARCH_STR=""
-else
-Kokkos_CUDA_ARCH_STR="-D$(Kokkos_CUDA_ARCH)=ON"
-endif
 
 CASA_BUILD_TYPE     = RelWithDebInfo
 CASACORE_BUILD_TYPE = RelWithDebInfo
@@ -60,6 +51,16 @@ PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 NCORES=12
 
 #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+# Initialize the Kokkos_CUDA_ARCH string to blank.
+# If this is not set on the commandline, the Kokkos
+# build will be for the local CUDA capability
+Kokkos_CUDA_ARCH=""
+ifeq ($(Kokkos_CUDA_ARCH),"")
+Kokkos_CUDA_ARCH_STR=""
+else
+Kokkos_CUDA_ARCH_STR="-D$(Kokkos_CUDA_ARCH)=ON"
+endif
+
 #--------------------------------------------------------------------------------------------------------
 #
 # Package-level dir structure
