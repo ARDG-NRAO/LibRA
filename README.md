@@ -28,17 +28,13 @@ The following need to be installed as below:
 A clone of this repository will get the ```apps/src``` directory with the source code for the standalone application, and the ```makefile.libra``` to compile this code and all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
 ```
-git clone gitlab@gitlab.nrao.edu:sbhatnag/libra.git
+git clone https://github.com/ARDG-NRAO/LibRA.git
 cd libra
 make -f makefile.libra init
 make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch> -f makefile.libra allbuild
 # E.g., the following command to build with support for AMPERE family of NVIDIA GPUs at CUDA Capability 80
 # make Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80 -f makefile.libra allbuild
-cd apps/build
-cmake ..
-make
-make install
 ```
 If successful, this will produce the following tree:
 ```
