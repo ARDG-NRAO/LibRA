@@ -159,8 +159,6 @@ hpg-cmake:
 	-Hpg_API=11 \
 	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
-	-Hpg_API=11 \
-	-DHpg_BUILD_TESTS=OFF \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \
@@ -276,7 +274,7 @@ casacore-clean:
 
 casa: casa-clone casa-build
 casa-clone:
-	$(info INFORMATION: casa-clone in a NoOp.  CASA6 code has been in-sourced in LibRA src directory.)
+	$(info INFORMATION: casa-clone is a NoOp.  CASA6 code has been in-sourced in LibRA src directory.)
 	# cd ${DEPENDSRCDIR};\
 	# git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
