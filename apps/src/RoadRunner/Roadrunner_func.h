@@ -47,11 +47,13 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 //#include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
-#include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
-#include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 #include <RoadRunner/ThreadCoordinator.h>
+#ifdef ROADRUNNER_USE_HPG
+#include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
+#include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <hpg/hpg.hpp>
+#endif
 
 #include <RoadRunner/rWeightor.h>
 #include <RoadRunner/DataIterations.h>
@@ -537,11 +539,27 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       else if (dataColumnName=="data")  dataCol_l=casa::refim::FTMachine::OBSERVED;
       else if (dataColumnName=="model") dataCol_l=casa::refim::FTMachine::MODEL;
 
+      // Install a terminate handler to inform that Libhpg() RAII
+      // class could not be instnaciated (typically because of CUDA
+      // issues. E.g. when gridder=awphpg, but there is not CUDA and
+      // or a GPU).
+      std::set_terminate([]()
+			 {
+			   std::cout << "Unhandled exception from Libhpg::Libhpg()"
+				     << endl << std::flush;
+			   std::abort();
+			 });
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
       // scope.
       LibHPG libhpg(ftmName=="awphpg");
       //  std::atexit(tpl_finalize);
+      std::set_terminate([]()
+			 {
+			   std::cout << "Unhandled exception of unknown origin"
+				     << endl << std::flush;
+			   std::abort();
+			 });
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert
@@ -895,41 +913,43 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       unsigned long allVol=vol;
       log_l << "Total rows processed: " << allVol << LogIO::POST;
 
-      {
-	// NB: to be safe, we ensure that value returned by getGridPtr()
-	// (a shared_ptr) releases its managed object as soon as we're
-	// done with it by assigning the value to a variable with block
-	// scope
-	size_t gridValuesCount;
-	auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
-	assert((size_t)((int)gridValuesCount) == gridValuesCount);
-
-	if (doSow)
-	  {
-	    // NB: similar caution (as getSumWeightsPtr() value) is
-	    // warranted for value returned by getGridPtr()
-	    size_t gridWeightsCount;
-	    auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
-	  }
-      }
 
       if (imagingMode!="predict")
 	{
+	  // Do the FFT of the grid on the device and get the grid and
+	  // weights to the CPU memory.
+	  //
+	  // The call sequence is is
+	  // AWProjectWBFT->finalizeToSky()-->AWVisResamplerHPG::finalizeToSky()-->[GPU
+	  // FFT + gatherGrids()].  This gets the image to the FTM
+	  // griddedData object, which is set to be the cgrid
+	  // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
+	  ftm_g->finalizeToSky();
+
 	  griddingTime += timer.real();
 	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
 
 	  if (cmplxGridName!="")
 	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
 
-	  // Do the FFT of the grid on the device and get the grid and
-	  // weights to the CPU memory.
-	  //
-	  // The call sequence is is
-	  // AWProjectWBFT->finalizeToSky()-->AWVisResamplerHPG::finalizeToSky()-->[GPU
-	  // FFT + gatherGrids()].  This gets the image to the FMT
-	  // griddedData object, which is set to be the cgrid
-	  // PagedImage<Complex> in roadrunner via FTM::initializeToSky().
-	  ftm_g->finalizeToSky();
+	  // Is the following block of code required?
+	  {
+	    // NB: to be safe, we ensure that value returned by getGridPtr()
+	    // (a shared_ptr) releases its managed object as soon as we're
+	    // done with it by assigning the value to a variable with block
+	    // scope
+	    size_t gridValuesCount;
+	    auto gridValuesPtr = ftm_g->getGridPtr(gridValuesCount);
+	    assert((size_t)((int)gridValuesCount) == gridValuesCount);
+
+	    if (doSow)
+	      {
+		// NB: similar caution (as getSumWeightsPtr() value) is
+		// warranted for value returned by getGridPtr()
+		size_t gridWeightsCount;
+		auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
+	      }
+	  }
 
 	  // Normalize the image.  normalize=True will divide the FFT'ed 
 	  // image by the weights (which is SoW)
