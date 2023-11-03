@@ -1487,7 +1487,7 @@ void MSTransformManager::createOutputMSStructure()
                                                                            timespan_p,
                                                                            option);
 	}
-	catch (AipsError ex)
+	catch (AipsError &ex)
 	{
 		outputMSStructureCreated = false;
 		logger_p 	<< LogIO::DEBUG1
@@ -5696,7 +5696,7 @@ void MSTransformManager::generateIterator()
 				visibilityIterator_p = new vi::VisibilityIterator2(vi::LayeredVi2Factory(selectedInputMs_p, &iterpar));
 			}
 		}
-		catch (MSSelectionError x)
+		catch (MSSelectionError &x)
 		{
 			delete visibilityIterator_p;
 
@@ -5755,7 +5755,7 @@ void MSTransformManager::generateIterator()
 																	isWritable, NULL, timeBin_p);
 			}
 		}
-		catch (AipsError x)
+		catch (AipsError &x)
 		{
 			logger_p << LogIO::DEBUG1 << LogOrigin("MSTransformManager",__FUNCTION__)
 				<< "Error initializing calibration VI: " << x.getMesg()

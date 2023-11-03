@@ -267,7 +267,7 @@ namespace casa {
 	itsOpenBDF = 0;
 	closeBDF();
       }
-      catch (AipsError x){
+      catch (AipsError &x){
 	LogIO os(LogOrigin("AsdmStMan", "init()"));
 	os <<  LogIO::WARN 
 	   << "An error occured when accessing the ASDM referenced by this table:" << endl

@@ -912,7 +912,7 @@ Bool UVMod::setCompPar() {
     //    cout << "gpar = " << gpar << endl;
     try {
       skycomp(0).shape().setParameters(gpar);
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       cout << " This should never happen now:  " << x.getMesg() << endl;
       return false;
     }

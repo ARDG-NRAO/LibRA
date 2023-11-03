@@ -502,7 +502,7 @@ Bool StokesImageUtil::FitGaussianPSF(ImageInterface<Float>& psf, ImageBeamSet& e
     try{
       fitted(k)=FitGaussianPSF(subpsf, tempBeam(k,0), psfcutoff);
     }
-    catch (AipsError x_error){
+    catch (AipsError &x_error){
       Int ik=k;
       fitted(k)=false;
       while ((ik > 0) && !fitted(k)){
@@ -898,7 +898,7 @@ try{
           // The current parameter values are used as the initial guess.
           solution = fitter.fit(x, y, sigma);
           loopSolutionFound = true;
-      }catch(AipsError x_error){
+      }catch(AipsError &x_error){
           loopSolutionFound = false;
           retryCounter++;
           posAng = 1.0 + retryCounter*M_PI/nRetries;
@@ -954,7 +954,7 @@ try{
 	LogIO::POST; 
  return false;
 
- } catch (AipsError x_error) {
+ } catch (AipsError &x_error) {
 	 beam[0] = fdiam;
 	 beam[1] = fdiam;
 	 beam[2] = 0.0;

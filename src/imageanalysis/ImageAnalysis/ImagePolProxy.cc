@@ -114,7 +114,7 @@ namespace casa { //# name space casa begins
     try {
       itsImPol = new ImagePolarimetry(*imagePointer);
       rstat = true;
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       delete imagePointer;
       *itsLog << x.getMesg() << LogIO::EXCEPTION;
     }
@@ -179,7 +179,7 @@ namespace casa { //# name space casa begins
     try {
       itsImPol = new ImagePolarimetry(*pImOut);
       rstat = true;
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       delete pImOut;
       pImOut = 0;
       *itsLog << x.getMesg() << LogIO::EXCEPTION;

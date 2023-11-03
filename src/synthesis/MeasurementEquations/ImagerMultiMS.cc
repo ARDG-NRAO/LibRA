@@ -586,7 +586,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       
       return dataSet_p;
     }
-    catch(AipsError x){
+    catch(AipsError &x){
       //Ayeee...lets back out of this one
       --numMS_p;
       blockMSSel_p.resize(numMS_p, true);

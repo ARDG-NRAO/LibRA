@@ -674,7 +674,7 @@ VLAT::sweepVi ()
     catch (SweepTerminated &){
         Log (1, "VLAT: VI sweep termination requested.\n");
     }
-    catch (AipsError e){
+    catch (AipsError &e){
         Log (1, "AipsError during sweepVi; readSubchunk=%s, writeSubChunk=%s",
              readSubchunk_p.toString().c_str(), writeSubchunk_p.toString().c_str());
         throw;

@@ -2157,7 +2157,7 @@ casacore::Matrix<T> ImageDecomposer<T>::fitGauss(const casacore::Matrix<T>& posi
   try{ 
     solution = fitter.fit(positions, dataValues, itsMaximumRMS, itsMaxIter,
                           itsConvCriteria);
-  } catch (casacore::AipsError fiterr) {
+  } catch (casacore::AipsError &fiterr) {
     cout << fiterr.getMesg() << endl;
     cout << "Fitting failed." << endl;
     solution = 0;

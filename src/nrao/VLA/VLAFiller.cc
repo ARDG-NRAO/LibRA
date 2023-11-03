@@ -357,7 +357,7 @@ void VLAFiller::fill(Int verbose){
       }
       counts.nRows = nrow();
     }
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     itsLog << LogIO::SEVERE 
 	   << "An error occurred. The error message is:" << endl
 	   << "'" << x.getMesg() << "'" << endl

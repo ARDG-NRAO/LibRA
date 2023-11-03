@@ -878,7 +878,7 @@ VisibilityIteratorReadImpl::setTileCache ()
 
 	    }
         }
-        catch (AipsError x) {
+        catch (AipsError &x) {
             //  cerr << "Data man type " << dataManType << "  " << dataManType.contains ("Tiled") << "  && " << (!String (cdesc.dataManagerGroup ()).empty ()) << endl;
             //  cerr << "Failed to set settilecache due to " << x.getMesg () << " column " << columns[k]  <<endl;
             //It failed so leave the caching as is
@@ -1277,7 +1277,7 @@ Bool VisibilityIteratorReadImpl::existsFlagCategory() const
     try{
       cache_p.msHasFC_p = columns_p.flagCategory_p.hasContent();
     }
-    catch (AipsError x){
+    catch (AipsError &x){
       cache_p.msHasFC_p = false;
     }
   }
@@ -2009,7 +2009,7 @@ VisibilityIteratorReadImpl::existsWeightSpectrum () const
             //   cerr << "(nPol_p, channelGroupSize ()): " << nPol_p
             //        << ", " << channelGroupSize () << endl;
             // }
-        } catch (AipsError x) {
+        } catch (AipsError &x) {
             cache_p.msHasWtSp_p = false;
         }
     }

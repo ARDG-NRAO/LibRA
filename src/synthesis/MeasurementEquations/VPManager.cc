@@ -1422,7 +1422,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				 rotAngOffset.radian(), // the parallactic angle offset
 				 true); // doSquint
 		} // endif exists
-	      } catch (AipsError x) {
+	      } catch (AipsError &x) {
 		os << LogIO::SEVERE
 		   << "BeamCalc failed with message " << endl
 		   << "   " << x.getMesg()

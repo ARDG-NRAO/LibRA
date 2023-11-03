@@ -340,7 +340,7 @@ namespace casa{
 	}
       }
 
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       String mesg="Initialisation of antenna ray tracing parameters for observatory "+obsName_p
 	+" failed using path "+antRayPath+"\n with message "+x.getMesg();
       BeamCalcGeometries_p.resize(0);

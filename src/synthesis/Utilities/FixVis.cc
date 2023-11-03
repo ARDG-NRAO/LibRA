@@ -332,7 +332,7 @@ Bool FixVis::calc_uvw(const String& refcode, const Bool reuse)
           MBaseline::getType(bltype, refcode);
           Muvw::getType(uvwtype, refcode);
         }
-        catch(AipsError x){
+        catch(AipsError &x){
           logSink() << LogIO::SEVERE
                     << "refcode \"" << refcode << "\" is not valid for baselines."
                     << LogIO::POST;
@@ -344,7 +344,7 @@ Bool FixVis::calc_uvw(const String& refcode, const Bool reuse)
       }
       
     }
-    catch(AipsError x){
+    catch(AipsError &x){
       logSink() << LogIO::SEVERE << "Error " << x.getMesg() << LogIO::POST;
     }
 
@@ -468,7 +468,7 @@ Bool FixVis::setImageField(const Int fieldid,
 
     return true;
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     this->unlock();
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;

@@ -235,7 +235,7 @@ Bool MSUVWGenerator::make_uvws(const Vector<Int> flds)
       UVWcol.put(it->first, it->second);
     }
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
               << LogIO::POST;
     throw(AipsError("Error in MSUVWGenerator::make_uvws."));

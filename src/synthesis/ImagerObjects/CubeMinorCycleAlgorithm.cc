@@ -198,7 +198,7 @@ void CubeMinorCycleAlgorithm::task(){
             writeBackToFullImage(maskName_p, chanRange_p[0], chanRange_p[1], (subimstor->mask()));
           }
         }
-        catch (AipsError x) {
+        catch (AipsError &x) {
           logger << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
           returnRec_p=Record();
         }

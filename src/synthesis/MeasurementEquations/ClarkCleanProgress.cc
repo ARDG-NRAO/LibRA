@@ -194,7 +194,7 @@ Bool ClarkCleanProgress::hasPGPlotter()
       } else {
 	return false;
       }
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       return false;
     } 
   }

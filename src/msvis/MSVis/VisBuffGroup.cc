@@ -72,7 +72,7 @@ Bool VisBuffGroup::store(const VisBuffer& vb)
     ++nBuf_p;
     retval = true;
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     os << LogIO::SEVERE
        << "Error " << x.getMesg() << " storing a VisBuffer."
        << LogIO::POST;

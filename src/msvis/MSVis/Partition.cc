@@ -451,7 +451,7 @@ Bool Partition::makePartition(String& msname, String& colname,
 		delete outpointer;
 		return true;
 	}
-	catch(AipsError x){
+	catch(AipsError &x){
 		ms_p=MeasurementSet();
 		throw(x);
 	}

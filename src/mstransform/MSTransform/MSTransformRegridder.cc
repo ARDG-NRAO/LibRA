@@ -1172,7 +1172,7 @@ Bool MSTransformRegridder::convertGridPars(	LogIO& os,
 		rstat = true;
 
 	}
-	catch (AipsError x)
+	catch (AipsError &x)
 	{
 		os << LogIO::SEVERE << LogOrigin("MSTransformRegridder", __FUNCTION__)
 				<< "Exception Reported: " << x.getMesg() << LogIO::POST;

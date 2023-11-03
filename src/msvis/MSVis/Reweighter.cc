@@ -433,7 +433,7 @@ Bool Reweighter::reweight(String& colname, const String& combine)
     
     return true;
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     ms_p = MeasurementSet();
     throw(x);
   }

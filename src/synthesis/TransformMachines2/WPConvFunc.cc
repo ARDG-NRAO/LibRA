@@ -526,7 +526,7 @@ Bool WPConvFunc::toRecord(RecordInterface& rec){
     rec.define("nx", nx_p);
     rec.define("ny", ny_p);
   }
-  catch(AipsError x) {
+  catch(AipsError &x) {
     return false;
   }
   return true;
@@ -565,7 +565,7 @@ Bool WPConvFunc::toRecord(RecordInterface& rec){
     rec.get("nx", nx_p);
     rec.get("ny", ny_p);
   }
-  catch(AipsError x) {
+  catch(AipsError &x) {
     err=x.getMesg();
     return false;
   }

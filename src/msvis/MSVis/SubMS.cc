@@ -856,7 +856,7 @@ Bool SubMS::pickAntennas(Vector<Int>& selected_antennaids,
 
     /*
     }
-    catch(AipsError x){
+    catch(AipsError &&x){
       ms_p=MeasurementSet();
       throw(x);
     }
@@ -1988,7 +1988,7 @@ Bool SubMS::fillAllTables(const Vector<MS::PredefinedColumns>& datacols)
       }
 
     }
-    catch(AipsError x){
+    catch(AipsError &x){
       os << LogIO::EXCEPTION
          << "Error " << x.getMesg() << " setting up the output FIELD table."
          << LogIO::POST;
@@ -4254,7 +4254,7 @@ Bool SubMS::fillAllTables(const Vector<MS::PredefinedColumns>& datacols)
       
       rstat = true;
 
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       os << LogIO::SEVERE << "Exception Reported: " << x.getMesg() << LogIO::POST;
       rstat = false;
     }

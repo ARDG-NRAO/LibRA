@@ -197,7 +197,7 @@ Bool toCasaVectorQuantity(const ::casac::variant& theval, casacore::Vector<casac
     else
       throw(AipsError("Could not convert quantity to record."));
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     ostringstream oss;
 
     oss << "Exception Reported: " << x.getMesg();
@@ -217,7 +217,7 @@ Bool toCasaVectorQuantity(const ::casac::variant& theval, casacore::Vector<casac
     else
       throw(AipsError("Could not convert quantity to record."));
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     ostringstream oss;
 
     oss << "Exception Reported: " << x.getMesg();
@@ -976,7 +976,7 @@ Bool ang_as_formatted_str(string& out, const casacore::Quantity& qang,
                        // throwing an exception.
     }
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     retval = false;
     RETHROW(x);
   }

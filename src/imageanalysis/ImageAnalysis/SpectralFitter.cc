@@ -170,7 +170,7 @@ Bool SpectralFitter::fit(const Vector<Float> &spcVals,
 	Bool ok(false);
 	try {
 		ok = _fit.fit();
-	} catch (AipsError x) {
+	} catch (AipsError &x) {
 		msg = x.getMesg();
 		*_log << LogIO::WARN << msg << LogIO::POST;
 		return false;

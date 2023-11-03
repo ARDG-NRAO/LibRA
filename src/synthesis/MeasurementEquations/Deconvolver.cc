@@ -262,7 +262,7 @@ Bool Deconvolver::open(const String& dirty, const String& psf, Bool warn)
 	}
 	beamValid_p=true;
 	
-      } catch (AipsError x) {
+      } catch (AipsError &x) {
 	os << LogIO::WARN << "Fitted beam is invalid: please set using setbeam"
 	   << LogIO::POST;
       } 
@@ -329,13 +329,13 @@ Bool Deconvolver::open(const String& dirty, const String& psf, Bool warn)
 	
 	return true;
 
-      } catch (AipsError x) {
+      } catch (AipsError &x) {
 	os << LogIO::SEVERE << "Caught Exception: "<< x.getMesg() << LogIO::POST;
 	return false;
       } 
     }
   }
-  catch (AipsError y){
+  catch (AipsError &y){
     throw(y);
   }
 }
@@ -349,7 +349,7 @@ Bool Deconvolver::reopen()
     } else {
       return false;
     }
-  }  catch (AipsError x) {
+  }  catch (AipsError &x) {
     dirty_p->table().unlock();
     psf_p->table().unlock();
     os << LogIO::SEVERE << "Caught Exception: "<< x.getMesg() << LogIO::POST;
@@ -383,7 +383,7 @@ Bool Deconvolver::fitpsf(const String& psf, GaussianBeam& beam)
        << beam_p.getMinor("arcsec") << " (arcsec) at pa "
        << beam_p.getPA(Unit("deg")) << " (deg) " << endl;
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   return true;
@@ -458,7 +458,7 @@ Bool Deconvolver::summary() const
     los << endl << state() << LogIO::POST;
     psf_p->table().unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     los << LogIO::SEVERE << "Caught Exception: " << x.getMesg()
 	<< LogIO::POST;
     dirty_p->table().unlock();
@@ -492,7 +492,7 @@ String Deconvolver::state() const
       os << "  Beam fit is not valid" << endl;
     }
     
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     LogOrigin OR("Deconvolver", "Deconvolver::state()", WHERE); 
     LogIO los(OR);
     los << LogIO::SEVERE << "Caught exception: " << x.getMesg()
@@ -604,7 +604,7 @@ Bool Deconvolver::restore(const String& model, const String& image,
       delete modelImage_p;
     }
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
@@ -667,7 +667,7 @@ Bool Deconvolver::residual(const String& model, const String& image)
       delete modelImage_p;
     }
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     psf_p->table().unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
@@ -702,7 +702,7 @@ Bool Deconvolver::make(const String& model)
     modelImage.setUnits(Unit("Jy/pixel"));
     dirty_p->table().unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
@@ -737,7 +737,7 @@ Bool Deconvolver::make1(const String& model)
     modelImage.setUnits(Unit("Jy/pixel"));
     dirty_p->table().unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
@@ -767,7 +767,7 @@ Bool Deconvolver::make(const String& model, ImageInterface<Float>& templateImage
     modelImage.table().tableInfo().setSubType("GENERIC");
     modelImage.setUnits(Unit("Jy/pixel"));
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   return true;
@@ -845,7 +845,7 @@ Bool Deconvolver::smooth(const String& model,
     dirty_p->table().unlock();
     psf_p->table().unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     psf_p->table().unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
@@ -1122,7 +1122,7 @@ Bool Deconvolver::clarkclean(const Int niter,
     if (mask) { delete  mask;}
 
     return result;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   dirty_p->table().unlock();
@@ -1240,7 +1240,7 @@ Bool Deconvolver::clean(const String& algorithm, const Int niter,
     if (maskim) delete maskim;    
 
     return result;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     psf_p->table().unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
@@ -1316,7 +1316,7 @@ Bool Deconvolver::naclean(const Int niter,
     if (maskim) delete maskim;    
 
     return result;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     dirty_p->table().unlock();
     psf_p->table().unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
@@ -1520,7 +1520,7 @@ Bool Deconvolver::mem(const String& entropy, const Int niter,
 	    myMemer.setAlpha(alpha);
 	    info.get("BETA", beta);
 	    myMemer.setBeta(beta); 
-	  } catch  (AipsError x) {
+	  } catch  (AipsError &x) {
 	    // could not get Alpha and Beta for initialization
 	    // continue
 	    os << "Could not retrieve Alpha and Beta from previously initialized model" 
@@ -1653,7 +1653,7 @@ Bool Deconvolver::mem(const String& entropy, const Int niter,
 
     return result;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   
@@ -1749,7 +1749,7 @@ Bool Deconvolver::makeprior(const String& prior, const String& templatename,
 
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   
@@ -1814,7 +1814,7 @@ Bool Deconvolver::clipimage(const String& clippedImageName, const String& inputI
 				      0.0, stokesInputSub)) );  
     }
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   
@@ -1867,7 +1867,7 @@ Bool Deconvolver::boxmask(const String& boxmask,
     SubImage<Float> innerSub(boxImage, ImageRegion(box), true);
     innerSub.set(fillValue.getValue("Jy"));
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   }   
   return true;
@@ -1922,7 +1922,7 @@ Bool Deconvolver::ft(const String& model, const String& transform)
     LatticeFFT::cfft2d(transformImage);
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
   return true;
@@ -1998,7 +1998,7 @@ Bool Deconvolver::clone(const String& imageName, const String& newImageName)
     PagedImage<Float> oldImage(imageName);
     PagedImage<Float> newImage(oldImage.shape(), oldImage.coordinates(),
 			       newImageName);
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -2333,7 +2333,7 @@ Bool Deconvolver::mtopen(const Int nTaylor,
       mt_cleaner_p.setscales(userScaleSizes);
       mt_cleaner_p.initialise(nx_p,ny_p); // allocates memory once....
     }
-  catch (AipsError x) 
+  catch (AipsError &x) 
     {
       os << LogIO::WARN << "Cannot allocate required memory for Multi-Term minor cycle" 
        << LogIO::POST;

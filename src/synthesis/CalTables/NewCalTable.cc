@@ -1094,7 +1094,7 @@ void NewCalTable::mergeSpwMetaInfo(const NewCalTable& other) {
 	AlwaysAssert( spwcols.freqGroup()(ispw)==ospwcols.freqGroup()(ispw), AipsError);
 	AlwaysAssert( spwcols.freqGroupName()(ispw)==ospwcols.freqGroupName()(ispw), AipsError);
       }
-      catch ( AipsError x ) {
+      catch ( AipsError &x ) {
 	throw(AipsError("Spw meta information incongruent; cannot merge it for append."));
       }
 
@@ -1135,7 +1135,7 @@ void NewCalTable::mergeSpwMetaInfo(const NewCalTable& other) {
 	  AlwaysAssert( spwcols.refFrequency()(ispw)==ospwcols.refFrequency()(ispw), AipsError);
 	  AlwaysAssert( spwcols.totalBandwidth()(ispw)==ospwcols.totalBandwidth()(ispw), AipsError);
 	}
-	catch ( AipsError err ) {
+	catch ( AipsError &err ) {
 	  throw(AipsError("Error merging spw="+String::toString(ispw)+"'s meta info"));
 	}
       }

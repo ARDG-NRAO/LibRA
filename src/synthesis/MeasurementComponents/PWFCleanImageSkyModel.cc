@@ -152,7 +152,7 @@ void PWFCleanImageSkyModel::makeApproxPSFs(SkyEquation& se){
       rank=applicator.nextProcessDone(makepsf,allDone);
     }
 
-  }catch (AipsError x){
+  }catch (AipsError &x){
 
     cout << x.getMesg() << endl;
   }  ;

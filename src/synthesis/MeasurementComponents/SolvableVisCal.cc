@@ -4716,7 +4716,7 @@ void SolvableVisCal::storeNCT() {
       String msn1=newct->keywordSet().asString("MSName");
       AlwaysAssert( msn0==msn1, AipsError);
     }
-    catch ( AipsError err ) {
+    catch ( AipsError &err ) {
       delete newct;  // ct_ will be deleted in dtor
       throw(AipsError("Cannot append solutions from different MS."));
     }
@@ -4725,7 +4725,7 @@ void SolvableVisCal::storeNCT() {
     try {
       ct_->mergeSpwMetaInfo(*newct);
     }
-    catch ( AipsError err ) {
+    catch ( AipsError &err ) {
       logSink() << err.getMesg() << LogIO::SEVERE;
       throw(AipsError("Error attempting append=T"));
     }
@@ -4780,7 +4780,7 @@ void SolvableVisCal::loadMemCalTable(String ctname,String field) {
     // Apply selection to table
     try {
       getSelectedTable(*ct_,wholect,ten,"");
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << x.getMesg() << LogIO::SEVERE;
       throw(AipsError("Error selecting on caltable: "+ctname+"... "));
     }
@@ -8068,7 +8068,7 @@ void SolvableVisJones::fluxscale(const String& outfile,
     }
     */
   }
-  catch (AipsError x) {
+  catch (AipsError &x) {
 
     // Clean up PtrBlocks
     for (Int iFld=0; iFld<nFld; iFld++) {

@@ -462,7 +462,7 @@ Imager::~Imager()
     cft_p = 0;
 
   }
-  catch (AipsError x){
+  catch (AipsError &x){
     String mess=x.getMesg();
     //This is a bug for wproject and facet together...
     //somebody is erasing a TempLattice before desturctor.
@@ -560,7 +560,7 @@ Bool Imager::open(MeasurementSet& theMs, Bool /*compress*/, Bool useModelCol)
     this->unlock();
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught Exception: "<< x.getMesg() << LogIO::EXCEPTION;
 
@@ -633,7 +633,7 @@ Bool Imager::summary()
     los << endl << state() << LogIO::POST;
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     los << LogIO::SEVERE << "Caught Exception: " << x.getMesg()
 	<< LogIO::EXCEPTION;
@@ -803,7 +803,7 @@ Bool Imager::setimage(const Int nx, const Int ny,
     this->unlock();
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     
     this->unlock();
 
@@ -1001,7 +1001,7 @@ Bool Imager::defineImage(const Int nx, const Int ny,
 
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -1212,7 +1212,7 @@ Bool Imager::advise(const Bool takeAdvice, const Float amplitudeLoss,
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -1677,7 +1677,7 @@ Bool Imager::setdata(const String& mode, const Vector<Int>& nchan,
     }
     this->unlock();
     return !nullSelect_p;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
    
@@ -1951,7 +1951,7 @@ Bool Imager::mask(const String& mask, const String& image,
 
     //this->lock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     //this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -1999,7 +1999,7 @@ Bool Imager::boxmask(const String& mask, const Vector<Int>& blc,
 
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -2154,7 +2154,7 @@ Bool Imager::clipimage(const String& image, const Quantity& threshold)
     StokesImageUtil::MaskOnStokesI(imageImage, threshold);
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -2236,7 +2236,7 @@ Bool Imager::feather(const String& image, const String& highRes,
       TableUtil::deleteTable(outLowRes);
     }
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
     return false;
@@ -2349,7 +2349,7 @@ Bool Imager::linearmosaic(const String& mosaic,
 	subDen.copyData( (LatticeExpr<Float>) (subDen + (PB*PB)) );
 	
       }
-      catch (AipsError x) {
+      catch (AipsError &x) {
 	os << LogIO::WARN<< "Caught exception while processing  " << images(i) 
 	   << "\n"<< x.getMesg()
 	   << LogIO::POST;
@@ -2400,7 +2400,7 @@ Bool Imager::linearmosaic(const String& mosaic,
       sensitivityImage.copyData( (LatticeExpr<Float>)( denominator/dMax ));
     }
   }
-  catch (AipsError x) {
+  catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;
@@ -2523,7 +2523,7 @@ Bool Imager::weight(const String& type, const String& crmode,
     this->writeHistory(os);
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -2592,7 +2592,7 @@ Bool Imager::filter(const String& type, const Quantity& bmaj,
     this->writeHistory(os);
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -2728,7 +2728,7 @@ Bool Imager::uvrange(const Double& uvmin, const Double& uvmax)
      // Beam is no longer valid
      beamValid_p=false;
      return true;    
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -2772,7 +2772,7 @@ Bool Imager::sensitivity(Quantity& pointsourcesens, Double& relativesens,
        << "Sum of weights                : " << sumwt << LogIO::POST;
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -2848,7 +2848,7 @@ Bool Imager::apparentSensitivity(Double& effSensitivity,
 
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3128,7 +3128,7 @@ Bool Imager::makeimage(const String& type, const String& image,
     }
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3250,7 +3250,7 @@ Bool Imager::restore(const Vector<String>& model,
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3302,7 +3302,7 @@ Bool Imager::updateresidual(const Vector<String>& model,
 
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3381,7 +3381,7 @@ Bool Imager::residual(const Vector<String>& model,
       removeTable(theModels[0]);
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3446,7 +3446,7 @@ Bool Imager::approximatepsf(const String& psf)
 
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     throw(x);
     return false;
@@ -3530,7 +3530,7 @@ Bool Imager::smooth(const Vector<String>& model,
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -4287,7 +4287,7 @@ Bool Imager::nnls(const String&,  const Int niter, const Float tolerance,
     destroySkyEquation();
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -4338,7 +4338,7 @@ Bool Imager::ft(const Vector<String>& model, const String& complist,
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -4548,7 +4548,7 @@ Bool Imager::setjy(const Vector<Int>& /*fieldid*/,
     this->unlock();
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     if(TableUtil::canDeleteTable(tempCL)) TableUtil::deleteTable(tempCL);
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
@@ -5023,7 +5023,7 @@ Record Imager::setjy(const Vector<Int>& /*fieldid*/,
     this->unlock();
     //return true;
   }
-  catch (AipsError x){
+  catch (AipsError &x){
     this->unlock();
     for(Int i = tempCLs.nelements(); i--;){
       if(tempCLs[i] != "")
@@ -5075,7 +5075,7 @@ String Imager::make_comp(const String& objName,
 				 returnFluxes, returnFluxErrs,
 				 clistnames, prefix);
   }
-  catch(AipsError x){
+  catch(AipsError &x){
     os << LogIO::SEVERE << "Exception Reported: " << x.getMesg() << LogIO::POST;
     RETHROW(x);
   }  
@@ -5239,7 +5239,7 @@ Bool Imager::sjy_concatComponentLists(LogIO& os, const Vector<String>& tempCLs, 
     }  
     concatCL.rename(outTempCL, Table::New);
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
     return false;
@@ -6083,7 +6083,7 @@ Bool Imager::clone(const String& imageName, const String& newImageName)
 			       newImageName);
     newImage.set(0.0);
     newImage.table().flush(true, true);
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -6125,7 +6125,7 @@ Bool Imager::make(const String& model)
     this->unlock();
     
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
 
@@ -6184,7 +6184,7 @@ Bool Imager::fitpsf(const String& psf, ImageBeamSet& mbeam) {
     this->unlock();
     
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
 
@@ -6332,7 +6332,7 @@ Bool Imager::plotuv(const Bool rotate)
     this->unlock();
   
   } 
-  catch (AipsError x) {
+  catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -6555,7 +6555,7 @@ Bool Imager::plotvis(const String& type, const Int increment)
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -6731,7 +6731,7 @@ Bool Imager::plotweights(const Bool gridded, const Int increment)
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -6798,7 +6798,7 @@ Bool Imager::clipvis(const Quantity& threshold)
     
     this->unlock();
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
   } 
@@ -6899,7 +6899,7 @@ Bool Imager::plotsummary()
     this->unlock();
     return true;
     */
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -7087,7 +7087,7 @@ Bool Imager::makemodelfromsd(const String& sdImage, const String& modelImage,
     StokesImageUtil::MaskFrom(mask, mask, Quantity(0.0, "Jy"));
     model.copyData( LatticeExpr<Float> (mask*model));
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;
@@ -7405,7 +7405,7 @@ Bool Imager::adviseChanSelex(Double& freqStart, Double& freqEnd,
 
 
         
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;

@@ -319,7 +319,7 @@ void MSUVBin::setTileCache()
 				}
 			}
 		}
-		catch (AipsError x) {
+		catch (AipsError &x) {
 			//  cerr << "Data man type " << dataManType << "  " << dataManType.contains ("Tiled") << "  && " << (!String (cdesc.dataManagerGroup ()).empty ()) << endl;
 			//  cerr << "Failed to set settilecache due to " << x.getMesg () << " column " << columns[k]  <<endl;
 			//It failed so leave the caching as is
