@@ -292,7 +292,7 @@ void Hummbee(//string& MSNBuf,
         float& gain, float& threshold,
         float& nsigma,
         int& cycleniter, float& cyclefactor,
-        vector<string>& mask)
+        vector<string>& mask, string& specmode)
 {
   LogIO os(LogOrigin("contact","hummbee_func"));
 
@@ -340,7 +340,7 @@ void Hummbee(//string& MSNBuf,
       decPars_p.interactive=false;
       decPars_p.autoAdjust=False; //genie
       decPars_p.fusedThreshold = fusedthreshold;
-      decPars_p.specmode="mfs"; //deconvolve task does not have this
+      decPars_p.specmode=specmode; //deconvolve task does not have this
       decPars_p.largestscale = largestscale;
       decPars_p.scalebias = 0.0;
       decPars_p.nTaylorTerms = nterms;
