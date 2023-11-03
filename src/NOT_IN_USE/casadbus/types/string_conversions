@@ -1,0 +1,113 @@
+//# string_conversions: conversion functions
+//#
+//# Copyright (C) 2011
+//# Associated Universities, Inc. Washington DC, USA.
+//#
+//# This library is free software; you can redistribute it and/or modify it
+//# under the terms of the GNU Library General Public License as published by
+//# the Free Software Foundation; either version 2 of the License, or (at your
+//# option) any later version.
+//#
+//# This library is distributed in the hope that it will be useful, but WITHOUT
+//# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+//# License for more details.
+//#
+//# You should have received a copy of the GNU Library General Public License
+//# along with this library; if not, write to the Free Software Foundation,
+//# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+//#
+//# Correspondence concerning AIPS++ should be addressed as follows:
+//#        Internet email: aips2-request@nrao.edu.
+//#        Postal address: AIPS++ Project Office
+//#                        National Radio Astronomy Observatory
+//#                        520 Edgemont Road
+//#                        Charlottesville, VA 22903-2475 USA
+//#
+//# $Id$
+
+#ifndef __casac_string_conversions__
+#define __casac_string_conversions__
+
+bool stringtobool( const std::string &str ) {
+    const char *data = str.data();
+    while ( *data && isspace(*data) ) ++data;
+    if (!strncasecmp(data,"true",4)) return true;
+    if (!strncasecmp(data,"false",5)) return false;
+    if (isdigit(*data) || *data == '+' || *data == '-') {
+	const char *digit = data;
+	while (*digit == '+' || *digit == '-') ++digit;
+	if (isdigit(*digit)) {
+	    while (*digit && (isdigit(*digit))) ++digit;
+	    if (*digit == '.') return atof(data) != 0.0 ? true : false;
+	    else return atoi(data) != 0 ? true : false;
+	} else {
+	    return false;
+	}
+    }
+    return false;
+}
+
+inline int stringtoint( const std::string &str ) {
+    const char *data = str.data();
+    return atoi(data);
+}
+
+
+inline double stringtodouble( const std::string &str ) {
+    const char *data = str.data();
+    return atof(data);
+}
+
+#define STRINGTOCOMPLEX_DEFINITION(TYPE,NAME)		\
+inline TYPE NAME( const std::string &str ) {		\
+    const char *data = str.data();			\
+    return TYPE(atof(data),0.0);			\
+}
+
+STRINGTOCOMPLEX_DEFINITION(std::complex<double>,stringtocomplex)
+
+#define TOSTRHELPERS(NAME,PTR,NEW)					\
+inline std::string PTR bool ## NAME( bool b ) {				\
+    return b ? NEW std::string("true") : NEW std::string("false");	\
+}									\
+inline std::string PTR NAME( bool b ) {					\
+    return b ? NEW std::string("true") : NEW std::string("false");	\
+}									\
+inline std::string PTR int ## NAME( int i ) {			\
+    char buff[256];							\
+    sprintf( buff, "%d", i );						\
+    return NEW std::string( (const char *) buff );			\
+}									\
+inline std::string PTR NAME( int i ) {					\
+    char buff[256];							\
+    sprintf( buff, "%d", i );						\
+    return NEW std::string( (const char *) buff );			\
+}									\
+inline std::string PTR double ## NAME( double d ) {			\
+    char buff[256];							\
+    sprintf( buff, "%f", d );						\
+    return NEW std::string( (const char *) buff );			\
+}									\
+inline std::string PTR NAME( double d ) {				\
+    char buff[256];							\
+    sprintf( buff, "%f", d );						\
+    return NEW std::string( (const char *) buff );			\
+}									\
+inline std::string PTR complex ## NAME( const std::complex<double> &c ) {\
+    char buff[512];							\
+    sprintf( buff, "(%f,%f)", c.real(), c.imag() );			\
+    return NEW std::string( (const char *) buff );			\
+}									\
+inline std::string PTR NAME( const std::complex<double> &c ) {		\
+    char buff[512];							\
+    sprintf( buff, "(%f,%f)", c.real(), c.imag() );			\
+    return NEW std::string( (const char *) buff );			\
+}
+
+TOSTRHELPERS(tostring,,)
+TOSTRHELPERS(tostringptr,*,new)
+
+inline std::string std_stringtostring(std::string s) { return s; }
+
+#endif
