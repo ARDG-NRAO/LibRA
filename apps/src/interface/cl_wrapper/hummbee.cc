@@ -67,7 +67,7 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
   float& gain, float& threshold,
   float& nsigma,
   int& cycleniter, float& cyclefactor,
-  vector<string>& mask
+  vector<string>& mask, string& specmode
 // how about min/maxpsffraction, smallscalbias?
   )
 {
@@ -145,6 +145,7 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
       i=1;clgetFValp("cyclefactor", cyclefactor,i);
       //i=1;clgetSValp("mask", mask,i);
       N=0; N=clgetNSValp("mask", mask, N);
+      i=1;clgetSValp("specmode", specmode,i);  clSetOptions("specmode",{"mfs","cube","cubedata","cubesource"});
     
      EndCL();
 
@@ -205,7 +206,7 @@ int main(int argc, char **argv)
     cfCache, fieldStr="", spwStr="*",
     imageName, modelImageName,phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural";*/ 
-  string imageName, modelImageName, deconvolver="hogbom"; //, mask="";
+  string imageName, modelImageName, deconvolver="hogbom", specmode="mfs"; //, mask="";
 
  // float cellSize;//refFreq=3e09, freqBW=3e9;
   //float robust=0.0;
@@ -239,7 +240,7 @@ int main(int argc, char **argv)
     gain, threshold,
     nsigma,
     cycleniter, cyclefactor,
-    mask);
+    mask, specmode);
 
   set_terminate(NULL);
 
@@ -257,7 +258,7 @@ int main(int argc, char **argv)
                  gain, threshold,
                  nsigma,
                  cycleniter, cyclefactor,
-                 mask
+                 mask, specmode
                  ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     }
   catch(AipsError& er)
