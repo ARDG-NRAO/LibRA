@@ -37,7 +37,8 @@ PYBIND11_MODULE(hummbee2py, m)
     "nsigma"_a=0.0,
     "cycleniter"_a=-1,
     "cyclefactor"_a=1.0,
-    "mask"_a=""
+    "mask"_a="",
+    "specmode"_a="mfs"
     );
 }
 
