@@ -3,22 +3,12 @@
 ## Description
 The primary goal of the LibRA project is to directly expose algorithms
 used in Radio Astronomy (RA) for image reconstruction from
-interferometric telescopes.  This not only requires that the software
-stack necessary to access professional implementations of the core
-algorithms be simple and shallow, but also keep the resulting software
-dependency graph as simple as possible. 
+interferometric telescopes.  The primary target users are research groups (R&D groups at observatories, at university departments) and individual researchers (faculty, students, post-docs) who may benefit from a software system with professional-quality implementation of the core algorithms which also easy to use, deploy locally and modify as necessary.  Therefore, a strong requirement deriving this work is to keep the interface simple, the software stack shallow and software dependency graph simple.
 
 This repository contains _only_ the algorithmically necessary
-scientific code to develop and a build system to compile it into a
-library of algorithms used for Radio Astronomy (RA) interferometric
-calibration and imaging.  Such a library can be treated as a
-third-party library which is usable by other R&D groups, individual
-researches/students, as well as in other packages in the RA community.
-
-Multiple interfaces to the library are provided to access the
-algorithms vis C++ or Python, or as an end-user via standalone
-applications built to conveniently configure and execute the
-algorithms from Linux shell.
+scientific code, and a build system to compile it into a
+library of algorithms.  Such a library can be used as a
+third-party library by other in the RA community.  Different interfaces to the library are provided to access the algorithms vis C++ or Python, or as an end-user via standalone applications built to conveniently configure and execute the algorithms from Linux shell.
 
 Interferometric radio telescopes are indirect imaging devices which
 collects data in the Fourier domain. Transforming the raw data from
