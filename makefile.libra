@@ -5,12 +5,13 @@
 #
 
 #
-# Kokkos string for the GPU architecture.
+# Example Kokkos string for the GPU architecture.
+# Full list is found at https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 #
 # V100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
 # A4000/A5000
-Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
+#Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE86
 # A100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_KEPLER30
@@ -50,6 +51,16 @@ PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 NCORES=12
 
 #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+# Initialize the Kokkos_CUDA_ARCH string to blank.
+# If this is not set on the commandline, the Kokkos
+# build will be for the local CUDA capability
+Kokkos_CUDA_ARCH=""
+ifeq ($(Kokkos_CUDA_ARCH),"")
+Kokkos_CUDA_ARCH_STR=""
+else
+Kokkos_CUDA_ARCH_STR="-D$(Kokkos_CUDA_ARCH)=ON"
+endif
+
 #--------------------------------------------------------------------------------------------------------
 #
 # Package-level dir structure
@@ -91,16 +102,20 @@ init:
 kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
+#
+# Do not indent the following three lines!
+#
 kokkos-build:
-ifndef Kokkos_CUDA_ARCH
-$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
-endif
+# ifndef Kokkos_CUDA_ARCH
+# #$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+# Kokkos_CUDA_ARCH_STR=""
+# endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
 	cd ${DEPENDBUILDDIR}/kokkos; \
 	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
-	      -D$(Kokkos_CUDA_ARCH)=ON \
+	      $(Kokkos_CUDA_ARCH_STR) \
 	      -DKokkos_ENABLE_CUDA=ON \
 	      -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
@@ -139,9 +154,10 @@ hpg-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/hpg;
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=ON \
+	-DHpg_USE_MIXED_PRECISION=OFF \
 	-Hpg_API=11 \
 	-DHpg_BUILD_TESTS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DKokkos_DIR=${INSTALLDIR}/lib/cmake/Kokkos \

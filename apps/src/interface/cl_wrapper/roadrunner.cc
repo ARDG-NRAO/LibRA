@@ -112,7 +112,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetValp("robust", robust,i);
 
       i=1;clgetValp("wprojplanes", nW,i);
-      i=1;clgetSValp("gridder", FTMName,i); clSetOptions("ftm",{"awphpg","awproject"});
+      i=1;clgetSValp("gridder", FTMName,i); clSetOptions("gridder",{"awphpg","awproject"});
       i=1;clgetSValp("cfcache", CFCache,i);
 
       // Expose the modelimagename parameter only for mode=residual or
