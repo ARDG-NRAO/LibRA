@@ -72,7 +72,7 @@ The `main` branch of this project is also mirrored [here](https://github.com/ARD
 - [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
 - [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
 - [ ] `subms` : Functionally same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
-- [ ] `htcondor` : A framework for the Algorithm Architecture that uses the apps as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or cluster of CPUs/GPUs.
+- [ ] `htclean` : A framework that implements the Algorithm Architecture that uses the apps as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or cluster of CPUs/GPUs.  This is currently used to deploy imaging on local cluster, on the PATh and OSG clusters.  A varient of it has been used for prototype deployment on AWS.
 
 ## System requirements
 The following come default with RHEL8 or similar systems:
