@@ -3,7 +3,7 @@
 ## Description
 The primary goal of the LibRA project is to directly expose algorithms
 used in Radio Astronomy (RA) for image reconstruction from
-interferometric telescopes.  The primary target users are research groups (R&D groups at observatories, at university departments) and individual researchers (faculty, students, post-docs) who may benefit from a software system with professional-quality implementation of the core algorithms which also easy to use, deploy locally and modify as necessary.  Therefore, a strong requirement deriving this work is to keep the interface simple, the software stack shallow and software dependency graph simple.
+interferometric telescopes.  The primary target users are research groups (R&D groups at observatories, at university departments) and individual researchers (faculty, students, post-docs) who may benefit from a software system with professional-quality implementation of the core algorithms which are also easy to use, deploy locally and modify as necessary.  Therefore, a strong requirement deriving this work is to keep the interface simple, the software stack shallow and software dependency graph simple.
 
 This repository contains _only_ the algorithmically necessary
 scientific code, and a build system to compile it into a
