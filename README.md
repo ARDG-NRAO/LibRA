@@ -40,7 +40,7 @@ part of the larger CASA code base which can be compiled into a
 reusable software library.  This significantly simplifies the software
 stack and the resulting software dependency graph. A suite of
 standalone applications are also available which can be built as relocatable
-Linux executable.  The resulting software stack is shown below.  Figure on the left shows our current software stack where the RA Algorithms layer is built on RA-specificdata access and CASACore layers.  Work is in progress to decouple the RA Algorithms layer from RA-specific layers with API based on the C++ Standard Template Library (STL). With a translation layer RA-specific libraries (CASACore, RA Data Access/Iterators) will be usable for RA application.
+Linux executable.  The resulting software stack is shown below.  Figure on the left shows our current software stack where the RA Algorithms layer is built on RA-specificdata access and CASACore layers.  _Work is in progress to decouple the RA Algorithms layer from RA-specific layers with API based on the C++ Standard Template Library (STL)_.  With a translation layer RA-specific libraries (CASACore, RA Data Access/Iterators) may be replaced for use of RA Algorithms in other domains.
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures below is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
