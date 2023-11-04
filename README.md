@@ -56,8 +56,8 @@ Linux executable.  The resulting software stack is shown below.  Figure on the l
 ### The repository contains
 
 - [ ] scientific code to build a software library of algorithms for image reconstruction
-- [ ] a suite of standalone applications (apps) to configure and run the algorithms in the library, and
-- [ ] a build system to build the apps and all the required dependencies, other than the System Requirements below.
+- [ ] a suite of standalone applications (apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the apps and all dependencies, other than the System Requirements below.
 
 
 A containerized means of building the LibRA project is available
