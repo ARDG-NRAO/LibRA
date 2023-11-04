@@ -16,8 +16,9 @@ third-party library which is usable by other R&D groups, individual
 researches/students, as well as in other packages in the RA community.
 
 Multiple interfaces to the library are provided to access the
-algorithms vis C++ or Python, or as an end-user via apps built to
-conveniently configure and execute the algorithms from Linux shell.
+algorithms vis C++ or Python, or as an end-user via standalone
+applications built to conveniently configure and execute the
+algorithms from Linux shell.
 
 Interferometric radio telescopes are indirect imaging devices which
 collects data in the Fourier domain. Transforming the raw data from
@@ -30,12 +31,6 @@ for application in such fields and enable cross-descipline R&D, the
 API to the library is based on C++ STL for portability and wider use
 that does not required RA-specific software stack and dependencies.
 
-A containerized means of building the LibRA project is available
-[here](https://gitlab.nrao.edu/ardg/libra-containers).
-
-The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
-
-
 ### The LibRA software stack
 
 The `src` directory contains the implementation of the basic
@@ -44,16 +39,23 @@ the CASA project but contains _only_ the algorithmically-significant
 part of the larger CASA code base which can be compiled into a
 reusable software library.  This signficantly simplifies the software
 stack and the resulting software dependenc graph. A suite of
-standalone apps are also available which can be built as relocatable
+standalone applications are also available which can be built as relocatable
 Linux executable.  The resulting software stack is shown below.
 
 ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")
 
 
-The repository includes
+The repository contains
 
+- [ ] scientific code with implemention of the algorithms for image reconstruction in RA
 - [ ] a suite of standalone applications (apps) that link to the current incarnation of the said library, and
 - [ ] a build system to build the apps and all the required dependencies other than the System Requirements below.
+
+
+A containerized means of building the LibRA project is available
+[here](https://gitlab.nrao.edu/ardg/libra-containers).
+
+The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 ## System requirements
 The following come default with RHEL8 or similar systems:
