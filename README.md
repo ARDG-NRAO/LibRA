@@ -58,8 +58,8 @@ A containerized means of building the LibRA project is available
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 ### Available of apps
-- [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the "major cycle" in RA.
-- [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the "minor cycle" in RA.
+- [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
+- [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] `coyote` : [NOT YET AVAILABLE] An application to build the CF Cache used as input to the `roadrunner` application.
 - [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
 - [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
