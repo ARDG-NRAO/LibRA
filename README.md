@@ -5,7 +5,8 @@ This is the repository for the LibRA project to develop a library of algorithms 
 
 ### Software stack
 
-          ![Stack of software layers](doc/figures/RRStack-Libra.png)
+![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")
+
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 The repository includes
