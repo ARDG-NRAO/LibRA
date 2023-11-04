@@ -40,9 +40,13 @@ part of the larger CASA code base which can be compiled into a
 reusable software library.  This significantly simplifies the software
 stack and the resulting software dependency graph. A suite of
 standalone applications are also available which can be built as relocatable
-Linux executable.  The resulting software stack is shown below.
+Linux executable.  The resulting software stack is shown below.  Figure on the left shows our current software stack where the RA Algorithms layer is built on RA-specificdata access and CASACore layers.  Work is in progress to decouple the RA Algorithms layer from RA-specific layers with API based on the C++ Standard Template Library (STL). With a translation layer RA-specific libraries (CASACore, RA Data Access/Iterators) will be usable for RA application.
 
-                      Current stack                                                        Target Stack
+[`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures below is a standalone library for embedded user interface used for command-line configuration of the LibRA apps.  
+
+[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standa alone library that deplys the compute-intensive calculations for imaging on a GPU or a CPU core (like resampling data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for developing performance portable implemention.
+
+                      Current Stack                                                        Target Stack
 
 ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
