@@ -42,9 +42,10 @@ stack and the resulting software dependency graph. A suite of
 standalone applications are also available which can be built as relocatable
 Linux executable.  The resulting software stack is shown below.
 
-Current Stack                           |    Target Stack
-:---------------------------------------:---------------------------------------
-![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack") | ![Stack of software layers](doc/figures/RRStack-Intended-2.png "LibRA software stack")
+                      Current stack                                                        Target Stack
+---------------------------------------
+![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
 
 
 ### The repository contains
