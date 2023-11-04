@@ -27,7 +27,7 @@ algorithms to reconstruct the image.  The fundamental scientific
 principles behind such telescopes are the same as those in other
 domains that rely on indirect imaging such as Magnetic Resonance
 Imaging (MRI) and Ultrasound imaging.  To make RA algorithms available
-for application in such fields and enable cross-descipline R&D, the
+for application in such fields and enable cross-discipline R&D, the
 API to the library is based on C++ STL for portability and wider use
 that does not required RA-specific software stack and dependencies.
 
@@ -37,25 +37,34 @@ The `src` directory contains the implementation of the basic
 calibration and imaging algorithms.  The code has been derived from
 the CASA project but contains _only_ the algorithmically-significant
 part of the larger CASA code base which can be compiled into a
-reusable software library.  This signficantly simplifies the software
-stack and the resulting software dependenc graph. A suite of
+reusable software library.  This significantly simplifies the software
+stack and the resulting software dependency graph. A suite of
 standalone applications are also available which can be built as relocatable
 Linux executable.  The resulting software stack is shown below.
 
 ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")
 
 
-The repository contains
+### The repository contains
 
-- [ ] scientific code with implemention of the algorithms for image reconstruction in RA
-- [ ] a suite of standalone applications (apps) that link to the current incarnation of the said library, and
-- [ ] a build system to build the apps and all the required dependencies other than the System Requirements below.
+- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] a suite of standalone applications (apps) to configure and run the algorithms in the library, and
+- [ ] a build system to build the apps and all the required dependencies, other than the System Requirements below.
 
 
 A containerized means of building the LibRA project is available
 [here](https://gitlab.nrao.edu/ardg/libra-containers).
 
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
+
+### List of current set of apps
+- [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the "major cycle" in RA.
+- [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the "minor cycle" in RA.
+- [ ] `coyote` : [NOT YET AVAILABLE] An application to build the CF Cache used as input to the `roadrunner` application.
+- [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
+- [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
+- [ ] `subms` : Functionally same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
+- [ ] `htcondor` : A framework for the Algorithm Architecture that uses the apps as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or cluster of CPUs/GPUs.
 
 ## System requirements
 The following come default with RHEL8 or similar systems:
