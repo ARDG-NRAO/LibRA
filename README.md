@@ -3,6 +3,9 @@
 ## Description
 This is the repository for the LibRA project to develop a library of algorithms used for Radio Astronomy (RA) interferometric calibration and imaging.  The intent is that such a library can be treated as a third-party library and usable in other packages.  The API will be C++ STL based with the intention of it being easily usable in the RA community in general and for indirect imaging in other fields (like some medical imaging techniques). A containerized means of building the LibRA project is available [here](https://gitlab.nrao.edu/ardg/libra-containers).
 
+### Software stack
+
+          ![Stack of software layers][doc/figures/RRStack-Libra.png]
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 The repository includes
