@@ -23,19 +23,23 @@ BISON_TARGET(CalLibraryGramBison CalLibrary/CalLibraryGram.yy ${CMAKE_CURRENT_BI
 FLEX_TARGET(CalLibraryGramFlex CalLibrary/CalLibraryGram.ll ${CMAKE_CURRENT_BINARY_DIR}/CalLibraryGram.lcc COMPILE_FLAGS -PCalLibraryGram)
 add_flex_bison_dependency(CalLibraryGramFlex CalLibraryGramBison)
 
+set(MODULE_NAME "synthesis")
+# The declare_casacpp_component builds cmake variables with names constructed from MODULE_NAME.
+# The library name, e,g., becomes "casacpp_"+${MODULE_NAME}.  One just have to know! This. Is. CMAKE.
+set(LIB_NAME "casacpp_synthesis") 
+
 # Declare this component using the function in the top level CMakeList.txt
-set(LIB_NAME "casacpp_synthesis")
-declare_casacpp_component("synthesis")
+declare_casacpp_component(${MODULE_NAME})
 
 # We need to add the BISON and FLEX outputs to the sources.
 # This overwrites the target_sources command from declare_casacpp_component
 target_sources(${LIB_NAME}
   PRIVATE
-   ${synthesis_library_sources}
+   ${${MODULE_NAME}_library_sources}
    ${BISON_CalLibraryGramBison_OUTPUTS}
    ${FLEX_CalLibraryGramFlex_OUTPUTS}
   PUBLIC
-    ${synthesis_public_headers})
+    ${${MODULE_NAME}_public_headers})
 
 # External dependencies
 # directory where casacore is installed
