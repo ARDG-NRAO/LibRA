@@ -91,8 +91,10 @@ The following come default with RHEL8 or similar systems:
 - [ ] GCC 8.x or later
 - [ ] cmake 3.x or later
 - [ ] git 2.0 or later, gcc-gfortran gtest-devel ccache
+      
+The `ccache` dependency can be dropped by setting `-DUseCcache=0` in the `casacore-cmake` target in `makefile.libra`.
 
-The following need to be installed as below:
+The following list of packages need to be installed. Following is a typical command to install:
 
 - [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
 
