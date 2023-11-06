@@ -282,7 +282,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	PBMath(static_cast<PBMath::CommonPB>(pbtype)).namePBClass(pbClassName);
 	os << ": " << pbClassName << LogIO::POST;
       }
-      catch(AipsError){
+      catch(AipsError&){
 	os <<  ": not available" << LogIO::POST;
       }
     }

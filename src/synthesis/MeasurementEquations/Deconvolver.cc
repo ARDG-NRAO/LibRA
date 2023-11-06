@@ -211,7 +211,8 @@ Bool Deconvolver::open(const String& dirty, const String& psf, Bool warn)
   
 
   try {
-    if (dirty_p) delete dirty_p;  dirty_p = 0;
+    if (dirty_p) delete dirty_p;  
+    dirty_p = 0;
     dirty_p = new PagedImage<Float>(dirty);
     AlwaysAssert(dirty_p, AipsError);
     nx_p=dirty_p->shape()(0);
@@ -233,7 +234,8 @@ Bool Deconvolver::open(const String& dirty, const String& psf, Bool warn)
     }
     dirtyName_p =  dirty_p->table().tableName();
     
-    if (psf_p) delete psf_p;  psf_p = 0;
+    if (psf_p) delete psf_p;  
+    psf_p = 0;
     if (psf == ""){
     	if(warn) {
     		os << LogIO::WARN
@@ -396,11 +398,16 @@ Bool Deconvolver::close()
   LogIO os(LogOrigin("Deconvolver", "close()", WHERE));
   
   os << "Closing images and detaching from Deconvolver" << LogIO::POST;
-  if(psf_p) delete psf_p; psf_p = 0;
-  if(dirty_p) delete dirty_p; dirty_p = 0;
-  if (convolver_p) delete convolver_p; convolver_p = 0;
-  if (residEqn_p) delete  residEqn_p;  residEqn_p = 0;
-  if (latConvEqn_p) delete latConvEqn_p; latConvEqn_p = 0;
+  if(psf_p) delete psf_p; 
+  psf_p = 0;
+  if(dirty_p) delete dirty_p; 
+  dirty_p = 0;
+  if (convolver_p) delete convolver_p; 
+  convolver_p = 0;
+  if (residEqn_p) delete  residEqn_p;  
+  residEqn_p = 0;
+  if (latConvEqn_p) delete latConvEqn_p; 
+  latConvEqn_p = 0;
 
   return true;
 }
@@ -1589,7 +1596,7 @@ Bool Deconvolver::mem(const String& entropy, const Int niter,
 	  myMemer.setAlpha(alpha);
 	  info.get("BETA", beta);
 	  myMemer.setBeta(beta); 
-	} catch  (AipsError x) {
+	} catch  (AipsError &x) {
 	  // could not get Alpha and Beta for initialization
 	  // continue
 	  os << "Could not retrieve Alpha and Beta from previously initialized model" 
