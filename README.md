@@ -1,14 +1,89 @@
 # LibRA
 
 ## Description
-This is the repository for the LibRA project to develop a library of algorithms used for Radio Astronomy (RA) interferometric calibration and imaging.  The intent is that such a library can be treated as a third-party library and usable in other packages.  The API will be C++ STL based with the intention of it being easily usable in the RA community in general and for indirect imaging in other fields (like some medical imaging techniques). A containerized means of building the LibRA project is available [here](https://gitlab.nrao.edu/ardg/libra-containers).
+
+The primary goal of the LibRA project is to directly expose algorithms
+used in Radio Astronomy (RA) for image reconstruction from
+interferometric telescopes.  The primary target users are research
+groups (R&D groups at observatories, at university departments) and
+individual researchers (faculty, students, post-docs) who may benefit
+from a software system with prodiction-quality implementation of the
+core algorithms which are also easy to use, deploy locally and modify
+as necessary.  Therefore, a strong requirement deriving this work is
+to keep the interface simple, the software stack shallow and software
+dependency graph small.
+
+This repository therefore contains _only_ the algorithmically
+necessary scientific code, and a build system to compile it into a
+library of algorithms.  Such a library can be directly used as a
+third-party library by others in the RA community.  A three different 
+interfaces to the library are provided for accessing the algorithms via
+C++ or Python, or as an end-user via standalone applications built to
+conveniently configure and execute the algorithms from a Linux shell.
+
+Interferometric radio telescopes are indirect imaging devices which
+collect data in the Fourier domain. Transforming the raw data from
+such devices to images requires application of sophisticated
+algorithms to reconstruct the image.  The fundamental scientific
+principles behind such telescopes are the same as in other domains
+that rely on indirect imaging such as Magnetic Resonance Imaging (MRI)
+and Ultrasound imaging.  To make RA algorithms available for
+application in such fields and enable cross-discipline R&D, the API to
+the library is based on C++ STL for portability and wider use that
+does not required RA-specific software stack and dependencies.
+
+### The LibRA software stack
+
+The `src` directory contains the implementation of the basic
+calibration and imaging algorithms.  The code has been derived from
+the CASA project but contains _only_ the algorithmically-significant
+part of the _much_ larger CASA code base.  The code here can be
+compiled into a standalone reusable software library.  This
+significantly simplifies the software stack and the resulting software
+dependency graph. A suite of standalone applications are also
+available which can be built as relocatable Linux executable (this may
+also be possible for MacOS, but we haven't had time to test).
+
+The resulting software stack is shown below.  Figure on the left shows
+our current software stack where the RA Algorithms layer is built on
+the RA-specificdata data access and CASACore layers.  _Work is in
+progress to decouple the RA Algorithms layer from RA-specific layers
+with the algorithms API based _only_ on the C++ Standard Template
+Library (STL)_.  With a translation layer RA-specific libraries
+(CASACore, RA Data Access/Iterators) may be replaced for use of RA
+Algorithms in other domains.
+
+                      Current Stack                                                        Target Stack
+
+![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
+
+
+[`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
+
+[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
+
+### The repository contains
+
+- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] a suite of standalone applications (apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the apps and all dependencies, other than the System Requirements below.
+
+
+A containerized means of building the LibRA project is available
+[here](https://gitlab.nrao.edu/ardg/libra-containers).
 
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
-The repository includes
-
-- [ ] a suite of standalone applications (apps) that link to the current incarnation of the said library, and
-- [ ] a build system to build the apps and all the required dependencies other than the System Requirements below.
+### Available of apps
+- [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
+- [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
+- [ ] `coyote` : [NOT YET AVAILABLE] An application to build the CF Cache used as input to the `roadrunner` application.
+- [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
+- [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
+- [ ] `subms` : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
+- [ ] `htclean` : A framework that implements the Algorithm Architecture that uses the apps as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  This is currently used to deploy imaging on a local cluster, and on the PATh and OSG clusters.  A varient of it has been used for prototype deployment on AWS.
 
 ## System requirements
 The following come default with RHEL8 or similar systems:
@@ -92,7 +167,7 @@ The binary applications will be install in ```apps/install``` directory.
 
 - [ ] `Kokkos_CUDA_ARCH`: This is set via the commandline as `Kokkos_CUDA_ARCH=<CUDA ARCH>`.  
                           Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  
-                          See list of supported values at the [Kokkos web page](https://kokkos.github.io/kokkos-core-wiki/keywords.html).
+                          See list of supported values at the [Kokkos web page](https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch).
 - [ ] `CASA_BUILD_TYPE`, `CASACORE_BUILD_TYPE`: The `cmake` build-type setting for CASA and CASACore code.
 - [ ] `{CASA,FFTW,KOKKOS,HPG,PARAFEED}_VERSION`: Names of the specific version or branch for the various packages.
 - [ ] `{CASA,CASACORE_DATA,FFTW,KOKKOS,HPG,PARAFEED,SAKURA}_REPOS`: URL for the repository of the various packages.
