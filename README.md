@@ -53,16 +53,16 @@ Library (STL)_.  With a translation layer RA-specific libraries
 (CASACore, RA Data Access/Iterators) may be replaced for use of RA
 Algorithms in other domains.
 
-[`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures below is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
-
-[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
-
                       Current Stack                                                        Target Stack
 
 ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 ![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
 
+
+[`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures below is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
+
+[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
 
 ### The repository contains
 
