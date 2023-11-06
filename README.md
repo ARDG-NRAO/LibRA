@@ -1,36 +1,55 @@
 # LibRA
 
-## Description
-The primary goal of the LibRA project is to directly expose algorithms
-used in Radio Astronomy (RA) for image reconstruction from
-interferometric telescopes.  The primary target users are research groups (R&D groups at observatories, at university departments) and individual researchers (faculty, students, post-docs) who may benefit from a software system with prodiction-quality implementation of the core algorithms which are also easy to use, deploy locally and modify as necessary.  Therefore, a strong requirement deriving this work is to keep the interface simple, the software stack shallow and software dependency graph simple.
+## Description The primary goal of the LibRA project is to directly
+expose algorithms used in Radio Astronomy (RA) for image
+reconstruction from interferometric telescopes.  The primary target
+users are research groups (R&D groups at observatories, at university
+departments) and individual researchers (faculty, students, post-docs)
+who may benefit from a software system with prodiction-quality
+implementation of the core algorithms which are also easy to use,
+deploy locally and modify as necessary.  Therefore, a strong
+requirement deriving this work is to keep the interface simple, the
+software stack shallow and software dependency graph small.
 
-This repository contains _only_ the algorithmically necessary
-scientific code, and a build system to compile it into a
-library of algorithms.  Such a library can be used as a
-third-party library by other in the RA community.  Different interfaces to the library are provided to access the algorithms vis C++ or Python, or as an end-user via standalone applications built to conveniently configure and execute the algorithms from Linux shell.
+This repository therefore contains _only_ the algorithmically
+necessary scientific code, and a build system to compile it into a
+library of algorithms.  Such a library can be directly used as a
+third-party library by others in the RA community.  A three different 
+interfaces to the library are provided for accessing the algorithms via
+C++ or Python, or as an end-user via standalone applications built to
+conveniently configure and execute the algorithms from a Linux shell.
 
 Interferometric radio telescopes are indirect imaging devices which
-collects data in the Fourier domain. Transforming the raw data from
+collect data in the Fourier domain. Transforming the raw data from
 such devices to images requires application of sophisticated
 algorithms to reconstruct the image.  The fundamental scientific
-principles behind such telescopes are the same as those in other
-domains that rely on indirect imaging such as Magnetic Resonance
-Imaging (MRI) and Ultrasound imaging.  To make RA algorithms available
-for application in such fields and enable cross-discipline R&D, the
-API to the library is based on C++ STL for portability and wider use
-that does not required RA-specific software stack and dependencies.
+principles behind such telescopes are the same as in other domains
+that rely on indirect imaging such as Magnetic Resonance Imaging (MRI)
+and Ultrasound imaging.  To make RA algorithms available for
+application in such fields and enable cross-discipline R&D, the API to
+the library is based on C++ STL for portability and wider use that
+does not required RA-specific software stack and dependencies.
 
 ### The LibRA software stack
 
 The `src` directory contains the implementation of the basic
 calibration and imaging algorithms.  The code has been derived from
 the CASA project but contains _only_ the algorithmically-significant
-part of the larger CASA code base which can be compiled into a
-reusable software library.  This significantly simplifies the software
-stack and the resulting software dependency graph. A suite of
-standalone applications are also available which can be built as relocatable
-Linux executable.  The resulting software stack is shown below.  Figure on the left shows our current software stack where the RA Algorithms layer is built on RA-specificdata access and CASACore layers.  _Work is in progress to decouple the RA Algorithms layer from RA-specific layers with API based on the C++ Standard Template Library (STL)_.  With a translation layer RA-specific libraries (CASACore, RA Data Access/Iterators) may be replaced for use of RA Algorithms in other domains.
+part of the _much_ larger CASA code base.  The code here can be
+compiled into a standalone reusable software library.  This
+significantly simplifies the software stack and the resulting software
+dependency graph. A suite of standalone applications are also
+available which can be built as relocatable Linux executable (this may
+also be possible for MacOS, but we haven't had time to test).
+
+The resulting software stack is shown below.  Figure on the left shows
+our current software stack where the RA Algorithms layer is built on
+the RA-specificdata data access and CASACore layers.  _Work is in
+progress to decouple the RA Algorithms layer from RA-specific layers
+with the algorithms API based _only_ on the C++ Standard Template
+Library (STL)_.  With a translation layer RA-specific libraries
+(CASACore, RA Data Access/Iterators) may be replaced for use of RA
+Algorithms in other domains.
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures below is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
