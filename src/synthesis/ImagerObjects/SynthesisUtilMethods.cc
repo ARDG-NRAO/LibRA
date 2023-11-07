@@ -430,7 +430,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 
         
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;

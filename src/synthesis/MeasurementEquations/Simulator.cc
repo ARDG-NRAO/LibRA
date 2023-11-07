@@ -370,7 +370,7 @@ Bool Simulator::resetviscal() {
     // reset the VisEquation (by sending an empty vc_p)
     ve_p.setapply(vc_p);
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -390,7 +390,7 @@ Bool Simulator::resetimcal() {
     //    if(epJ_p) delete epJ_p; epJ_p=0;
     */
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -408,7 +408,7 @@ Bool Simulator::reset() {
     // reset im-plane cal terms
     resetimcal();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -679,7 +679,7 @@ Bool Simulator::settimes(const Quantity& integrationTime,
     timesHaveBeenSet_p=true;
     
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -836,7 +836,7 @@ Bool Simulator::setfield(const String& sourceName,
 
     sim_p->initFields(sourceName, sourceDirection, calCode);
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -949,7 +949,7 @@ Bool Simulator::setspwindow(const String& spwName,
 			 freqRes_p[nSpw-1], freqType,
 			 stokesString_p[nSpw-1]);
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1261,7 +1261,7 @@ Bool Simulator::setnoise(const String& mode,
       //throw(AipsError("could not create M in Simulator::setnoise"));        
     } 
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1327,7 +1327,7 @@ Bool Simulator::setgain(const String& mode,
 	throw(AipsError("unsupported mode "+mode+" in setgain()"));
       }
     }
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1437,7 +1437,7 @@ Bool Simulator::settrop(const String& mode,
     }
 
 #ifndef RI_DEBUG
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1509,7 +1509,7 @@ Bool Simulator::setleakage(const String& /*mode*/, const String& table,
       throw(AipsError("could not create D in Simulator::setleakage"));        
 
 #ifndef RI_DEBUG
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1579,7 +1579,7 @@ Bool Simulator::oldsetnoise(const String& mode,
     }
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1612,7 +1612,7 @@ Bool Simulator::setpa(const String& /*mode*/, const String& /*table*/,
     }
  */
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -1643,7 +1643,7 @@ Bool Simulator::setbandpass(const String& /*mode*/, const String& /*table*/,
     }
     return true;
     */
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
 
     return false;
@@ -1671,7 +1671,7 @@ Bool Simulator::setpointingerror(const String& epJTableName,
     }
     */
   }
-  catch (AipsError x)
+  catch (AipsError &x)
     {
       os << LogIO::SEVERE << "Caught exception: "
 	 << x.getMesg() << LogIO::POST;
@@ -1726,7 +1726,7 @@ Bool Simulator::create_corrupt(Record& simpar)
     // svc=NULL;
     ve_p.setapply(vc_p);
             
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     if (svc) delete svc;
     throw(AipsError("Error in Simulator::create_corrupt"));
@@ -1811,7 +1811,7 @@ Bool Simulator::setapply(const String& type,
        << vc->applyinfo()
        << LogIO::POST;
     
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << x.getMesg()
        << " Check inputs and try again."
        << LogIO::POST;
@@ -1834,7 +1834,7 @@ Bool Simulator::setapply(const String& type,
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     if (vc) delete vc;
@@ -2045,7 +2045,7 @@ Bool Simulator::observe(const String&   sourcename,
     ms_p->flush();
     ms_p->unlock();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -2098,7 +2098,7 @@ Bool Simulator::observemany(const Vector<String>&   sourcenames,
     ms_p->flush();
     ms_p->unlock();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -2195,7 +2195,7 @@ Bool Simulator::predict(const Vector<String>& modelImage,
     ms_p->unlock();     
     if(mssel_p) mssel_p->lock();   
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     ms_p->unlock();     
     if(mssel_p) mssel_p->lock();   
@@ -2555,7 +2555,7 @@ Bool Simulator::createSkyEquation(const Vector<String>& image,
     } else {
       vp_p=0;
     }
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     ms_p->unlock();     
     if(mssel_p) mssel_p->lock();   
@@ -2599,7 +2599,7 @@ Bool Simulator::setlimits(const Double shadowLimit,
     
     sim_p->setFractionBlockageLimit( shadowLimit );
     sim_p->setElevationLimit( elevationLimit );
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -2615,7 +2615,7 @@ Bool Simulator::setauto(const Double autocorrwt)
     
     sim_p->setAutoCorrelationWt(autocorrwt);
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     return false;
   } 
@@ -2845,7 +2845,7 @@ Bool Simulator::setdata(const Vector<Int>& spectralwindowids,
       }
     }
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;

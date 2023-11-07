@@ -114,7 +114,7 @@ vi.origin();
     cout << "Doing a dummy uvw/weight read" << endl;
 
 
-}catch (AipsError x) {
+}catch (AipsError &x) {
     cout <<  "Exceptionally yours: " << x.getMesg() << endl;
  } 
 

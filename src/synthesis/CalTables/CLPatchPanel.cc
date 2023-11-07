@@ -335,7 +335,7 @@ void FieldCalMap::setSelectedFieldMap(const String& fieldsel,
       throw(AipsError(fieldsel+" matches no fields."));
 
   }
-  catch ( AipsError err ) {
+  catch ( AipsError &err ) {
 
     throw(AipsError("Field mapping by selection failure: "+err.getMesg()));
 
@@ -890,7 +890,7 @@ CLPatchPanel::CLPatchPanel(const String& ctname,
       // Select on the reference table
       try {
 	this->selectOnCT(ct0,ct_,"",cls.extfldsel,"","");
-      } catch ( MSSelectionError err ) {
+      } catch ( MSSelectionError &err ) {
 	// Selection failed somehow:
 	throw(AipsError("Problem selecting for multi-field field mapping ('"+cls.extfldsel+"') in caltable="+ctname+":  "+err.getMesg()));
       }
@@ -904,7 +904,7 @@ CLPatchPanel::CLPatchPanel(const String& ctname,
     try {
       this->selectOnMS(clsms,ms_,cls.obs,cls.fld,cls.ent,cls.spw,"");
     }
-    catch ( MSSelectionNullSelection x ) {
+    catch ( MSSelectionNullSelection &x ) {
 
       // Warn in logger that this slice doesn't match anything
       //  in the selected MS
@@ -1077,7 +1077,7 @@ CLPatchPanel::CLPatchPanel(const String& ctname,
 	    try {
 	      this->selectOnCT(antselCT,spwselCT,"","","",String::toString(thisCTant));
 	    }
-	    catch ( MSSelectionNullSelection x ) {
+	    catch ( MSSelectionNullSelection &x ) {
 	      // Log a warning about the missing antenna
 	      logsink_ << LogIO::WARN << "     Found no calibration for MS ant Id=" << thisMSant << " (CT ant Id=" << thisCTant << ")"
 		       << " in MS spw Id=" << thisMSspw << " (CT spw Id=" << thisCTspw << ") (" << ctname << ")"

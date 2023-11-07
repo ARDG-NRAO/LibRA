@@ -889,7 +889,7 @@ bool MSTransformDataHandler::makeMSBasicStructure(String& msname,
 			ret = fillSubTables(colNamesTok);
 		}
 	}
-	catch (AipsError ex)
+	catch (AipsError &ex)
 	{
 		ret = false;
 		os 	<< LogIO::SEVERE
@@ -1766,7 +1766,7 @@ bool MSTransformDataHandler::fillFieldTable()
 		}
 
 	}
-	catch (AipsError x)
+	catch (AipsError &x)
 	{
 		os 	<< LogIO::EXCEPTION << "Error " << x.getMesg() << " setting up the output FIELD table." << LogIO::POST;
 	}

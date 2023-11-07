@@ -51,7 +51,7 @@
 #include <synthesis/MeasurementComponents/ClarkCleanImageSkyModel.h>
 #include <synthesis/MeasurementEquations/SkyEquation.h>
 #include <synthesis/TransformMachines/ATerm.h>
-#include <graphics/GenericPlotter/SimplePlotter.h>
+//#include <graphics/GenericPlotter/SimplePlotter.h>
 
 
 namespace casacore{

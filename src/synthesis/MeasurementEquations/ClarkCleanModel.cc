@@ -673,7 +673,7 @@ void ClarkCleanModel::doMinorIterations(Array<Float> & model,
                signedAbsRes, IPosition(2,maxPos(0),maxPos(1)),
                totalFlux, false, itsJustStarting );
 	itsJustStarting = false;
-      } catch (AipsError x) {
+      } catch (AipsError &x) {
         // if it throw an exception, do nothing
       } 
     }

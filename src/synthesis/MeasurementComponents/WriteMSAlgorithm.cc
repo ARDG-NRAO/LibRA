@@ -100,7 +100,7 @@ try{
     status=1;
 
 
-}catch (AipsError x) {
+}catch (AipsError &x) {
     cout <<  "Exceptionally yours: " << x.getMesg() << endl;
  } 
 

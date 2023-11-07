@@ -171,7 +171,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	memer.setAlpha(alpha);
 	info.get("BETA", beta);
 	memer.setBeta(beta); 
-      } catch  (AipsError x) {
+      } catch  (AipsError &x) {
 	// could not get Alpha and Beta for initialization
 	// continue
 	os << "Could not retrieve Alpha and Beta from previously initialized model" 

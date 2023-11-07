@@ -217,7 +217,7 @@ String Imager::imageName()
     }
     unlock();
     return name;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     unlock();
     os << LogIO::SEVERE << "Caught Exception: "<< x.getMesg() << LogIO::EXCEPTION; 
     return "";
@@ -1632,7 +1632,7 @@ String Imager::state()
     os << "  Image plane padding : " << padding_p << endl;
     
     this->unlock();
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;
@@ -1827,7 +1827,7 @@ Bool Imager::pb(const String& inimage,
     if (inComps_pointer) delete inComps_pointer; 
     if (outComps_pointer) delete outComps_pointer; 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     if (myPBp) delete myPBp;
     if (inImage_pointer) delete inImage_pointer;
     if (outImage_pointer) delete outImage_pointer; 
@@ -1929,7 +1929,7 @@ Bool Imager::pbguts(ImageInterface<Float>& inImage,
     StokesImageUtil::To(outImage, cIn);
     delete myPBp;    
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::POST;
     return false;
@@ -2302,7 +2302,7 @@ Bool Imager::correct(const Bool /*doparallactic*/, const Quantity& /*t*/)
  */
 
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     return false;
@@ -3850,7 +3850,7 @@ void Imager::writeHistory(LogIO& os){
     os.postLocally();
     if(!hist_p.null())
       hist_p->addMessage(os);
-  }catch (AipsError x) {
+  }catch (AipsError &x) {
     oslocal << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 	    << LogIO::POST;
   } 
@@ -3863,7 +3863,7 @@ void Imager::writeCommand(LogIO& os){
     os.postLocally();
     if(!hist_p.null())
       hist_p->cliCommand(os);
-  }catch (AipsError x) {
+  }catch (AipsError &x) {
     oslocal << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 	    << LogIO::POST;
   } 
@@ -4509,7 +4509,7 @@ Bool Imager::calcImFreqs(Vector<Double>& imgridfreqs,
     }
     //cerr<<"Final imgridfreqs(0)="<<imgridfreqs(0)<<endl;
     
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     this->unlock();
     os << LogIO::SEVERE << "Caught exception: " << x.getMesg()
        << LogIO::EXCEPTION;

@@ -906,7 +906,7 @@ void SingleDishSkyCal::calcWtScale()
       NewCalTable temp;
       try {
         getSelectedTable(temp, *ct_, ten, "");
-      } catch (AipsError x) {
+      } catch (AipsError &x) {
         continue;
       }
       temp = temp.sort("TIME");

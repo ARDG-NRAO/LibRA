@@ -854,7 +854,7 @@ void MFCleanImageSkyModel::restoreOverlappingModels(){
         partToUnmask.copyData(myexpr0);
 
       }
-      catch(AipsError x){
+      catch(AipsError &x){
 	/*
            os << LogIO::WARN
               << "no overlap or failure of copying the clean components"
@@ -913,7 +913,7 @@ void MFCleanImageSkyModel::mergeOverlappingMasks(){
 	      partToMerge.copyData(myexpr0);
 
 	    }
-	    catch(AipsError x){
+	    catch(AipsError &x){
 	      //most probably no overlap
 	      /*
 		os << LogIO::WARN

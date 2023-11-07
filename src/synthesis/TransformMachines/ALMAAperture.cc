@@ -253,7 +253,7 @@ namespace casa{
 	try{
 	  respImage_p(i) = new PagedImage<Complex>(respImageName(i));
 	}
-	catch(std::exception x){
+	catch(std::exception &x){
 	  ostringstream oss;
 	  oss << "Error reading antenna response image from path \""
 	      << respImageName(i) << "\": " << x.what();

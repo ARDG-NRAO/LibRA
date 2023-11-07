@@ -139,7 +139,7 @@ void MakeApproxPSFAlgorithm::task(){
 
     ms.unlock();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     cout <<  "Exceptionally yours: " << x.getMesg() << endl;
   };
 };

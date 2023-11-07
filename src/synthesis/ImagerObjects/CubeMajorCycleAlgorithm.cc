@@ -337,7 +337,7 @@ void CubeMajorCycleAlgorithm::task(){
 	//cerr << "***Time gridding/ffting " << tim.real() << endl;
           status_p = True;
         }
-        catch (AipsError x) {
+        catch (AipsError &x) {
 
            LogIO os( LogOrigin("SynthesisImagerVi2","CubeMajorCycle",WHERE) );
            os << LogIO::WARN << "Exception for chan range "  << chanRange_p  << " ---   "<< x.getMesg()   << LogIO::POST;

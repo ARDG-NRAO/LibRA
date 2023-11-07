@@ -611,7 +611,7 @@ ROVisIteratorImpl::setTileCache()
           else
             tacc.setCacheSize(startrow, 1);
         }
-        catch (AipsError x) {
+        catch (AipsError &x) {
           //It failed so leave the caching as is.
           continue;
         }

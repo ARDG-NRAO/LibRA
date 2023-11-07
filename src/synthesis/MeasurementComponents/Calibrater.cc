@@ -303,7 +303,7 @@ Bool Calibrater::initialize(MeasurementSet& inputMS,
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogOrigin("Calibrater","initialize",WHERE) 
 	      << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
@@ -463,7 +463,7 @@ void Calibrater::selectvis(const String& time,
     initialize(*ms_p,false,false,false);
     throw(AipsError("Error in data selection specification: " + x.getMesg()));
   } 
-  catch (AipsError x) {
+  catch (AipsError &x) {
     // Re-initialize with the existing MS
     logSink() << LogOrigin("Calibrater","selectvis",WHERE) 
 	      << LogIO::SEVERE << "Caught exception: " << x.getMesg()
@@ -563,7 +563,7 @@ Bool Calibrater::setapply (const String& type,
 	      << vc->applyinfo()
 	      << LogIO::POST;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << x.getMesg() 
 	      << " Check inputs and try again."
 	      << LogIO::POST;
@@ -586,7 +586,7 @@ Bool Calibrater::setapply (const String& type,
     
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     if (vc) delete vc;
@@ -616,7 +616,7 @@ Bool Calibrater::validatecallib(Record callib) {
       try {
 	CalLibSlice::validateCLS(thisicl);
       }
-      catch ( AipsError x) {
+      catch ( AipsError &x) {
 	logSink() << LogIO::SEVERE
 		  << "Caltable " << tabname 
 		  << " is missing the following fields: " 
@@ -712,7 +712,7 @@ Bool Calibrater::setcallib2(Record callib, const MeasurementSet* ms) {
       // ingest this table according to its callib
       vc->setCallib(thistabrec,lms);
       
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << x.getMesg() 
 		<< " Check inputs and try again."
 		<< LogIO::POST;
@@ -733,7 +733,7 @@ Bool Calibrater::setcallib2(Record callib, const MeasurementSet* ms) {
       // Maintain sort of apply list
       ve_p->setapply(vc_p);
       
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 		<< LogIO::POST;
       if (vc) delete vc;
@@ -1022,7 +1022,7 @@ Bool Calibrater::setsolve (const String& type,
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     unsetsolve();
@@ -1256,7 +1256,7 @@ Bool Calibrater::unsetapply(const Int& which) {
     if(ve_p) ve_p->setapply(vc_p);
 
     return true;
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     throw(AipsError("Error in Calibrater::unsetapply."));
@@ -1279,7 +1279,7 @@ Bool Calibrater::unsetsolve() {
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     throw(AipsError("Error in Calibrater::unsetsolve."));
@@ -1494,7 +1494,7 @@ Calibrater::correct2(String mode)
 	//cout << "Number of VisBuffers corrected: " << nvb << endl;
 
     }
-    catch (AipsError x) {
+    catch (AipsError &x) {
         logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 	              << LogIO::POST;
 
@@ -1604,7 +1604,7 @@ Bool Calibrater::corrupt2()
       //cout << "Number of VisBuffers corrupted: " << nvb << endl;
       
     }
-    catch (AipsError x) {
+    catch (AipsError &x) {
         logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 	              << LogIO::POST;
 
@@ -1934,7 +1934,7 @@ Bool Calibrater::initWeightsWithTsys(String wtmode, Bool dowtsp,
 		// clear-up Tsys caltable from list of apply
 		unsetapply();
 
-	} catch (AipsError x) {
+	} catch (AipsError &x) {
 		logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 				<< LogIO::POST;
 
@@ -2257,7 +2257,7 @@ Bool Calibrater::initWeights(String wtmode, Bool dowtsp) {
     }
 
   }
-  catch (AipsError x) {
+  catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
              << LogIO::POST;
 
@@ -2424,7 +2424,7 @@ Bool Calibrater::initWeights(Bool doBT, Bool dowtsp) {
     }
 
   }
-  catch (AipsError x) {
+  catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
              << LogIO::POST;
 
@@ -2485,7 +2485,7 @@ Bool Calibrater::solve() {
       //svc_p->selfGatherAndSolve(*vs_p,*ve_p);
     }
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
 
     logSink() << "Reseting entire solve/apply state." << LogIO::POST;
@@ -2695,7 +2695,7 @@ void Calibrater::fluxscale(const String& infile,
       throw(AipsError(tabErr.str()));
 
     }
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
 
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
@@ -2810,7 +2810,7 @@ void Calibrater::specifycal(const String& type,
 
     delete cal_;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
 	      << x.getMesg()
@@ -2905,7 +2905,7 @@ Bool Calibrater::smooth(const String& infile,
     else
       throw(AipsError("This type ("+svc->typeName()+") does not support smoothing."));
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
    
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
@@ -2982,7 +2982,7 @@ Bool Calibrater::reRefant(const casacore::String& infile,
     // Apparently, it worked
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
    
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
@@ -3067,7 +3067,7 @@ Bool Calibrater::listCal(const String& infile,
         
         return true;
         
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
         
         logSink() << LogIO::SEVERE
                   << "Caught Exception: "
@@ -3973,7 +3973,7 @@ void OldCalibrater::selectvis(const String& time,
     initialize(*ms_p,false,false,false);
     throw(AipsError("Error in data selection specification: " + x.getMesg()));
   } 
-  catch (AipsError x) {
+  catch (AipsError &x) {
     // Re-initialize with the existing MS
     logSink() << LogOrigin("Calibrater","selectvis",WHERE) 
 	      << LogIO::SEVERE << "Caught exception: " << x.getMesg()
@@ -4014,7 +4014,7 @@ Bool OldCalibrater::setapply (const String& type,
 	      << vc->applyinfo()
 	      << LogIO::POST;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << x.getMesg() 
 	      << " Check inputs and try again."
 	      << LogIO::POST;
@@ -4037,7 +4037,7 @@ Bool OldCalibrater::setapply (const String& type,
     
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     if (vc) delete vc;
@@ -4102,7 +4102,7 @@ Bool OldCalibrater::setcallib(Record callib) {
       // ingest this table according to its callib
       vc->setCallib(thistabrec,*mssel_p);
 
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << x.getMesg() 
 		<< " Check inputs and try again."
 		<< LogIO::POST;
@@ -4123,7 +4123,7 @@ Bool OldCalibrater::setcallib(Record callib) {
       // Maintain sort of apply list
       ve_p->setapply(vc_p);
       
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 		<< LogIO::POST;
       if (vc) delete vc;
@@ -4220,7 +4220,7 @@ Bool OldCalibrater::setcallib2(Record callib, const casacore::MeasurementSet* ms
       // ingest this table according to its callib
       vc->setCallib(thistabrec,lms);
 
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << x.getMesg() 
 		<< " Check inputs and try again."
 		<< LogIO::POST;
@@ -4241,7 +4241,7 @@ Bool OldCalibrater::setcallib2(Record callib, const casacore::MeasurementSet* ms
       // Maintain sort of apply list
       ve_p->setapply(vc_p);
       
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
       logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 		<< LogIO::POST;
       if (vc) delete vc;
@@ -4289,7 +4289,7 @@ Bool OldCalibrater::setsolve (const String& type,
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     unsetsolve();
@@ -4388,7 +4388,7 @@ Bool OldCalibrater::correct(String mode)
 	actRec_.defineRecord("VisEquation",ve_p->actionRec());
 
     }
-    catch (AipsError x) {
+    catch (AipsError &x) {
         logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 	              << LogIO::POST;
 
@@ -4464,7 +4464,7 @@ Bool OldCalibrater::corrupt() {
     // Now that we're out of the loop, summarize any errors.
     retval = summarize_uncalspws(uncalspw, "corrupt");
   }
-  catch (AipsError x) {
+  catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
 
@@ -4794,7 +4794,7 @@ Bool OldCalibrater::initWeightsWithTsys(String wtmode, Bool dowtsp,
 		// clear-up Tsys caltable from list of apply
 		unsetapply();
 
-	} catch (AipsError x) {
+	} catch (AipsError &x) {
 		logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg()
 				<< LogIO::POST;
 
@@ -4870,7 +4870,7 @@ Bool OldCalibrater::solve() {
 
     svc_p->clearChanMask();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
 
     logSink() << "Reseting entire solve/apply state." << LogIO::POST;
@@ -4921,7 +4921,7 @@ Vector<Double> OldCalibrater::modelfit(const Int& niter,
     // Return the parameter vector
     return uvmod.par();
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE << "Caught exception: " << x.getMesg() << LogIO::POST;
     throw(AipsError("Error in Calibrater::modelfit."));
     
@@ -5045,7 +5045,7 @@ void OldCalibrater::fluxscale(const String& infile,
       throw(AipsError(tabErr.str()));
 
     }
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
 
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
@@ -5220,7 +5220,7 @@ void OldCalibrater::accumulate(const String& intab,
     logSink() << "Finished accumulation." 
 	      << LogIO::POST;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
 	      << x.getMesg()
@@ -5325,7 +5325,7 @@ void OldCalibrater::specifycal(const String& type,
 
     delete cal_;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
 	      << x.getMesg()
@@ -5419,7 +5419,7 @@ Bool OldCalibrater::smooth(const String& infile,
     else
       throw(AipsError("This type ("+svc->typeName()+") does not support smoothing."));
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
    
     logSink() << LogIO::SEVERE
 	      << "Caught Exception: "
@@ -5503,7 +5503,7 @@ Bool OldCalibrater::listCal(const String& infile,
         
         return true;
         
-    } catch (AipsError x) {
+    } catch (AipsError &x) {
         
         logSink() << LogIO::SEVERE
                   << "Caught Exception: "
@@ -5611,7 +5611,7 @@ Bool OldCalibrater::initialize(MeasurementSet& inputMS,
 
     return true;
 
-  } catch (AipsError x) {
+  } catch (AipsError &x) {
     logSink() << LogOrigin("Calibrater","initialize",WHERE) 
 	      << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;

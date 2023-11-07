@@ -1270,7 +1270,7 @@ void WBCleanImageSkyModel::restoreOverlappingModels(){
 		partToUnmask.copyData(myexpr0);
 		
 	      }
-	      catch(AipsError x){
+	      catch(AipsError &x){
 		/*
 		  os << LogIO::WARN
 		  << "no overlap or failure of copying the clean components"

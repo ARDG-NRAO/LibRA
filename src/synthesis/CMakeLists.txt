@@ -23,31 +23,36 @@ BISON_TARGET(CalLibraryGramBison CalLibrary/CalLibraryGram.yy ${CMAKE_CURRENT_BI
 FLEX_TARGET(CalLibraryGramFlex CalLibrary/CalLibraryGram.ll ${CMAKE_CURRENT_BINARY_DIR}/CalLibraryGram.lcc COMPILE_FLAGS -PCalLibraryGram)
 add_flex_bison_dependency(CalLibraryGramFlex CalLibraryGramBison)
 
+set(MODULE_NAME "synthesis")
+# The declare_casacpp_component builds cmake variables with names constructed from MODULE_NAME.
+# The library name, e,g., becomes "casacpp_"+${MODULE_NAME}.  One just have to know! This. Is. CMAKE.
+set(LIB_NAME "casacpp_synthesis") 
+
 # Declare this component using the function in the top level CMakeList.txt
-declare_casacpp_component("synthesis")
+declare_casacpp_component(${MODULE_NAME})
 
 # We need to add the BISON and FLEX outputs to the sources.
 # This overwrites the target_sources command from declare_casacpp_component
-target_sources(casacpp_synthesis
+target_sources(${LIB_NAME}
   PRIVATE
-   ${synthesis_library_sources}
+   ${${MODULE_NAME}_library_sources}
    ${BISON_CalLibraryGramBison_OUTPUTS}
    ${FLEX_CalLibraryGramFlex_OUTPUTS}
   PUBLIC
-    ${synthesis_public_headers})
+    ${${MODULE_NAME}_public_headers})
 
 # External dependencies
 # directory where casacore is installed
-target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::CASACORE)
+target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::CASACORE)
 # OpenMP dependency
-#target_link_libraries(casacpp_synthesis PUBLIC OpenMP::OpenMP_CXX)
+#target_link_libraries(${LIB_NAME} PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency
-target_link_libraries(casacpp_synthesis PUBLIC PkgConfig::SAKURA)
+target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 # Libhpg dependency
-target_link_libraries(casacpp_synthesis PUBLIC hpg::hpg)
+target_link_libraries(${LIB_NAME} PUBLIC hpg::hpg)
 # Libparafeed dependency
-target_link_libraries(casacpp_synthesis PUBLIC parafeed::parafeed)
-#target_include_directories(casacpp_synthesis PRIVATE /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
+target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
+#target_include_directories(${LIB_NAME} PRIVATE /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
 #add_library(libparafeed SHARED IMPORTED)
 #set_property(TEST libparafeed )
 #set(PARAFEED_LIBRARIES /home/pjaganna/Software/casa_build_native/linux_64b/libparafeed.a /usr/lib/x86_64-linux-gnu/libreadline.so /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
@@ -55,19 +60,19 @@ target_link_libraries(casacpp_synthesis PUBLIC parafeed::parafeed)
 
 # Internal dependencies.  Include protobuf only if using GRPC
 if (CMAKE_USE_GRPC)
-  target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
-  add_dependencies(casacpp_synthesis casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+  add_dependencies(${LIB_NAME} casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
   # the generated protobuf headers
-  target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+  target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
 else()
-  target_link_libraries(casacpp_synthesis PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
-  add_dependencies(casacpp_synthesis casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
+  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
+  add_dependencies(${LIB_NAME} casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
 endif()
 
 # # the generated protobuf headers
-# target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
+# target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
 
 # Include directory for the generated flex/bison
-target_include_directories(casacpp_synthesis PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # the top level source directory, so that we can find all the includes
-target_include_directories(casacpp_synthesis PUBLIC ${CMAKE_SOURCE_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SOURCE_DIR})
