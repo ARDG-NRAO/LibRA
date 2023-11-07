@@ -241,7 +241,8 @@ void rGridFT::init() {
   uvOffset(1)=ny/2;
 
   // Now set up the gridder. The possibilities are BOX and SF
-  if(gridder) delete gridder; gridder=0;
+  if(gridder) delete gridder;
+  gridder=0;
   gridder = new ConvolveGridder<Double, Complex>(IPosition(2, nx, ny),
 						 uvScale, uvOffset,
 						 convType);
@@ -250,7 +251,8 @@ void rGridFT::init() {
   // we can use non-overlapped tiles. Otherwise we need to use
   // overlapped tiles and additive gridding so that only increments
   // to a tile are written.
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
 
   if(isTiled) {
     Float tileOverlap=0.5;
@@ -276,9 +278,11 @@ void rGridFT::init() {
 
 // This is nasty, we should use CountedPointers here.
 rGridFT::~rGridFT() {
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
   //if(arrayLattice) delete arrayLattice; arrayLattice=0;
-  if(gridder) delete gridder; gridder=0;
+  if(gridder) delete gridder;
+  gridder=0;
 }
 
 // Initialize for a transform from the Sky domain. This means that

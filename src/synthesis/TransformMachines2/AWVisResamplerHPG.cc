@@ -688,7 +688,7 @@ namespace casa{
 
     //    std::vector<hpg::VisData<HPGNPOL> > hpgVB;
     // = makeHPGVisBuffer<HPGNPOL>(sumwt,
-    unsigned int hpgVBNRows =
+    //    unsigned int hpgVBNRows =
       makeHPGVisBuffer<HPGNPOL>(//hpgVB_p,
 				hpgVBBucket_p,
 				sumwt,

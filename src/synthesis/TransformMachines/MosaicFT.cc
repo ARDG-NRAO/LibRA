@@ -223,7 +223,8 @@ void MosaicFT::init() {
                                                      "SF"));
 
   // Set up image cache needed for gridding. 
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
   /*
   if(isTiled) {
     Float tileOverlap=0.5;
@@ -244,7 +245,8 @@ void MosaicFT::init() {
 
 // This is nasty, we should use CountedPointers here.
 MosaicFT::~MosaicFT() {
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
   //  if(arrayLattice) delete arrayLattice; arrayLattice=0;
 }
 
@@ -692,7 +694,8 @@ void MosaicFT::finalizeToSky()
   if(!weightLattice.null()) weightLattice=0;
   griddedWeight.resize();
 
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+  if(pointingToImage) delete pointingToImage;
+  pointingToImage=0;
 }
 
 

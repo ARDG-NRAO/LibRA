@@ -253,11 +253,15 @@ Simulator::~Simulator()
   // Delete all im-plane calibration corruption terms
   resetimcal();
 
-  if(sim_p) delete sim_p; sim_p = 0;
+  if(sim_p) delete sim_p;
+  sim_p = 0;
 
-  if(sm_p) delete sm_p; sm_p = 0;
-  if(ft_p) delete ft_p; ft_p = 0;
-  if(cft_p) delete cft_p; cft_p = 0;
+  if(sm_p) delete sm_p;
+  sm_p = 0;
+  if(ft_p) delete ft_p;
+  ft_p = 0;
+  if(cft_p) delete cft_p;
+  cft_p = 0;
   
 }
 
@@ -343,12 +347,18 @@ Bool Simulator::close()
 
   ms_p->unlock();
   if(mssel_p) mssel_p->unlock();
-  if(vs_p) delete vs_p; vs_p = 0;
-  if(mssel_p) delete mssel_p; mssel_p = 0;
-  if(ms_p) delete ms_p; ms_p = 0;
-  if(sm_p) delete sm_p; sm_p = 0;
-  if(ft_p) delete ft_p; ft_p = 0;
-  if(cft_p) delete cft_p; cft_p = 0;
+  if(vs_p) delete vs_p;
+  vs_p = 0;
+  if(mssel_p) delete mssel_p;
+  mssel_p = 0;
+  if(ms_p) delete ms_p;
+  ms_p = 0;
+  if(sm_p) delete sm_p;
+  sm_p = 0;
+  if(ft_p) delete ft_p;
+  ft_p = 0;
+  if(cft_p) delete cft_p;
+  cft_p = 0;
 
   return true;
 }
@@ -360,7 +370,8 @@ Bool Simulator::resetviscal() {
     os << "Resetting all visibility corruption components" << LogIO::POST;
     
     // The noise term (for now)
-    if(ac_p) delete ac_p; ac_p=0;
+    if(ac_p) delete ac_p;
+    ac_p=0;
 
     // Delete all VisCals
     for (uInt i=0;i<vc_p.nelements();++i)
@@ -384,8 +395,10 @@ Bool Simulator::resetimcal() {
 
     os << "Reset all image-plane corruption components" << LogIO::POST;
     
-    if(vp_p) delete vp_p; vp_p=0;
-    if(gvp_p) delete gvp_p; gvp_p=0;
+    if(vp_p) delete vp_p;
+    vp_p=0;
+    if(gvp_p) delete gvp_p;
+    gvp_p=0;
     /*
     //    if(epJ_p) delete epJ_p; epJ_p=0;
     */
@@ -1565,14 +1578,16 @@ Bool Simulator::oldsetnoise(const String& mode,
     else if (mode=="simplenoise") {
       os << "Using simple noise model with noise level of " << simplenoise.getValue("Jy")
 	 << " Jy" << LogIO::POST;
-	if(ac_p) delete ac_p; ac_p = 0;
+	if(ac_p) delete ac_p;
+	ac_p = 0;
 	ac_p = new SimACoh(seed_p, simplenoise.getValue("Jy") );
     }
     else {
       os << "Using the Brown calculated noise model" << LogIO::POST;
       os << "  eta_ant=" << antefficiency << " eta_corr=" << correfficiency << " eta_spill=" << spillefficiency << LogIO::POST;
       os << "  tau=" << tau << " trx=" << trx << " tatmos=" << tatmos << " tcmb=" << tcmb << LogIO::POST;
-	if(ac_p) delete ac_p; ac_p = 0;
+	if(ac_p) delete ac_p;
+	ac_p = 0;
 	ac_p = new SimACohCalc(seed_p, antefficiency, correfficiency,
 			       spillefficiency, tau, Quantity(trx, "K"), 
 			       Quantity(tatmos, "K"), Quantity(tcmb, "K"));
@@ -2036,8 +2051,10 @@ Bool Simulator::observe(const String&   sourcename,
 		   add_observation, state_sig, state_ref, state_cal,state_load,state_sub_scan,state_obs_mode,observername,projectname);
 
 
-    if(ms_p) delete ms_p; ms_p=0;
-    if(mssel_p) delete mssel_p; mssel_p=0;
+    if(ms_p) delete ms_p;
+    ms_p=0;
+    if(mssel_p) delete mssel_p;
+    mssel_p=0;
     ms_p = new MeasurementSet(msname_p, 
 			      TableLock(TableLock::AutoNoReadLocking), 
 			      Table::Update);
@@ -2089,8 +2106,10 @@ Bool Simulator::observemany(const Vector<String>&   sourcenames,
     sim_p->observe(sourcenames, spwname, startTimes, stopTimes, directions,
 		   add_observation, state_sig, state_ref, state_cal,state_load,state_sub_scan,state_obs_mode,observername,projectname);
 
-    if(ms_p) delete ms_p; ms_p=0;
-    if(mssel_p) delete mssel_p; mssel_p=0;
+    if(ms_p) delete ms_p;
+    ms_p=0;
+    if(mssel_p) delete mssel_p;
+    mssel_p=0;
     ms_p = new MeasurementSet(msname_p, 
 			      TableLock(TableLock::AutoNoReadLocking), 
 			      Table::Update);
@@ -2566,13 +2585,18 @@ Bool Simulator::createSkyEquation(const Vector<String>& image,
 
 void Simulator::destroySkyEquation() 
 {
-  if(se_p) delete se_p; se_p=0;
-  if(sm_p) delete sm_p; sm_p=0;
-  if(vp_p) delete vp_p; vp_p=0;
-  if(componentList_p) delete componentList_p; componentList_p=0;
+  if(se_p) delete se_p;
+  se_p=0;
+  if(sm_p) delete sm_p;
+  sm_p=0;
+  if(vp_p) delete vp_p;
+  vp_p=0;
+  if(componentList_p) delete componentList_p;
+  componentList_p=0;
 
   for (Int model=0;model<Int(nmodels_p);model++) {
-    if(images_p[model]) delete images_p[model]; images_p[model]=0;
+    if(images_p[model]) delete images_p[model];
+    images_p[model]=0;
   }
 };
 
@@ -2738,8 +2762,10 @@ Bool Simulator::setdata(const Vector<Int>& spectralwindowids,
       };
     };
 
-    if(vs_p) delete vs_p; vs_p=0;
-    if(mssel_p) delete mssel_p; mssel_p=0;
+    if(vs_p) delete vs_p;
+    vs_p=0;
+    if(mssel_p) delete mssel_p;
+    mssel_p=0;
       
     // If a selection has been made then close the current MS
     // and attach to a new selected MS. We do this on the original
@@ -2772,7 +2798,8 @@ Bool Simulator::setdata(const Vector<Int>& spectralwindowids,
       //AlwaysAssert(mssel_p, AipsError);
       //mssel_p->rename(msname_p+"/SELECTED_TABLE", Table::Scratch);
       if(mssel_p->nrow()==0) {
-	delete mssel_p; mssel_p=0;
+	delete mssel_p;
+	mssel_p=0;
 	os << LogIO::WARN
 	   << "Selection is empty: reverting to original MeasurementSet"
 	   << LogIO::POST;
@@ -2826,7 +2853,8 @@ Bool Simulator::setdata(const Vector<Int>& spectralwindowids,
     }
     
     // Now create the VisSet
-    if(vs_p) delete vs_p; vs_p=0;
+    if(vs_p) delete vs_p;
+    vs_p=0;
     makeVisSet();
     //Now assign the source directions to something selected or sensible
     {

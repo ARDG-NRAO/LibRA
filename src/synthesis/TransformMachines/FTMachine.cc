@@ -339,7 +339,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     
     // Set up the UVWMachine. 
-    if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+    if(uvwMachine_p) delete uvwMachine_p;
+    uvwMachine_p=0;
 
 
     String observatory=vb.msColumns().observation().telescopeName()(0);
@@ -486,7 +487,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   
   FTMachine::~FTMachine() 
   {
-    if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+    if(uvwMachine_p) delete uvwMachine_p;
+    uvwMachine_p=0;
   }
   
   Bool FTMachine::interpolateFrequencyTogrid(const VisBuffer& vb,
@@ -852,7 +854,8 @@ void  FTMachine::girarUVW(Matrix<Double>& uvw, Vector<Double>& dphase,
       if((vb.fieldId()!=lastFieldId_p) || (vb.msId()!=lastMSId_p) || fixMovingSource_p) {
 	
 	String observatory=vb.msColumns().observation().telescopeName()(0);
-	if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+	if(uvwMachine_p) delete uvwMachine_p;
+	uvwMachine_p=0;
 	if(observatory.contains("ATCA") || observatory.contains("WSRT")){
 		//Tangent specified is being wrongly used...it should be for a
 	    	//Use the safest way  for now.
@@ -959,7 +962,8 @@ void  FTMachine::girarUVW(Matrix<Double>& uvw, Vector<Double>& dphase,
       if((vb.fieldId()!=lastFieldId_p) || (vb.msId()!=lastMSId_p) || fixMovingSource_p) {
 	
 	String observatory=vb.msColumns().observation().telescopeName()(0);
-	if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+	if(uvwMachine_p) delete uvwMachine_p;
+	uvwMachine_p=0;
 	if(observatory.contains("ATCA") || observatory.contains("WSRT")){
 		//Tangent specified is being wrongly used...it should be for a
 	    	//Use the safest way  for now.
