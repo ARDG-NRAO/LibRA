@@ -119,12 +119,18 @@ PBMath2DImage::PBMath2DImage(const ImageInterface<Complex>& jonesImage) :
 
 PBMath2DImage::~PBMath2DImage()
 {
-  if(reJonesImage_p) delete reJonesImage_p; reJonesImage_p=0;
-  if(imJonesImage_p) delete imJonesImage_p; imJonesImage_p=0;
-  if(incrementsReJones_p) delete incrementsReJones_p; incrementsReJones_p=0;
-  if(incrementsImJones_p) delete incrementsImJones_p; incrementsImJones_p=0;
-  if(referencePixelReJones_p) delete referencePixelReJones_p; referencePixelReJones_p=0;
-  if(referencePixelImJones_p) delete referencePixelImJones_p; referencePixelImJones_p=0;
+  if(reJonesImage_p) delete reJonesImage_p;
+  reJonesImage_p=0;
+  if(imJonesImage_p) delete imJonesImage_p;
+  imJonesImage_p=0;
+  if(incrementsReJones_p) delete incrementsReJones_p;
+  incrementsReJones_p=0;
+  if(incrementsImJones_p) delete incrementsImJones_p;
+  incrementsImJones_p=0;
+  if(referencePixelReJones_p) delete referencePixelReJones_p;
+  referencePixelReJones_p=0;
+  if(referencePixelImJones_p) delete referencePixelImJones_p;
+  referencePixelImJones_p=0;
 };
 
 PBMath2DImage& PBMath2DImage::operator=(const PBMath2DImage& other)
@@ -1181,8 +1187,10 @@ void PBMath2DImage::updateJones(const CoordinateSystem& coords,
       }
 
      // Delete any old images
-    if(reRegridJonesImage_p) delete reRegridJonesImage_p; reRegridJonesImage_p=0;
-    if(imRegridJonesImage_p) delete imRegridJonesImage_p; imRegridJonesImage_p=0;
+    if(reRegridJonesImage_p) delete reRegridJonesImage_p;
+    reRegridJonesImage_p=0;
+    if(imRegridJonesImage_p) delete imRegridJonesImage_p;
+    imRegridJonesImage_p=0;
 
 
    reRegridJonesImage_p = new TempImage<Float>(desiredShape,

@@ -3300,10 +3300,14 @@ Bool Imager::addResidualsToSkyEquation(const Vector<String>& imageNames) {
 
 void Imager::destroySkyEquation() 
 {
-  if(se_p) delete se_p; se_p=0;
-  if(sm_p) delete sm_p; sm_p=0;
-  if(vp_p) delete vp_p; vp_p=0;
-  if(gvp_p) delete gvp_p; gvp_p=0;
+  if(se_p) delete se_p;
+  se_p=0;
+  if(sm_p) delete sm_p;
+  sm_p=0;
+  if(vp_p) delete vp_p;
+  vp_p=0;
+  if(gvp_p) delete gvp_p;
+  gvp_p=0;
   
   if(componentList_p) delete componentList_p; componentList_p=0;
  

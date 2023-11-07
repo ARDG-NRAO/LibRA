@@ -252,7 +252,8 @@ void SDGrid::init() {
   // we can use non-overlapped tiles. Otherwise we need to use
   // overlapped tiles and additive gridding so that only increments
   // to a tile are written.
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
 
   convType=downcase(convType);
   logIO() << "Convolution function : " << convType << LogIO::DEBUG1 << LogIO::POST;
@@ -369,7 +370,8 @@ void SDGrid::init() {
     logIO_p << "Unknown convolution function " << convType << LogIO::EXCEPTION;
   }
 
-  if(wImage) delete wImage; wImage=0;
+  if(wImage) delete wImage;
+  wImage=0;
   wImage = new TempImage<Float>(image->shape(), image->coordinates());
 
   /*if(isTiled) {
@@ -401,12 +403,18 @@ void SDGrid::init() {
 // This is nasty, we should use CountedPointers here.
 SDGrid::~SDGrid() {
   //fclose(pfile);
-  if (imageCache) delete imageCache; imageCache = 0;
-  if (arrayLattice) delete arrayLattice; arrayLattice = 0;
-  if (wImage) delete wImage; wImage = 0;
-  if (wImageCache) delete wImageCache; wImageCache = 0;
-  if (wArrayLattice) delete wArrayLattice; wArrayLattice = 0;
-  if (interpolator) delete interpolator; interpolator = 0;
+  if (imageCache) delete imageCache;
+  imageCache = 0;
+  if (arrayLattice) delete arrayLattice;
+  arrayLattice = 0;
+  if (wImage) delete wImage;
+  wImage = 0;
+  if (wImageCache) delete wImageCache;
+  wImageCache = 0;
+  if (wArrayLattice) delete wArrayLattice;
+  wArrayLattice = 0;
+  if (interpolator) delete interpolator;
+  interpolator = 0;
 }
 
 void SDGrid::findPBAsConvFunction(const ImageInterface<Complex>& image,
@@ -622,10 +630,12 @@ void SDGrid::initializeToVis(ImageInterface<Complex>& iimage,
     wGriddedData.resize(gridShape);
     wGriddedData = 0.0;
 
-    if(arrayLattice) delete arrayLattice; arrayLattice=0;
+    if(arrayLattice) delete arrayLattice;
+    arrayLattice=0;
     arrayLattice = new ArrayLattice<Complex>(griddedData);
 
-    if(wArrayLattice) delete wArrayLattice; wArrayLattice=0;
+    if(wArrayLattice) delete wArrayLattice;
+    wArrayLattice=0;
     wArrayLattice = new ArrayLattice<Float>(wGriddedData);
     wArrayLattice->set(0.0);
     wLattice=wArrayLattice;
@@ -659,7 +669,8 @@ void SDGrid::finalizeToVis()
     imageCache->showCacheStatistics(o);
     logIO() << o.str() << LogIO::POST;
     }*/
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+  if(pointingToImage) delete pointingToImage;
+  pointingToImage=0;
 }
 
 
@@ -729,12 +740,14 @@ void SDGrid::initializeToSky(ImageInterface<Complex>& iimage,
         << "gridShape = " << gridShape << LogIO::POST;
     griddedData.resize(gridShape);
     griddedData=Complex(0.0);
-    if(arrayLattice) delete arrayLattice; arrayLattice=0;
+    if(arrayLattice) delete arrayLattice;
+    arrayLattice=0;
     arrayLattice = new ArrayLattice<Complex>(griddedData);
     lattice=arrayLattice;
     wGriddedData.resize(gridShape);
     wGriddedData=0.0;
-    if(wArrayLattice) delete wArrayLattice; wArrayLattice=0;
+    if(wArrayLattice) delete wArrayLattice;
+    wArrayLattice=0;
     wArrayLattice = new ArrayLattice<Float>(wGriddedData);
     wLattice=wArrayLattice;
 
@@ -773,7 +786,8 @@ void SDGrid::finalizeToSky()
   }
   */
 
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+  if(pointingToImage) delete pointingToImage;
+  pointingToImage=0;
 }
 
 Array<Complex>* SDGrid::getDataPointer(const IPosition& centerLoc2D,
