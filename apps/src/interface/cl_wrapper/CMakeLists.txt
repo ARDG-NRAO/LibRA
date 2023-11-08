@@ -2,7 +2,7 @@
 set (CMAKE_CXX_STANDARD 11)
 set(OPT "-g -O2 ")
 message("Apps_BUILD_TESTS is: ${Apps_BUILD_TESTS}")
-set(WRAPPER_LIST roadrunner hummbee mssplit subms tableinfo wabbler coyote)
+set(WRAPPER_LIST roadrunner hummbee mssplit subms tableinfo coyote)
 foreach(WRAPPER IN LISTS WRAPPER_LIST)
 	#message("Building CLWrapper: ${WRAPPER}")
 	if(Apps_BUILD_TESTS)
