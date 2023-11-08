@@ -554,12 +554,6 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       // scope.
       LibHPG libhpg(ftmName=="awphpg");
       //  std::atexit(tpl_finalize);
-      std::set_terminate([]()
-			 {
-			   std::cout << "Unhandled exception of unknown origin"
-				     << endl << std::flush;
-			   std::abort();
-			 });
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert

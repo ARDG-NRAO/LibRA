@@ -1,7 +1,7 @@
 
 set (CMAKE_CXX_STANDARD 11)
 set(OPT "-g -O2 ")
-set(WRAPPER_LIST roadrunner hummbee mssplit subms tableinfo wabbler)
+set(WRAPPER_LIST roadrunner hummbee mssplit subms tableinfo wabbler coyote)
 foreach(WRAPPER IN LISTS WRAPPER_LIST)
     add_executable(${WRAPPER} ${WRAPPER}.cc)
     target_link_libraries(${WRAPPER} PRIVATE ${APP_LINK_LIBRARIES})
