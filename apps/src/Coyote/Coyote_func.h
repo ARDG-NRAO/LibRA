@@ -244,8 +244,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   conjPolMat = pop_p->makeConjPolMat(visPol,polMap);
   conjPolIndexMat = pop_p->makeConjPol2CFMat(visPol,polMap);
 
-  cerr << "polMap: "; cerr << polMap << endl;
-  cerr << "visPolMap: "; cerr << visPolMap << endl;
+  // cerr << "polMap: "; cerr << polMap << endl;
+  // cerr << "visPolMap: "; cerr << visPolMap << endl;
   //------------------------a mess----------------------------------------------------
 
   // spwidList      = db.spwidList;
@@ -257,7 +257,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   //  awcf_l->setSpwSelection(spwChanSelFlag_p);
   awcf_l->setSpwFreqSelection(mssFreqSel);
   
-  cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
+  // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
   
   try
     {
