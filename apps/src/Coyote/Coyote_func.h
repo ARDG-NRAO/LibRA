@@ -136,6 +136,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCache,
 	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
 	    float &pbLimit,
@@ -210,7 +211,6 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   // cgrid.table().markForDelete();
   
   Int wConvSize = nW;
-  Float pa=0.0, dpa=400.0;
   const Vector<Double> uvScale(3,0);
   Bool fillCF = false;
   
@@ -238,7 +238,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
   Vector<Int> visPol((db.vb_l)->correlationTypes());
   polMat = pop_p->makePolMat(visPol,polMap);
-  cerr << visPol << " " << polMap << endl;
+  //cerr << visPol << " " << polMap << endl;
   polIndexMat = pop_p->makePol2CFMat(visPol,polMap);
 
   conjPolMat = pop_p->makeConjPolMat(visPol,polMap);
@@ -261,12 +261,14 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   
   try
     {
+      double D2R=C::pi/180.0;
+      pa *= D2R; dpa *= D2R;
       awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
 			       pop_p, pa, dpa, uvScale, uvOffset,
 			       vbFreqSelection, *cfs2_l, *cfswt2_l, fillCF);
 
-      cfs2_l->show("CFStore",cerr,true);
-      cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","",    Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
+      //      cfs2_l->show("CFStore",cerr,true);
+      cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
       //      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
 	Double memUsed=cfs2_l->memUsage();
 	String unit(" KB");
