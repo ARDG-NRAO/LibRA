@@ -269,6 +269,8 @@ namespace casa{
     //
     // Lambda function to fill CFs with a given prefix.
     //
+    memCache2_p.resize(1);
+    memCacheWt2_p.resize(1);
     auto fillCF_l = [&](CFStoreCacheType2& memCache2_l, casacore::String& cfprefix)
 		    {
 		      fillCFSFromDisk(dirObj,cfprefix, memCache2_l, true, selectedPA, dPA, verbose);

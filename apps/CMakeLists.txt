@@ -7,6 +7,8 @@ include(FetchContent)
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
 set(OPT "-g -O2 ")
 
+set(BUILD_TYPE "RelWithDebInfo")
+
 set(ARCH "linux_64b")
 set(INSTALLDIR "install/${ARCH}")
 set(DEPDIR "${CMAKE_CURRENT_LIST_DIR}/../dependencies")
@@ -46,6 +48,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${DEPLIB}")
+set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP

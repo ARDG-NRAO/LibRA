@@ -954,7 +954,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     conjPolMap = pop->getConjPolMat();
     conjPolIndexMap = pop->getConjPol2CFMat();
 
-    //cerr << "AWCF: " << polMap << endl << polIndexMap << endl << conjPolMap << endl << conjPolIndexMap << endl;
+   cerr << "AWCF: " << polMap << endl << polIndexMap << endl << conjPolMap << endl << conjPolIndexMap << endl;
     
     // for(uInt ip=0;ip<pp.nelements();ip++)
     // 	pp(ip)=translateStokesToCrossPol(skyStokes(ip));
@@ -1132,7 +1132,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			     *psTerm_p, *wTerm_p, *aTerm_p, !fillCF);
 	}
 	// cfb_p->show(NULL,cerr);
-	//cfb_p->makePersistent("test.cf");
+	// cfb_p->makePersistent("test.cf");
 	// cfwtb_p->makePersistent("test.wtcf");
 	
       } // End of loop over baselines

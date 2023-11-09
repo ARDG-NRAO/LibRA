@@ -196,6 +196,10 @@ namespace casa
 		     const int nWPlanes, const bool wbAWP,
 		     const bool forced);
 
+      bool matchPol(const vi::VisBuffer2& vb,
+		    const casacore::CoordinateSystem& imCoords,
+		    casacore::Vector<int>& polMap,
+		    casacore::Vector<casacore::Stokes::StokesTypes>& visPolMap_p);
     }
     
     void getHADec(casacore::MeasurementSet& ms, const VisBuffer2& vb, casacore::Double &HA, casacore::Double& RA, casacore::Double& Dec);
