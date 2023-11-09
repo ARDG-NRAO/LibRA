@@ -144,7 +144,7 @@ public:
 	   ):
     msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
   {
-    LogIO log_l(LogOrigin("roadrunner","DataBase"));
+    LogIO log_l(LogOrigin("DataBase","DataBase"));
     log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
 	  << "setting up data iterators...all that boring stuff."
 	  << LogIO::POST;
@@ -253,7 +253,7 @@ public:
   //
   ~DataBase()
   {
-    LogIO log_l(LogOrigin("roadrunner","~DataBase"));
+    LogIO log_l(LogOrigin("DataBase","~DataBase"));
     log_l << "Closing the database.  Detaching the MS for cleanup." << LogIO::POST;
     //detach the ms for cleaning up
     theMS = MeasurementSet();

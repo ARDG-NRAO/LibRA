@@ -169,16 +169,14 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
-  LogIO log_l(LogOrigin("roadrunner", "Roadrunner_func"));
+  LogIO log_l(LogOrigin("coyote", "Coyote_func"));
   
-  bool wTerm = false;
-  if (nW > 1) wTerm=true;
+  bool wTerm = (nW > 1)? true : false;
+
+  //-------------------------------------------------------------------------------------------------
   // Instantiate AWCF object so we can use it to make cf.
   // The AWCF::makeConvFunc requires the following objects
-  // CountedPtr<refim::ConvolutionFunction> awcf_l = AWProjectFT::makeCFObject(telescopeName, 
-  //  aTerm,
-  //  psTerm, wTerm, true, WBAwp,
-  //  conjBeams);
+  //
   CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
   CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
   CountedPtr<refim::WTerm> WTerm_l = new WTerm();
@@ -189,8 +187,13 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 
   CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);						
   awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);						
+  //-------------------------------------------------------------------------------------------------
 
-  //  const String imageNamePrefix=imageNamePrefix;
+
+  //-------------------------------------------------------------------------------------------------
+  // Instantiate the CFCache object, initialize it and extract the
+  // CFStore objects from it (the CFC in-memory model).
+  //
   CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
   cfCacheObj_l->setCacheDir(cfCache.data());
   cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
@@ -212,7 +215,11 @@ void Coyote(bool &restartUI, int &argc, char **argv,
       cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
       cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
     }
+  //-------------------------------------------------------------------------------------------------
 
+  //-------------------------------------------------------------------------------------------------
+  // Instantite the DataBase object, make a complex grid using meta
+  // from the DataBase and the sky-image provided.
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
   string uvDistStr;
@@ -242,7 +249,16 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   uvOffset(0)=imSize[0];
   uvOffset(1)=imSize[1];
   uvOffset(2)=0;
-  // Replace this with the actual polarization parser.
+  //-------------------------------------------------------------------------------------------------
+
+  //-------------------------------------------------------------------------------------------------
+  // Instantiate the PolOuterProduce object which encapsulates the
+  // polarization maps from VB to Muller (which is CFs) to the
+  // image-plane polarizations requested.  Set the necessary maps in
+  // the ConvolutionFunction object (awcf_l variable).
+  //
+  //Replace this with the actual polarization parser (this commented
+  //existed earlier and I (SB) don't know what it may mean).
   Vector<int> polMap;
   Vector<casacore::Stokes::StokesTypes> visPolMap;//{0,1,2,3};
 
@@ -260,27 +276,43 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   awcf_l->setPolMap(polMap);
   //  awcf_l->setSpwSelection(spwChanSelFlag_p);
   awcf_l->setSpwFreqSelection(mssFreqSel);
+  //-------------------------------------------------------------------------------------------------
   
   // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
-  
   try
     {
-      double D2R=C::pi/180.0;
+      // Get the PA from the MS/VB if UI setting is outside the valid
+      // range for PA [-180, +180].
       if (abs(pa) > 180.0) pa=getPA(*(db.vb_l));
+
+      constexpr double D2R=M_PI/180.0;
       pa *= D2R; dpa *= D2R;
 
-      // This currently makes both CF and WTCF. 
+      //
+      // This currently makes both CF and WTCF.  It will also fill the
+      // CFs (serially) for fillCF=true.  For fillCF=false (default
+      // value here), it will produce an "empty CFC" which has
+      // single-pixel CFs with the necessary information in the
+      // header/MiscInfo to fill them later. This allows
+      // parallelization of the compute intensive step (filling the
+      // CFs) which is highly parallelizable and scales well.
+      //
       awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
 			       pop_p, pa, dpa, uvScale, uvOffset,
 			       vbFreqSelection,
 			       *cfs2_l, *cfswt2_l,
 			       fillCF);
 
-      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
+      //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
+
+      //
+      // Save the contents of the CFStore on the disk.
+      //
       cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
       cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
 
+      // Report some stats.
       Double memUsed=cfs2_l->memUsage();
       String unit(" KB");
       memUsed = (Int)(memUsed/1024.0+0.5);
@@ -293,7 +325,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
     }
   catch(AipsError &e)
     {
-      cerr << e.what() << endl;
+      log_l << e.what() << endl;
     }
   
 }
