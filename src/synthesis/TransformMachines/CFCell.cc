@@ -111,7 +111,7 @@ namespace casa{
     // don't know how to make a 0x0 pixel image to just save the CS
     // and miscInfo information to the disk).
     if ((storage_p->shape()).product()==0) tmpShape = IPosition(4,2,1,1,1);
-
+    else tmpShape = storage_p->shape();
     // cerr << "thisCF.shape() = "
     //   //<< thisCF.shape()
     // 	 << " " << tmpShape << " " << storage_p->shape() << endl;
