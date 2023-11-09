@@ -122,10 +122,33 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
 }
 
-CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2, std::string &stokes, std::string &mType)
+CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
+					  Vector<casacore::Stokes::StokesTypes> visPolMap,
+					  Vector<int> polMap,
+					  std::string &stokes, std::string &mType)
 {
   CountedPtr<refim::PolOuterProduct> pop_l = new PolOuterProduct;
   
+  //------------------------a mess----------------------------------------------------
+  Vector<Int> intpolmap(visPolMap.nelements());
+  for (uInt kk=0; kk < intpolmap.nelements(); ++kk){
+    intpolmap[kk]=Int(visPolMap[kk]);
+  }
+  pop_l->initCFMaps(intpolmap, polMap);
+
+  PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
+  Vector<Int> visPol(vb2.correlationTypes());
+  polMat = pop_l->makePolMat(visPol,polMap);
+  //cerr << visPol << " " << polMap << endl;
+  polIndexMat = pop_l->makePol2CFMat(visPol,polMap);
+
+  conjPolMat = pop_l->makeConjPolMat(visPol,polMap);
+  conjPolIndexMat = pop_l->makeConjPol2CFMat(visPol,polMap);
+
+  // cerr << "polMap: "; cerr << polMap << endl;
+  // cerr << "visPolMap: "; cerr << visPolMap << endl;
+  //------------------------a mess----------------------------------------------------
+
   return pop_l;
 }
 
@@ -135,6 +158,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCache,
+	    string& imageNamePrefix,
 	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
@@ -165,29 +189,29 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);						
   awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);						
 
-  const String imageNamePrefix=String("");
+  //  const String imageNamePrefix=imageNamePrefix;
   CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
   cfCacheObj_l->setCacheDir(cfCache.data());
   cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
   cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
   try
     {
-      cfCacheObj_l->initCache2(false);//, 400.0, -1.0,imageNamePrefix+casacore::String("CFS*")); // This would load only WTCFS* CFs
+      cfCacheObj_l->initCache2(false, dpa, -1.0,
+			       casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
     }
   catch (AipsError &e)
     {
-      cerr << e.what() << endl;
+      // Ignore the "CFS is empty" exception.
+      //cerr << e.what() << endl;
     }
   CountedPtr<casa::refim::CFStore2> cfs2_l, cfswt2_l;
-  // cfs2_l = new casa::refim::CFStore2();
-  // cfswt2_l = new casa::refim::CFStore2();
+
   if (!cfCacheObj_l.null())
     {
       cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
       cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
     }
 
-  
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
   string uvDistStr;
@@ -198,17 +222,15 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
 	      doSPWDataIter);
   
-  PagedImage<Complex> cgrid = makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
-						   imageName, imSize, cellSize, phaseCenter, 
-						   stokes, refFreqStr);
   // Creating a complex image from the user inputed image.
   // To be turned into the most basic parameters needed to make CF
   // To read an image on disk you need PagedImage. 
   // This is inherited from ImageInterface so should be able to pass
   // an image interface object from it.
-  
-  
-  // cgrid.table().markForDelete();
+  PagedImage<Complex> cgrid = makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
+						   imageName, imSize, cellSize, phaseCenter, 
+						   stokes, refFreqStr);
+  cgrid.table().markForDelete();
   
   Int wConvSize = nW;
   const Vector<Double> uvScale(3,0);
@@ -226,27 +248,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   refim::SynthesisUtils::matchPol(*(db.vb_l),cgrid.coordinates(),polMap,visPolMap);
   // Initialize pop to have the right values
   
-  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), stokes, mType);
+  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), visPolMap, polMap, stokes, mType);
 
-  //------------------------a mess----------------------------------------------------
-  Vector<Int> intpolmap(visPolMap.nelements());
-  for (uInt kk=0; kk < intpolmap.nelements(); ++kk){
-    intpolmap[kk]=Int(visPolMap[kk]);
-  }
-  pop_p->initCFMaps(intpolmap, polMap);
-
-  PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
-  Vector<Int> visPol((db.vb_l)->correlationTypes());
-  polMat = pop_p->makePolMat(visPol,polMap);
-  //cerr << visPol << " " << polMap << endl;
-  polIndexMat = pop_p->makePol2CFMat(visPol,polMap);
-
-  conjPolMat = pop_p->makeConjPolMat(visPol,polMap);
-  conjPolIndexMat = pop_p->makeConjPol2CFMat(visPol,polMap);
-
-  // cerr << "polMap: "; cerr << polMap << endl;
-  // cerr << "visPolMap: "; cerr << visPolMap << endl;
-  //------------------------a mess----------------------------------------------------
 
   // spwidList      = db.spwidList;
   // fieldidList    = db.fieldidList;
@@ -262,24 +265,30 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   try
     {
       double D2R=C::pi/180.0;
+      if (abs(pa) > 180.0) pa=getPA(*(db.vb_l));
       pa *= D2R; dpa *= D2R;
+
+      // This currently makes both CF and WTCF. 
       awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
 			       pop_p, pa, dpa, uvScale, uvOffset,
-			       vbFreqSelection, *cfs2_l, *cfswt2_l, fillCF);
+			       vbFreqSelection,
+			       *cfs2_l, *cfswt2_l,
+			       fillCF);
 
+      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
       cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
-      //      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
-	Double memUsed=cfs2_l->memUsage();
-	String unit(" KB");
-	memUsed = (Int)(memUsed/1024.0+0.5);
-	if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
+      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
 
-	LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
-	log_l << "Convolution function memory footprint:" 
-	      << (Int)(memUsed) << unit << " out of a maximum of "
-	      << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
+      Double memUsed=cfs2_l->memUsage();
+      String unit(" KB");
+      memUsed = (Int)(memUsed/1024.0+0.5);
+      if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
 
+      LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
+      log_l << "Convolution function memory footprint:" 
+	    << (Int)(memUsed) << unit << " out of a maximum of "
+	    << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
     }
   catch(AipsError &e)
     {

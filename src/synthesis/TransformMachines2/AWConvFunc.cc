@@ -1117,6 +1117,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	if (fillCF) log_l << "Making CFs for baseline type " << ib << LogIO::POST;
 	else        log_l << "Making empty CFs for baseline type " << ib << LogIO::POST;
 	{
+	  //
+	  // Get VB PA isn't necessary here since the pa passed to
+	  // this function is already derived from VB in AWP.  In
+	  // general this function should use whatever is passed to
+	  // it, and the caller should decide the source PA value
+	  // (e.g. VB or the UI).
+	  //
 	  Double vbPA = getPA(vb), freqHi;
 
 	  
@@ -1127,7 +1134,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	
 	  freqHi = refVal[0];
 	  fillConvFuncBuffer(*cfb_p, *cfwtb_p, nx, nx, skyIncr, convSize, convSize, freqValues, wValues, wScale,
-			     vbPA, freqHi,
+			     paQuant.getValue(),//;vbPA,
+			     freqHi,
 			     polMap, polIndexMap, vb, psScale,
 			     *psTerm_p, *wTerm_p, *aTerm_p, !fillCF);
 	}
