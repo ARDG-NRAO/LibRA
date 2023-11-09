@@ -164,7 +164,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
 	    float &pbLimit,
-	    int &cfBufferSize, int &cfOversampling)
+	    int &cfBufferSize, int &cfOversampling,
+	    bool& dryRun)
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
@@ -234,7 +235,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   
   Int wConvSize = nW;
   const Vector<Double> uvScale(3,0);
-  Bool fillCF = false;
+  Bool fillCF = !dryRun;
   
   Vector<Double> uvOffset;
   uvOffset.resize(3);
