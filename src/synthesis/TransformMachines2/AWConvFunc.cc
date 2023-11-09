@@ -1124,7 +1124,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	  // it, and the caller should decide the source PA value
 	  // (e.g. VB or the UI).
 	  //
-	  Double vbPA = getPA(vb), freqHi;
+	  Double vbPA = getPA(vb);
+	  Double freqHi;
 
 	  
 	  Vector<Double> chanFreq = vb.getFrequencies(0);

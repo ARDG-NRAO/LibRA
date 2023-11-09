@@ -48,8 +48,9 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	string& fieldStr, string& spwStr, string& phaseCenter,
 	bool& conjBeams,
 	float& pbLimit,
-  int& cfBufferSize,
-  int& cfOversampling)
+	int& cfBufferSize,
+	int& cfOversampling,
+	bool& dryRun)
 {
   if (!restart)
     {
@@ -97,6 +98,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetFValp("pblimit", pbLimit,i);
       i=1;clgetIValp("buffersize", cfBufferSize,i);
       i=1;clgetIValp("oversampling", cfOversampling,i);
+      i=1;clgetBValp("dryrun", dryRun,i); 
       
      EndCL();
 
@@ -151,6 +153,7 @@ int main(int argc, char **argv)
   bool conjBeams= true;
   bool psTerm = false;
   bool aTerm = true;
+  bool dryRun = true;
   float pbLimit=1e-3;
   float pa=-200.0, // Get PA from the MS
     dpa=360.0; // Don't rotate CFs for PA
@@ -160,7 +163,7 @@ int main(int argc, char **argv)
      cfCache, imageNamePrefix, WBAwp,
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
-     pbLimit, cfBufferSize, cfOversampling);
+     pbLimit, cfBufferSize, cfOversampling,dryRun);
 
   set_terminate(NULL);
 
@@ -173,8 +176,9 @@ int main(int argc, char **argv)
 	   WBAwp,
 	   psTerm, aTerm, mType, pa, dpa,
 	   fieldStr,spwStr, phaseCenter,
-		 conjBeams,
-     pbLimit, cfBufferSize, cfOversampling);
+	   conjBeams, pbLimit,
+	   cfBufferSize, cfOversampling,
+	   dryRun);
 
     }
   catch(AipsError& er)
