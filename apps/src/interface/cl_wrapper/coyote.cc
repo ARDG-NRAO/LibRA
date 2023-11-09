@@ -42,7 +42,7 @@
 void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	string& imageName, string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
-	int& nW, string& CFCache, 
+	int& nW, string& CFCache, string& imageNamePrefix,
 	bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
 	float& pa, float& dpa,
 	string& fieldStr, string& spwStr, string& phaseCenter,
@@ -81,11 +81,13 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 
       i=1;clgetIValp("wplanes", nW,i);  
       i=1;clgetSValp("cfcache", CFCache,i);
+      i=1;clgetSValp("nameprefix", imageNamePrefix,i);
+
       i=1;clgetBValp("wbawp", WBAwp,i);
       i=1;clgetBValp("aterm", aTerm,i); 
       i=1;clgetBValp("psterm", psTerm,i); 
       i=1;clgetSValp("muellertype", mType,i);
-      i=1;clgetFValp("pa", pa, i);
+      i=1;dbgclgetFValp("pa", pa, i);
       i=1;clgetFValp("dpa", dpa, i);
 
       i=1;clgetSValp("field", fieldStr,i);
@@ -137,7 +139,8 @@ int main(int argc, char **argv)
   // The Factory Settings.
   string MSNBuf="", cfCache="", fieldStr="", spwStr="*",
     imageName,cmplxGridName="",phaseCenter, stokes="I",
-    refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal" ;
+    refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
+    imageNamePrefix="";
   
   float cellSize;//refFreq=3e09, freqBW=3e9;
   int NX=0, nW=1, cfBufferSize=512, cfOversampling=20;
@@ -149,11 +152,12 @@ int main(int argc, char **argv)
   bool psTerm = false;
   bool aTerm = true;
   float pbLimit=1e-3;
-  float pa=0.0, dpa=360.0;
+  float pa=-200.0, // Get PA from the MS
+    dpa=360.0; // Don't rotate CFs for PA
   
   UI(restartUI, argc, argv, MSNBuf,imageName, telescopeName,
      NX, cellSize, stokes, refFreqStr, nW,
-     cfCache, WBAwp,
+     cfCache, imageNamePrefix, WBAwp,
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
      pbLimit, cfBufferSize, cfOversampling);
@@ -165,7 +169,8 @@ int main(int argc, char **argv)
     Coyote(restartUI, argc, argv, MSNBuf,imageName, 
 	   telescopeName, NX, cellSize,
 	   stokes, refFreqStr, nW,
-	   cfCache, WBAwp,
+	   cfCache, imageNamePrefix,
+	   WBAwp,
 	   psTerm, aTerm, mType, pa, dpa,
 	   fieldStr,spwStr, phaseCenter,
 		 conjBeams,
