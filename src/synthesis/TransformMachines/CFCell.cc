@@ -110,7 +110,7 @@ namespace casa{
     // being made persistent.  So make a 2x2 pixel image (since I
     // don't know how to make a 0x0 pixel image to just save the CS
     // and miscInfo information to the disk).
-    if ((storage_p->shape()).product()==0) tmpShape = IPosition(4,2,2,1,1);
+    if ((storage_p->shape()).product()==0) tmpShape = IPosition(4,2,1,1,1);
 
     // cerr << "thisCF.shape() = "
     //   //<< thisCF.shape()
