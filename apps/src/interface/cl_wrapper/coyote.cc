@@ -42,9 +42,10 @@
 void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	string& imageName, string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
-  int& nW, string& CFCache, 
+	int& nW, string& CFCache, 
 	bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
-  string& fieldStr, string& spwStr, string& phaseCenter,
+	float& pa, float& dpa,
+	string& fieldStr, string& spwStr, string& phaseCenter,
 	bool& conjBeams,
 	float& pbLimit,
   int& cfBufferSize,
@@ -84,13 +85,16 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetBValp("aterm", aTerm,i); 
       i=1;clgetBValp("psterm", psTerm,i); 
       i=1;clgetSValp("muellertype", mType,i);
+      i=1;clgetFValp("pa", pa, i);
+      i=1;clgetFValp("dpa", dpa, i);
+
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
       i=1;clgetSValp("phasecenter", phaseCenter,i);
       i=1;clgetBValp("conjbeams", conjBeams,i);
       i=1;clgetFValp("pblimit", pbLimit,i);
-      i=1;clgetIValp("cfBufferSize", cfBufferSize,i);
-      i=1;clgetIValp("cfOversampling", cfOversampling,i);
+      i=1;clgetIValp("buffersize", cfBufferSize,i);
+      i=1;clgetIValp("oversampling", cfOversampling,i);
       
      EndCL();
 
@@ -145,11 +149,12 @@ int main(int argc, char **argv)
   bool psTerm = false;
   bool aTerm = true;
   float pbLimit=1e-3;
+  float pa=0.0, dpa=360.0;
   
   UI(restartUI, argc, argv, MSNBuf,imageName, telescopeName,
      NX, cellSize, stokes, refFreqStr, nW,
      cfCache, WBAwp,
-     psTerm, aTerm, mType,
+     psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
      pbLimit, cfBufferSize, cfOversampling);
 
@@ -158,11 +163,11 @@ int main(int argc, char **argv)
   try
     {
     Coyote(restartUI, argc, argv, MSNBuf,imageName, 
-		 telescopeName, NX, cellSize,
-		 stokes, refFreqStr, nW,
-		 cfCache, WBAwp,
-     psTerm, aTerm, mType,
-     fieldStr,spwStr, phaseCenter,
+	   telescopeName, NX, cellSize,
+	   stokes, refFreqStr, nW,
+	   cfCache, WBAwp,
+	   psTerm, aTerm, mType, pa, dpa,
+	   fieldStr,spwStr, phaseCenter,
 		 conjBeams,
      pbLimit, cfBufferSize, cfOversampling);
 
