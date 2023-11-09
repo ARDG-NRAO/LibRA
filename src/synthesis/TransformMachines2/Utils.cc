@@ -1478,6 +1478,7 @@ namespace casa{
       
       return;
     }
+
     bool SynthesisUtils::needNewCF(int& cachedVBSpw,
 				   const int currentVBSpw,
 				   const int nWPlanes, const bool wbAWP,
@@ -1490,6 +1491,77 @@ namespace casa{
       return d;
     }
 
+    Bool SynthesisUtils::matchPol(const vi::VisBuffer2& vb,
+				  const casacore::CoordinateSystem& imCoords,
+				  casacore::Vector<int>& polMap,
+				  casacore::Vector<casacore::Stokes::StokesTypes>& visPolMap_p)
+    {
+      Vector<casacore::Stokes::StokesTypes> visPolMap(vb.getCorrelationTypesSelected());
+    if((polMap.nelements() > 0) &&(visPolMap.nelements() == visPolMap_p.nelements()) &&allEQ(visPolMap, visPolMap_p))
+      return True;
+    //Int stokesIndex=image->coordinates().findCoordinate(casacore::Coordinate::STOKES);
+    int stokesIndex=imCoords.findCoordinate(casacore::Coordinate::STOKES);
+    AlwaysAssert(stokesIndex>-1, AipsError);
+    //casacore::StokesCoordinate stokesCoord=image->coordinates().stokesCoordinate(stokesIndex);
+    casacore::StokesCoordinate stokesCoord=imCoords.stokesCoordinate(stokesIndex);    
+
+
+    visPolMap_p.resize();
+    visPolMap_p=visPolMap;
+    int nvispol=visPolMap.nelements();
+    AlwaysAssert(nvispol>0, AipsError);
+    polMap.resize(nvispol);
+    polMap=-1;
+    int pol=0;
+    bool found=false;
+    // First we try matching Stokes in the visibilities to
+    // Stokes in the image that we are gridding into.
+    for (pol=0;pol<nvispol;pol++) {
+      Int p=0;
+      if(stokesCoord.toPixel(p, casacore::Stokes::type(visPolMap(pol)))) {
+	//        AlwaysAssert(p<npol, AipsError);
+        polMap(pol)=p;
+        found=true;
+      }
+    }
+      // If this fails then perhaps we were looking to grid I
+      // directly. If so then we need to check that the parallel
+      // hands are present in the visibilities.
+    if(!found) {
+      int p=0;
+      if(stokesCoord.toPixel(p, casacore::Stokes::I)) {
+        polMap=-1;
+        if(vb.polarizationFrame()==casacore::MSIter::Linear) {
+          p=0;
+          for (pol=0;pol<nvispol;pol++) {
+            if(Stokes::type(visPolMap(pol))==casacore::Stokes::XX)
+              {polMap(pol)=0;p++;found=true;};
+            if(Stokes::type(visPolMap(pol))==casacore::Stokes::YY)
+              {polMap(pol)=0;p++;found=true;};
+          }
+        }
+        else {
+          p=0;
+          for (pol=0;pol<nvispol;pol++) {
+            if(casacore::Stokes::type(visPolMap(pol))==casacore::Stokes::LL)
+              {polMap(pol)=0;p++;found=true;};
+            if(casacore::Stokes::type(visPolMap(pol))==casacore::Stokes::RR)
+              {polMap(pol)=0;p++;found=true;};
+          }
+        }
+        if(!found) {
+	  LogIO os(LogOrigin("Utils", "matchPol", WHERE));
+          os <<  "Cannot find polarization map: visibility polarizations = "
+    					<< visPolMap << LogIO::EXCEPTION;
+        }
+    	else {
+    		
+    		//logIO() << LogIO::DEBUGGING << "Transforming I only" << LogIO::POST;
+    	}
+      };
+    }
+    return True;
+  } 
 
   template
   std::vector<Double>::iterator SynthesisUtils::Unique(std::vector<Double>::iterator first, std::vector<Double>::iterator last);

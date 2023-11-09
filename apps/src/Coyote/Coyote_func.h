@@ -51,6 +51,7 @@
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
+
 #include <RoadRunner/rWeightor.h>
 #include <RoadRunner/DataIterations.h>
 #include <RoadRunner/DataBase.h>
@@ -155,14 +156,36 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
   CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
   CountedPtr<refim::WTerm> WTerm_l = new WTerm();
+
   if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
-  if (aTerm == 0) ATerm_l->setOpCode(CFTerms::NOOP);
-  if (psTerm == 0) PSTerm_l->setOpCode(CFTerms::NOOP);
+  if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
+  if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
+
   CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);						
   awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);						
-  CountedPtr<casa::refim::CFCache> cfc_l;
+
+  const String imageNamePrefix=String("");
+  CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
+  cfCacheObj_l->setCacheDir(cfCache.data());
+  cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
+  cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
+  try
+    {
+      cfCacheObj_l->initCache2(false);//, 400.0, -1.0,imageNamePrefix+casacore::String("CFS*")); // This would load only WTCFS* CFs
+    }
+  catch (AipsError &e)
+    {
+      cerr << e.what() << endl;
+    }
   CountedPtr<casa::refim::CFStore2> cfs2_l, cfswt2_l;
-  
+  // cfs2_l = new casa::refim::CFStore2();
+  // cfswt2_l = new casa::refim::CFStore2();
+  if (!cfCacheObj_l.null())
+    {
+      cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
+      cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
+    }
+
   
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
@@ -186,8 +209,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   
   // cgrid.table().markForDelete();
   
-  Int wConvSize = 0;
-  Float pa=0.0, dpa=0.0;
+  Int wConvSize = nW;
+  Float pa=0.0, dpa=400.0;
   const Vector<Double> uvScale(3,0);
   Bool fillCF = false;
   
@@ -197,18 +220,69 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   uvOffset(1)=imSize[1];
   uvOffset(2)=0;
   // Replace this with the actual polarization parser.
-  Vector<int> polMap{4,0,1,2,3};
-  
+  Vector<int> polMap;
+  Vector<casacore::Stokes::StokesTypes> visPolMap;//{0,1,2,3};
+
+  refim::SynthesisUtils::matchPol(*(db.vb_l),cgrid.coordinates(),polMap,visPolMap);
   // Initialize pop to have the right values
   
-  CountedPtr<refim::PolOuterProduct> pop_l = setPOP(*(db.vb_l), stokes, mType);
+  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), stokes, mType);
+
+  //------------------------a mess----------------------------------------------------
+  Vector<Int> intpolmap(visPolMap.nelements());
+  for (uInt kk=0; kk < intpolmap.nelements(); ++kk){
+    intpolmap[kk]=Int(visPolMap[kk]);
+  }
+  pop_p->initCFMaps(intpolmap, polMap);
+
+  PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
+  Vector<Int> visPol((db.vb_l)->correlationTypes());
+  polMat = pop_p->makePolMat(visPol,polMap);
+  cerr << visPol << " " << polMap << endl;
+  polIndexMat = pop_p->makePol2CFMat(visPol,polMap);
+
+  conjPolMat = pop_p->makeConjPolMat(visPol,polMap);
+  conjPolIndexMat = pop_p->makeConjPol2CFMat(visPol,polMap);
+
+  cerr << "polMap: "; cerr << polMap << endl;
+  cerr << "visPolMap: "; cerr << visPolMap << endl;
+  //------------------------a mess----------------------------------------------------
+
+  // spwidList      = db.spwidList;
+  // fieldidList    = db.fieldidList;
+  // spwRefFreqList = db.spwRefFreqList;
+  Matrix<Double> mssFreqSel;
+  mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
   awcf_l->setPolMap(polMap);
+  //  awcf_l->setSpwSelection(spwChanSelFlag_p);
+  awcf_l->setSpwFreqSelection(mssFreqSel);
   
   cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
   
-  awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
-			   pop_l, pa, dpa, uvScale, uvOffset,
-			   vbFreqSelection, *cfs2_l, *cfswt2_l, fillCF);
+  try
+    {
+      awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
+			       pop_p, pa, dpa, uvScale, uvOffset,
+			       vbFreqSelection, *cfs2_l, *cfswt2_l, fillCF);
+
+      cfs2_l->show("CFStore",cerr,true);
+      cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","",    Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
+      //      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
+	Double memUsed=cfs2_l->memUsage();
+	String unit(" KB");
+	memUsed = (Int)(memUsed/1024.0+0.5);
+	if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
+
+	LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
+	log_l << "Convolution function memory footprint:" 
+	      << (Int)(memUsed) << unit << " out of a maximum of "
+	      << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
+
+    }
+  catch(AipsError &e)
+    {
+      cerr << e.what() << endl;
+    }
   
 }
 

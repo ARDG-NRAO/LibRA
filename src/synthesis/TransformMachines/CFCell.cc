@@ -77,8 +77,8 @@ namespace casa{
        << "Data shape: "         << storage_p->shape() << " " << shape_p << endl
        << "Parallactic Angle(d): "  << pa_p.getValue("deg")
        << endl;
-    IPosition dummy;
-    Vector<String> csList;
+    // IPosition dummy;
+    // Vector<String> csList;
     // os << "CoordSys: ";
     // csList = coordSys_p.list(log_l,MDoppler::RADIO,dummy,dummy);
     // os << csList << endl;
@@ -110,13 +110,16 @@ namespace casa{
     // being made persistent.  So make a 2x2 pixel image (since I
     // don't know how to make a 0x0 pixel image to just save the CS
     // and miscInfo information to the disk).
-    if ((storage_p->shape()).product()==0) tmpShape[0]=tmpShape[1]=2;
+    if ((storage_p->shape()).product()==0) tmpShape = IPosition(4,2,2,1,1);
+
+    // cerr << "thisCF.shape() = "
+    //   //<< thisCF.shape()
+    // 	 << " " << tmpShape << " " << storage_p->shape() << endl;
+
+    // cerr << "Ref pixel = " << coordSys_p.referencePixel() << endl;
+    // show(NULL,cerr);
 
     PagedImage<Complex> thisCF(tmpShape,coordSys_p, name);
-    //cerr << "thisCF.shape() = " << thisCF.shape() << " " << tmpShape << " " << storage_p->shape() << endl;
-
-    //    cerr << "Ref pixel = " << coordSys_p.referencePixel() << endl;
-    //    show(NULL,cerr);
     //cerr << storage_p->shape() << endl;
 
     if ((storage_p->shape()).nelements()>0) thisCF.put(*storage_p);

@@ -68,7 +68,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       SMap watchPoints; VString exposedKeys;
       int i;
       MSNBuf="";
-      i=1;clgetSValp("ms", MSNBuf,i);  
+      i=1;clgetSValp("vis", MSNBuf,i);  
       i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("telescope", telescopeName,i);  
       
