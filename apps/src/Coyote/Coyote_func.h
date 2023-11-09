@@ -153,7 +153,7 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 }
 
 void Coyote(bool &restartUI, int &argc, char **argv,
-	    string &MSNBuf, string &imageName,
+	    string &MSNBuf, 
 	    string &telescopeName,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
@@ -171,6 +171,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("coyote", "Coyote_func"));
   
+  string imageName="coyote_skyimage.im";
   bool wTerm = (nW > 1)? true : false;
 
   //-------------------------------------------------------------------------------------------------

@@ -40,7 +40,8 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 void UI(bool restart, int argc, char **argv, string& MSNBuf,
-	string& imageName, string& telescopeName, int& ImSize, 
+	//string& imageName,
+	string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
 	int& nW, string& CFCache, string& imageNamePrefix,
 	bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
@@ -54,43 +55,43 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 {
   if (!restart)
     {
-	BeginCL(argc,argv);
-	clInteractive(0);
+      BeginCL(argc,argv);
+      clInteractive(0);
       //clCmdLineFirst(0);//In an interactive session, this is supposed
-			//to keep the order of the keywords presented
-			//the same as in the code.  But it does not!
-			//The library always behaves like
-			//clCmdLineFirst(1).
-      }
+      //to keep the order of the keywords presented
+      //the same as in the code.  But it does not!
+      //The library always behaves like
+      //clCmdLineFirst(1).
+    }
   // else
   //   clRetry();
  REENTER:
-      try
+  try
     {
       SMap watchPoints; VString exposedKeys;
       int i;
       MSNBuf="";
       i=1;clgetSValp("vis", MSNBuf,i);  
-      i=1;clgetSValp("imagename", imageName,i);  
+      //i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("telescope", telescopeName,i);  
       
-
+      
       i=1;clgetIValp("imsize", ImSize,i);  
       i=1;clgetFValp("cellsize", cellSize,i);  
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
       i=1;clgetSValp("reffreq", refFreqStr,i);  
-
+      
       i=1;clgetIValp("wplanes", nW,i);  
       i=1;clgetSValp("cfcache", CFCache,i);
       i=1;clgetSValp("nameprefix", imageNamePrefix,i);
-
+      
       i=1;clgetBValp("wbawp", WBAwp,i);
       i=1;clgetBValp("aterm", aTerm,i); 
       i=1;clgetBValp("psterm", psTerm,i); 
       i=1;clgetSValp("muellertype", mType,i);
       i=1;dbgclgetFValp("pa", pa, i);
       i=1;clgetFValp("dpa", dpa, i);
-
+      
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
       i=1;clgetSValp("phasecenter", phaseCenter,i);
@@ -100,30 +101,30 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetIValp("oversampling", cfOversampling,i);
       i=1;clgetBValp("dryrun", dryRun,i); 
       
-     EndCL();
-
-     // do some input parameter checking now.
-     string mesgs;
-     if (CFCache == "")
-       mesgs += "The CFCache parameter needs to be set. ";
-       
-     if (refFreqStr == "")
-       mesgs += "The reffreq parameter needs to be set. ";
-
-     if (ImSize <= 0)
-       mesgs += "The imsize parameter needs to be set to a positive finite value. ";
-
-     if (cellSize <= 0)
-       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
-
-     if (cfBufferSize <= 0)
-       mesgs += "The cfBufferSize parameter needs to be set to a positive finite value. ";
-
-     if (cfOversampling <= 0)
-       mesgs += "The cfBufferSize parameter needs to be set to a positive value preferably over 20. ";
-
-     if (mesgs != "")
-       clThrowUp(mesgs,"###Fatal", CL_FATAL);
+      EndCL();
+      
+      // do some input parameter checking now.
+      string mesgs;
+      if (CFCache == "")
+	mesgs += "The CFCache parameter needs to be set. ";
+      
+      if (refFreqStr == "")
+	mesgs += "The reffreq parameter needs to be set. ";
+      
+      if (ImSize <= 0)
+	mesgs += "The imsize parameter needs to be set to a positive finite value. ";
+      
+      if (cellSize <= 0)
+	mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
+      
+      if (cfBufferSize <= 0)
+	mesgs += "The cfBufferSize parameter needs to be set to a positive finite value. ";
+      
+      if (cfOversampling <= 0)
+	mesgs += "The cfBufferSize parameter needs to be set to a positive value preferably over 20. ";
+      
+      if (mesgs != "")
+	clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
   catch (clError& x)
     {
@@ -158,28 +159,30 @@ int main(int argc, char **argv)
   float pa=-200.0, // Get PA from the MS
     dpa=360.0; // Don't rotate CFs for PA
   
-  UI(restartUI, argc, argv, MSNBuf,imageName, telescopeName,
+  UI(restartUI, argc, argv, MSNBuf,
+     //imageName,
+     telescopeName,
      NX, cellSize, stokes, refFreqStr, nW,
      cfCache, imageNamePrefix, WBAwp,
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
      pbLimit, cfBufferSize, cfOversampling,dryRun);
-
+  
   set_terminate(NULL);
-
+  
   try
     {
-    Coyote(restartUI, argc, argv, MSNBuf,imageName, 
-	   telescopeName, NX, cellSize,
-	   stokes, refFreqStr, nW,
-	   cfCache, imageNamePrefix,
-	   WBAwp,
-	   psTerm, aTerm, mType, pa, dpa,
-	   fieldStr,spwStr, phaseCenter,
-	   conjBeams, pbLimit,
-	   cfBufferSize, cfOversampling,
-	   dryRun);
-
+      Coyote(restartUI, argc, argv, MSNBuf,//imageName, 
+	     telescopeName, NX, cellSize,
+	     stokes, refFreqStr, nW,
+	     cfCache, imageNamePrefix,
+	     WBAwp,
+	     psTerm, aTerm, mType, pa, dpa,
+	     fieldStr,spwStr, phaseCenter,
+	     conjBeams, pbLimit,
+	     cfBufferSize, cfOversampling,
+	     dryRun);
+      
     }
   catch(AipsError& er)
     {
