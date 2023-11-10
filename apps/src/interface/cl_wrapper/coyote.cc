@@ -48,7 +48,6 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	float& pa, float& dpa,
 	string& fieldStr, string& spwStr, string& phaseCenter,
 	bool& conjBeams,
-	float& pbLimit,
 	int& cfBufferSize,
 	int& cfOversampling,
 	bool& dryRun)
@@ -75,11 +74,11 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       //i=1;clgetSValp("imagename", imageName,i);  
       i=1;clgetSValp("telescope", telescopeName,i);  
       
-      
       i=1;clgetIValp("imsize", ImSize,i);  
-      i=1;clgetFValp("cellsize", cellSize,i);  
+      i=1;clgetFValp("cell", cellSize,i);  
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
       i=1;clgetSValp("reffreq", refFreqStr,i);  
+      i=1;clgetSValp("phasecenter", phaseCenter,i);
       
       i=1;clgetIValp("wplanes", nW,i);  
       i=1;clgetSValp("cfcache", CFCache,i);
@@ -88,15 +87,14 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetBValp("wbawp", WBAwp,i);
       i=1;clgetBValp("aterm", aTerm,i); 
       i=1;clgetBValp("psterm", psTerm,i); 
+      i=1;clgetBValp("conjbeams", conjBeams,i);
       i=1;clgetSValp("muellertype", mType,i);
       i=1;dbgclgetFValp("pa", pa, i);
       i=1;clgetFValp("dpa", dpa, i);
       
       i=1;clgetSValp("field", fieldStr,i);
       i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetSValp("phasecenter", phaseCenter,i);
-      i=1;clgetBValp("conjbeams", conjBeams,i);
-      i=1;clgetFValp("pblimit", pbLimit,i);
+      //      i=1;clgetFValp("pblimit", pbLimit,i);
       i=1;clgetIValp("buffersize", cfBufferSize,i);
       i=1;clgetIValp("oversampling", cfOversampling,i);
       i=1;clgetBValp("dryrun", dryRun,i); 
@@ -106,22 +104,22 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       // do some input parameter checking now.
       string mesgs;
       if (CFCache == "")
-	mesgs += "The CFCache parameter needs to be set. ";
+	mesgs += "The cfcache parameter needs to be set.\n ";
       
       if (refFreqStr == "")
-	mesgs += "The reffreq parameter needs to be set. ";
+	mesgs += "The reffreq parameter needs to be set.\n ";
       
       if (ImSize <= 0)
-	mesgs += "The imsize parameter needs to be set to a positive finite value. ";
+	mesgs += "The imsize parameter needs to be set to a positive finite value.\n ";
       
       if (cellSize <= 0)
-	mesgs += "The cellsize parameter needs to be set to a positive finite value. ";
+	mesgs += "The cell parameter needs to be set to a positive finite value.\n ";
       
       if (cfBufferSize <= 0)
-	mesgs += "The cfBufferSize parameter needs to be set to a positive finite value. ";
+	mesgs += "The buffersize parameter needs to be set to a positive finite value.\n ";
       
       if (cfOversampling <= 0)
-	mesgs += "The cfBufferSize parameter needs to be set to a positive value preferably over 20. ";
+	mesgs += "The oversampling parameter needs to be set to a positive value.\n ";
       
       if (mesgs != "")
 	clThrowUp(mesgs,"###Fatal", CL_FATAL);
@@ -142,11 +140,11 @@ int main(int argc, char **argv)
   // The Factory Settings.
   string MSNBuf="", cfCache="", fieldStr="", spwStr="*",
     imageName,cmplxGridName="",phaseCenter, stokes="I",
-    refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
+    refFreqStr, telescopeName="EVLA", mType="diagonal",
     imageNamePrefix="";
   
-  float cellSize;//refFreq=3e09, freqBW=3e9;
-  int NX=0, nW=1, cfBufferSize=512, cfOversampling=20;
+  float cellSize=0;//refFreq=3e09, freqBW=3e9;
+  int NX=0, nW=1, cfBufferSize=0, cfOversampling=20;
   bool WBAwp=true;
   bool restartUI=false;
   bool doPointing=false;
@@ -155,7 +153,6 @@ int main(int argc, char **argv)
   bool psTerm = false;
   bool aTerm = true;
   bool dryRun = true;
-  float pbLimit=1e-3;
   float pa=-200.0, // Get PA from the MS
     dpa=360.0; // Don't rotate CFs for PA
   
@@ -166,7 +163,7 @@ int main(int argc, char **argv)
      cfCache, imageNamePrefix, WBAwp,
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
-     pbLimit, cfBufferSize, cfOversampling,dryRun);
+     cfBufferSize, cfOversampling,dryRun);
   
   set_terminate(NULL);
   
@@ -179,7 +176,7 @@ int main(int argc, char **argv)
 	     WBAwp,
 	     psTerm, aTerm, mType, pa, dpa,
 	     fieldStr,spwStr, phaseCenter,
-	     conjBeams, pbLimit,
+	     conjBeams,
 	     cfBufferSize, cfOversampling,
 	     dryRun);
       
