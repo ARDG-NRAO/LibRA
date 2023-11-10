@@ -28,16 +28,16 @@
 #define COYOTE_H
 
 #include <casacore/casa/namespace.h>
-#include <casacore/casa/OS/Directory.h>
-#include <casacore/casa/Utilities/Regex.h>
+//#include <casacore/casa/OS/Directory.h>
+//#include <casacore/casa/Utilities/Regex.h>
 #include <casacore/casa/Logging/LogFilter.h>
-#include <casacore/casa/System/ProgressMeter.h>
+//#include <casacore/casa/System/ProgressMeter.h>
 
 #include <casacore/measures/Measures/Stokes.h>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/images/Images/ImageInterface.h>
 #include <casacore/images/Images/PagedImage.h>
-#include <casacore/tables/TaQL/ExprNode.h>
+//#include <casacore/tables/TaQL/ExprNode.h>
 
 #include <casacore/ms/MSSel/MSSelection.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
@@ -45,18 +45,18 @@
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 
-#include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <synthesis/TransformMachines2/ThreadCoordinator.h>
+//#include <synthesis/TransformMachines2/MakeCFArray.h>
+//#include <synthesis/TransformMachines2/ThreadCoordinator.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
 
 #include <RoadRunner/rWeightor.h>
-#include <RoadRunner/DataIterations.h>
+//#include <RoadRunner/DataIterations.h>
 #include <RoadRunner/DataBase.h>
 #include <RoadRunner/MakeComponents.h>
-#include <RoadRunner/Roadrunner_func.h>
+//#include <RoadRunner/Roadrunner_func.h>
 
 
 #include <hpg/hpg.hpp>
@@ -163,7 +163,6 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
-	    float &pbLimit,
 	    int &cfBufferSize, int &cfOversampling,
 	    bool& dryRun)
 {
