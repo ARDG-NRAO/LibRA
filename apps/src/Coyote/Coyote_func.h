@@ -157,13 +157,15 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    string &telescopeName,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
-	    string &cfCache,
+	    string &cfCacheName,
 	    string& imageNamePrefix,
 	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
 	    int &cfBufferSize, int &cfOversampling,
+	    std::vector<std::string>& cfList,
+	    std::vector<std::string>& wtCFList,
 	    bool& dryRun)
 {
   LogFilter filter(LogMessage::NORMAL);
@@ -195,13 +197,46 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   // CFStore objects from it (the CFC in-memory model).
   //
   CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
-  cfCacheObj_l->setCacheDir(cfCache.data());
-  cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
-  cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
   try
     {
-      cfCacheObj_l->initCache2(false, dpa, -1.0,
-			       casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+      cfCacheObj_l->setCacheDir(cfCacheName.data());
+      
+      if (dryRun)
+	{
+	  // In LazyFill model, the CFs are loaded in memory when
+	  // accessed (e.g. in the gridder loops).  None of their meta
+	  // data is available till then, which is required for
+	  // filling.  Hence, setup the CFCacheObj for LAZYFILL only
+	  // for the dryRun=True case.  In case there are some CFs in
+	  // the CFC already, their lazy loading is OK since all that
+	  // is required to know is if the requested CFs already exist
+	  // or not.
+	  //
+	  cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
+	  cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
+	  cfCacheObj_l->initCache2(false, dpa, -1.0,
+				   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+	}
+      else
+	{
+	  // Do not set CFCacheObj for LAZYFILL for dryRun=False case.
+	  // For this case, the CFs listed in the cfList are expected
+	  // to be empty and needs filling.  The CF meta data is
+	  // therefore required to be loaded in the memory.
+	  //
+	  // This should be made more robust polymorphically in the
+	  // CFCache/CFBufer/CFCell tree.  Otherwise logic that is
+	  // really internal detals of how these objects work together
+	  // leaks all the way to the client layers.
+	  int verbose=1;
+	  casacore::Vector<casacore::String> cfNames(cfList);
+	  casacore::Vector<casacore::String> wtCFNames(wtCFList);
+	  
+	  cfCacheObj_l->initCacheFromList2(cfCacheName,
+					   cfNames, wtCFNames,
+					   pa,dpa,
+					   verbose);
+	}
     }
   catch (AipsError &e)
     {
@@ -227,6 +262,16 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   Vector<Int> imSize(2,NX);
   Matrix<Double> vbFreqSelection ;
   
+  Int wConvSize = nW;
+  const Vector<Double> uvScale(3,0);
+  Bool fillCF = !dryRun;
+  
+  Vector<Double> uvOffset;
+  uvOffset.resize(3);
+  uvOffset(0)=imSize[0];
+  uvOffset(1)=imSize[1];
+  uvOffset(2)=0;
+
   DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
 	      doSPWDataIter);
   
@@ -238,17 +283,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   PagedImage<Complex> cgrid = makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
 						   imageName, imSize, cellSize, phaseCenter, 
 						   stokes, refFreqStr);
-  cgrid.table().markForDelete();
+  //  cgrid.table().markForDelete();
   
-  Int wConvSize = nW;
-  const Vector<Double> uvScale(3,0);
-  Bool fillCF = !dryRun;
-  
-  Vector<Double> uvOffset;
-  uvOffset.resize(3);
-  uvOffset(0)=imSize[0];
-  uvOffset(1)=imSize[1];
-  uvOffset(2)=0;
   //-------------------------------------------------------------------------------------------------
 
   //-------------------------------------------------------------------------------------------------
@@ -276,6 +312,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   awcf_l->setPolMap(polMap);
   //  awcf_l->setSpwSelection(spwChanSelFlag_p);
   awcf_l->setSpwFreqSelection(mssFreqSel);
+
   //-------------------------------------------------------------------------------------------------
   
   // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
@@ -297,12 +334,27 @@ void Coyote(bool &restartUI, int &argc, char **argv,
       // parallelization of the compute intensive step (filling the
       // CFs) which is highly parallelizable and scales well.
       //
+      if (dryRun)
       awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
 			       pop_p, pa, dpa, uvScale, uvOffset,
 			       vbFreqSelection,
 			       *cfs2_l, *cfswt2_l,
 			       fillCF);
 
+      else
+	{
+      Vector<Double> dummyUVScale;
+      Matrix<Double> dummyvbFreqSel;
+      AWConvFunc::makeConvFunction2(cfCacheName,
+				dummyUVScale,
+				uvOffset,
+				dummyvbFreqSel,
+				*cfs2_l,
+				*cfswt2_l,
+				psTerm,
+				aTerm,
+				conjBeams);
+	}
       //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
 

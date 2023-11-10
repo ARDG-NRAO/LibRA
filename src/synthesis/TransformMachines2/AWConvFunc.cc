@@ -1964,6 +1964,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	    cfb_p=cfs2.getCFBuffer(iPA,iB);
 	    cfwtb_p=cfwts2.getCFBuffer(iPA,iB);
 
+	    cfb_p->primeTheCache();
+	    cfwtb_p->primeTheCache();
+
 	    IPosition cfbShape = cfb_p->shape();
 	    for (int iNu=0; iNu<cfbShape(0); iNu++)       // Frequency axis
 	      for (int iPol=0; iPol<cfbShape(2); iPol++)     // Polarization axis
@@ -1975,11 +1978,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    Float sampling;
 
 		    CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
-		    //cerr << "####@#$#@$@ " << iNu << " " << iW << " " << iPol << endl;
-		    //tt->show("test",cout);
+		    //		    cerr << "####@#$#@$@ " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
+		    //		    tt->show("test",cout);
 		    if (tt->cfShape_p.nelements() != 0)
 		       {
-			 (*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
+			 //(*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
+			 tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
 			 {
 			   //This code uses the BeamCalc class to get
 			   //the nominal min. freq. of the band in
