@@ -135,20 +135,20 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
     intpolmap[kk]=Int(visPolMap[kk]);
   }
   pop_l->initCFMaps(intpolmap, polMap);
-
+  
   PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
   Vector<Int> visPol(vb2.correlationTypes());
   polMat = pop_l->makePolMat(visPol,polMap);
   //cerr << visPol << " " << polMap << endl;
   polIndexMat = pop_l->makePol2CFMat(visPol,polMap);
-
+  
   conjPolMat = pop_l->makeConjPolMat(visPol,polMap);
   conjPolIndexMat = pop_l->makeConjPol2CFMat(visPol,polMap);
-
+  
   // cerr << "polMap: "; cerr << polMap << endl;
   // cerr << "visPolMap: "; cerr << visPolMap << endl;
   //------------------------a mess----------------------------------------------------
-
+  
   return pop_l;
 }
 
@@ -174,7 +174,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   
   string imageName=cfCacheName+"/uvgrid.im";
   bool wTerm = (nW > 1)? true : false;
-
+  
   //-------------------------------------------------------------------------------------------------
   // Instantiate AWCF object so we can use it to make cf.
   // The AWCF::makeConvFunc requires the following objects
@@ -182,16 +182,16 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
   CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
   CountedPtr<refim::WTerm> WTerm_l = new WTerm();
-
+  
   if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
   if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
   if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
-
+  
   CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);						
   awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);						
   //-------------------------------------------------------------------------------------------------
-
-
+  
+  
   //-------------------------------------------------------------------------------------------------
   // Instantiate the CFCache object, initialize it and extract the
   // CFStore objects from it (the CFC in-memory model).
@@ -244,17 +244,15 @@ void Coyote(bool &restartUI, int &argc, char **argv,
       //cerr << e.what() << endl;
     }
   CountedPtr<casa::refim::CFStore2> cfs2_l, cfswt2_l;
-
+  
   if (!cfCacheObj_l.null())
     {
       cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
       cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
     }
   //-------------------------------------------------------------------------------------------------
-
+  
   //-------------------------------------------------------------------------------------------------
-  // Instantite the DataBase object, make a complex grid using meta
-  // from the DataBase and the sky-image provided.
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
   string uvDistStr;
@@ -271,143 +269,161 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   uvOffset(0)=imSize[0];
   uvOffset(1)=imSize[1];
   uvOffset(2)=0;
-
-  DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
-	      doSPWDataIter);
-  
-  // Creating a complex image from the user inputed image.
-  // To be turned into the most basic parameters needed to make CF
-  // To read an image on disk you need PagedImage. 
-  // This is inherited from ImageInterface so should be able to pass
-  // an image interface object from it.
-  PagedImage<Complex> cgrid = makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
-						   imageName, imSize, cellSize, phaseCenter, 
-						   stokes, refFreqStr);
-  //
-  // Save the coordinate system in a record and make it persistent in
-  // the CFCache.
-  //
-  // {
-  //   Record csysRec;
-  //   String name=cfCacheName+"/uvgrid.csys";
-  //   cgrid.coordinates().save(csysRec,"cgrid.sys");
-  //   // Write Csys to a file
-  //   {
-  //   std::ofstream csysfile;
-  //   csysfile.open(name.c_str());
-  //   csysRec.print(csysfile, -1);
-  //   }
-
-  //   // Read Csys to a file
-  //   {
-  //     AipsIO rrfile;
-  //     rrfile.open(name);
-  //     Record rr;
-  //     //      rr.getRecord(rrfile);
-  //     rrfile >> rr;
-  //     //CoordinateSystem *tt=CoordinateSystem::restore(rr,"cgrid.sys");
-  //   }
-    
-    // Record d= csysRec.asRecord(RecordFieldId("cgrid.sys"));
-    // Record d0= d.asRecord(RecordFieldId("direction0"));
-
-    // // RecordDesc desc=d0.description();
-    // // for(int i=0;i<desc.nfields();i++)
-    // //   cerr << "CSYS.shape: " <<desc.name(i) << endl;
-    
-    // Vector<double> crpix;
-    // d0.get(RecordFieldId("crpix"),crpix);
-    // cerr << "CSYS.shape: " <<crpix << endl;
-
-    // d0.get(RecordFieldId("crpix"),crpix);
-  //}
-  //  cgrid.table().markForDelete();
-  
-  //-------------------------------------------------------------------------------------------------
-
-  //-------------------------------------------------------------------------------------------------
-  // Instantiate the PolOuterProduce object which encapsulates the
-  // polarization maps from VB to Muller (which is CFs) to the
-  // image-plane polarizations requested.  Set the necessary maps in
-  // the ConvolutionFunction object (awcf_l variable).
-  //
-  //Replace this with the actual polarization parser (this commented
-  //existed earlier and I (SB) don't know what it may mean).
-  Vector<int> polMap;
-  Vector<casacore::Stokes::StokesTypes> visPolMap;//{0,1,2,3};
-
-  refim::SynthesisUtils::matchPol(*(db.vb_l),cgrid.coordinates(),polMap,visPolMap);
-  // Initialize pop to have the right values
-  
-  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), visPolMap, polMap, stokes, mType);
-
-
-  // spwidList      = db.spwidList;
-  // fieldidList    = db.fieldidList;
-  // spwRefFreqList = db.spwRefFreqList;
-  Matrix<Double> mssFreqSel;
-  mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
-  awcf_l->setPolMap(polMap);
-  //  awcf_l->setSpwSelection(spwChanSelFlag_p);
-  awcf_l->setSpwFreqSelection(mssFreqSel);
-
-  //-------------------------------------------------------------------------------------------------
-  
-  // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
   try
     {
-      // Get the PA from the MS/VB if UI setting is outside the valid
-      // range for PA [-180, +180].
-      if (abs(pa) > 180.0) pa=getPA(*(db.vb_l));
-
-      constexpr double D2R=M_PI/180.0;
-      pa *= D2R; dpa *= D2R;
-
-      //
-      // This currently makes both CF and WTCF.  It will also fill the
-      // CFs (serially) for fillCF=true.  For fillCF=false (default
-      // value here), it will produce an "empty CFC" which has
-      // single-pixel CFs with the necessary information in the
-      // header/MiscInfo to fill them later. This allows
-      // parallelization of the compute intensive step (filling the
-      // CFs) which is highly parallelizable and scales well.
-      //
       if (dryRun)
-      awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
-			       pop_p, pa, dpa, uvScale, uvOffset,
-			       vbFreqSelection,
-			       *cfs2_l, *cfswt2_l,
-			       fillCF);
-
+	{
+	  //
+	  // dryRun=True case.  This makes "blank CFs" in the CFC from
+	  // scratch.  So needs meta data from the sky image as well
+	  // as the MS.
+	  //
+	  //
+	  // Instantite the DataBase object, make a complex grid using meta
+	  // from the DataBase and the sky-image provided.
+	  //
+	  DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
+		      doSPWDataIter);
+	  
+	  //
+	  // Creating a complex image from the user inputed image.
+	  // To be turned into the most basic parameters needed to make CF
+	  // To read an image on disk you need PagedImage. 
+	  // This is inherited from ImageInterface so should be able to pass
+	  // an image interface object from it.
+	  //
+	  PagedImage<Complex> cgrid =
+	    makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
+				 imageName, imSize, cellSize, phaseCenter, 
+				 stokes, refFreqStr);
+	  //
+	  // Save the coordinate system in a record and make it persistent in
+	  // the CFCache.
+	  //
+	  // {
+	  //   Record csysRec;
+	  //   String name=cfCacheName+"/uvgrid.csys";
+	  //   cgrid.coordinates().save(csysRec,"cgrid.sys");
+	  //   // Write Csys to a file
+	  //   {
+	  //   std::ofstream csysfile;
+	  //   csysfile.open(name.c_str());
+	  //   csysRec.print(csysfile, -1);
+	  //   }
+	  
+	  //   // Read Csys to a file
+	  //   {
+	  //     AipsIO rrfile;
+	  //     rrfile.open(name);
+	  //     Record rr;
+	  //     //      rr.getRecord(rrfile);
+	  //     rrfile >> rr;
+	  //     //CoordinateSystem *tt=CoordinateSystem::restore(rr,"cgrid.sys");
+	  //   }
+	  
+	  // Record d= csysRec.asRecord(RecordFieldId("cgrid.sys"));
+	  // Record d0= d.asRecord(RecordFieldId("direction0"));
+	  
+	  // // RecordDesc desc=d0.description();
+	  // // for(int i=0;i<desc.nfields();i++)
+	  // //   cerr << "CSYS.shape: " <<desc.name(i) << endl;
+	  
+	  // Vector<double> crpix;
+	  // d0.get(RecordFieldId("crpix"),crpix);
+	  // cerr << "CSYS.shape: " <<crpix << endl;
+	  
+	  // d0.get(RecordFieldId("crpix"),crpix);
+	  //}
+	  //  cgrid.table().markForDelete();
+	  
+	  //-------------------------------------------------------------------------------------------------
+	  
+	  //-------------------------------------------------------------------------------------------------
+	  // Instantiate the PolOuterProduce object which encapsulates the
+	  // polarization maps from VB to Muller (which is CFs) to the
+	  // image-plane polarizations requested.  Set the necessary maps in
+	  // the ConvolutionFunction object (awcf_l variable).
+	  //
+	  //Replace this with the actual polarization parser (this commented
+	  //existed earlier and I (SB) don't know what it may mean).
+	  Vector<int> polMap;
+	  Vector<casacore::Stokes::StokesTypes> visPolMap;//{0,1,2,3};
+	  
+	  refim::SynthesisUtils::matchPol(*(db.vb_l),cgrid.coordinates(),polMap,visPolMap);
+	  // Initialize pop to have the right values
+	  
+	  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), visPolMap, polMap, stokes, mType);
+	  
+	  
+	  // spwidList      = db.spwidList;
+	  // fieldidList    = db.fieldidList;
+	  // spwRefFreqList = db.spwRefFreqList;
+	  Matrix<Double> mssFreqSel;
+	  mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
+	  awcf_l->setPolMap(polMap);
+	  //  awcf_l->setSpwSelection(spwChanSelFlag_p);
+	  awcf_l->setSpwFreqSelection(mssFreqSel);
+	  
+	  //-------------------------------------------------------------------------------------------------
+	  
+	  // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
+	  // Get the PA from the MS/VB if UI setting is outside the valid
+	  // range for PA [-180, +180].
+	  if (abs(pa) > 180.0) pa=getPA(*(db.vb_l));
+	  
+	  constexpr double D2R=M_PI/180.0;
+	  pa *= D2R; dpa *= D2R;
+	  
+	  //
+	  // This currently makes both CF and WTCF.  It will also fill the
+	  // CFs (serially) for fillCF=true.  For fillCF=false (default
+	  // value here), it will produce an "empty CFC" which has
+	  // single-pixel CFs with the necessary information in the
+	  // header/MiscInfo to fill them later. This allows
+	  // parallelization of the compute intensive step (filling the
+	  // CFs) which is highly parallelizable and scales well.
+	  //
+	  awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
+				   pop_p, pa, dpa, uvScale, uvOffset,
+				   vbFreqSelection,
+				   *cfs2_l, *cfswt2_l,
+				   fillCF);
+	}	  
       else
 	{
-      Vector<Double> dummyUVScale;
-      Matrix<Double> dummyvbFreqSel;
-      AWConvFunc::makeConvFunction2(cfCacheName,
-				dummyUVScale,
-				uvOffset,
-				dummyvbFreqSel,
-				*cfs2_l,
-				*cfswt2_l,
-				psTerm,
-				aTerm,
-				conjBeams);
+	  //
+	  // dryRun=False case.  The list of CFs in the CFC are
+	  // expected to be "blank CFs" with all the necessary meta
+	  // information to fill them. Not else other than the CFC is
+	  // necessary.
+	  //
+	  Vector<Double> dummyUVScale;
+	  Matrix<Double> dummyvbFreqSel;
+	  AWConvFunc::makeConvFunction2(cfCacheName,
+					dummyUVScale,
+					uvOffset,
+					dummyvbFreqSel,
+					*cfs2_l,
+					*cfswt2_l,
+					psTerm,
+					aTerm,
+					conjBeams);
 	}
       //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
-
+      
       //
       // Save the contents of the CFStore on the disk.
       //
       cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
       cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
-
+      
       // Report some stats.
       Double memUsed=cfs2_l->memUsage();
       String unit(" KB");
       memUsed = (Int)(memUsed/1024.0+0.5);
       if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
-
+      
       LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
       log_l << "Convolution function memory footprint:" 
 	    << (Int)(memUsed) << unit << " out of a maximum of "
