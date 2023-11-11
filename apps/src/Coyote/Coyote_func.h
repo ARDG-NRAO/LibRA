@@ -119,7 +119,7 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;
   CoordinateSystem csys = imageParams.buildCoordinateSystem(vi2,makeTheChanSelMap(msSelection),msList);
   IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
-  return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
+  return PagedImage<Complex>(imshape, csys, imageParams.imageName);
 }
 
 CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
@@ -172,7 +172,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("coyote", "Coyote_func"));
   
-  string imageName="coyote_skyimage.im";
+  string imageName=cfCacheName+"/uvgrid.im";
   bool wTerm = (nW > 1)? true : false;
 
   //-------------------------------------------------------------------------------------------------
@@ -283,6 +283,44 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   PagedImage<Complex> cgrid = makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
 						   imageName, imSize, cellSize, phaseCenter, 
 						   stokes, refFreqStr);
+  //
+  // Save the coordinate system in a record and make it persistent in
+  // the CFCache.
+  //
+  // {
+  //   Record csysRec;
+  //   String name=cfCacheName+"/uvgrid.csys";
+  //   cgrid.coordinates().save(csysRec,"cgrid.sys");
+  //   // Write Csys to a file
+  //   {
+  //   std::ofstream csysfile;
+  //   csysfile.open(name.c_str());
+  //   csysRec.print(csysfile, -1);
+  //   }
+
+  //   // Read Csys to a file
+  //   {
+  //     AipsIO rrfile;
+  //     rrfile.open(name);
+  //     Record rr;
+  //     //      rr.getRecord(rrfile);
+  //     rrfile >> rr;
+  //     //CoordinateSystem *tt=CoordinateSystem::restore(rr,"cgrid.sys");
+  //   }
+    
+    // Record d= csysRec.asRecord(RecordFieldId("cgrid.sys"));
+    // Record d0= d.asRecord(RecordFieldId("direction0"));
+
+    // // RecordDesc desc=d0.description();
+    // // for(int i=0;i<desc.nfields();i++)
+    // //   cerr << "CSYS.shape: " <<desc.name(i) << endl;
+    
+    // Vector<double> crpix;
+    // d0.get(RecordFieldId("crpix"),crpix);
+    // cerr << "CSYS.shape: " <<crpix << endl;
+
+    // d0.get(RecordFieldId("crpix"),crpix);
+  //}
   //  cgrid.table().markForDelete();
   
   //-------------------------------------------------------------------------------------------------
