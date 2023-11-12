@@ -207,22 +207,24 @@ namespace casa{
 				   Float selectedPA, Float dPA,
 				   const Int verbose)
   {
-    Vector<String> cf, wtcf;
-    cf=cfFileNames;
-    wtcf=cfWtFileNames;
-    // for (int i = 0; i < cfFileNames.nelements(); i++)
-    //   cf[i] = path+"/"+cfFileNames[i];
-    // for (int i = 0; i < cfWtFileNames.nelements(); i++)
-    //   wtcf[i] = path+"/"+cfWtFileNames[i];
-    fillCFListFromDisk(cf, path, memCache2_p, true, selectedPA, dPA,verbose);
-    fillCFListFromDisk(wtcf, path, memCacheWt2_p, false, selectedPA, dPA, verbose);
+    LogIO log_l(LogOrigin("CFCache2", "fillCFListFromDisk"));
+
+    if (cfFileNames.nelements() > 0)
+      {
+	log_l << "Loading misc info from CFs" << LogIO::POST;
+	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
+      }
+    if (cfWtFileNames.nelements() > 0)
+      {
+	log_l << "Loading misc info from WTCFs" << LogIO::POST;
+	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, false, selectedPA, dPA, verbose);
+      }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();
     if (verbose > 0) summarize(memCache2_p,   "CFS",   true);
-    //summarize(memCacheWt2_p, "WTCFS", false);
   }
 
-    void CFCache::setLazyFill(const Bool& lazyFill)
+  void CFCache::setLazyFill(const Bool& lazyFill)
   {
     loadPixBuf_p=!lazyFill;
     if (lazyFill)
@@ -377,8 +379,6 @@ namespace casa{
 				   Bool showInfo, Float selectPAVal, Float dPA,
 				   const Int verbose)
   {
-    LogOrigin logOrigin("CFCache2", "fillCFListFromDisk");
-    LogIO log_l(logOrigin);
     (void)showInfo;
     Bool selectPA = (fabs(selectPAVal) <= 360.0);
     try
@@ -444,7 +444,6 @@ namespace casa{
 	    // 	if (pickThisCF) cfCount++;
 	    //   }
 	    // cerr << "Will load " << cfCount << "CFs." << endl;
-	    log_l << "Loading misc info from CFs" << LogIO::POST;
 	    TableRecord miscInfo;
 	    {
 	      ProgressMeter pm(1.0, Double(fileNames.nelements()),
@@ -573,9 +572,15 @@ namespace casa{
 		    auto ndx=cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,miscInfo);
 		    (cfb->getCFCellPtr(ndx(0), ndx(1), ndx(2)))->shape_p=cfShape;
 
-		    if (verbose > 0) log_l << cfCacheTable_l[ipa].cfNameList[nf]
-					   << "[" << fndx << "," << wndx << "," << mndx << "] "
-					   << paList_p[ipa] << " " << xSupport << LogIO::POST;
+		    if (verbose > 0)
+		      {
+			LogOrigin logOrigin("CFCache2", "fillCFListFromDisk");
+			LogIO log_l(logOrigin);
+
+			log_l << cfCacheTable_l[ipa].cfNameList[nf]
+			      << "[" << fndx << "," << wndx << "," << mndx << "] "
+			      << paList_p[ipa] << " " << xSupport << LogIO::POST;
+		      }
 		  }
 		//cfb->show("cfb: ");
 	      }
