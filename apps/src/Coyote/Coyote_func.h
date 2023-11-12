@@ -222,18 +222,20 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  // Do not set CFCacheObj for LAZYFILL for dryRun=False case.
 	  // For this case, the CFs listed in the cfList are expected
 	  // to be empty and needs filling.  The CF meta data is
-	  // therefore required to be loaded in the memory.
+	  // therefore required in the memory for configuring the code
+	  // for filling the CF.
 	  //
 	  // This should be made more robust polymorphically in the
 	  // CFCache/CFBufer/CFCell tree.  Otherwise logic that is
 	  // really internal detals of how these objects work together
 	  // leaks all the way to the client layers.
-	  int verbose=1;
+	  int verbose=0;
 	  casacore::Vector<casacore::String> cfNames(cfList);
 	  casacore::Vector<casacore::String> wtCFNames(wtCFList);
 	  
 	  cfCacheObj_l->initCacheFromList2(cfCacheName,
-					   cfNames, wtCFNames,
+					   casacore::Vector<casacore::String>(cfList), //cfNames,
+					   casacore::Vector<casacore::String>(wtCFNames),
 					   pa,dpa,
 					   verbose);
 	}
@@ -253,14 +255,10 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   //-------------------------------------------------------------------------------------------------
   
   //-------------------------------------------------------------------------------------------------
-  Vector<int> spwidList, fieldidList;
-  Vector<double> spwRefFreqList;
   string uvDistStr;
   bool doSPWDataIter = false;
   Vector<Int> imSize(2,NX);
-  Matrix<Double> vbFreqSelection ;
   
-  Int wConvSize = nW;
   const Vector<Double> uvScale(3,0);
   Bool fillCF = !dryRun;
   
@@ -300,40 +298,19 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  // Save the coordinate system in a record and make it persistent in
 	  // the CFCache.
 	  //
-	  // {
-	  //   Record csysRec;
-	  //   String name=cfCacheName+"/uvgrid.csys";
-	  //   cgrid.coordinates().save(csysRec,"cgrid.sys");
-	  //   // Write Csys to a file
-	  //   {
-	  //   std::ofstream csysfile;
-	  //   csysfile.open(name.c_str());
-	  //   csysRec.print(csysfile, -1);
-	  //   }
-	  
-	  //   // Read Csys to a file
-	  //   {
-	  //     AipsIO rrfile;
-	  //     rrfile.open(name);
-	  //     Record rr;
-	  //     //      rr.getRecord(rrfile);
-	  //     rrfile >> rr;
-	  //     //CoordinateSystem *tt=CoordinateSystem::restore(rr,"cgrid.sys");
-	  //   }
-	  
-	  // Record d= csysRec.asRecord(RecordFieldId("cgrid.sys"));
-	  // Record d0= d.asRecord(RecordFieldId("direction0"));
-	  
-	  // // RecordDesc desc=d0.description();
-	  // // for(int i=0;i<desc.nfields();i++)
-	  // //   cerr << "CSYS.shape: " <<desc.name(i) << endl;
-	  
-	  // Vector<double> crpix;
-	  // d0.get(RecordFieldId("crpix"),crpix);
-	  // cerr << "CSYS.shape: " <<crpix << endl;
-	  
-	  // d0.get(RecordFieldId("crpix"),crpix);
-	  //}
+	  {
+	    String csysFileName=cfCacheName+"/uvgrid_csys.rec";
+	    String csysKey="uvgrid.csys";
+	    IPosition imShape = cgrid.shape();
+	    SynthesisUtils::saveAsRecord(cgrid.coordinates(),
+					 imShape,
+					 csysFileName, csysKey);
+
+	    // Just a test for now to read the coorsys back into memory.
+	    CoordinateSystem tt;
+	    SynthesisUtils::readFromRecord(tt,imShape,csysFileName, csysKey);
+	    cerr << "Imshape = " << imShape << endl;
+	  }
 	  //  cgrid.table().markForDelete();
 	  
 	  //-------------------------------------------------------------------------------------------------
@@ -355,6 +332,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  CountedPtr<refim::PolOuterProduct> pop_p = setPOP(*(db.vb_l), visPolMap, polMap, stokes, mType);
 	  
 	  
+	  // Vector<int> spwidList, fieldidList;
+	  // Vector<double> spwRefFreqList;
 	  // spwidList      = db.spwidList;
 	  // fieldidList    = db.fieldidList;
 	  // spwRefFreqList = db.spwRefFreqList;
@@ -383,7 +362,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  // parallelization of the compute intensive step (filling the
 	  // CFs) which is highly parallelizable and scales well.
 	  //
-	  awcf_l->makeConvFunction(cgrid , *(db.vb_l), wConvSize,
+	  Matrix<Double> vbFreqSelection ;
+	  awcf_l->makeConvFunction(cgrid , *(db.vb_l), nW,
 				   pop_p, pa, dpa, uvScale, uvOffset,
 				   vbFreqSelection,
 				   *cfs2_l, *cfswt2_l,
