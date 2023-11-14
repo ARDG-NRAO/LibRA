@@ -267,6 +267,7 @@ namespace casa{
     //   cs.spectralCoordinate(cs.findCoordinate(Coordinate::SPECTRAL)).increment()(0);
 
     cfCells_p(ndx(0),ndx(1),ndx(2))->coordSys_p  = cs;
+
     return ndx;
   }
   //

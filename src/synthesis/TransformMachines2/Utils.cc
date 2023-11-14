@@ -32,6 +32,7 @@
 #include <casacore/measures/Measures/MEpoch.h>
 #include <casacore/measures/Measures/MeasTable.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <casacore/casa/Utilities/Assert.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -48,9 +49,11 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 
 using namespace casacore;
-namespace casa{
+namespace casa
+{
   using namespace vi;
-  namespace refim{
+  namespace refim
+  {
     //
     //--------------------------------------------------------------------------------------------
     //  
@@ -1253,13 +1256,40 @@ namespace casa{
       try
 	{
 	  //casacore::Table tThisCF(Dir+'/'+fileName);
-	  casacore::PagedImage<casacore::Complex> thisCF(Dir+'/'+fileName);
-	  cfShape = thisCF.shape();
-	  if (loadPixels) pixelBuffer.assign(thisCF.get());
+	  String cfName=Dir+'/'+fileName;
+	  if (loadPixels)
+	    {
+	      casacore::PagedImage<casacore::Complex> thisCF(cfName);
+	      cfShape = thisCF.shape();
+	      //if (loadPixels)
+	      pixelBuffer.assign(thisCF.get());
+	    }
+
 	  casacore::TableRecord miscinfo;
 	  if (loadMiscInfo)
 	    {
-	      miscinfo= thisCF.miscInfo();
+	      try
+		{
+		  ImageInformation<casacore::Complex> imInfo(cfName);
+		  miscinfo = imInfo.getMiscInfo();
+		  coordSys = imInfo.getCoordinateSystem();
+		}
+	      catch (AipsError &x)
+		{
+		  //
+		  // Fallback resolution is to use the ImageInterface
+		  // to load miscInfo and coordSys.  This seems to
+		  // also load the pixel array which makes it slower.
+		  //
+
+		  // LogIO log_l(LogOrigin("SynthesisUtils",
+		  // "getCFParams")); log_l << x.what() << " Using the
+		  // ImageInterface::miscInfo() route" << LogIO::POST;
+		  // miscinfo=casacore::TableRecord(SynthesisUtils::readRecord(cfName+'/'+"miscInfo.rec"));
+		  casacore::PagedImage<casacore::Complex> thisCF(cfName);
+		  miscinfo= thisCF.miscInfo();
+		  coordSys = thisCF.coordinates();
+		};
 	      
 	      miscinfo.get("ParallacticAngle", paVal);
 	      miscinfo.get("MuellerElement", mVal);
@@ -1269,8 +1299,23 @@ namespace casa{
 	      miscinfo.get("Sampling", sampling);
 	      miscinfo.get("ConjFreq", conjFreq);
 	      miscinfo.get("ConjPoln", conjPoln);
-	      casacore::Int index= thisCF.coordinates().findCoordinate(casacore::Coordinate::SPECTRAL);
-	      coordSys = thisCF.coordinates();
+	      
+	      // IPosition cfShape;
+	      // String name=cfName+"/cf_csys.rec";
+	      // SynthesisUtils::readFromRecord(coordSys, cfShape,
+	      // 				     name,
+	      // 				     "cf_grid.csys");
+      // {
+      // IPosition dummy;
+      // 	LogIO log_l(LogOrigin("Utils", "getCFParam"));
+      // 	for(auto x :coordSys.list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
+      // }
+	      casacore::Int index= coordSys.findCoordinate(casacore::Coordinate::SPECTRAL);
+
+	      // casacore::PagedImage<casacore::Complex> thisCF(cfName);
+	      // casacore::Int index= thisCF.coordinates().findCoordinate(casacore::Coordinate::SPECTRAL);
+	      // coordSys = thisCF.coordinates();
+
 	      casacore::SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
 	      fVal=static_cast<Float>(spCS.referenceValue()(0));
 	    }
@@ -1573,42 +1618,62 @@ namespace casa{
     // Functions to save and read a casacore::CoordinateSystem to and
     // from a casacore::Record.  The Record is made persistent in a
     // disk file.
-    void SynthesisUtils::saveAsRecord(const casacore::CoordinateSystem& csys,
-				      const casacore::IPosition& imShape,
-				      const casacore::String& fileName,
-				      const casacore::String& keyName)
-    {
-      Record csysRec;
-      csys.save(csysRec,keyName);
-      RecordDesc desc=csysRec.description();
-      desc.addField("imsize",TpArrayInt);
-      csysRec.restructure(desc);
-      Vector<int> shp=imShape.asVector();
-      int imsId=csysRec.fieldNumber("imsize");
-      csysRec.define(imsId,shp);
-
-      // Write Csys to a file
-      AipsIO rrfile;
-      rrfile.open(fileName,ByteIO::New);
-      rrfile << csysRec;
-    }
-    void SynthesisUtils::readFromRecord(casacore::CoordinateSystem& csys,
-					casacore::IPosition& imShape,
-					const casacore::String& fileName,
-					const casacore::String& keyName)
+    casacore::Record SynthesisUtils::readRecord(const casacore::String& fileName)
     {
       AipsIO rrfile;
       rrfile.open(fileName,ByteIO::Old);
       Record rr;
       rrfile >> rr;
-      IPosition dummy;
-      csys = CoordinateSystem(*CoordinateSystem::restore(rr,keyName));
-      int imsId=rr.fieldNumber("imsize");
-      Vector<int> shp;
-      rr.get(imsId,shp);
+      return rr;
+    }
+    void SynthesisUtils::writeRecord(const casacore::String& fileName,
+				     const casacore::Record& rec)
+    {
+      // Write record to a file
+      AipsIO rrfile;
+      rrfile.open(fileName,ByteIO::New);
+      rrfile << rec;
+    }
+
+    void SynthesisUtils::saveAsRecord(const casacore::CoordinateSystem& csys,
+				      const casacore::IPosition&,//imShape,
+				      const casacore::String& fileName,
+				      const casacore::String& keyName)
+    {
+      // Save CoordinateSystem in a record
+      Record csysRec;
+      csys.save(csysRec,keyName);
+      // RecordDesc csys_desc=csysRec.description();
+      // RecordDesc imsize_desc;
+      // // Add image shape to the record.
+      // imsize_desc.addField("imsize",TpArrayInt);
+      // Vector<int> shp=imShape.asVector();
+
+      // imsize_desc.merge(csys_desc);
+      // csysRec.restructure(imsize_desc);
+      
+      // int imsId=csysRec.fieldNumber("imsize");
+      // csysRec.define(imsId,shp);
+      // csys.save(csysRec,keyName);
+
+      writeRecord(fileName, csysRec);
+    }
+    void SynthesisUtils::readFromRecord(casacore::CoordinateSystem& csys,
+					casacore::IPosition&,// imShape,
+					const casacore::String& fileName,
+					const casacore::String& keyName)
+    {
+      Record rr = readRecord(fileName);
+      //      rr.print(cerr);
+      CoordinateSystem *tt=CoordinateSystem::restore(rr,keyName);
+      csys = CoordinateSystem(*tt);
+      // int imsId=rr.fieldNumber("imsize");
+      // Vector<int> shp;
+      // rr.get(imsId,shp);
       // {
+      // 	IPosition dummy;
       // 	LogIO log_l(LogOrigin("Utils", "readFromRecord"));
-      // 	for(auto x :csys.list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
+      // 	for(auto x :tt->list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
       // }
     }
     template

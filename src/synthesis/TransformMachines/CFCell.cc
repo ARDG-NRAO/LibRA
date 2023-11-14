@@ -26,12 +26,13 @@
 //#
 //# $Id$
 #include <synthesis/TransformMachines/CFCell.h>
-#include <synthesis/TransformMachines/Utils.h>
+#include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/casa/Utilities/BinarySearch.h>
 #include <casacore/images/Images/PagedImage.h>
 using namespace casacore;
 namespace casa{
-
+  using namespace refim;
   
   CountedPtr<CFCell> CFCell::clone()
   {
@@ -119,12 +120,13 @@ namespace casa{
     // cerr << "Ref pixel = " << coordSys_p.referencePixel() << endl;
     // show(NULL,cerr);
 
+    Record miscinfo;
+    {
     PagedImage<Complex> thisCF(tmpShape,coordSys_p, name);
     //cerr << storage_p->shape() << endl;
 
     if ((storage_p->shape()).nelements()>0) thisCF.put(*storage_p);
 
-    Record miscinfo;
     miscinfo.define("Xsupport", xSupport_p);
     miscinfo.define("Ysupport", ySupport_p);
     miscinfo.define("Sampling", sampling_p);
@@ -140,6 +142,36 @@ namespace casa{
     miscinfo.define("Diameter", diameter_p);
     miscinfo.define("OpCode",isRotationallySymmetric_p);
     thisCF.setMiscInfo(miscinfo);
+
+    ImageInformation<Complex> imInfo(thisCF,name);
+    imInfo.save();
+
+    //   coordSys_p = thisCF.coordinates();
+    }
+    // Write miscInfo to a file
+    
+
+    // cerr << "000000000000000000000000000000000000000000" << endl;
+    //   {
+    // 	IPosition dummy;
+    //   	LogIO log_l(LogOrigin("CFCell", "makePersistent"));
+    //   	for(auto x :coordSys_p.list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
+    //   }
+    // SynthesisUtils::writeRecord(name+String("/miscInfo.rec"),
+    // 				miscinfo);
+    // SynthesisUtils::saveAsRecord(coordSys_p, tmpShape,
+    // 				 name+"/cf_csys.rec",
+    // 				 "cf_grid.csys");
+
+    // {
+    //   IPosition cfShape;
+    //   String ttname=name+"/cf_csys.rec";
+    //   CoordinateSystem c;
+    //   SynthesisUtils::readFromRecord(c, cfShape, ttname,
+    // 				     "cf_grid.csys");
+
+    // }
+    // cerr << "000000000000000000000000000000000000000000" << endl;
 
     //show("thisCell: ", cout);
   }

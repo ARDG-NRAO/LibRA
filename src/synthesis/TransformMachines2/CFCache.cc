@@ -28,6 +28,7 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <casacore/lattices/LEL/LatticeExpr.h>
 #include <casacore/casa/System/ProgressMeter.h>
@@ -406,11 +407,32 @@ namespace casa{
 			       "Reading CFCache aux. info.", "","","",true);
 	      for (uInt i=0; i < fileNames.nelements(); i++)
 		{
-		  PagedImage<Complex> thisCF(CFCDir+'/'+fileNames[i]);
-		  TableRecord miscinfo = thisCF.miscInfo();
+		  String cfName=CFCDir+'/'+fileNames[i];
+		  TableRecord miscinfo;
+		  ImageInformation<Complex> imInfo(cfName);
+
+		  try
+		    {
+		      miscinfo = imInfo.getMiscInfo();
+		      
+		      // String miName = cfName+'/'+String("miscInfo.rec");
+		      // miRec = SynthesisUtils::readRecord(miName);
+		      // miscinfo = TableRecord(miRec);
+		    }
+		  catch (AipsError &e)
+		    {
+		      //
+		      // In case of any error in reading the miscInfo
+		      // from a saved record (e.g. if this is an old
+		      // CFC where this file does not exist), resort
+		      // to getting the miscInfo via the ImageInterfnace.
+		      //
+		      //cerr << e.what();
+		      PagedImage<Complex> thisCF(cfName);
+		      miscinfo = thisCF.miscInfo();
+		    }
 		  //	    miscinfo.print(cerr);
 		  Double  paVal;
-		  //UNUSED: Double  wVal; Int mVal;
 		  miscinfo.get("ParallacticAngle",paVal);
 		  paList_p.push_back(paVal);
 		  pm.update(Double(i));
@@ -454,8 +476,16 @@ namespace casa{
 		  CoordinateSystem coordSys;
 
 		  IPosition cfShape;
-		  miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
-							 xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		  try
+		    {
+		      miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
+							     xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		    }
+		  catch(AipsError &e)
+		    {
+		      cerr << "getCFParams:: " << e.what() << endl;
+		      throw(e);
+		    }
 		
 		  Bool pickThisCF=true;
 		  if (selectPA) pickThisCF = (fabs(paVal - selectPAVal) <= dPA);
@@ -512,8 +542,8 @@ namespace casa{
 		    muellerElements[ii][0]=mList[ii];
 		  }
 		Double wIncr; miscInfo.get("WIncr", wIncr);
-        Vector<Double> const wListV(wList);
-        Vector<Double> const fListV(fList);
+		Vector<Double> const wListV(wList);
+		Vector<Double> const fListV(fList);
 		cfb->resize(wIncr,0.0,wListV,fListV,
 			    muellerElements,muellerElements,muellerElements,muellerElements);
 		cfb->setPA(paList_p[ipa]);
