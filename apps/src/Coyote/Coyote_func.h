@@ -51,6 +51,7 @@
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 
 #include <RoadRunner/rWeightor.h>
 //#include <RoadRunner/DataIterations.h>
@@ -298,19 +299,22 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  // Save the coordinate system in a record and make it persistent in
 	  // the CFCache.
 	  //
-	  {
-	    String csysFileName=cfCacheName+"/uvgrid_csys.rec";
-	    String csysKey="uvgrid.csys";
-	    IPosition imShape = cgrid.shape();
-	    SynthesisUtils::saveAsRecord(cgrid.coordinates(),
-					 imShape,
-					 csysFileName, csysKey);
+	  //	  String targetName=String(cfCacheName);
+	  ImageInformation<Complex> imInfo(cgrid,casacore::String(cfCacheName));
+	  imInfo.save();
+	  // {
+	  //   String csysFileName=cfCacheName+"/uvgrid_csys.rec";
+	  //   String csysKey="uvgrid.csys";
+	  //   IPosition imShape = cgrid.shape();
+	  //   SynthesisUtils::saveAsRecord(cgrid.coordinates(),
+	  // 				 imShape,
+	  // 				 csysFileName, csysKey);
 
-	    // Just a test for now to read the coorsys back into memory.
-	    CoordinateSystem tt;
-	    SynthesisUtils::readFromRecord(tt,imShape,csysFileName, csysKey);
-	    cerr << "Imshape = " << imShape << endl;
-	  }
+	  //   // Just a test for now to read the coorsys back into memory.
+	  //   CoordinateSystem tt;
+	  //   SynthesisUtils::readFromRecord(tt,imShape,csysFileName, csysKey);
+	  //   cerr << "Imshape = " << imShape << endl;
+	  // }
 	  //  cgrid.table().markForDelete();
 	  
 	  //-------------------------------------------------------------------------------------------------
@@ -374,8 +378,8 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  //
 	  // dryRun=False case.  The list of CFs in the CFC are
 	  // expected to be "blank CFs" with all the necessary meta
-	  // information to fill them. Not else other than the CFC is
-	  // necessary.
+	  // information to fill them. Nothing else other than the CFC
+	  // is necessary.
 	  //
 	  Vector<Double> dummyUVScale;
 	  Matrix<Double> dummyvbFreqSel;

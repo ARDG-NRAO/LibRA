@@ -200,14 +200,19 @@ namespace casa
 		    const casacore::CoordinateSystem& imCoords,
 		    casacore::Vector<int>& polMap,
 		    casacore::Vector<casacore::Stokes::StokesTypes>& visPolMap_p);
-    void saveAsRecord(const casacore::CoordinateSystem& csys,
-		      const casacore::IPosition& imShape,
-		      const casacore::String& fileName,
-		      const casacore::String& keyName);
-    void readFromRecord(casacore::CoordinateSystem& csys,
-			casacore::IPosition& imShape,
+
+      casacore::Record readRecord(const casacore::String& fileName);
+      void writeRecord(const casacore::String& fileName,
+		      const casacore::Record& rec);
+
+      void saveAsRecord(const casacore::CoordinateSystem& csys,
+			const casacore::IPosition& imShape,
 			const casacore::String& fileName,
 			const casacore::String& keyName);
+      void readFromRecord(casacore::CoordinateSystem& csys,
+			  casacore::IPosition& imShape,
+			  const casacore::String& fileName,
+			  const casacore::String& keyName);
     }
     
     void getHADec(casacore::MeasurementSet& ms, const VisBuffer2& vb, casacore::Double &HA, casacore::Double& RA, casacore::Double& Dec);
