@@ -46,6 +46,13 @@ namespace casa
     class ImageInformation
     {
     public:
+      ImageInformation():
+	cimg_p(NULL),
+	coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
+	imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
+	miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
+	coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName()
+      {};
       //
       // Constructor to read existing records save by this class
       //
