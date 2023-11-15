@@ -1273,6 +1273,7 @@ namespace casa
 		  ImageInformation<casacore::Complex> imInfo(cfName);
 		  miscinfo = imInfo.getMiscInfo();
 		  coordSys = imInfo.getCoordinateSystem();
+		  cfShape = IPosition(imInfo.getImShape());
 		}
 	      catch (AipsError &x)
 		{
@@ -1289,6 +1290,12 @@ namespace casa
 		  casacore::PagedImage<casacore::Complex> thisCF(cfName);
 		  miscinfo= thisCF.miscInfo();
 		  coordSys = thisCF.coordinates();
+		  cfShape = thisCF.shape();
+		  //
+		  // If the above info is not saved as records, save it now.
+		  //
+		  ImageInformation<casacore::Complex> imInfo(thisCF,cfName);
+		  imInfo.save();
 		};
 	      
 	      miscinfo.get("ParallacticAngle", paVal);
