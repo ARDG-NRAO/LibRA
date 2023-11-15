@@ -315,7 +315,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  //   SynthesisUtils::readFromRecord(tt,imShape,csysFileName, csysKey);
 	  //   cerr << "Imshape = " << imShape << endl;
 	  // }
-	  //  cgrid.table().markForDelete();
+	  cgrid.table().markForDelete();
 	  
 	  //-------------------------------------------------------------------------------------------------
 	  
