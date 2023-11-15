@@ -42,6 +42,32 @@
 namespace casa
 {
   namespace refim {
+
+    class ImageInformationError : public casacore::AipsError {
+    public:
+      ImageInformationError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	casacore::AipsError(message,c)
+      {};
+      ~ImageInformationError () noexcept {};
+    };
+
+    class ImageInformationSaveError : public ImageInformationError {
+    public:
+      ImageInformationSaveError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	ImageInformationError(message,c)
+      {};
+      ~ImageInformationSaveError () noexcept {};
+    };
+
+    class ImageInformationRecordNotFoundError : public ImageInformationError {
+    public:
+      ImageInformationRecordNotFoundError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	ImageInformationError(message,c)
+      {};
+      ~ImageInformationRecordNotFoundError () noexcept {};
+    };
+    
+
     template <class T>
     class ImageInformation
     {
@@ -89,7 +115,7 @@ namespace casa
       void save()
       {
 	if (cimg_p == NULL)
-	  throw(casacore::AipsError("ImageInformation::save():  Use ImageInformation(ImageInterface&, String&) ctor to save image information"));
+	  throw(ImageInformationSaveError("ImageInformation::save():  Use ImageInformation(ImageInterface&, String&) ctor to save image information"));
 	//
 	// Save image coordinate system as a casacore::Record
 	//
@@ -126,7 +152,7 @@ namespace casa
       casacore::CoordinateSystem getCoordinateSystem()
       {
 	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(casacore::AipsError("ImageInformation::getCoordinateSystem(): "+coordSysRecFileName+" does not exist."));
+	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+coordSysRecFileName+" does not exist."));
 
 	casacore::IPosition dummyImShape;
 	casacore::CoordinateSystem csys;
@@ -144,7 +170,7 @@ namespace casa
       casacore::Vector<int> getImShape()
       {
 	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(casacore::AipsError("ImageInformation::getCoordinateSystem(): "+imInfoRecFileName+" does not exist."));
+	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+imInfoRecFileName+" does not exist."));
 
 	casacore::TableRecord imInfo = casacore::TableRecord(SynthesisUtils::readRecord(imInfoRecFileName));
 	casacore::Vector<int> imShape;
@@ -157,7 +183,7 @@ namespace casa
       casacore::TableRecord getMiscInfo()
       {
 	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(casacore::AipsError("ImageInformation::getCoordinateSystem(): "+miscInfoRecFileName+" does not exist."));
+	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+miscInfoRecFileName+" does not exist."));
 
 	return casacore::TableRecord(SynthesisUtils::readRecord(miscInfoRecFileName));
       }

@@ -1736,7 +1736,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	  //cellSize = dc.increment()*(Double)(miscInfo.sampling*skyImage.shape()(0)/nx); // nx is the size of the CF buffer
 	  cellSize = dc.increment()*(Double)(miscInfo.sampling*skyImageShape(0)/nx); // nx is the size of the CF buffer
 	}
-      catch(AipsError &e)
+      catch(casa::refim::ImageInformationError &e)
 	{
 	  log_l << e.what() << endl << "This is an internal error." << LogIO::EXCEPTION;
 	}
@@ -1982,7 +1982,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	skyCoords = imInfo.getCoordinateSystem();
 	imShape = imInfo.getImShape();
       }
-    catch (AipsError &e)
+    catch (casa::refim::ImageInformationError &e)
       {
 	skyImage_l = new PagedImage<Complex> (uvGridDiskImage);//cfs2.getCacheDir()+"/uvgrid.im");
 	imInfo = ImageInformation<Complex>(*skyImage_l, cfCachePath);
