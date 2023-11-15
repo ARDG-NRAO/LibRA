@@ -104,7 +104,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				  const casacore::Bool conjBeams);
     static void fillConvFuncBuffer2(CFBuffer& cfb, CFBuffer& cfWtb,
 				    const casacore::Int& nx, const casacore::Int& ny,
-				    const casacore::ImageInterface<casacore::Complex>& skyImage,
+				    const casacore::ImageInterface<casacore::Complex>* skyImage,
 				    const CFCStruct& miscInfo,
 				    PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
 				    casacore::Bool conjBeams);
