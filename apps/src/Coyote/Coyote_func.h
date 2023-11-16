@@ -52,6 +52,7 @@
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
 #include <synthesis/TransformMachines2/ImageInformation.h>
+#include <casacore/casa/Utilities/Regex.h>
 
 #include <RoadRunner/rWeightor.h>
 //#include <RoadRunner/DataIterations.h>
@@ -153,6 +154,32 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   return pop_l;
 }
 
+std::vector<std::string> fileList(const std::string& cfCacheName,
+				  const std::vector<std::string>& regexList)
+  {
+    // Just easier to work with STL...
+    std::vector<std::string> selectedCF;
+    try
+      {
+	Directory dirObj(cfCacheName);
+
+	for(auto x : casacore::Vector<casacore::String>(regexList))
+	  {
+	    Regex regex(Regex::fromPattern(x));
+	    Vector<String> tmp = dirObj.find(regex);
+	    for (auto y : tmp) selectedCF.push_back(y);
+	  }
+	if (selectedCF.size() == 0)
+	  throw(SynthesisFTMachineError(String("Regex for CF selection leads to a NULL set!")));
+      }
+    catch(AipsError& x)
+      {
+	throw(SynthesisFTMachineError(String("Error while reading CF disk cache: ")
+				      +x.getMesg()));
+      }
+    return selectedCF;
+  }
+
 void Coyote(bool &restartUI, int &argc, char **argv,
 	    string &MSNBuf, 
 	    string &telescopeName,
@@ -166,13 +193,18 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    bool &conjBeams,  
 	    int &cfBufferSize, int &cfOversampling,
 	    std::vector<std::string>& cfList,
-	    std::vector<std::string>& wtCFList,
 	    bool& dryRun)
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("coyote", "Coyote_func"));
   
+  if (dryRun==false)
+    cfList = fileList(cfCacheName,cfList);
+
+  std::vector<std::string> wtCFList;
+  for(auto x : cfList) wtCFList.push_back("WT"+x);
+
   string imageName=cfCacheName+"/uvgrid.im";
   bool wTerm = (nW > 1)? true : false;
   
