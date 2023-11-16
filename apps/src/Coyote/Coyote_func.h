@@ -193,13 +193,13 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	    bool &conjBeams,  
 	    int &cfBufferSize, int &cfOversampling,
 	    std::vector<std::string>& cfList,
-	    bool& dryRun)
+	    string& mode)
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("coyote", "Coyote_func"));
   
-  if (dryRun==false)
+  if (mode=="fillcf")
     cfList = fileList(cfCacheName,cfList);
 
   std::vector<std::string> wtCFList;
@@ -234,7 +234,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
     {
       cfCacheObj_l->setCacheDir(cfCacheName.data());
       
-      if (dryRun)
+      if (mode == "dryrun")
 	{
 	  // In LazyFill model, the CFs are loaded in memory when
 	  // accessed (e.g. in the gridder loops).  None of their meta
@@ -250,7 +250,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  cfCacheObj_l->initCache2(false, dpa, -1.0,
 				   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
 	}
-      else
+      else if (mode == "fillcf")
 	{
 	  // Do not set CFCacheObj for LAZYFILL for dryRun=False case.
 	  // For this case, the CFs listed in the cfList are expected
@@ -271,6 +271,11 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 					   casacore::Vector<casacore::String>(wtCFNames),
 					   pa,dpa,
 					   verbose);
+	}
+      else
+	{
+	  throw(AipsError("Don't know what to do with mode="+mode+"!"));
+	  exit(-1);
 	}
     }
   catch (AipsError &e)
@@ -293,7 +298,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   Vector<Int> imSize(2,NX);
   
   const Vector<Double> uvScale(3,0);
-  Bool fillCF = !dryRun;
+  Bool fillCF = (mode == "fillcf");
   
   Vector<Double> uvOffset;
   uvOffset.resize(3);
@@ -302,10 +307,10 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   uvOffset(2)=0;
   try
     {
-      if (dryRun)
+      if (mode=="dryrun")
 	{
 	  //
-	  // dryRun=True case.  This makes "blank CFs" in the CFC from
+	  // mode="dryrun" case.  This makes "blank CFs" in the CFC from
 	  // scratch.  So needs meta data from the sky image as well
 	  // as the MS.
 	  //
@@ -408,7 +413,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
       else
 	{
 	  //
-	  // dryRun=False case.  The list of CFs in the CFC are
+	  // mode="fillcf" case.  The list of CFs in the CFC are
 	  // expected to be "blank CFs" with all the necessary meta
 	  // information to fill them. Nothing else other than the CFC
 	  // is necessary.

@@ -53,7 +53,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	int& cfOversampling,
 	std::vector<std::string>& cfList,
 	//	std::vector<std::string>& wtCFList,
-	bool& dryRun)
+	string& mode)
 {
   if (!restart)
     {
@@ -104,9 +104,9 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       InitMap(watchPoints,exposedKeys);exposedKeys.resize(0);
       exposedKeys.push_back("cflist");
       //      exposedKeys.push_back("wtcflist");
-      watchPoints["0"]=exposedKeys;
+      watchPoints["fillcf"]=exposedKeys;
 
-      i=1;clgetValp("dryrun", dryRun,i,watchPoints);
+      i=1;clgetSValp("mode", mode,i,watchPoints);clSetOptions("mode",{"dryrun","fillcf"});
       clgetNSValp("cflist", cfList,i);
       //      clgetNSValp("wtcflist", wtCFList,i);
       
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
   string MSNBuf="", cfCache="", fieldStr="", spwStr="*",
     imageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr, telescopeName="EVLA", mType="diagonal",
-    imageNamePrefix="";
+    imageNamePrefix="",mode="dryrun";
   std::vector<std::string> cfList;
   //  std::vector<std::string> wtCFList;
   
@@ -165,7 +165,6 @@ int main(int argc, char **argv)
   bool conjBeams= true;
   bool psTerm = false;
   bool aTerm = true;
-  bool dryRun = true;
   float pa=-200.0, // Get PA from the MS
     dpa=360.0; // Don't rotate CFs for PA
   
@@ -179,7 +178,7 @@ int main(int argc, char **argv)
      cfBufferSize, cfOversampling,
      cfList,
      //     wtCFList,
-     dryRun);
+     mode);
   
   set_terminate(NULL);
   
@@ -196,7 +195,7 @@ int main(int argc, char **argv)
 	     cfBufferSize, cfOversampling,
 	     cfList,
 	     //wtCFList,
-	     dryRun);
+	     mode);
       
     }
   catch(AipsError& er)
