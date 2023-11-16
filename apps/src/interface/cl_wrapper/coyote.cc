@@ -52,7 +52,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	int& cfBufferSize,
 	int& cfOversampling,
 	std::vector<std::string>& cfList,
-	std::vector<std::string>& wtCFList,
+	//	std::vector<std::string>& wtCFList,
 	bool& dryRun)
 {
   if (!restart)
@@ -101,14 +101,14 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetIValp("buffersize", cfBufferSize,i);
       i=1;clgetIValp("oversampling", cfOversampling,i);
 
-      InitMap(watchPoints,exposedKeys);
+      InitMap(watchPoints,exposedKeys);exposedKeys.resize(0);
       exposedKeys.push_back("cflist");
-      exposedKeys.push_back("wtcflist");
+      //      exposedKeys.push_back("wtcflist");
       watchPoints["0"]=exposedKeys;
 
-      i=1;clgetValp("dryrun", dryRun,i);//,watchPoints); 
+      i=1;clgetValp("dryrun", dryRun,i,watchPoints);
       clgetNSValp("cflist", cfList,i);
-      clgetNSValp("wtcflist", wtCFList,i);
+      //      clgetNSValp("wtcflist", wtCFList,i);
       
       EndCL();
       
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     refFreqStr, telescopeName="EVLA", mType="diagonal",
     imageNamePrefix="";
   std::vector<std::string> cfList;
-  std::vector<std::string> wtCFList;
+  //  std::vector<std::string> wtCFList;
   
   float cellSize=0;//refFreq=3e09, freqBW=3e9;
   int NX=0, nW=1, cfBufferSize=0, cfOversampling=20;
@@ -177,7 +177,9 @@ int main(int argc, char **argv)
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
      cfBufferSize, cfOversampling,
-     cfList,wtCFList,dryRun);
+     cfList,
+     //     wtCFList,
+     dryRun);
   
   set_terminate(NULL);
   
@@ -192,7 +194,8 @@ int main(int argc, char **argv)
 	     fieldStr,spwStr, phaseCenter,
 	     conjBeams,
 	     cfBufferSize, cfOversampling,
-	     cfList, wtCFList,
+	     cfList,
+	     //wtCFList,
 	     dryRun);
       
     }
