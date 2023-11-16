@@ -16,16 +16,17 @@ dependency graph small.
 This repository therefore contains _only_ the algorithmically
 necessary scientific code, and a build system to compile it into a
 library of algorithms.  Such a library can be directly used as a
-third-party library by others in the RA community.  A three different 
-interfaces to the library are provided for accessing the algorithms via
-C++ or Python, or as an end-user via standalone applications built to
-conveniently configure and execute the algorithms from a Linux shell.
+third-party library by others in the RA community.  Via this project,
+three different interfaces to the library are provided for accessing
+the algorithms via C++, Python, or as an end-user via standalone
+applications built to conveniently configure and execute the
+algorithms from a Linux shell.
 
 Interferometric radio telescopes are indirect imaging devices which
 collect data in the Fourier domain. Transforming the raw data from
-such devices to images requires application of sophisticated
+such devices to images require application of sophisticated
 algorithms to reconstruct the image.  The fundamental scientific
-principles behind such telescopes are the same as in other domains
+principles behind such telescopes share commonalities with other domains
 that rely on indirect imaging such as Magnetic Resonance Imaging (MRI)
 and Ultrasound imaging.  To make RA algorithms available for
 application in such fields and enable cross-discipline R&D, the API to
@@ -42,7 +43,7 @@ compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph. A suite of standalone applications are also
 available which can be built as relocatable Linux executable (this may
-also be possible for MacOS, but we haven't had time to test).
+also be possible for MacOS, but we haven't test it).
 
 The resulting software stack is shown below.  Figure on the left shows
 our current software stack where the RA Algorithms layer is built on
