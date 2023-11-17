@@ -13,14 +13,13 @@ as necessary.  Therefore, a strong requirement deriving this work is
 to keep the interface simple, the software stack shallow and software
 dependency graph small.
 
-This repository therefore contains _only_ the algorithmically
-necessary scientific code, and a build system to compile it into a
-library of algorithms.  Such a library can be directly used as a
-third-party library by others in the RA community.  Via this project,
-three different interfaces to the library are provided for accessing
-the algorithms via C++, Python, or as an end-user via standalone
-applications built to conveniently configure and execute the
-algorithms from a Linux shell.
+This repository therefore contains _only_ the
+algorithmically-necessary code, and a build system to compile it into
+a library of algorithms.  Such a library can be directly used as a
+third-party library by others in the RA community.  Interfaces are
+provided to access the algorithms from C++ and Python, or as an
+end-user via standalone applications built to conveniently configure
+and execute the algorithms from a Linux shell.
 
 Interferometric radio telescopes are indirect imaging devices which
 collect data in the Fourier domain. Transforming the raw data from
