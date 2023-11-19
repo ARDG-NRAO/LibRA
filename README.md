@@ -18,7 +18,9 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-end-user via [standalone applications](#available-standalone-applications-apps) to conveniently configure and execute the algorithms from a Linux shell.
+#end-user via [standalone
+applications](#available-standalone-applications-apps) to conveniently
+configure and execute the algorithms from a Linux shell.  The low-level algorithms that these interfaces expose are designed to be used as component-algorithms in a higher-level [Algorithm Architecture][doc/AlgoArch/README.md].
 
 Interferometric radio telescopes are indirect imaging devices which
 collect data in the Fourier domain. Transforming the raw data from
