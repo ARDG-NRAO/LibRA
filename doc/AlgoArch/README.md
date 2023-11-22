@@ -29,6 +29,6 @@ these algorithmic components for data processing directly to produce
 astronomical results, and also individual and groups who may use these
 algorithmic components in their research for new algorithms which
 inevitably requires software development.  For the latter group, the
-implementation must provide easy and direct access to well know core
+implementation must provide easy and direct access to well known core
 algorithms so that those don't need to be re-implemented/reinvented,
 and the research can focus on solving real outstanding problems.
