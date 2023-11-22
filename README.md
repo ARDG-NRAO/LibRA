@@ -193,4 +193,10 @@ The binary applications will be install in ```apps/install``` directory.
 
 ### Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers)
+
+### ToDo List
+- [ ] Make a top-level `cmake` file.
+- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.
+      Perhaps using GPU Paralle?
+
 ***
