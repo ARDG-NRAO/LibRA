@@ -197,6 +197,6 @@ The binary applications will be install in ```apps/install``` directory.
 ### ToDo List
 - [ ] Make a top-level `cmake` file.
 - [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.
-      Perhaps using GPU Paralle?
+      Perhaps using [GPU Parallel](https://www.gnu.org/software/parallel)?
 
 ***
