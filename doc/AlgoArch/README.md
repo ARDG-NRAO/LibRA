@@ -18,12 +18,11 @@ implemented such that they do not need to change with the complexity
 of the applications they are used in.  These core components should
 also have solid theoretical basis to exist, making it possible for the
 architecture to be table across a variety of high-level data
-processing procedure/algorithm.  These high-level procedures may
-differ from each other in details but must ultimately satisfy
-fundamental scientific principles applicable to the various domains
-that use the technique of indirect imaging (e.g. principles of physics
-& optics, statistics and signal processing for interferometric imaging
-in radio astronomy).
+processing procedure/algorithm which may differ from each other in
+details but must ultimately satisfy fundamental scientific principles
+applicable to the various domains that use the technique of indirect
+imaging (e.g. principles of physics & optics, statistics and signal
+processing for interferometric imaging in radio astronomy).
 
 The "end-users" from our point of view are both -- researchers who use
 these algorithmic components for data processing directly to produce
