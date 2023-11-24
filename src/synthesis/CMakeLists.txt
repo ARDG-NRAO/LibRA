@@ -52,11 +52,6 @@ target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 target_link_libraries(${LIB_NAME} PUBLIC hpg::hpg)
 # Libparafeed dependency
 target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
-#target_include_directories(${LIB_NAME} PRIVATE /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
-#add_library(libparafeed SHARED IMPORTED)
-#set_property(TEST libparafeed )
-#set(PARAFEED_LIBRARIES /home/pjaganna/Software/casa_build_native/linux_64b/libparafeed.a /usr/lib/x86_64-linux-gnu/libreadline.so /home/pjaganna/Software/casa_build_native/linux_64b/include/parafeed/)
-
 
 # Internal dependencies.  Include protobuf only if using GRPC
 if (CMAKE_USE_GRPC)
