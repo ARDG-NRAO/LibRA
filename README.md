@@ -88,7 +88,9 @@ to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or v
 - [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] `coyote` : An application to build the CF Cache used as input to the `roadrunner` application.
 - [ ] `htclean` : A framework that implements the Algorithm Architecture that uses the apps as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  So far, this has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA apps as components has also been used for a prototype deployment on AWS.
+
 ----
+
 - [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
 - [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
 - [ ] `subms` : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
