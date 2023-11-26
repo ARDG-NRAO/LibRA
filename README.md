@@ -178,7 +178,9 @@ If successful, this will produce the following tree:
 └── README.md
 ```
 
-The binary applications will be install in ```apps/install``` directory.
+The binary [standalone
+applications](#available-standalone-applications-apps) will be install
+in ```apps/install``` directory.
 
 ### Setting up the various variables in `makefile.libra`
 
