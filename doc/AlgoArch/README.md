@@ -32,3 +32,5 @@ software.  For the latter group, the implementation must provide easy
 and direct access to well established algorithms so that those don't
 need to be re-implemented/reinvented, and instead their research can
 focus on solving real outstanding problems.
+
+## Mathematical Framework
