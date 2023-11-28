@@ -198,7 +198,7 @@ in ```apps/install``` directory.
 This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 
 ### ToDo List
- [ ] Make a top-level `cmake` file.
+- [ ] Make a top-level `cmake` file.
 - [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.  
 Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
