@@ -18,12 +18,12 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-#end-user via [standalone
+end-user via [standalone
 applications](#available-standalone-applications-apps) to conveniently
 configure and execute the algorithms from a Linux shell.  The
-low-level algorithms that these interfaces expose are designed to be
-used as component-algorithms in a higher-level _generalized and
-scalable_ [Algorithm Architecture](doc/AlgoArch/README.md).
+low-level algorithms exposed by these interfaces are factorized to be
+used as components in a higher-level _generalized_ [Algorithm
+Architecture](doc/AlgoArch/README.md).
 
 Interferometric radio telescopes are indirect imaging devices which
 collect data in the Fourier domain. Transforming the raw data from
@@ -195,11 +195,17 @@ in ```apps/install``` directory.
 - [ ] `Apps_BUILD_TESTS`: Whether to build apps as libraries, instead of binaries, for unit tests. Default is OFF.
 
 ### Resources
-- [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers)
+- [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers).
+This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 
 ### ToDo List
-- [ ] Make a top-level `cmake` file.
-- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.
-      Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
+ [ ] Make a top-level `cmake` file.
+- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.  
+Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
+- [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
+Such a list can be used by other components of the algorithm
+      architecture to make a potentially smaller sub-CFC, specially
+      with the given MS is a partition of a larger database being
+      imaged.
 
 ***
