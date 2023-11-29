@@ -204,7 +204,7 @@ Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
 Such a list can be used by other components of the algorithm
       architecture to make a potentially smaller sub-CFC, specially
-      with the given MS is a partition of a larger database being
+      when the given MS is a partition of a larger database being
       imaged.
 
 ***
