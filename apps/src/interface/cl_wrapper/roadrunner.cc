@@ -128,9 +128,15 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
 
       i=1;clgetValp("wbawp", WBAwp,i);
-      i=1;clgetSValp("field", fieldStr,i);
-      i=1;clgetSValp("spw", spwStr,i);
-      i=1;clgetSValp("uvrange", uvDistStr,i);
+
+      // A commas in the value of the following fields is interpreted
+      // in the application code (MSSelection module of CASACore).  So
+      // use a call from parafeed to get the value without it being
+      // interpreted for commas by the parafeed library.
+      i=1;clgetFullValp("field", fieldStr);
+      i=1;clgetFullValp("spw", spwStr);
+      i=1;clgetFullValp("uvrange", uvDistStr);
+
       i=1;clgetValp("pbcor", doPBCorr,i);
       i=1;clgetValp("conjbeams", conjBeams,i);
       i=1;clgetValp("pblimit", pbLimit,i);

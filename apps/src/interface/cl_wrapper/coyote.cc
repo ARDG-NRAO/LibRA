@@ -95,8 +95,8 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       i=1;dbgclgetFValp("pa", pa, i);
       i=1;clgetFValp("dpa", dpa, i);
       
-      i=1;clgetSValp("field", fieldStr,i);
-      i=1;clgetSValp("spw", spwStr,i);
+      i=1;clgetFullValp("field", fieldStr);
+      i=1;clgetFullValp("spw", spwStr);
       //      i=1;clgetFValp("pblimit", pbLimit,i);
       i=1;clgetIValp("buffersize", cfBufferSize,i);
       i=1;clgetIValp("oversampling", cfOversampling,i);
