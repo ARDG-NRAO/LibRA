@@ -50,6 +50,9 @@ PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 # No. of cores to use for compiling
 NCORES=12
 
+# If ON, apps are built as libraries for unit tests. Default is faulse where apps are built as binaries.
+Apps_BUILD_TESTS=OFF
+
 #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 # Initialize the Kokkos_CUDA_ARCH string to blank.
 # If this is not set on the commandline, the Kokkos
@@ -326,13 +329,16 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  ${APPSDIR} 
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  \
+        -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} \
+	${APPSDIR} 
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
 
 apps-clean:
 	cd ${APPSBUILDDIR}/; gmake clean
+	\rm -rf ${APPSINSTALLDIR}
 
 ##################### ---------------------------
 

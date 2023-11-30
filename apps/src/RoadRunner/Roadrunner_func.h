@@ -28,7 +28,7 @@
 #define ROADRUNNER_ROADRUNNER_FUNC_H
 #include <casacore/casa/namespace.h>
 #include <casacore/casa/OS/Directory.h>
-#include <casacore/casa/Utilities/Regex.h>
+//#include <casacore/casa/Utilities/Regex.h>
 #include <casacore/casa/Logging/LogFilter.h>
 #include <casacore/casa/System/ProgressMeter.h>
 
@@ -36,7 +36,7 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/images/Images/ImageInterface.h>
 #include <casacore/images/Images/PagedImage.h>
-#include <casacore/tables/TaQL/ExprNode.h>
+//#include <casacore/tables/TaQL/ExprNode.h>
 
 #include <casacore/ms/MSSel/MSSelection.h>
 #include <msvis/MSVis/VisibilityIterator2.h>

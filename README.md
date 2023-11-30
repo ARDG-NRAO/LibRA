@@ -182,6 +182,7 @@ The binary applications will be install in ```apps/install``` directory.
 - [ ] `{CASA,CASACORE_DATA,FFTW,KOKKOS,HPG,PARAFEED,SAKURA}_REPOS`: URL for the repository of the various packages.
 - [ ] `PATH`: Set this to include the location of the local CUDA installation.  To build the `LibRA` system a GPU is not necessary, but a CUDA install is necessary.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
+- [ ] `Apps_BUILD_TESTS`: Whether to build apps as libraries, instead of binaries, for unit tests. Default is OFF.
 
 ### Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers)

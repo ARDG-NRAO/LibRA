@@ -46,6 +46,8 @@
 //using namespace casacore;
 //using namespace std;
 
+#include <iostream>
+#include <fstream>
 #include <Hummbee/hummbee_func.h>
 
 //
@@ -152,12 +154,19 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
      // do some input parameter checking now.
      string mesgs;
 
-     /*if (ImSize <= 0)
-       mesgs += "The imsize parameter needs to be set to a positive finite value. ";
+     if (nsigma > 0)
+     { 
+       ifstream pbfile;
+       pbfile.open(imageName + string(".pb"));
 
-     if (cellSize <= 0)
-       mesgs += "The cellsize parameter needs to be set to a positive finite value. ";*/
-
+       if (!pbfile)
+       {     
+         mesgs += "A .pb file is not found. Please provide a .pb file when setting nsigma greater than 0. \n";
+         cout << "Not found PB" << endl;
+       }
+       else
+         cout << "found PB" << endl;
+     }
      if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
@@ -246,7 +255,7 @@ int main(int argc, char **argv)
 
   try
     {
-      Hummbee(/*MSNBuf,*/imageName, modelImageName,
+      float PeakRes = Hummbee(/*MSNBuf,*/imageName, modelImageName,
                  /*NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, robust,
                  cfCache, fieldStr,spwStr,
@@ -260,6 +269,7 @@ int main(int argc, char **argv)
                  cycleniter, cyclefactor,
                  mask, specmode
                  ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
+    
     }
   catch(AipsError& er)
     {

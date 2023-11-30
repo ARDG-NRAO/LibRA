@@ -337,7 +337,7 @@ protected:
   // return true if two directions are close enough to consider the
   // operator unchanged, false otherwise
   casacore::Bool directionsCloseEnough(const casacore::MDirection &dir1,
-                             const casacore::MDirection &dir2) const throw(casacore::AipsError);
+                             const casacore::MDirection &dir2) const noexcept(false);//const throw(casacore::AipsError);
   			     
   // return index of compareTelescope, compareAntenna and compareFeed in
   // myTelescopes_p, myAntennaIDs and myFeedIDs; -1 if not found

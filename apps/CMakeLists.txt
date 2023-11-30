@@ -69,4 +69,9 @@ if(BUILD_PYWRAPPER)
   add_subdirectory(src/interface/python_wrapper)
 endif()
 
+# add and build googletest
+option(Apps_BUILD_TESTS "Build tests" ON)
+if(Apps_BUILD_TESTS)
+  add_subdirectory(src/tests)
+endif()
 
