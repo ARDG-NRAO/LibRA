@@ -579,9 +579,12 @@ Bool Imager::close()
      << "Closing MeasurementSet and detaching from imager"
      << LogIO::POST;
   this->unlock();
-  if(ft_p) delete ft_p; ft_p = 0;
-  if(cft_p) delete cft_p; cft_p = 0;
-  if(vs_p) delete vs_p; vs_p = 0;
+  if(ft_p) delete ft_p;
+  ft_p = 0;
+  if(cft_p) delete cft_p;
+  cft_p = 0;
+  if(vs_p) delete vs_p;
+  vs_p = 0;
   if(rvi_p) delete rvi_p; 
   rvi_p=0;
   wvi_p=0;
@@ -590,10 +593,13 @@ Bool Imager::close()
   //if(ms_p) delete ms_p; 
   ms_p = 0;
 
-  if(se_p) delete se_p; se_p = 0;
+  if(se_p) delete se_p;
+  se_p = 0;
 
-  if(vp_p) delete vp_p; vp_p = 0;
-  if(gvp_p) delete gvp_p; gvp_p = 0;
+  if(vp_p) delete vp_p;
+  vp_p = 0;
+  if(gvp_p) delete gvp_p;
+  gvp_p = 0;
 
   destroySkyEquation();
 

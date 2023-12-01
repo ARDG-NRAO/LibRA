@@ -26,12 +26,13 @@
 //#
 //# $Id$
 #include <synthesis/TransformMachines/CFCell.h>
-#include <synthesis/TransformMachines/Utils.h>
+#include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/casa/Utilities/BinarySearch.h>
 #include <casacore/images/Images/PagedImage.h>
 using namespace casacore;
 namespace casa{
-
+  using namespace refim;
   
   CountedPtr<CFCell> CFCell::clone()
   {
@@ -77,8 +78,8 @@ namespace casa{
        << "Data shape: "         << storage_p->shape() << " " << shape_p << endl
        << "Parallactic Angle(d): "  << pa_p.getValue("deg")
        << endl;
-    IPosition dummy;
-    Vector<String> csList;
+    // IPosition dummy;
+    // Vector<String> csList;
     // os << "CoordSys: ";
     // csList = coordSys_p.list(log_l,MDoppler::RADIO,dummy,dummy);
     // os << csList << endl;
@@ -110,18 +111,22 @@ namespace casa{
     // being made persistent.  So make a 2x2 pixel image (since I
     // don't know how to make a 0x0 pixel image to just save the CS
     // and miscInfo information to the disk).
-    if ((storage_p->shape()).product()==0) tmpShape[0]=tmpShape[1]=2;
+    if ((storage_p->shape()).product()==0) tmpShape = IPosition(4,2,1,1,1);
+    else tmpShape = storage_p->shape();
+    // cerr << "thisCF.shape() = "
+    //   //<< thisCF.shape()
+    // 	 << " " << tmpShape << " " << storage_p->shape() << endl;
 
+    // cerr << "Ref pixel = " << coordSys_p.referencePixel() << endl;
+    // show(NULL,cerr);
+
+    Record miscinfo;
+    {
     PagedImage<Complex> thisCF(tmpShape,coordSys_p, name);
-    //cerr << "thisCF.shape() = " << thisCF.shape() << " " << tmpShape << " " << storage_p->shape() << endl;
-
-    //    cerr << "Ref pixel = " << coordSys_p.referencePixel() << endl;
-    //    show(NULL,cerr);
     //cerr << storage_p->shape() << endl;
 
     if ((storage_p->shape()).nelements()>0) thisCF.put(*storage_p);
 
-    Record miscinfo;
     miscinfo.define("Xsupport", xSupport_p);
     miscinfo.define("Ysupport", ySupport_p);
     miscinfo.define("Sampling", sampling_p);
@@ -137,6 +142,36 @@ namespace casa{
     miscinfo.define("Diameter", diameter_p);
     miscinfo.define("OpCode",isRotationallySymmetric_p);
     thisCF.setMiscInfo(miscinfo);
+
+    ImageInformation<Complex> imInfo(thisCF,name);
+    imInfo.save();
+
+    //   coordSys_p = thisCF.coordinates();
+    }
+    // Write miscInfo to a file
+    
+
+    // cerr << "000000000000000000000000000000000000000000" << endl;
+    //   {
+    // 	IPosition dummy;
+    //   	LogIO log_l(LogOrigin("CFCell", "makePersistent"));
+    //   	for(auto x :coordSys_p.list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
+    //   }
+    // SynthesisUtils::writeRecord(name+String("/miscInfo.rec"),
+    // 				miscinfo);
+    // SynthesisUtils::saveAsRecord(coordSys_p, tmpShape,
+    // 				 name+"/cf_csys.rec",
+    // 				 "cf_grid.csys");
+
+    // {
+    //   IPosition cfShape;
+    //   String ttname=name+"/cf_csys.rec";
+    //   CoordinateSystem c;
+    //   SynthesisUtils::readFromRecord(c, cfShape, ttname,
+    // 				     "cf_grid.csys");
+
+    // }
+    // cerr << "000000000000000000000000000000000000000000" << endl;
 
     //show("thisCell: ", cout);
   }

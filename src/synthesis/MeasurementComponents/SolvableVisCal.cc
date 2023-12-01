@@ -729,9 +729,12 @@ SolvableVisCal::~SolvableVisCal() {
 
   deleteSVC();
 
-  if (ci_)   delete ci_;   ci_=NULL;
-  if (cpp_)  delete cpp_;  cpp_=NULL;
-  if (ct_)   delete ct_;   ct_=NULL;
+  if (ci_)   delete ci_;
+  ci_=NULL;
+  if (cpp_)  delete cpp_;
+  cpp_=NULL;
+  if (ct_)   delete ct_;
+  ct_=NULL;
 
 }
 

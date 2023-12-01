@@ -731,7 +731,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     vbs.uvw_p.reference(uvwOrigin); 
     Bool dopsf_l=true;
     vbs.accumCFs_p=((vbs.uvw_p.nelements() == 0) && dopsf_l);
-    cerr << "uvw_p.nelements " << vbs.uvw_p.nelements() << endl;
+    //    cerr << "uvw_p.nelements " << vbs.uvw_p.nelements() << endl;
     // Array<Complex> gwts; Bool removeDegenerateAxis=false;
     // wtsGrid.get(gwts, removeDegenerateAxis);
     Int nDataChan = vbs.flagCube_p.shape()[1];

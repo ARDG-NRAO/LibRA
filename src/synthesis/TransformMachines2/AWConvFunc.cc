@@ -43,6 +43,7 @@
 #include <synthesis/TransformMachines2/VLACalcIlluminationConvFunc.h>
 #include <synthesis/TransformMachines2/ConvolutionFunction.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
 #include <casacore/coordinates/Coordinates/LinearCoordinate.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
@@ -954,7 +955,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     conjPolMap = pop->getConjPolMat();
     conjPolIndexMap = pop->getConjPol2CFMat();
 
-    //cerr << "AWCF: " << polMap << endl << polIndexMap << endl << conjPolMap << endl << conjPolIndexMap << endl;
+    // cerr << "AWCF: " << polMap << endl << polIndexMap << endl << conjPolMap << endl << conjPolIndexMap << endl;
     
     // for(uInt ip=0;ip<pp.nelements();ip++)
     // 	pp(ip)=translateStokesToCrossPol(skyStokes(ip));
@@ -1117,7 +1118,15 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	if (fillCF) log_l << "Making CFs for baseline type " << ib << LogIO::POST;
 	else        log_l << "Making empty CFs for baseline type " << ib << LogIO::POST;
 	{
-	  Double vbPA = getPA(vb), freqHi;
+	  //
+	  // Get VB PA isn't necessary here since the pa passed to
+	  // this function is already derived from VB in AWP.  In
+	  // general this function should use whatever is passed to
+	  // it, and the caller should decide the source PA value
+	  // (e.g. VB or the UI).
+	  //
+	  // Double vbPA = getPA(vb);
+	  Double freqHi;
 
 	  
 	  Vector<Double> chanFreq = vb.getFrequencies(0);
@@ -1127,12 +1136,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	
 	  freqHi = refVal[0];
 	  fillConvFuncBuffer(*cfb_p, *cfwtb_p, nx, nx, skyIncr, convSize, convSize, freqValues, wValues, wScale,
-			     vbPA, freqHi,
+			     paQuant.getValue(),//;vbPA,
+			     freqHi,
 			     polMap, polIndexMap, vb, psScale,
 			     *psTerm_p, *wTerm_p, *aTerm_p, !fillCF);
 	}
 	// cfb_p->show(NULL,cerr);
-	//cfb_p->makePersistent("test.cf");
+	// cfb_p->makePersistent("test.cf");
 	// cfwtb_p->makePersistent("test.wtcf");
 	
       } // End of loop over baselines
@@ -1642,7 +1652,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //
   void AWConvFunc::fillConvFuncBuffer2(CFBuffer& cfb, CFBuffer& cfWtb,
 				       const Int& nx, const Int& ny, 
-				       const ImageInterface<Complex>& skyImage,
+				       const ImageInterface<Complex>* skyImage,
 				       const CFCStruct& miscInfo,
 				       PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
 				       Bool conjBeams)
@@ -1706,14 +1716,31 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       // 	Coordinate* FTlc=lc.makeFourierCoordinate(axes,dirShape);
       // 	cellSize = lc.increment();
       // }
-      {
-	CoordinateSystem skyCoords(skyImage.coordinates());
+
+      //
+      // By the time control gets here, ImageInformation inputs should
+      // exist in the CFC one way or another.  If not, this is due to
+      // a case that logic in makeConvFunction2() missed -- an
+      // internal error.
+      //
+      try
+	{
+	  ImageInformation<Complex> imInfo(cfb.getCFCacheDir());
+	  CoordinateSystem skyCoords(imInfo.getCoordinateSystem());
+	  //	CoordinateSystem skyCoords(skyImage.coordinates());
+
+	  Vector<int> skyImageShape = imInfo.getImShape();
+	  Int directionIndex=skyCoords.findCoordinate(Coordinate::DIRECTION);
+	  DirectionCoordinate dc=skyCoords.directionCoordinate(directionIndex);
+	  //Vector<Double> cellSize;
+	  //cellSize = dc.increment()*(Double)(miscInfo.sampling*skyImage.shape()(0)/nx); // nx is the size of the CF buffer
+	  cellSize = dc.increment()*(Double)(miscInfo.sampling*skyImageShape(0)/nx); // nx is the size of the CF buffer
+	}
+      catch(casa::refim::ImageInformationError &e)
+	{
+	  log_l << e.what() << endl << "This is an internal error." << LogIO::EXCEPTION;
+	}
 	
-	Int directionIndex=skyCoords.findCoordinate(Coordinate::DIRECTION);
-	DirectionCoordinate dc=skyCoords.directionCoordinate(directionIndex);
-	//Vector<Double> cellSize;
-	cellSize = dc.increment()*(Double)(miscInfo.sampling*skyImage.shape()(0)/nx); // nx is the size of the CF buffer
-      }
       //cerr << "#########$$$$$$ " << cellSize << endl;
 
       // Int directionIndex=cs_l.findCoordinate(Coordinate::DIRECTION);
@@ -1926,20 +1953,56 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     //  
     // Get the coordinate system
     //
+    Int skyNX,skyNY;
+    Vector<int> imShape;
+    CoordinateSystem skyCoords;
     const String uvGridDiskImage=cfCachePath+"/"+"uvgrid.im";
-    PagedImage<Complex> skyImage_l(uvGridDiskImage);//cfs2.getCacheDir()+"/uvgrid.im");
     Double skyMinFreq;
     Vector<Double> skyIncr;
-    Int skyNX,skyNY;
-    {
-      skyNX=skyImage_l.shape()(0);
-      skyNY=skyImage_l.shape()(1);
-      CoordinateSystem skyCoords(skyImage_l.coordinates());
+    CountedPtr<PagedImage<Complex> > skyImage_l;
+    ImageInformation<Complex> imInfo;
 
+    //
+    // Get the sky image coordinates and shape.
+    //
+    // The logic in the code below is that if the CFC is a new one, it
+    // should have inputs for the ImageInformation object (the
+    // try-block below) and not need the uvGridDiskImage image.
+    //
+    // If ImageInformation<T> object could get this information, it is
+    // assumed that the CFC is the older one which has the
+    // uvGridDiskImage image.  So use it as input to construct the
+    // ImageInformation<T>, save it, and retrieve the information from
+    // it.  The try-block code should work in next application of this
+    // code to the same CFC.
+    //
+    try
+      {
+	imInfo = ImageInformation<Complex> (cfCachePath);
+	skyCoords = imInfo.getCoordinateSystem();
+	imShape = imInfo.getImShape();
+      }
+    catch (casa::refim::ImageInformationError &e)
+      {
+	skyImage_l = new PagedImage<Complex> (uvGridDiskImage);//cfs2.getCacheDir()+"/uvgrid.im");
+	imInfo = ImageInformation<Complex>(*skyImage_l, cfCachePath);
+	imInfo.save();
+	skyCoords = imInfo.getCoordinateSystem();
+	imShape = imInfo.getImShape();
+      }	
+
+    {
+      // skyNX=skyImage_l->shape()(0);
+      // skyNY=skyImage_l->shape()(1);
+      // skyCoords=skyImage_l->coordinates();
+
+      skyNX = imShape[0];
+      skyNY = imShape[1];
       Int directionIndex=skyCoords.findCoordinate(Coordinate::DIRECTION);
       DirectionCoordinate dc=skyCoords.directionCoordinate(directionIndex);
       skyIncr = dc.increment();
     }
+    
     CountedPtr<CFBuffer> cfb_p, cfwtb_p;
     
     IPosition cfsShape = cfs2.getShape();
@@ -1955,6 +2018,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	    cfb_p=cfs2.getCFBuffer(iPA,iB);
 	    cfwtb_p=cfwts2.getCFBuffer(iPA,iB);
 
+	    cfb_p->primeTheCache();
+	    cfwtb_p->primeTheCache();
+
 	    IPosition cfbShape = cfb_p->shape();
 	    for (int iNu=0; iNu<cfbShape(0); iNu++)       // Frequency axis
 	      for (int iPol=0; iPol<cfbShape(2); iPol++)     // Polarization axis
@@ -1966,11 +2032,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    Float sampling;
 
 		    CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
-		    //cerr << "####@#$#@$@ " << iNu << " " << iW << " " << iPol << endl;
-		    //tt->show("test",cout);
+		    //		    cerr << "####@#$#@$@ " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
+		    //		    tt->show("test",cout);
 		    if (tt->cfShape_p.nelements() != 0)
 		       {
-			 (*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
+			 //(*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
+			 tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
 			 {
 			   //This code uses the BeamCalc class to get
 			   //the nominal min. freq. of the band in
@@ -2034,7 +2101,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			 //
 			 
 			 AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
-							 skyImage_l,
+							 //skyImage_l,
+							 NULL,
 							 miscInfo,
 							 *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
 							 *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),

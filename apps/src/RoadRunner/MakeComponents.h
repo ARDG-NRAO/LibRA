@@ -133,6 +133,9 @@ createAWPFTMachine(const String ftmName,
   //
   // Construct and initialize the CF cache object.
   //
+  // This pointer is set in the FTMachine base class. It can be
+  // initialized later, which here is done after constructing the FTM.
+  //
   CountedPtr<refim::CFCache> cfCacheObj;
   
   //

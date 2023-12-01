@@ -902,7 +902,7 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
 		}
 		////Could not find another point (interval is infinite)  hence only 1 valid point
 		if( (i+counter) < 0){
-		  cerr << "HIT BREAK " << endl;
+		  // cerr << "HIT BREAK " << endl;
 		  indices[pt]=i;
 		  break;
 		}
@@ -928,16 +928,16 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
 		//}
 		indices[pt]=abs(timecol[i]-ptime[pt]) <  nearval ? i : nearestIndx;
 		////////TESTOO
-		if(indices[pt] > 4688000){
-		  cerr <<  indices[pt] << " timecol " << timecol[i] << " halfInt " << halfInt << " TEST " << timecol[nearestIndx] << "  nearval " << nearval << " inx " << i << "   " << nearestIndx << endl;
+		// if(indices[pt] > 4688000){
+		//   cerr <<  indices[pt] << " timecol " << timecol[i] << " halfInt " << halfInt << " TEST " << timecol[nearestIndx] << "  nearval " << nearval << " inx " << i << "   " << nearestIndx << endl;
 		  
-		}
+		// }
 		///////////////////
 	      break;
 	      }
 	    } else {
 	      // valid for all times (we should also handle interval<0 -> timestamps)
-	      cerr << "JUMPY " << i << " ant " << ant << " halfint " << halfInt << " done "<< done <<  endl;
+	      //	      cerr << "JUMPY " << i << " ant " << ant << " halfint " << halfInt << " done "<< done <<  endl;
 	      indices[pt]=i;
 	      break;
 	    }

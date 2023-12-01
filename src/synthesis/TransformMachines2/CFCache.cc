@@ -28,6 +28,7 @@
 #include <synthesis/TransformMachines/SynthesisError.h>
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <casacore/lattices/LEL/LatticeExpr.h>
 #include <casacore/casa/System/ProgressMeter.h>
@@ -207,22 +208,24 @@ namespace casa{
 				   Float selectedPA, Float dPA,
 				   const Int verbose)
   {
-    Vector<String> cf, wtcf;
-    cf=cfFileNames;
-    wtcf=cfWtFileNames;
-    // for (int i = 0; i < cfFileNames.nelements(); i++)
-    //   cf[i] = path+"/"+cfFileNames[i];
-    // for (int i = 0; i < cfWtFileNames.nelements(); i++)
-    //   wtcf[i] = path+"/"+cfWtFileNames[i];
-    fillCFListFromDisk(cf, path, memCache2_p, true, selectedPA, dPA,verbose);
-    fillCFListFromDisk(wtcf, path, memCacheWt2_p, false, selectedPA, dPA, verbose);
+    LogIO log_l(LogOrigin("CFCache2", "fillCFListFromDisk"));
+
+    if (cfFileNames.nelements() > 0)
+      {
+	log_l << "Loading misc info from CFs" << LogIO::POST;
+	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
+      }
+    if (cfWtFileNames.nelements() > 0)
+      {
+	log_l << "Loading misc info from WTCFs" << LogIO::POST;
+	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, false, selectedPA, dPA, verbose);
+      }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();
     if (verbose > 0) summarize(memCache2_p,   "CFS",   true);
-    //summarize(memCacheWt2_p, "WTCFS", false);
   }
 
-    void CFCache::setLazyFill(const Bool& lazyFill)
+  void CFCache::setLazyFill(const Bool& lazyFill)
   {
     loadPixBuf_p=!lazyFill;
     if (lazyFill)
@@ -269,6 +272,8 @@ namespace casa{
     //
     // Lambda function to fill CFs with a given prefix.
     //
+    memCache2_p.resize(1);
+    memCacheWt2_p.resize(1);
     auto fillCF_l = [&](CFStoreCacheType2& memCache2_l, casacore::String& cfprefix)
 		    {
 		      fillCFSFromDisk(dirObj,cfprefix, memCache2_l, true, selectedPA, dPA, verbose);
@@ -375,8 +380,6 @@ namespace casa{
 				   Bool showInfo, Float selectPAVal, Float dPA,
 				   const Int verbose)
   {
-    LogOrigin logOrigin("CFCache2", "fillCFListFromDisk");
-    LogIO log_l(logOrigin);
     (void)showInfo;
     Bool selectPA = (fabs(selectPAVal) <= 360.0);
     try
@@ -404,11 +407,32 @@ namespace casa{
 			       "Reading CFCache aux. info.", "","","",true);
 	      for (uInt i=0; i < fileNames.nelements(); i++)
 		{
-		  PagedImage<Complex> thisCF(CFCDir+'/'+fileNames[i]);
-		  TableRecord miscinfo = thisCF.miscInfo();
+		  String cfName=CFCDir+'/'+fileNames[i];
+		  TableRecord miscinfo;
+		  ImageInformation<Complex> imInfo(cfName);
+
+		  try
+		    {
+		      miscinfo = imInfo.getMiscInfo();
+		      
+		      // String miName = cfName+'/'+String("miscInfo.rec");
+		      // miRec = SynthesisUtils::readRecord(miName);
+		      // miscinfo = TableRecord(miRec);
+		    }
+		  catch (AipsError &e)
+		    {
+		      //
+		      // In case of any error in reading the miscInfo
+		      // from a saved record (e.g. if this is an old
+		      // CFC where this file does not exist), resort
+		      // to getting the miscInfo via the ImageInterfnace.
+		      //
+		      //cerr << e.what();
+		      PagedImage<Complex> thisCF(cfName);
+		      miscinfo = thisCF.miscInfo();
+		    }
 		  //	    miscinfo.print(cerr);
 		  Double  paVal;
-		  //UNUSED: Double  wVal; Int mVal;
 		  miscinfo.get("ParallacticAngle",paVal);
 		  paList_p.push_back(paVal);
 		  pm.update(Double(i));
@@ -442,7 +466,6 @@ namespace casa{
 	    // 	if (pickThisCF) cfCount++;
 	    //   }
 	    // cerr << "Will load " << cfCount << "CFs." << endl;
-	    log_l << "Loading misc info from CFs" << LogIO::POST;
 	    TableRecord miscInfo;
 	    {
 	      ProgressMeter pm(1.0, Double(fileNames.nelements()),
@@ -453,8 +476,16 @@ namespace casa{
 		  CoordinateSystem coordSys;
 
 		  IPosition cfShape;
-		  miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
-							 xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		  try
+		    {
+		      miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
+							     xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		    }
+		  catch(AipsError &e)
+		    {
+		      cerr << "getCFParams:: " << e.what() << endl;
+		      throw(e);
+		    }
 		
 		  Bool pickThisCF=true;
 		  if (selectPA) pickThisCF = (fabs(paVal - selectPAVal) <= dPA);
@@ -511,8 +542,8 @@ namespace casa{
 		    muellerElements[ii][0]=mList[ii];
 		  }
 		Double wIncr; miscInfo.get("WIncr", wIncr);
-        Vector<Double> const wListV(wList);
-        Vector<Double> const fListV(fList);
+		Vector<Double> const wListV(wList);
+		Vector<Double> const fListV(fList);
 		cfb->resize(wIncr,0.0,wListV,fListV,
 			    muellerElements,muellerElements,muellerElements,muellerElements);
 		cfb->setPA(paList_p[ipa]);
@@ -571,9 +602,15 @@ namespace casa{
 		    auto ndx=cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,miscInfo);
 		    (cfb->getCFCellPtr(ndx(0), ndx(1), ndx(2)))->shape_p=cfShape;
 
-		    if (verbose > 0) log_l << cfCacheTable_l[ipa].cfNameList[nf]
-					   << "[" << fndx << "," << wndx << "," << mndx << "] "
-					   << paList_p[ipa] << " " << xSupport << LogIO::POST;
+		    if (verbose > 0)
+		      {
+			LogOrigin logOrigin("CFCache2", "fillCFListFromDisk");
+			LogIO log_l(logOrigin);
+
+			log_l << cfCacheTable_l[ipa].cfNameList[nf]
+			      << "[" << fndx << "," << wndx << "," << mndx << "] "
+			      << paList_p[ipa] << " " << xSupport << LogIO::POST;
+		      }
 		  }
 		//cfb->show("cfb: ");
 	      }
