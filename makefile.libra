@@ -29,7 +29,8 @@ FFTW_VERSION     = 3.3.10
 KOKKOS_VERSION   = 4.1.00
 HPG_VERSION      = v2.0.1
 PARAFEED_VERSION = master
-CASACORE_VERSION = v3.5.0
+#CASACORE_VERSION = v3.5.0
+CASACORE_VERSION = fix_regex_v3.5.0
 EIGEN_VERSION	 = 3.4.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
@@ -40,7 +41,8 @@ SAKURA_REPOS        = https://github.com/tnakazato/sakura/archive/refs/tags/libs
 CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
 PYBIND11_REPOS      = https://github.com/pybind/pybind11.git
 CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
-CASACORE_REPOS      = https://github.com/casacore/casacore.git
+#CASACORE_REPOS      = https://github.com/casacore/casacore.git
+CASACORE_REPOS      = https://github.com/preshanth/casacore.git
 EIGEN_REPOS	    = https://gitlab.com/libeigen/eigen.git
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
@@ -49,6 +51,9 @@ PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 
 # No. of cores to use for compiling
 NCORES=12
+
+# If ON, apps are built as libraries for unit tests. Default is faulse where apps are built as binaries.
+Apps_BUILD_TESTS=OFF
 
 #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 # Initialize the Kokkos_CUDA_ARCH string to blank.
@@ -326,13 +331,16 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  ${APPSDIR} 
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  \
+        -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} \
+	${APPSDIR} 
 
 apps-build: apps-cmake
 	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
 
 apps-clean:
 	cd ${APPSBUILDDIR}/; gmake clean
+	\rm -rf ${APPSINSTALLDIR}
 
 ##################### ---------------------------
 

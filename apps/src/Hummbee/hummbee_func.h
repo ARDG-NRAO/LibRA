@@ -274,7 +274,7 @@ int cleanComplete()
  * @param cyclefactor The cycle factor to use for the deconvolution algorithm.
  * @param mask A vector of masks to use for the deconvolution algorithm.
  */
-void Hummbee(//string& MSNBuf,
+float Hummbee(//string& MSNBuf,
         string& imageName, string& modelImageName,
         /*int& ImSize, int& nW,
         float& cellSize, string& stokes, string& refFreqStr,
@@ -295,6 +295,8 @@ void Hummbee(//string& MSNBuf,
         vector<string>& mask, string& specmode)
 {
   LogIO os(LogOrigin("contact","hummbee_func"));
+
+  Float PeakResidual = 0.0;
 
   try
     { 
@@ -372,7 +374,7 @@ void Hummbee(//string& MSNBuf,
         itsImages->mask()->unlock();
       }
       Bool validMask = ( masksum > 0 );
-      Float PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
+      PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
       Float psffraction = MaxPsfSidelobe * CycleFactor;
       psffraction = max(psffraction, minpsffraction);
@@ -406,6 +408,9 @@ void Hummbee(//string& MSNBuf,
       iterBotRec_p = itsDeconvolver.executeMinorCycle(iterBotRec_p);
       //itsIterBot.endMinorCycle(iterbotrec); // prob don't need this - mergeCycleExecutionRecord (peakres, etc)
                                                 // & getDetailsRecord from "state"
+
+      // return the peak residual for unit test
+      PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
       //don't need this. Handled by SynthesisDeconvolver already.
       /*stopflag = cleanComplete();
@@ -465,6 +470,7 @@ void Hummbee(//string& MSNBuf,
       os << er.what() << LogIO::SEVERE;
     }
 
+    return (float(PeakResidual));
 
 }
 
