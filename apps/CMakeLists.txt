@@ -78,7 +78,6 @@ if(BUILD_PYWRAPPER)
 endif()
 
 # add and build googletest
-option(Apps_BUILD_TESTS "Build tests" ON)
 if(Apps_BUILD_TESTS)
   add_subdirectory(src/tests)
 endif()

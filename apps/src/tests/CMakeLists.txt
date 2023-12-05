@@ -23,7 +23,7 @@ add_executable(LibRATests test_hummbee.cc test_roadrunner.cc)
 #message("PROJECT_SOURCE_DIR is ${PROJECT_SOURCE_DIR}")
 
 # Link with Google Test
-target_link_libraries(LibRATests GTest::gtest_main stdc++fs hummbee roadrunner)
+target_link_libraries(LibRATests GTest::gtest_main stdc++fs hummbeelib roadrunnerlib)
 # Add the test executable
 
 # Add the test executable as a test target
