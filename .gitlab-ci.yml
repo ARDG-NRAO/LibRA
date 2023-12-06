@@ -27,13 +27,14 @@ build-job:       # This job runs in the build stage, which runs first.
   script:
     - echo "Compiling the code..."
     - make -f makefile.libra allclone
-    - make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 -f makefile.libra allbuild
+    - make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
     - echo "Compile complete."
 
 test-job:
   stage: test
 
   script:
+    - "Entering $PWD/apps/build/src/tests to run apps unit tests"
     - cd apps/build/src/tests
     - ./LibRATests  
 
