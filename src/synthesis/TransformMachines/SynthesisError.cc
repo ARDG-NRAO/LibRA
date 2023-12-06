@@ -29,43 +29,49 @@
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
-
-SynthesisError::SynthesisError (Category c)
-: AipsError("Synthesis Error",c)
-{}
-SynthesisError::SynthesisError (const String& str,Category c)
-: AipsError(str,c)
-{}
-SynthesisError::~SynthesisError () throw()
-{}
-
-void SynthesisError::addMessage(String& mesg)
-{
-  message = message+mesg;
-}
-
-void SynthesisError::changeMessage(String& mesg)
-{
-  message = mesg;
-}
-
-SynthesisFTMachineError::SynthesisFTMachineError (const String& str,Category c)
-: SynthesisError(str,c)
-{}
-SynthesisFTMachineError::~SynthesisFTMachineError () throw()
-{}
-
-PSFZero::PSFZero(const String& str, Category c)
-  :SynthesisFTMachineError(str,c) 
-{}
-PSFZero::~PSFZero() throw()
-{};
-
-CFNotCached::CFNotCached(const String& str, Category c)
-  :SynthesisError(str,c) 
-{}
-CFNotCached::~CFNotCached() throw()
-{};
-
+  
+  SynthesisError::SynthesisError (Category c)
+    : AipsError("Synthesis Error",c)
+  {}
+  SynthesisError::SynthesisError (const String& str,Category c)
+    : AipsError(str,c)
+  {}
+  SynthesisError::~SynthesisError () throw()
+  {}
+  
+  void SynthesisError::addMessage(String& mesg)
+  {
+    message = message+mesg;
+  }
+  
+  void SynthesisError::changeMessage(String& mesg)
+  {
+    message = mesg;
+  }
+  
+  SynthesisFTMachineError::SynthesisFTMachineError (const String& str,Category c)
+    : SynthesisError(str,c)
+  {}
+  SynthesisFTMachineError::~SynthesisFTMachineError () throw()
+  {}
+  
+  PSFZero::PSFZero(const String& str, Category c)
+    :SynthesisFTMachineError(str,c) 
+  {}
+  PSFZero::~PSFZero() throw()
+  {};
+  
+  CFNotCached::CFNotCached(const String& str, Category c)
+    :SynthesisError(str,c) 
+  {}
+  CFNotCached::~CFNotCached() throw()
+  {};
+  
+  CFSupportZero::CFSupportZero(const casacore::String& message, Category c)
+    :SynthesisError(message,c)
+  {};
+  CFSupportZero::~CFSupportZero() throw()
+  {};
+  
 } //# NAMESPACE CASA - END
 

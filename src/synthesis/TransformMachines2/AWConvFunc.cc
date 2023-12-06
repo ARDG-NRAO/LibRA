@@ -1218,10 +1218,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
     if(xSupport<1) 
       {
-	LogIO log_l(LogOrigin("AWConvFunc2", "setUpCFSupport[R&D]"));
-	
-	log_l << "Convolution function is misbehaved - support seems to be zero"
-	    << LogIO::EXCEPTION;
+	throw(casa::CFSupportZero("AWConvFunc2::setupCFSupport(): Convolution function is misbehaved - support seems to be zero"));
       }
     return found;
   }
@@ -2116,14 +2113,33 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			 // will now be filled using the supplied PS-, W- ad A-term objects.
 			 //
 			 
-			 AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
-							 //skyImage_l,
-							 NULL,
-							 miscInfo,
-							 *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
-							 *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
-							 *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
-							 conjBeams);
+			 try
+			   {
+			     // A note for future cleanup: The cfb_p,
+			     // cfwtb_p and convSize information now
+			     // should not be required since those are
+			     // in miscInfo. Any information is
+			     // currently derived from CFBs should be
+			     // made available via miscInfo.  This
+			     // will also make this call more CASACore
+			     // agnostic (and some day exposed for
+			     // direct use).
+			     AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
+							     //skyImage_l,
+							     NULL,
+							     miscInfo,
+							     *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
+							     *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
+							     *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
+							     conjBeams);
+			   }
+			 catch (CFSupportZero& e)
+			   {
+			     LogIO log_l(LogOrigin("AWConvFunc", "makeConvFunction2"));
+			     log_l << e.what() << LogIO::POST
+				   << "We are assuming that the CF (\"" << tt->fileName_p <<"\") is already filled"
+				   << LogIO::POST;
+			   }
 			 // Mark this CFCell as filled.  The decision
 			 // to trigger filling of the CF and WTCF
 			 // earlier is based on checking isFilled_p
