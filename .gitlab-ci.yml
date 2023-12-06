@@ -1,5 +1,6 @@
 stages:          # List of stages for jobs, and their order of execution
   - build
+  - test
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
@@ -28,3 +29,11 @@ build-job:       # This job runs in the build stage, which runs first.
     - make -f makefile.libra allclone
     - make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 -f makefile.libra allbuild
     - echo "Compile complete."
+
+  test-job:
+    stage: test
+
+    script:
+      - cd apps/build/src/tests
+      - ./LibRATests  
+
