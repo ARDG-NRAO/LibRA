@@ -30,10 +30,10 @@ build-job:       # This job runs in the build stage, which runs first.
     - make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 -f makefile.libra allbuild
     - echo "Compile complete."
 
-  test-job:
-    stage: test
+test-job:
+  stage: test
 
-    script:
-      - cd apps/build/src/tests
-      - ./LibRATests  
+  script:
+    - cd apps/build/src/tests
+    - ./LibRATests  
 
