@@ -44,5 +44,5 @@ test-job:
   artifacts:
     when: always
     reports:
-      junit: report.xml 
+      junit: apps/build/src/tests/report.xml 
 
