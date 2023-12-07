@@ -5,6 +5,7 @@ stages:          # List of stages for jobs, and their order of execution
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: $CI_PROJECT_DIR/ccache
+  GIT_CLEAN_FLAGS: none  # do not remove the build directories afterwards, so "test-job" can use it.
 
 cache:
     key: ccache_main # this is the global location.
