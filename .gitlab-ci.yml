@@ -38,5 +38,10 @@ test-job:
     - echo $PWD
     - echo "Entering $PWD/apps/build/src/tests to run apps unit tests"
     - cd apps/build/src/tests
-    - ./LibRATests  
+    - ./LibRATests --gtest_output="xml:report.xml"
+
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml 
 
