@@ -60,8 +60,9 @@
 #include <RoadRunner/MakeComponents.h>
 //#include <RoadRunner/Roadrunner_func.h>
 
-
 #include <hpg/hpg.hpp>
+#include <unistd.h>
+
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -205,7 +206,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   std::vector<std::string> wtCFList;
   for(auto x : cfList) wtCFList.push_back("WT"+x);
 
-  string imageName=cfCacheName+"/uvgrid.im";
+  string imageName=cfCacheName+"/uvgrid.im"+to_string(getppid());
   bool wTerm = (nW > 1)? true : false;
   
   //-------------------------------------------------------------------------------------------------
