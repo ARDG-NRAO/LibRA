@@ -21,6 +21,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - export CCACHE_COMPILERCHECK=content
     - ccache --zero-stats || true
     - ccache --show-stats || true
+    - git clean -ffdx #clean build
   after_script:
     - export CCACHE_DIR="$PWD/ccache"
     - ccache --show-stats
