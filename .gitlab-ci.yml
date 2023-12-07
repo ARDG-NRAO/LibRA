@@ -34,7 +34,8 @@ test-job:
   stage: test
 
   script:
-    - "Entering $PWD/apps/build/src/tests to run apps unit tests"
+    - echo $PWD
+    - echo "Entering $PWD/apps/build/src/tests to run apps unit tests"
     - cd apps/build/src/tests
     - ./LibRATests  
 
