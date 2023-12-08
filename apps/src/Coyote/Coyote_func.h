@@ -206,7 +206,13 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   std::vector<std::string> wtCFList;
   for(auto x : cfList) wtCFList.push_back("WT"+x);
 
-  string imageName=cfCacheName+"/uvgrid.im"+to_string(getppid());
+  // Make a name for the temp image that will be unique for multiple
+  // instances on different computers but writing to the same
+  // directory.
+  char hostname[HOST_NAME_MAX];
+  gethostname(hostname, HOST_NAME_MAX);
+  string imageName=cfCacheName + "/uvgrid.im_" +
+    to_string(getppid()) + "_"+string(hostname);
   bool wTerm = (nW > 1)? true : false;
   
   //-------------------------------------------------------------------------------------------------
@@ -279,10 +285,13 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  exit(-1);
 	}
     }
-  catch (AipsError &e)
+  catch (CFSupportZero &e)
     {
-      // Ignore the "CFS is empty" exception.
-      //cerr << e.what() << endl;
+      // Ignore the "CFS is empty" exception.  This exception should
+      // reach here since it is resolved in AWCF.  But leaving the
+      // code here in case there is a bug in the resolution code.
+
+      cerr << e.what() << endl;
     }
   CountedPtr<casa::refim::CFStore2> cfs2_l, cfswt2_l;
   
@@ -294,6 +303,9 @@ void Coyote(bool &restartUI, int &argc, char **argv,
   //-------------------------------------------------------------------------------------------------
   
   //-------------------------------------------------------------------------------------------------
+  // Setup and apply makeConvFunction() for mode=dryrun and
+  // makeConvFunction2() for mode=fillcf on the CF store memory models
+  // (cfs2_l and cfswt2_l)
   string uvDistStr;
   bool doSPWDataIter = false;
   Vector<Int> imSize(2,NX);
