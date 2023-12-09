@@ -72,6 +72,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {};
   CFSupportZero::~CFSupportZero() throw()
   {};
+
+  CFCIsEmpty::CFCIsEmpty(const casacore::String& message, Category c)
+    :SynthesisError(message,c)
+  {};
+  CFCIsEmpty::~CFCIsEmpty() throw()
+  {};
   
 } //# NAMESPACE CASA - END
 

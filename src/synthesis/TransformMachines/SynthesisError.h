@@ -110,6 +110,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     CFSupportZero(const casacore::String& message, Category c=GENERAL);
     ~CFSupportZero() throw();
   };
+
+  class CFCIsEmpty: public SynthesisError{
+  public:
+    CFCIsEmpty(const casacore::String& message, Category c=GENERAL);
+    ~CFCIsEmpty() throw();
+  };
+
+  
 } //# NAMESPACE CASA - END
 
 #endif

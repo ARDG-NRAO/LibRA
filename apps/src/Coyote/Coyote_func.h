@@ -254,8 +254,21 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  //
 	  cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
 	  cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
-	  cfCacheObj_l->initCache2(false, dpa, -1.0,
-				   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+	  try
+	    {
+	      cfCacheObj_l->initCache2(false, dpa, -1.0,
+				       casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+	    }
+	  catch (CFCIsEmpty& e)
+	    {
+	      // Ignore the exception.  Empty CFs will be created in
+	      // the section below after the CFStore objects (which
+	      // encapsulate the in-memory model of the CFCache) are
+	      // derived.
+
+	      //log_l << e.what() << LogIO::POST;
+	      log_l << "The CFCache (\"" << cfCacheName << "\") is empty.  Created a new one." << LogIO::POST;
+	    }
 	}
       else if (mode == "fillcf")
 	{
