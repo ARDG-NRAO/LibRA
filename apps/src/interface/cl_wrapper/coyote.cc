@@ -107,7 +107,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       watchPoints["fillcf"]=exposedKeys;
 
       i=1;clgetSValp("mode", mode,i,watchPoints);clSetOptions("mode",{"dryrun","fillcf"});
-      clgetNSValp("cflist", cfList,i);
+      i=0;clgetNSValp("cflist", cfList,i);
       //      clgetNSValp("wtcflist", wtCFList,i);
       
       EndCL();
@@ -117,21 +117,23 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       if (CFCache == "")
 	mesgs += "The cfcache parameter needs to be set.\n ";
       
-      if (refFreqStr == "")
-	mesgs += "The reffreq parameter needs to be set.\n ";
+      if (mode != "fillcf")
+	{
+	  if (refFreqStr == "")
+	    mesgs += "The reffreq parameter needs to be set.\n ";
       
-      if (ImSize <= 0)
-	mesgs += "The imsize parameter needs to be set to a positive finite value.\n ";
+	  if (ImSize <= 0)
+	    mesgs += "The imsize parameter needs to be set to a positive finite value.\n ";
       
-      if (cellSize <= 0)
-	mesgs += "The cell parameter needs to be set to a positive finite value.\n ";
+	  if (cellSize <= 0)
+	    mesgs += "The cell parameter needs to be set to a positive finite value.\n ";
       
-      if (cfBufferSize <= 0)
-	mesgs += "The buffersize parameter needs to be set to a positive finite value.\n ";
+	  if (cfBufferSize <= 0)
+	    mesgs += "The buffersize parameter needs to be set to a positive finite value.\n ";
       
-      if (cfOversampling <= 0)
-	mesgs += "The oversampling parameter needs to be set to a positive value.\n ";
-      
+	  if (cfOversampling <= 0)
+	    mesgs += "The oversampling parameter needs to be set to a positive value.\n ";
+	}
       if (mesgs != "")
 	clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }

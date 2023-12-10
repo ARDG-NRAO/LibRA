@@ -141,6 +141,7 @@ namespace casa{
     miscinfo.define("BandName", bandName_p);
     miscinfo.define("Diameter", diameter_p);
     miscinfo.define("OpCode",isRotationallySymmetric_p);
+    miscinfo.define("IsFilled",isFilled_p);
     thisCF.setMiscInfo(miscinfo);
 
     ImageInformation<Complex> imInfo(thisCF,name);
