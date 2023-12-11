@@ -267,7 +267,7 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	      // derived.
 
 	      //log_l << e.what() << LogIO::POST;
-	      log_l << "The CFCache (\"" << cfCacheName << "\") is empty.  Created a new one." << LogIO::POST;
+	      log_l << "The CFCache (\"" << cfCacheName << "\") is empty.  Building a new one." << LogIO::POST;
 	    }
 	}
       else if (mode == "fillcf")
@@ -408,8 +408,30 @@ void Coyote(bool &restartUI, int &argc, char **argv,
 	  mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
 	  awcf_l->setPolMap(polMap);
 	  //  awcf_l->setSpwSelection(spwChanSelFlag_p);
+
+	  // Replace mssFreqSel with a filtered version of it, filtered
+	  // for the SPW IDs in the stl::vector db.spwidList.tovector().
+	  mssFreqSel.assign(filterByFirstColumn(mssFreqSel,db.spwidList.tovector()));
 	  awcf_l->setSpwFreqSelection(mssFreqSel);
-	  
+
+	  // cerr << mssFreqSel << endl << "++++++++++++++++++++++++++++++" << endl;
+	  // cerr << db.spwidList << endl << "++++++++++++++++++++++++++++++" << endl;
+	  // std::vector<int> vec=db.spwidList.tovector();
+	  // std::vector<std::vector<double>> tt=filterByFirstColumn(mssFreqSel,vec);
+	  // // for(auto r:tt)
+	  // //   {
+	  // //     for(auto c : r)
+	  // // 	cerr << c << " ";
+	  // //     cerr << endl;
+	  // //   }
+	  // Matrix<double> mssFreqSelVB;
+	  // mssFreqSelVB.resize(tt.size(),4);
+	  // for(int i=0;i<tt.size();i++)
+	  //   {
+	  //     mssFreqSelVB.row(i)=casacore::Vector<double>(tt[i]);
+	  //   }
+	  // cerr << mssFreqSelVB << endl;
+
 	  //-------------------------------------------------------------------------------------------------
 	  
 	  // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
