@@ -1,9 +1,12 @@
 #include <filesystem>
 #include "Hummbee/hummbee_func.h"
 #include "gtest/gtest.h"
+#include <casacore/images/Images/PagedImage.h>
 
 using namespace std;
 using namespace std::filesystem;
+using namespace casacore;
+
 
 namespace test{
 TEST(HummbeeTest, AppLevelCubeAsp) {
@@ -40,6 +43,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  mask, specmode
                  );
 	
+  PagedImage<Float> myimage ("image.name");
 
   remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
