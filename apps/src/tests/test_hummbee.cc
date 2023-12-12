@@ -43,13 +43,24 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  mask, specmode
                  );
 	
-  PagedImage<Float> myimage ("image.name");
+  PagedImage<Float> paged("unittest_hummbee.model");
+  Matrix<Float> modelimage;
+  const int nx = paged.shape()(0);
+  const int ny = paged.shape()(1);
+  modelimage.resize(nx,ny);
+  modelimage = paged.get();
+
+  cout << "modelimage shape is " << modelimage.shape() << endl;
+  //cout << "model[256,209,0,0] = " << modelimage(256,209,0,0) << endl;
+  //cout << "model[256,209,0,4] = " << modelimage(256,209,0,4) << endl;
+  //cout << "model[275,330,0,0] = " << modelimage(275,330,0,0) << endl;
+  //cout << "model[275,330,0,4] = " << modelimage(275,330,0,4) << endl;
 
   remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
   remove_all(current_path()/"unittest_hummbee.sumwt");
-  remove_all(current_path()/"unittest_hummbee.model");
+  //remove_all(current_path()/"unittest_hummbee.model");
   remove_all(current_path()/"unittest_hummbee.mask");
 
   float goldPeakRes = 4.98845;
