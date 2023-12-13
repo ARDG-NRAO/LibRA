@@ -1018,7 +1018,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	IPosition start(4, 0, 0, 0, 0);
 	IPosition pbSlice(4, convSize, convSize, 1, 1);
 	
-	Matrix<Complex> screen(convSize, convSize);
+	//	Matrix<Complex> screen(convSize, convSize);
+
 	// WTerm wterm_l;
 	// PSTerm psTerm_l;
 
@@ -1217,10 +1218,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
     if(xSupport<1) 
       {
-	LogIO log_l(LogOrigin("AWConvFunc2", "setUpCFSupport[R&D]"));
-	
-	log_l << "Convolution function is misbehaved - support seems to be zero"
-	    << LogIO::EXCEPTION;
+	throw(casa::CFSupportZero("AWConvFunc2::setupCFSupport(): Convolution function is misbehaved - support seems to be zero"));
       }
     return found;
   }
@@ -1978,12 +1976,22 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     //
     try
       {
+	// Assume this is a new-format CFC and misc info can be read
+	// from a saved Record using ImageInformation<T>(PATH).
 	imInfo = ImageInformation<Complex> (cfCachePath);
 	skyCoords = imInfo.getCoordinateSystem();
 	imShape = imInfo.getImShape();
       }
     catch (casa::refim::ImageInformationError &e)
       {
+	// Fallback: If ImageInformation<T>(CFCPath) did not succeed,
+	// it indicates that this an old CFC never before touced by
+	// this code.  So fill from the "uvgrid.im" image that is
+	// saved in the old CFC using
+	// ImageInformation<T>(Image,CFCPath), and write back the
+	// information to the CFC.  This would make the CFC into the
+	// new format and on the next visit the try{...} clause above
+	// should succeed.
 	skyImage_l = new PagedImage<Complex> (uvGridDiskImage);//cfs2.getCacheDir()+"/uvgrid.im");
 	imInfo = ImageInformation<Complex>(*skyImage_l, cfCachePath);
 	imInfo.save();
@@ -2034,10 +2042,15 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
 		    //		    cerr << "####@#$#@$@ " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
 		    //		    tt->show("test",cout);
-		    if (tt->cfShape_p.nelements() != 0)
+
+		    // Fill the CFCell if it isn't already filled.
+		    if ((tt->isFilled_p==false) && (tt->cfShape_p.nelements() != 0))
 		       {
 			 //(*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
 			 tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
+
+			 if (miscInfo.shape[0] == miscInfo.xSupport*2*miscInfo.sampling + 4*miscInfo.sampling+1)
+			   break;
 			 {
 			   //This code uses the BeamCalc class to get
 			   //the nominal min. freq. of the band in
@@ -2072,7 +2085,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			 IPosition start(4, 0, 0, 0, 0);
 			 IPosition pbSlice(4, convSize, convSize, 1, 1);
 			 
-			 Matrix<Complex> screen(convSize, convSize);
+			 //			 Matrix<Complex> screen(convSize, convSize);
 			 
 			 {
 			   // Set up the anti-aliasing operator (psTerm_p) for this CF.
@@ -2100,26 +2113,50 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			 // will now be filled using the supplied PS-, W- ad A-term objects.
 			 //
 			 
-			 AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
-							 //skyImage_l,
-							 NULL,
-							 miscInfo,
-							 *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
-							 *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
-							 *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
-							 conjBeams);
-					     
-			 //				     *psTerm_p, *wTerm_p, *aTerm_p);
+			 try
+			   {
+			     // A note for future cleanup: The cfb_p,
+			     // cfwtb_p and convSize information now
+			     // should not be required since those are
+			     // in miscInfo. Any information is
+			     // currently derived from CFBs should be
+			     // made available via miscInfo.  This
+			     // will also make this call more CASACore
+			     // agnostic (and some day exposed for
+			     // direct use).
+			     AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
+							     //skyImage_l,
+							     NULL,
+							     miscInfo,
+							     *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
+							     *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
+							     *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
+							     conjBeams);
+			   }
+			 catch (CFSupportZero& e)
+			   {
+			     LogIO log_l(LogOrigin("AWConvFunc", "makeConvFunction2"));
+			     log_l << e.what() << LogIO::POST
+				   << "We are assuming that the CF (\"" << tt->fileName_p <<"\") is already filled"
+				   << LogIO::POST;
+			   }
+			 // Mark this CFCell as filled.  The decision
+			 // to trigger filling of the CF and WTCF
+			 // earlier is based on checking isFilled_p
+			 // only for CF, but since
+			 // fillConvFuncBuffer2() fills both CF and
+			 // WTCF, mark the latter as filled also.
+			 tt->isFilled_p=true;
+			 ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->isFilled_p=true;
+
 			 //cfb_p->show(NULL,cerr);
-			 //
-			 // Make the CFStores persistent.
-			 //
-			 // cfs2.makePersistent(cfCachePath.c_str());
-			 // cfwts2.makePersistent(cfCachePath.c_str(),"WT");
 		       }
 		  }
 	  } // End of loop over baselines
 
+    //
+    // Make the CFStores persistent.
+    //
     cfs2.makePersistent(cfCachePath.c_str());
     cfwts2.makePersistent(cfCachePath.c_str(),"","WT");
     // Directory dir(uvGridDiskImage);
