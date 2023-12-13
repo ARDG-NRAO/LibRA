@@ -43,29 +43,23 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  mask, specmode
                  );
 	
-  PagedImage<Float> paged("unittest_hummbee.model");
-  Matrix<Float> modelimage;
-  const int nx = paged.shape()(0);
-  const int ny = paged.shape()(1);
-  modelimage.resize(nx,ny);
-  modelimage = paged.get();
+  PagedImage<Float> modelimage("unittest_hummbee.model");
 
-  cout << "modelimage shape is " << modelimage.shape() << endl;
-  //cout << "model[256,209,0,0] = " << modelimage(256,209,0,0) << endl;
-  //cout << "model[256,209,0,4] = " << modelimage(256,209,0,4) << endl;
-  //cout << "model[275,330,0,0] = " << modelimage(275,330,0,0) << endl;
-  //cout << "model[275,330,0,4] = " << modelimage(275,330,0,4) << endl;
+  float tol = 0.1;
+  float goldPeakRes = 4.98845;
+  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+
+  float goldValchan0 = 0.0442593;
+  float goldValchan2 = 0.0384871;
+  EXPECT_NEAR(modelimage(IPosition(4,275,330,0,0)), goldValchan0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,275,330,0,2)), goldValchan2, tol);
 
   remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
   remove_all(current_path()/"unittest_hummbee.sumwt");
-  //remove_all(current_path()/"unittest_hummbee.model");
+  remove_all(current_path()/"unittest_hummbee.model");
   remove_all(current_path()/"unittest_hummbee.mask");
-
-  float goldPeakRes = 4.98845;
-  EXPECT_TRUE((PeakRes >= goldPeakRes*0.9) && (PeakRes <= goldPeakRes*1.1));
-
 }
 
 TEST(HummbeeTest,  AppLevelMfsAsp) {
@@ -104,6 +98,16 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
                  mask, specmode
                  );
 
+  PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
+
+  float tol = 0.1;
+  float goldPeakRes = 26.0554;
+  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+
+  float goldValLoc0 = 0.000332008;
+  float goldValLoc1 = 0.000176319;
+  EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);
 
   remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
@@ -111,9 +115,6 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");
-
-  float goldPeakRes = 26.0554;
-  EXPECT_TRUE((PeakRes >= goldPeakRes*0.9) && (PeakRes <= goldPeakRes*1.1));
 }
 
 };
