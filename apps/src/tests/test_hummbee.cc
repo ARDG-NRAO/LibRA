@@ -1,7 +1,6 @@
 #include <filesystem>
 #include "Hummbee/hummbee_func.h"
 #include "gtest/gtest.h"
-#include <casacore/images/Images/PagedImage.h>
 
 using namespace std;
 using namespace std::filesystem;
