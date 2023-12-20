@@ -222,7 +222,8 @@ namespace casa{
 				     diameter);
     //    miscInfo.print(cerr);
     cfCells_p(ndx(0),ndx(1),ndx(2))->isRotationallySymmetric_p = isRotationallySymmetric;
-    miscInfo.get("IsFilled", cfCells_p(ndx(0),ndx(1),ndx(2))->isFilled_p);
+    if (miscInfo.isDefined("isFilled"))
+      miscInfo.get("IsFilled", cfCells_p(ndx(0),ndx(1),ndx(2))->isFilled_p);
 
     return ndx;
   }
