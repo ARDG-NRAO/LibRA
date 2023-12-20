@@ -36,7 +36,7 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   bool doSPWDataIter=true;
   vector<float> posigdev = {0.0,0.0};
 
-  string ftmName="awproject";
+  string ftmName="awphpg";
   string fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data";
   string modelImageName="",stokes="I";
   string refFreqStr="3.0e9";
@@ -60,14 +60,24 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   // Check that the .psf is generated
   path p1("htclean_gpu_newpsf.psf");
   path p2("htclean_gpu_newpsf.sumwt");
-  bool ans = exists(p1) && exists(p2);
-
-   remove_all(current_path()/"CYGTST.corespiral.ms");
-   remove_all(current_path()/"4k_nosquint.cfc");
-   remove_all(current_path()/"htclean_gpu_newpsf.psf");
-   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+  path p3("htclean_gpu_newpsf_gridv.vis");
+  bool ans = exists(p1) && exists(p2) && exists(p3);
    
-   EXPECT_TRUE( ans );
+  EXPECT_TRUE( ans );
+
+  PagedImage<Float> psfimage("htclean_gpu_newpsf.psf");
+  float tol = 0.1;
+  float goldValLoc0 = 44163072;
+  float goldValLoc1 = 6067482.5;
+
+  EXPECT_NEAR(psfimage(IPosition(4,2000,2000,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(psfimage(IPosition(4,1885,1885,0,0)), goldValLoc1, tol);
+
+  remove_all(current_path()/"CYGTST.corespiral.ms");
+  remove_all(current_path()/"4k_nosquint.cfc");
+  remove_all(current_path()/"htclean_gpu_newpsf.psf");
+  remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
+  remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
 }
 
 TEST(RoadrunnerTest, AppLevelWeight) {
@@ -112,13 +122,22 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 
   // Check that the .psf is generated
   path p1("htclean_gpu_newpsf.weight");
-  bool ans = exists(p1);
+  path p2("htclean_gpu_newpsf.sumwt");
+  bool ans = exists(p1) && exists(p2);
+  EXPECT_TRUE( ans );
+   
+  PagedImage<Float> weight("htclean_gpu_newpsf.weight");
+  float tol = 0.1;
+  float goldValLoc0 = -277710.1875;
+  float goldValLoc1 = 470668.9375;
+  EXPECT_NEAR(weight(IPosition(4,2000,2053,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(weight(IPosition(4,1379,1969,0,0)), goldValLoc1, tol);
 
    remove_all(current_path()/"CYGTST.corespiral.ms");
    remove_all(current_path()/"4k_nosquint.cfc");
    remove_all(current_path()/"htclean_gpu_newpsf.weight");
+   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
 
-   EXPECT_TRUE( ans );
 }
 
 };
