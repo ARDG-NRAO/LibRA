@@ -220,7 +220,10 @@ namespace casa{
     RigidVector<Int,3> ndx=setParams(inu, iw, ipx, ipy, freqValue, bandName, wValue, muellerElement, cs,
 				     sampling, xSupport, ySupport, fileName, conjFreq, conjPoln, telescopeName,
 				     diameter);
+    //    miscInfo.print(cerr);
     cfCells_p(ndx(0),ndx(1),ndx(2))->isRotationallySymmetric_p = isRotationallySymmetric;
+    miscInfo.get("IsFilled", cfCells_p(ndx(0),ndx(1),ndx(2))->isFilled_p);
+
     return ndx;
   }
   RigidVector<Int, 3> CFBuffer::setParams(const Int& inu, const Int& iw, const Int& /*ipx*/, const Int& /*ipy*/,
