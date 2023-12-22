@@ -44,6 +44,43 @@
 #include <casacore/casa/Logging/LogIO.h>
 #include <iostream>
 
+// Code for filterByFirstColumn() largly contributed by
+// bard.google.com/chat.  The code below is after (a) correction, and
+// (b) adpotation (see comments below)
+#include <vector>
+#include <algorithm>
+#include <unordered_set> // Bard did not think this was required.
+template <typename T>
+casacore::Matrix<T> filterByFirstColumn(const casacore::Matrix<T>& matrix,
+					const std::vector<int>& indices)
+{
+  std::vector< std::vector<T>> filteredMatrix;
+  // Create a set for faster lookup of valid indices.
+  std::unordered_set<size_t> valid_indices(indices.begin(), indices.end());
+
+  for (size_t i = 0; i < matrix.nelements(); ++i)
+    {
+      if (valid_indices.count(matrix(i,0)))
+	{
+	  // Pointing Bard to CASACore doc page for Matrix did not
+	  // produce the following code.  Bard could only produce with
+	  // STL containers.
+	  filteredMatrix.push_back(matrix.row(i).tovector());
+	}
+    }
+
+  casacore::Matrix<T> mssFreqSelVB;
+  mssFreqSelVB.resize(filteredMatrix.size(),4);
+  for(int i=0;i<filteredMatrix.size();i++)
+    {
+      mssFreqSelVB.row(i)=casacore::Vector<double>(filteredMatrix[i]);
+    }
+
+  return mssFreqSelVB;
+}
+
+
+
 namespace casa
 {
   using namespace vi;
