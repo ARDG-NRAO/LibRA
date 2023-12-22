@@ -220,7 +220,7 @@ public:
 	  vb_SPWIDList.push_back(vb_l->spectralWindows()(0));
 	}
 
-      log_l << "Done with SPWID list determination" << LogIO::POST;
+      log_l << "...done." << LogIO::POST;
 
       //
       // Since the SPWIDList is determined by iterating over the
@@ -244,7 +244,7 @@ public:
       uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
     }
 
-    cerr << "Selected SPW ID list: " << spwidList << endl;
+    log_l << "Selected SPW ID list: " << spwidList << endl;
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
