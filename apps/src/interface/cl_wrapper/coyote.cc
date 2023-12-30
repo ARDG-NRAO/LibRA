@@ -26,6 +26,10 @@
 //
 // Following are from the parafeed project (the UI library)
 //
+/**
+ * @file coyote.cc
+ * @brief This file contains the implementation of the UI function.
+ */
 #include <cl.h> // C++ized version
 #include <clinteract.h>
 #include <clgetBaseCode.h>
@@ -40,6 +44,36 @@
 
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
+/**
+ * @brief This function handles the user interface for the Coyote application.
+ * 
+ * @param restart A boolean parameter indicating whether to restart the UI.
+ * @param argc The number of command line arguments.
+ * @param argv The command line arguments.
+ * @param MSNBuf A string parameter.
+ * @param telescopeName The name of the telescope.
+ * @param ImSize The image size.
+ * @param cellSize The cell size.
+ * @param stokes The Stokes parameters.
+ * @param refFreqStr The reference frequency string.
+ * @param nW The number of W-planes.
+ * @param CFCache The convolution function cache.
+ * @param imageNamePrefix The image name prefix.
+ * @param WBAwp A boolean parameter indicating whether to use WBAwp.
+ * @param aTerm A boolean parameter indicating whether to use aTerm.
+ * @param psTerm A boolean parameter indicating whether to use psTerm.
+ * @param mType The measurement type.
+ * @param pa The position angle.
+ * @param dpa The change in position angle.
+ * @param fieldStr The field string.
+ * @param spwStr The spectral window string.
+ * @param phaseCenter The phase center.
+ * @param conjBeams A boolean parameter indicating whether to use conjugate beams.
+ * @param cfBufferSize The convolution function buffer size.
+ * @param cfOversampling The convolution function oversampling factor.
+ * @param cfList The list of convolution functions.
+ * @param mode The mode of operation.
+ */
 void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	//string& imageName,
 	string& telescopeName, int& ImSize, 
@@ -186,7 +220,7 @@ int main(int argc, char **argv)
   
   try
     {
-      Coyote(restartUI, argc, argv, MSNBuf,//imageName, 
+      Coyote(MSNBuf,//imageName, 
 	     telescopeName, NX, cellSize,
 	     stokes, refFreqStr, nW,
 	     cfCache, imageNamePrefix,
