@@ -68,6 +68,17 @@ using namespace casa::refim;
 using namespace casacore;
 using namespace std;
 
+/// @brief This function makes an empty image for the sky model.
+/// @param vi2 is the visibility iterator.
+/// @param selectedMS is the MeasurementSet object.
+/// @param msSelection is the MSSelection object.
+/// @param imageName is the name of the image.
+/// @param imSize is the size of the image.
+/// @param cellSize is the cell size of the image.
+/// @param phaseCenter is the phase center of the image.
+/// @param stokes is the Stokes parameter of the image.
+/// @param refFreq is the reference frequency of the image.
+/// @return 
 PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
 					 const MeasurementSet& selectedMS,
 					 MSSelection& msSelection,
@@ -125,6 +136,13 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   return PagedImage<Complex>(imshape, csys, imageParams.imageName);
 }
 
+/// @brief Sets the Polarization Outer Product (POP) object.
+/// @param vb2 is the VisBuffer2 object.
+/// @param visPolMap is the vector of Stokes::StokesTypes.
+/// @param polMap is the vector of polarization indices.
+/// @param stokes is the Stokes parameter.
+/// @param mType is the Muller parameter.
+/// @return 
 CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<casacore::Stokes::StokesTypes> visPolMap,
 					  Vector<int> polMap,
@@ -155,6 +173,10 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   return pop_l;
 }
 
+/// @brief This function returns the fileList of CFs to fill.
+/// @param cfCacheName is the name of the CF cache.
+/// @param regexList is the list of regexes.
+/// @return 
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList)
 {
@@ -194,7 +216,31 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
   return selectedCF;
 }
 
-void Coyote(bool &restartUI, int &argc, char **argv,
+/// @brief Is a Function to generate a list of CFs which can be filled usinga  different mode
+/// @param MSNBuf is the name of the MeasurementSet.
+/// @param telescopeName is the name of the telescope.
+/// @param NX is the size of the image.
+/// @param cellSize is the cell size of the image.
+/// @param stokes is the Stokes parameter.
+/// @param refFreqStr is the reference frequency.
+/// @param nW is the number of W-terms.
+/// @param cfCacheName is the name of the CF cache.
+/// @param imageNamePrefix is the prefix of the image name.
+/// @param WBAwp is the flag for WBAwp.
+/// @param psTerm is the flag for psTerm.
+/// @param aTerm is the flag for aTerm.
+/// @param mType is	the Muller parameter.
+/// @param pa is the parallactic angle.
+/// @param dpa is the delta parallactic angle.
+/// @param fieldStr is the field selection string.
+/// @param spwStr is the spectral window selection string.
+/// @param phaseCenter is the phase center.
+/// @param conjBeams is the flag for conjBeams.
+/// @param cfBufferSize is the CF buffer size.
+/// @param cfOversampling is the CF oversampling.
+/// @param cfList is the list of CFs.
+/// @param mode is the mode which can be either dryrun or fillcf.
+void Coyote(//bool &restartUI, int &argc, char **argv,
 	    string &MSNBuf, 
 	    string &telescopeName,
 	    int &NX, float &cellSize,
