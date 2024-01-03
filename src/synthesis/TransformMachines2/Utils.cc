@@ -1631,7 +1631,7 @@ namespace casa
       try
 	{
 	  // Attempt reading the record as a Record first.  This will be
-	  // the case for CFCs and CFs created before 01Jan2023
+	  // the case for CFCs and CFs created before 01Jan2024
 	  AipsIO rrfile;
 	  rrfile.open(fileName,ByteIO::Old);
 	  rrfile >> rr;
@@ -1640,7 +1640,7 @@ namespace casa
       catch (AipsError &er)
 	{
 	  // Read record stored as a Table.
-	  Table tab(fileName+String(".tab"), Table::Update);
+	  Table tab(fileName, Table::Update);
 	  rr=tab.keywordSet().asRecord("record");
 	  return rr;
 	}
@@ -1658,7 +1658,7 @@ namespace casa
 	  casacore::TableDesc td("","1",TableDesc::Scratch);
 	  td.comment()="A Record as a Table";
 	  td.rwKeywordSet().defineRecord ("record", rec);
-	  casacore::SetupNewTable newtab(fileName+String(".tab"), td, Table::New);//, stopt);
+	  casacore::SetupNewTable newtab(fileName, td, Table::New);//, stopt);
 	  Table tab(newtab,1);
 	}
     }
