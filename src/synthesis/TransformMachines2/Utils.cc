@@ -1627,19 +1627,40 @@ namespace casa
     // disk file.
     casacore::Record SynthesisUtils::readRecord(const casacore::String& fileName)
     {
-      AipsIO rrfile;
-      rrfile.open(fileName,ByteIO::Old);
       Record rr;
-      rrfile >> rr;
-      return rr;
+      try
+	{
+	  // Attempt reading the record as a Record first.  This will be
+	  // the case for CFCs and CFs created before 01Jan2024
+	  AipsIO rrfile;
+	  rrfile.open(fileName,ByteIO::Old);
+	  rrfile >> rr;
+	  return rr;
+	}
+      catch (AipsError &er)
+	{
+	  // Read record stored as a Table.
+	  Table tab(fileName, Table::Update);
+	  rr=tab.keywordSet().asRecord("record");
+	  return rr;
+	}
     }
     void SynthesisUtils::writeRecord(const casacore::String& fileName,
 				     const casacore::Record& rec)
     {
       // Write record to a file
-      AipsIO rrfile;
-      rrfile.open(fileName,ByteIO::New);
-      rrfile << rec;
+      // 	{
+      // 	  AipsIO rrfile;
+      // 	  rrfile.open(fileName,ByteIO::New);
+      // 	  rrfile << rec;
+      // 	}
+	{
+	  casacore::TableDesc td("","1",TableDesc::Scratch);
+	  td.comment()="A Record as a Table";
+	  td.rwKeywordSet().defineRecord ("record", rec);
+	  casacore::SetupNewTable newtab(fileName, td, Table::New);//, stopt);
+	  Table tab(newtab,1);
+	}
     }
 
     void SynthesisUtils::saveAsRecord(const casacore::CoordinateSystem& csys,

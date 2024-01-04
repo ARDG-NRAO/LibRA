@@ -42,8 +42,9 @@
 namespace casa
 {
   namespace refim {
-
-    class ImageInformationError : public casacore::AipsError {
+    //-----------------------------------------------------------------------------------------------------------------------
+    class ImageInformationError : public casacore::AipsError
+    {
     public:
       ImageInformationError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
 	casacore::AipsError(message,c)
@@ -51,7 +52,8 @@ namespace casa
       ~ImageInformationError () noexcept {};
     };
 
-    class ImageInformationSaveError : public ImageInformationError {
+    class ImageInformationSaveError : public ImageInformationError
+    {
     public:
       ImageInformationSaveError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
 	ImageInformationError(message,c)
@@ -59,13 +61,15 @@ namespace casa
       ~ImageInformationSaveError () noexcept {};
     };
 
-    class ImageInformationRecordNotFoundError : public ImageInformationError {
+    class ImageInformationRecordNotFoundError : public ImageInformationError
+    {
     public:
       ImageInformationRecordNotFoundError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
 	ImageInformationError(message,c)
       {};
       ~ImageInformationRecordNotFoundError () noexcept {};
     };
+    //-----------------------------------------------------------------------------------------------------------------------
     
 
     template <class T>
@@ -80,6 +84,7 @@ namespace casa
 	coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName()
       {};
       //
+      //------------------------------------------------------------------------
       // Constructor to read existing records save by this class
       //
       ImageInformation(const casacore::String& targetPath):
@@ -92,6 +97,7 @@ namespace casa
 	initPaths(targetPath);
       };
       //
+      //------------------------------------------------------------------------
       // Constructor to write and read records saved by this class
       //
       ImageInformation(casacore::ImageInterface<T>& cimg,
@@ -104,14 +110,18 @@ namespace casa
       {
 	initPaths(targetPath);
       };
-      
+      //
+      //------------------------------------------------------------------------
+      //
       void initPaths(const casacore::String& targetPath)
       {
 	coordSysRecFileName = targetPath+'/'+coordSysFileName;
 	imInfoRecFileName=targetPath+'/'+imInfoFileName;
 	miscInfoRecFileName=targetPath+'/'+miscInfoFileName;
       }
-      
+      //
+      //------------------------------------------------------------------------
+      //
       void save()
       {
 	if (cimg_p == NULL)
@@ -151,15 +161,26 @@ namespace casa
       //
       casacore::CoordinateSystem getCoordinateSystem()
       {
-	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+coordSysRecFileName+" does not exist."));
+	//
+	// Use the supplied filename as-is here.  The logic to
+	// modification to the name for reading as a Record or a Table
+	// are in SynthesisUtils::read/writeRecord.  At this level,
+	// the interface is via casacore::Record only.
+	//
+	casacore::String fileName = coordSysRecFileName;
+	// if (!fileExists(fileName.c_str()))
+	//   {
+	//     fileName = coordSysRecFileName + casacore::String(".tab");
+	//     if (!fileExists(fileName.c_str()))
+	//       throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+fileName+" does not exist."));
+	//   }
 
 	casacore::IPosition dummyImShape;
 	casacore::CoordinateSystem csys;
 	
 	SynthesisUtils::readFromRecord(csys,
 				     dummyImShape,
-				     coordSysRecFileName,
+				     fileName,
 				     coordSysKey);
 	return csys;
 	
@@ -169,10 +190,14 @@ namespace casa
       //
       casacore::Vector<int> getImShape()
       {
-	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+imInfoRecFileName+" does not exist."));
-
-	casacore::TableRecord imInfo = casacore::TableRecord(SynthesisUtils::readRecord(imInfoRecFileName));
+	//
+	// Use the supplied filename as-is here.  The logic to
+	// modification to the name for reading as a Record or a Table
+	// are in SynthesisUtils::read/writeRecord.  At this level,
+	// the interface is via casacore::Record only.
+	//
+	casacore::String fileName=imInfoRecFileName;
+	casacore::TableRecord imInfo = casacore::TableRecord(SynthesisUtils::readRecord(fileName));
 	casacore::Vector<int> imShape;
 	imInfo.get(imShapeKey,imShape);
 	return imShape;
@@ -182,31 +207,43 @@ namespace casa
       //
       casacore::TableRecord getMiscInfo()
       {
-	if (!fileExists(coordSysRecFileName.c_str()))
-	  throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+miscInfoRecFileName+" does not exist."));
-
-	return casacore::TableRecord(SynthesisUtils::readRecord(miscInfoRecFileName));
+	//
+	// Use the supplied filename as-is here.  The logic to
+	// modification to the name for reading as a Record or a Table
+	// are in SynthesisUtils::read/writeRecord.  At this level,
+	// the interface is via casacore::Record only.
+	//
+	casacore::String fileName=miscInfoRecFileName;
+	return casacore::TableRecord(SynthesisUtils::readRecord(fileName));
       }
+      //
+      //------------------------------------------------------------------------
+      //
       ~ImageInformation() {};
+      //
+      //------------------------------------------------------------------------
+      //
     private:
       casacore::ImageInterface<T> *cimg_p;
       casacore::String coordSysFileName,  coordSysKey;
       casacore::String imInfoFileName, imShapeKey;
       casacore::String miscInfoFileName,  miscInfoKey;
       casacore::String coordSysRecFileName, imInfoRecFileName, miscInfoRecFileName;
-
-      inline bool fileExists(const char* name)
-      {
-	if (FILE *file = fopen(name, "r"))
-	  {
-	    fclose(file);
-	    return true;
-	  }
-	else
-	  {
-	    return false;
-	  }
-      };
+      //
+      //------------------------------------------------------------------------
+      //
+      // inline bool fileExists(const char* name)
+      // {
+      // 	if (FILE *file = fopen(name, "r"))
+      // 	  {
+      // 	    fclose(file);
+      // 	    return true;
+      // 	  }
+      // 	else
+      // 	  {
+      // 	    return false;
+      // 	  }
+      // };
     };
   };
 };

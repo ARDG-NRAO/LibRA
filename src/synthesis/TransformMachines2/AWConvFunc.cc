@@ -1992,6 +1992,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// information to the CFC.  This would make the CFC into the
 	// new format and on the next visit the try{...} clause above
 	// should succeed.
+	log_l << e.what() << LogIO::WARN;
 	skyImage_l = new PagedImage<Complex> (uvGridDiskImage);//cfs2.getCacheDir()+"/uvgrid.im");
 	imInfo = ImageInformation<Complex>(*skyImage_l, cfCachePath);
 	imInfo.save();
