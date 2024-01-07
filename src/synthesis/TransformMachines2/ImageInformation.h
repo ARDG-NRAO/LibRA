@@ -159,6 +159,42 @@ namespace casa
       //
       //------------------------------------------------------------------------
       //
+      void save(const casacore::CoordinateSystem& coordinates,
+		const casacore::IPosition& shape,
+		const casacore::Record& miscinfo)
+      {
+	//
+	// Save image coordinate system as a casacore::Record
+	//
+	SynthesisUtils::saveAsRecord(coordinates,
+				     shape,
+				     coordSysRecFileName,
+				     coordSysKey);
+	//
+	// Save cimg.shape() as a casacore::Record
+	//
+	casacore::RecordDesc imInfoDesc;
+	// Add image shape to the record.
+	imInfoDesc.addField(imShapeKey,casacore::TpArrayInt);
+	casacore::Vector<int> shp=shape.asVector();
+	
+	casacore::Record imInfoRec(imInfoDesc);
+	int imsId=imInfoDesc.fieldNumber(imShapeKey);
+	imInfoRec.define(imsId,shp);
+	SynthesisUtils::writeRecord(imInfoRecFileName, imInfoRec);
+	
+	//
+	// Save miscinfo
+	//
+	if (miscinfo.nfields() > 0)
+	  {
+	    SynthesisUtils::writeRecord(miscInfoRecFileName,
+					miscinfo);
+	  }
+      }
+      //
+      //------------------------------------------------------------------------
+      //
       casacore::CoordinateSystem getCoordinateSystem()
       {
 	//

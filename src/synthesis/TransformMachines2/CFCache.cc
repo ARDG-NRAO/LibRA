@@ -659,42 +659,42 @@ namespace casa{
   //
   //-----------------------------------------------------------------------
   //
-  TableRecord CFCache::getCFParams(const String& fileName,
-				   Array<Complex>& pixelBuffer,
-				   CoordinateSystem& coordSys, 
-				   Double& sampling,
-				   Double& paVal,
-				   Int& xSupport, Int& ySupport,
-				   Double& fVal, Double& wVal, Int& mVal,
-				   Double& conjFreq, Int& conjPoln,
-				   Bool loadPixels)
-  {
-    try
-      {
-	PagedImage<Complex> thisCF(Dir+'/'+fileName);
-	TableRecord miscinfo = thisCF.miscInfo();
+  // TableRecord CFCache::getCFParams(const String& fileName,
+  // 				   Array<Complex>& pixelBuffer,
+  // 				   CoordinateSystem& coordSys, 
+  // 				   Double& sampling,
+  // 				   Double& paVal,
+  // 				   Int& xSupport, Int& ySupport,
+  // 				   Double& fVal, Double& wVal, Int& mVal,
+  // 				   Double& conjFreq, Int& conjPoln,
+  // 				   Bool loadPixels)
+  // {
+  //   try
+  //     {
+  // 	PagedImage<Complex> thisCF(Dir+'/'+fileName);
+  // 	TableRecord miscinfo = thisCF.miscInfo();
 
-	if (loadPixels) pixelBuffer.assign(thisCF.get());
-	miscinfo.get("ParallacticAngle", paVal);
-	miscinfo.get("MuellerElement", mVal);
-	miscinfo.get("WValue", wVal);
-	miscinfo.get("Xsupport", xSupport);
-	miscinfo.get("Ysupport", ySupport);
-	miscinfo.get("Sampling", sampling);
-	miscinfo.get("ConjFreq", conjFreq);
-	miscinfo.get("ConjPoln", conjPoln);
-	Int index= thisCF.coordinates().findCoordinate(Coordinate::SPECTRAL);
-	coordSys = thisCF.coordinates();
-	SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
-	fVal=static_cast<casacore::Float>(spCS.referenceValue()(0));
-	return miscinfo;
-      }
-    catch(AipsError& x)
-      {
-	throw(SynthesisFTMachineError(String("Error in CFCache::getCFParams(): ")
-				      +x.getMesg()));
-      }
-  }
+  // 	if (loadPixels) pixelBuffer.assign(thisCF.get());
+  // 	miscinfo.get("ParallacticAngle", paVal);
+  // 	miscinfo.get("MuellerElement", mVal);
+  // 	miscinfo.get("WValue", wVal);
+  // 	miscinfo.get("Xsupport", xSupport);
+  // 	miscinfo.get("Ysupport", ySupport);
+  // 	miscinfo.get("Sampling", sampling);
+  // 	miscinfo.get("ConjFreq", conjFreq);
+  // 	miscinfo.get("ConjPoln", conjPoln);
+  // 	Int index= thisCF.coordinates().findCoordinate(Coordinate::SPECTRAL);
+  // 	coordSys = thisCF.coordinates();
+  // 	SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
+  // 	fVal=static_cast<casacore::Float>(spCS.referenceValue()(0));
+  // 	return miscinfo;
+  //     }
+  //   catch(AipsError& x)
+  //     {
+  // 	throw(SynthesisFTMachineError(String("Error in CFCache::getCFParams(): ")
+  // 				      +x.getMesg()));
+  //     }
+  // }
   //
   //-----------------------------------------------------------------------
   //

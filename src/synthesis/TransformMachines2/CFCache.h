@@ -263,15 +263,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			   const casacore::String& nameQualifier="",
 			   const casacore::Int mosXPos=0, const casacore::Int mosYPos=0);
 
-    casacore::TableRecord getCFParams(const casacore::String& fileName,
-		     casacore::Array<casacore::Complex>& pixelBuffer,
-		     casacore::CoordinateSystem& coordSys, 
-		     casacore::Double& sampling,
-		     casacore::Double& paVal,
-		     casacore::Int& xSupport, casacore::Int& ySupport,
-		     casacore::Double& fVal, casacore::Double& wVal, casacore::Int& mVal,
-		     casacore::Double& conjFreq, casacore::Int& conjPoln,
-		     casacore::Bool loadPixels=true);
+    // casacore::TableRecord getCFParams(const casacore::String& fileName,
+    // 		     casacore::Array<casacore::Complex>& pixelBuffer,
+    // 		     casacore::CoordinateSystem& coordSys, 
+    // 		     casacore::Double& sampling,
+    // 		     casacore::Double& paVal,
+    // 		     casacore::Int& xSupport, casacore::Int& ySupport,
+    // 		     casacore::Double& fVal, casacore::Double& wVal, casacore::Int& mVal,
+    // 		     casacore::Double& conjFreq, casacore::Int& conjPoln,
+    // 		     casacore::Bool loadPixels=true);
     //
     // Methods to write the auxillary information from the memory
     // cache to the disk cache.  Without this call, the disk cache

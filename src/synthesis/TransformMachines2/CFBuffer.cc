@@ -27,9 +27,11 @@
 //# $Id$
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ParallelFor.h>
 #include <casacore/casa/Utilities/BinarySearch.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/Assert.h>
+#include <mutex>
 
 using namespace casacore;
 using namespace casa::vi;
@@ -481,19 +483,35 @@ namespace casa{
 
   void CFBuffer::makePersistent(const char *dir, const char *cfName)
   {
-    for (Int i=0;i<cfCells_p.shape()(0);i++)
-      for (Int j=0;j<cfCells_p.shape()(1);j++)
-	for (Int k=0;k<cfCells_p.shape()(2);k++)
-	  {
-	    ostringstream name;
-	    name << String(cfName) << "_CF_" << i << "_" << j << "_" << k << ".im";
-	    //cerr << "CFB Name : " << name.str() << endl;
-	    // const char *formedName;
-	    // if (cfName != "" ) formedName = name.str().c_str();
-	    // else               formedName = cfName;
-	    // cerr << "Formed name = " << formedName << endl;
-	    cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
-	  }
+    std::string cfNameStr(cfName);
+    //    std::mutex cfc_mutex;
+
+    //    auto writeCFCell = [this,&dir,&cfNameStr,&cfc_mutex](const int istart, const int iend)
+    auto writeCFCell = [this,&dir,&cfNameStr](const int istart, const int iend)
+    {
+      for (int i=istart; i<iend; i++)
+	for (int j=0; j<cfCells_p.shape()(1); j++)
+	  for (int k=0; k< cfCells_p.shape()(2); k++)
+	    {
+	      ostringstream name;
+	      name << cfNameStr << "_CF_" << i << "_" << j << "_" << k << ".im";
+	      //	      std::lock_guard<std::mutex> guard(cfc_mutex);
+	      cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
+	    }
+
+    };
+
+    bool useThreads=true;
+    parallel_for(cfCells_p.shape()(0),writeCFCell,useThreads);
+
+    // for (int i=0;i<cfCells_p.shape()(0);i++)
+    //   for (int j=0;j<cfCells_p.shape()(1);j++)
+    // 	for (int k=0; k< cfCells_p.shape()(2); k++)
+    // 	  {
+    // 	    ostringstream name;
+    // 	    name << String(cfName) << "_CF_" << i << "_" << j << "_" << k << ".im";
+    // 	    cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
+    // 	  }
   }
 
   Int CFBuffer::nearestFreqNdx(const Double& freqVal) 

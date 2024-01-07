@@ -341,6 +341,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	      // really internal detals of how these objects work together
 	      // leaks all the way to the client layers.
 	      int verbose=0;
+	      cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
 	      casacore::Vector<casacore::String> cfNames(cfList);
 	      casacore::Vector<casacore::String> wtCFNames(wtCFList);
 
