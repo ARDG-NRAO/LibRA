@@ -211,7 +211,7 @@ namespace casa{
     else bandName="UNKNOWABLE";
     float diameter; miscInfo.get("Diameter", diameter);
     // In the absense of evidence, assume that users are sensible and
-    // are using AWProjection where it is really need it and not for
+    // are using AWProjection where it is really needed and not for
     // using it as a replacement for rotatially symmetric stuff.  So
     // by default, the CFs are assumed to be rotationally asymmetric.
     bool isRotationallySymmetric=True; 
@@ -224,7 +224,7 @@ namespace casa{
 				     diameter);
     //    miscInfo.print(cerr);
     cfCells_p(ndx(0),ndx(1),ndx(2))->isRotationallySymmetric_p = isRotationallySymmetric;
-    if (miscInfo.isDefined("isFilled"))
+    if (miscInfo.isDefined("IsFilled"))
       miscInfo.get("IsFilled", cfCells_p(ndx(0),ndx(1),ndx(2))->isFilled_p);
 
     return ndx;
@@ -481,7 +481,8 @@ namespace casa{
     os << "---------------------------------------------------------" << endl;
   }
 
-  void CFBuffer::makePersistent(const char *dir, const char *cfName)
+  void CFBuffer::makePersistent(const char *dir, const char *cfName,
+				const bool useThreads)
   {
     std::string cfNameStr(cfName);
     //    std::mutex cfc_mutex;
@@ -501,7 +502,8 @@ namespace casa{
 
     };
 
-    bool useThreads=true;
+    //writeCFCell(0,cfCells_p.shape()(0));
+    //    bool useThreads=true;
     parallel_for(cfCells_p.shape()(0),writeCFCell,useThreads);
 
     // for (int i=0;i<cfCells_p.shape()(0);i++)

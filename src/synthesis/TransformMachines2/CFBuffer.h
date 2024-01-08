@@ -369,7 +369,7 @@ using namespace casa::vi;
     casacore::Bool null() {return (cfCells_p.nelements() == 0);};
     
     casacore::Cube<casacore::CountedPtr<CFCell> >& getStorage() {return cfCells_p;};
-    void makePersistent(const char *dir, const char *cfName="");
+    void makePersistent(const char *dir, const char *cfName="",const bool useThreads=false);
     
     void primeTheCache();
     void initMaps(const VisBuffer2& vb,const casacore::Matrix<casacore::Double>& freqSelection,const casacore::Double& imRefFreq);

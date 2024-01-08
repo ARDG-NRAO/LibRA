@@ -507,6 +507,18 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 				   vbFreqSelection,
 				   *cfs2_l, *cfswt2_l,
 				   fillCF);
+	  //
+	  // AWConvFunc::makeConvFunction() does not make the memory
+	  // model (CFStore) persistent.  So save the contents of the
+	  // CFStore on the disk.
+	  //
+	  // [07Jan2024] In the dryrun mode, only the meta info is
+	  // written as casacore::Records conerted to
+	  // casacore::Tables.  Writing these with multi-threadings
+	  // seems to be work.  The bool parameter is therefore set to
+	  // true (it is false in the default interface).
+	  cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
 	}
       else
 	{
@@ -531,11 +543,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
 
-      //
-      // Save the contents of the CFStore on the disk.
-      //
-      cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
-      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
 
       // Report some stats.
       Double memUsed=cfs2_l->memUsage();

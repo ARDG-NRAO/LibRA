@@ -129,6 +129,10 @@ namespace casa{
 
     if (isFilled_p==true)
       {
+	{
+	  casacore::Directory dir(name);
+	  if (dir.exists()) dir.removeRecursive();
+	}
 	PagedImage<Complex> thisCF(tmpShape,coordSys_p, name);
 	if ((storage_p->shape()).nelements()>0) thisCF.put(*storage_p);
 	thisCF.setMiscInfo(miscinfo);

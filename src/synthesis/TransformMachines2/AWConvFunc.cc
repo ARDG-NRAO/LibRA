@@ -2041,11 +2041,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    Float sampling;
 
 		    CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
-		    cerr << "--------------------------- " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
-		    tt->show("",cout);
+		    // cerr << "--------------------------- " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
+		    // tt->show("",cout);
 
 		    // Fill the CFCell if it isn't already filled.
-		    if ((tt->isFilled_p==false) && (tt->cfShape_p.nelements() != 0))
+		    if ((tt->isFilled_p==false) && (tt->shape_p.nelements() != 0))
 		       {
 			 //(*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
 			 tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
