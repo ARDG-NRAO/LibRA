@@ -354,7 +354,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  else
 	    {
 	      throw(AipsError("Don't know what to do with mode="+mode+"!"));
-	      exit(-1);
 	    }
 	}
       catch (CFSupportZero &e)
