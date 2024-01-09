@@ -128,55 +128,6 @@ make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/k
 # E.g., the following command to build with support for AMPERE family of NVIDIA GPUs at CUDA Capability 80
 # make Kokkos_CUDA_ARCH=Kokkos_ARCH_AMPERE80 -f makefile.libra allbuild
 ```
-If successful, this will produce the following tree:
-```
-.
-├── apps
-│   ├── build
-│   │   ├── CMakeFiles
-│   │   ├── src
-│   │   ├── CMakeCache.txt
-│   │   ├── cmake_install.cmake
-│   │   ├── install_manifest.txt
-│   │   └── Makefile
-│   ├── install
-│   │   ├── hummbee
-│   │   ├── hummbee2py.cpython-36m-x86_64-linux-gnu.so
-│   │   ├── mssplit
-│   │   ├── roadrunner
-│   │   ├── roadrunner2py.cpython-36m-x86_64-linux-gnu.so
-│   │   ├── subms
-│   │   └── tableinfo
-│   ├── src
-│   │   ├── Hummbee
-│   │   ├── interface
-│   │   ├── MSSplit
-│   │   ├── RoadRunner
-│   │   ├── SubMS
-│   │   └── TableInfo
-│   └── CMakeLists.txt
-├── dependencies
-│   ├── build
-│   │   ├── casacore
-│   │   ├── casacpp
-│   │   ├── hpg
-│   │   ├── kokkos
-│   │   ├── libsakura
-│   │   └── parafeed
-│   ├── install
-│   │   └── linux_64b
-│   └── src
-│       ├── casa6
-│       ├── fftw-3.3.10
-│       ├── hpg
-│       ├── kokkos
-│       ├── parafeed
-│       ├── py_local_env
-│       └── sakura-libsakura-5.1.3
-├── test
-├── makefile.libra
-└── README.md
-```
 
 The binary [standalone
 applications](#available-standalone-applications-apps) will be install
