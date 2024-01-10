@@ -1,20 +1,32 @@
-#include <casa/aips.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionError.h>
-#include <ms/MSSel/MSSelectionTools.h>
-#include <ms/MSSel/MSSelectableTable.h>
-#include <tables/Tables/Table.h>
-#include <tables/Tables/PlainTable.h>
-#include <string>
-using namespace std;
-using namespace casacore;
-//
-//-------------------------------------------------------------------------
-//
-/**
- * @fn void showTableCache()
- * @brief Displays the current state of the table cache.
- */
+// -*- C++ -*-
+// # mssplit.cc
+// # Copyright (C) 2021
+// # Associated Universities, Inc. Washington DC, USA.
+// #
+// # This library is free software; you can redistribute it and/or modify it
+// # under the terms of the GNU Library General Public License as published by
+// # the Free Software Foundation; either version 2 of the License, or (at your
+// # option) any later version.
+// #
+// # This library is distributed in the hope that it will be useful, but WITHOUT
+// # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+// # License for more details.is
+// #
+// # You should have received a copy of the GNU Library General Public License
+// # along with this library; if not, write to the Free Software Foundation,
+// # Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+// #
+// # Correspondence concerning this should be addressed as follows:
+// #        Postal address: National Radio Astronomy Observatory
+// #                        1003 Lopezville Road,
+// #                        Socorro, NM - 87801, USA
+// #
+// # $Id$
+
+#include <MSSplit/mssplit.h>
+
+
 void showTableCache()
 {
   const TableCache& cache = PlainTable::tableCache();
@@ -27,14 +39,8 @@ void showTableCache()
   for (Int i=0; i<n; ++i) 
     cout << "    " << i << ": \"" <<  lockedTables(i) << "\"" << endl;
 }
-//
-//-------------------------------------------------------------------------
-//
-/**
- * @fn void printBaselineList(const casacore::MeasurementSet& ms)
- * @brief Prints the list of baselines in the given MeasurementSet.
- * @param ms The MeasurementSet to print baselines from.
- */
+
+
 void printBaselineList(Matrix<Int> list,ostream& os)
 {
   os << "Baselines = ";
@@ -47,14 +53,7 @@ void printBaselineList(Matrix<Int> list,ostream& os)
     }
   os << endl;
 }
-//
-//-------------------------------------------------------------------------
-//
-/**
- * @fn void printInfo(const casacore::MeasurementSet& ms)
- * @brief Prints information about the given MeasurementSet.
- * @param ms The MeasurementSet to print information about.
- */
+
 
 void printInfo(casacore::MSSelection& msSelection)
 {
@@ -80,23 +79,13 @@ void printInfo(casacore::MSSelection& msSelection)
   cout << "ObservationIDList    = " << msSelection.getObservationList() << endl;
   //  printBaselineList(msSelection.getBaselineList(),cout);
 }
-//
-//-------------------------------------------------------------------------
-//
-/**
- * @fn void MSSplit_func(const std::string& MSName, const std::string& subMSName, const std::string& fieldStr, const std::string& spwStr, const std::string& uvDistStr)
- * @brief Splits a MeasurementSet into a subset.
- * @param MSName The name of the original MeasurementSet.
- * @param subMSName The name of the subset MeasurementSet to be created.
- * @param fieldStr The field string to select specific fields.
- * @param spwStr The spectral window string to select specific spectral windows.
- * @param uvDistStr The UV distance string to select specific UV distances.
- */
-void MSSplit_func(const string& MSNBuf="", const string& OutMSBuf="", const bool& deepCopy=0, const string& fieldStr="",
-		 const string& timeStr="", const string &spwStr="", const string& baselineStr="",
-		 const string& uvdistStr="", const string& taqlStr="", const string& scanStr="",
-		 const string& arrayStr="", const string& polnStr="", const string& stateObsModeStr="",
-		 const string& observationStr="")
+
+
+void MSSplit_func(const string& MSNBuf, const string& OutMSBuf, const bool& deepCopy, const string& fieldStr,
+		 const string& timeStr, const string &spwStr, const string& baselineStr,
+		 const string& uvdistStr, const string& taqlStr, const string& scanStr,
+		 const string& arrayStr, const string& polnStr, const string& stateObsModeStr,
+		 const string& observationStr)
 
 {
   //

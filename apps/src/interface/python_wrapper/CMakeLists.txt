@@ -12,7 +12,9 @@ if(NOT pybind11_POPULATED)
 endif()
 #FetchContent_MakeAvailable(pybind11)
 #find_package(pybind11 REQUIRED)
-set(WRAPPER_LIST roadrunner2py hummbee2py coyote2py)
+
+#set(WRAPPER_LIST roadrunner2py hummbee2py coyote2py)
+set(WRAPPER_LIST)
 
 foreach(WRAPPER IN LISTS WRAPPER_LIST)
     pybind11_add_module(${WRAPPER} ${WRAPPER}.cc)

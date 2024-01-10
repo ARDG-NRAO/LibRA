@@ -1,4 +1,3 @@
-//# Coyote.cc: Driver for the AWConvFunc class of FTMachines
 //# Copyright (C) 2021
 //# Associated Universities, Inc. Washington DC, USA.
 //#

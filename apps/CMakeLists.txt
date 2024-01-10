@@ -56,12 +56,12 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 # add and build each APP
 # SEEMS TO BE OLD CODE, NOT IN USE NOW
-#set(APP_LIST MSSplit TableInfo SubMS)
-# foreach(APP IN LISTS APP_LIST)
-#   set(APP_DIR ${APP})
-#   string(TOLOWER ${APP_DIR} APP_NAME)
-#   add_subdirectory(src/${APP_DIR})
-# endforeach()
+set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo)
+ foreach(APP IN LISTS APP_LIST)
+   set(APP_DIR ${APP})
+   string(TOLOWER ${APP_DIR} APP_NAME)
+   add_subdirectory(src/${APP_DIR})
+ endforeach()
 
 # set(CL_LIST roadrunner)
 
