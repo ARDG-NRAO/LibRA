@@ -1,4 +1,3 @@
-//# roadrunner.cc: Driver for the AWProject class of FTMachines
 //# Copyright (C) 2021
 //# Associated Universities, Inc. Washington DC, USA.
 //#
@@ -40,7 +39,7 @@
 //================================================================================
 //
 
-#include <RoadRunner/Roadrunner_func.h>
+#include <RoadRunner/roadrunner.h>
 //
 //-------------------------------------------------------------------------
 //

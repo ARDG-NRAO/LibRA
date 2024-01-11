@@ -53,7 +53,7 @@ using namespace std;
  * @param verifyMS A function to verify the loaded measurement set.
  * @return A tuple containing the spw and field IDs of the selected measurement set.
  */
-std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
+inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
 					     const String& spwStr,
 					     const String& fieldStr,
 					     const String& uvDistStr,

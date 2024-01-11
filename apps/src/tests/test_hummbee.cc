@@ -1,10 +1,9 @@
 #include <filesystem>
-#include "Hummbee/hummbee_func.h"
+#include "Hummbee/hummbee.h"
 #include "gtest/gtest.h"
 
 using namespace std;
 using namespace std::filesystem;
-using namespace casacore;
 
 
 namespace test{
