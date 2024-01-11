@@ -41,6 +41,12 @@ casapath=sys.argv[4];#"~";
 taskID=int(sys.argv[5])-1;
 procs=int(sys.argv[6]);
 
+# Makes rather unituitive code due to 0-based counting (in this
+# script) and 1-based indexs supplied (is this is Slurm requirement?).
+if (taskID >= procs):
+    raise ValueError("taskID should =< procs");
+    
+
 def makeExecCommand(tasks,procs,taskID,cfList,execCmd):
     # For each taskID, determine the number of tasks it gets (the
     # parameter 'n').  Take care to distribute the tasks which would
@@ -87,5 +93,5 @@ tasks=len(cfsList);
 #print("# No. of CFs: ",len(cfsList),cfsList[0],"~",cfsList[tasks-1]);
 
 cmdLine,n,l0,l1=makeExecCommand(tasks,procs,taskID,cfsList,coyoteExec);
-print("ncfs: ",n," startndx: ",l0," endndx: ",l1);
+print("ncfs: ",n,"startndx: ",l0,"endndx: ",l1,"total # of cfs: ",tasks);
 print(cmdLine);
