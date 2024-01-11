@@ -303,5 +303,24 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		bool& doSPWDataIter);
 
 
+
+void UI(Bool restart, int argc, char **argv, string& MSNBuf,
+  string& imageName, string& modelImageName,string& dataColumnName,
+  string& sowImageExt,
+  string& cmplxGridName, int& ImSize, int& nW,
+  float& cellSize, string& stokes, string& refFreqStr,
+  string& phaseCenter, string& weighting,
+  string& rmode, float& robust,
+  string& FTMName, string& CFCache, string& imagingMode,
+  Bool& WBAwp,string& fieldStr, string& spwStr,
+  string& uvDistStr,
+  Bool& doPointing, Bool& normalize,
+  Bool& doPBCorr,
+  Bool& conjBeams,
+  Float& pbLimit,
+  vector<float> &posigdev,
+  Bool& doSPWDataIter);
+
+
 #endif
 

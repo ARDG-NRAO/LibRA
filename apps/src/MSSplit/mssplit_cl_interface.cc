@@ -18,29 +18,7 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 
-/**
- * @brief This function is responsible for handling user input for the MSSplit application.
- * 
- * @param restart A boolean value indicating whether the application is being restarted.
- * @param argc An integer value indicating the number of command line arguments.
- * @param argv A pointer to a character array containing the command line arguments.
- * @param MSNBuf A reference to a string variable to store the input table name.
- * @param OutMSBuf A reference to a string variable to store the output table name.
- * @param deepCopy A boolean reference to indicate whether to perform a deep copy.
- * @param fieldStr A reference to a string variable to store the field selection.
- * @param timeStr A reference to a string variable to store the time selection.
- * @param spwStr A reference to a string variable to store the spectral window selection.
- * @param baselineStr A reference to a string variable to store the baseline selection.
- * @param scanStr A reference to a string variable to store the scan selection.
- * @param arrayStr A reference to a string variable to store the array selection.
- * @param uvdistStr A reference to a string variable to store the uvdist selection.
- * @param taqlStr A reference to a string variable to store the TAQL selection.
- * @param polnStr A reference to a string variable to store the polarization selection.
- * @param stateObsModeStr A reference to a string variable to store the state observation mode selection.
- * @param observationStr A reference to a string variable to store the observation selection.
- * 
- * @throws AipsError if the input table name is not set.
- */
+
 void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, bool& deepCopy,
 	string& fieldStr, string& timeStr, string& spwStr, string& baselineStr,
 	string& scanStr, string& arrayStr, string& uvdistStr,string& taqlStr, string& polnStr,
