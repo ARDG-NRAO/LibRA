@@ -42,7 +42,7 @@ taskID=int(sys.argv[5])-1;
 procs=int(sys.argv[6]);
 
 # Makes rather unituitive code due to 0-based counting (in this
-# script) and 1-based indexs supplied (is this is Slurm requirement?).
+# script) and 1-based indexs supplied (is this a Slurm requirement?).
 if (taskID >= procs):
     raise ValueError("taskID should =< procs");
     
@@ -86,7 +86,8 @@ cfsList=[];
 # Read the cfsFile, and make an array of lines read after stripping newline
 with open(cfsFile, 'r') as f:
     for line in f:
-        cfsList.append(os.path.basename(line.strip()));
+        cfsName=os.path.basename(line.strip())
+        if (cfsName != ''): cfsList.append(cfsName);
 
 # No. of tasks is equal to the number of lines in cfsFile
 tasks=len(cfsList);        
