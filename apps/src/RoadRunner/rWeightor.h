@@ -56,7 +56,7 @@ using namespace casacore;
  * @param robust The robustness parameter.
  * @param uvDistStr The UV distance string.
  */
-void
+inline void
 weightor(vi::VisibilityIterator2& vi_p,
 	 const CoordinateSystem& itsMaxCoordSys, // CSys of the sky image
 	 const IPosition& itsMaxShape,           // X-Y shape of the sky image

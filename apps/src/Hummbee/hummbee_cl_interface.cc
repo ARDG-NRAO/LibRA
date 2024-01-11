@@ -31,7 +31,6 @@
 //
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-//#include <casacore/casa/namespace.h>
 
 #ifdef CONTACT_USE_MPI
 # include <mpi.h>
@@ -43,12 +42,14 @@
 //-------------------------------------------------------------------------
 //
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
+
 //using namespace casacore;
 //using namespace std;
 
 #include <iostream>
 #include <fstream>
-#include <Hummbee/hummbee_func.h>
+#include <Hummbee/hummbee.h>
+
 
 //
 void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
@@ -178,31 +179,6 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
       RestartUI(REENTER);
     }
 }
-//
-//-------------------------------------------------------------------------
-//
-// Moving the embedded MPI interfaces out of the (visual) way.  If
-// necessary in the future, MPI code should be implemented in a
-// separate class and this code appropriate re-factored to be used as
-// an API for MPI class.  Ideally, MPI code should not be part of the
-// roadrunner (application layer) code.
-//#include <synthesis/TransformMachines2/test/RR_MPI.h>
-//
-
-//
-//-------------------------------------------------------------------------
-// Experimantal code not yet working
-//
-// #include <synthesis/TransformMachines2/test/ImagingEngine.h>
-//   ImagingEngine imgEngine();
-
-
-//
-//-------------------------------------------------------------------------
-//
-//
-//-------------------------------------------------------------------------
-//
 
 
 int main(int argc, char **argv)

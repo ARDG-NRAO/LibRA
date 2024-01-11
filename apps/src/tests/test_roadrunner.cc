@@ -1,5 +1,5 @@
 #include <filesystem>
-#include "RoadRunner/Roadrunner_func.h"
+#include "RoadRunner/roadrunner.h"
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -120,7 +120,7 @@ TEST(RoadrunnerTest, AppLevelWeight) {
                  doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
                  doSPWDataIter);
 
-  // Check that the .psf is generated
+  // Check that the weight files are generated
   path p1("htclean_gpu_newpsf.weight");
   path p2("htclean_gpu_newpsf.sumwt");
   bool ans = exists(p1) && exists(p2);
@@ -139,5 +139,10 @@ TEST(RoadrunnerTest, AppLevelWeight) {
    remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
 
 }
+
+//TEST(RoadrunnerTest, UIWeight) {
+
+//}
+
 
 };
