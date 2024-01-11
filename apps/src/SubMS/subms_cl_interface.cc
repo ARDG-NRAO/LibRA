@@ -1,41 +1,41 @@
-#include <casa/aips.h>
-#include <ms/MSSel/MSSelection.h>
-#include <ms/MSSel/MSSelectionError.h>
-#include <ms/MSSel/MSSelectionTools.h>
-#include <msvis/MSVis/SubMS.h>
+// # Copyright (C) 2021
+// # Associated Universities, Inc. Washington DC, USA.
+// #
+// # This library is free software; you can redistribute it and/or modify it
+// # under the terms of the GNU Library General Public License as published by
+// # the Free Software Foundation; either version 2 of the License, or (at your
+// # option) any later version.
+// #
+// # This library is distributed in the hope that it will be useful, but WITHOUT
+// # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+// # License for more details.is
+// #
+// # You should have received a copy of the GNU Library General Public License
+// # along with this library; if not, write to the Free Software Foundation,
+// # Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+// #
+// # Correspondence concerning this should be addressed as follows:
+// #        Postal address: National Radio Astronomy Observatory
+// #                        1003 Lopezville Road,
+// #                        Socorro, NM - 87801, USA
+// #
+// # $Id$
+
+
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-#include <SubMS/SubMS_func.h>
 
-using namespace std;
-using namespace casa;
-using namespace casacore;
+#include <SubMS/subms.h>
+
+
 //
 //-------------------------------------------------------------------------
 //
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
-/**
- * @brief This function provides a user interface for the command line interface (CLI) of the subms program.
- * 
- * @param restart A boolean flag indicating whether to restart the CLI or not.
- * @param argc The number of command line arguments.
- * @param argv An array of command line arguments.
- * @param MSNBuf A string reference to store the input MS name.
- * @param OutMSBuf A string reference to store the output MS name.
- * @param WhichColStr A string reference to store the data column name.
- * @param deepCopy An integer reference to store the deep copy flag.
- * @param fieldStr A string reference to store the field name.
- * @param timeStr A string reference to store the time range.
- * @param spwStr A string reference to store the spectral window name.
- * @param baselineStr A string reference to store the baseline name.
- * @param scanStr A string reference to store the scan name.
- * @param arrayStr A string reference to store the array name.
- * @param uvdistStr A string reference to store the uv distance range.
- * @param taqlStr A string reference to store the TAQL query.
- * @param integ A float reference to store the integration time.
- */
+
 void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, 
 	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
 	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 

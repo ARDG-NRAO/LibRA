@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <string>
 #include <iostream>
-#include <Hummbee/hummbee_func.h>
+#include <Hummbee/hummbee.h>
 
 using namespace pybind11;
 using namespace std;

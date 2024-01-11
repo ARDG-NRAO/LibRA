@@ -75,7 +75,7 @@
  * @param tile The tile size.
  * @return A tuple containing a pointer to the CF cache and a pointer to the visibility resampler base.
  */
-std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>>
+inline std::tuple<CountedPtr<refim::CFCache>,CountedPtr<refim::VisibilityResamplerBase>>
 createAWPFTMachine(const String ftmName,
 		   const String modelImageName,
 		   CountedPtr<refim::FTMachine>& theFT, 
@@ -205,7 +205,7 @@ createAWPFTMachine(const String ftmName,
  * @param in The input string to be converted.
  * @return A boolean indicating whether the conversion was successful.
  */
-bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
+inline bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
 {
    bool rstat(false);
    String tmpA, tmpB, tmpC;
@@ -261,7 +261,7 @@ bool mdFromString(casacore::MDirection &theDir, const casacore::String &in)
  * @param mss A reference to the MSSelection object.
  * @return A map of channel selections.
  */
-std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > >
+inline std::map<casacore::Int, std::map<casacore::Int, casacore::Vector<casacore::Int> > >
 makeTheChanSelMap(MSSelection& mss)
 {
   Matrix<Int> mssChanSel = mss.getChanList();
@@ -299,7 +299,7 @@ makeTheChanSelMap(MSSelection& mss)
  * @param refFreq The reference frequency.
  * @return A PagedImage object representing the empty sky image.
  */
-PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
+inline PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
 				      const MeasurementSet& selectedMS,
 				      MSSelection& msSelection,
 				      const String& imageName, const String& startModelImageName,

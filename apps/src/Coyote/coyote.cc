@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// # Coyote_func.h: Definition of the Coyote function
+// # Coyote.cc: Definition of the Coyote functions
 // # Copyright (C) 2021
 // # Associated Universities, Inc. Washington DC, USA.
 // #
@@ -24,61 +24,15 @@
 // #
 // # $Id$
 
-#ifndef COYOTE_H
-#define COYOTE_H
-
-#include <casacore/casa/namespace.h>
-//#include <casacore/casa/OS/Directory.h>
-//#include <casacore/casa/Utilities/Regex.h>
-#include <casacore/casa/Logging/LogFilter.h>
-//#include <casacore/casa/System/ProgressMeter.h>
-
-#include <casacore/measures/Measures/Stokes.h>
-#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
-#include <casacore/images/Images/ImageInterface.h>
-#include <casacore/images/Images/PagedImage.h>
-//#include <casacore/tables/TaQL/ExprNode.h>
-
-#include <casacore/ms/MSSel/MSSelection.h>
-#include <msvis/MSVis/VisibilityIterator2.h>
-#include <msvis/MSVis/VisBuffer2.h>
-#include <msvis/MSVis/ViFrequencySelection.h>
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
-
-//#include <synthesis/TransformMachines2/MakeCFArray.h>
-//#include <synthesis/TransformMachines2/ThreadCoordinator.h>
-#include <synthesis/TransformMachines2/CFStore2.h>
-#include <synthesis/TransformMachines2/AWConvFunc.h>
-#include <synthesis/TransformMachines2/CFCache.h>
-#include <synthesis/TransformMachines2/PolOuterProduct.h>
-#include <synthesis/TransformMachines2/ImageInformation.h>
-#include <casacore/casa/Utilities/Regex.h>
 
 #include <RoadRunner/rWeightor.h>
-//#include <RoadRunner/DataIterations.h>
 #include <RoadRunner/DataBase.h>
 #include <RoadRunner/MakeComponents.h>
-//#include <RoadRunner/Roadrunner_func.h>
 
-#include <hpg/hpg.hpp>
-#include <unistd.h>
+#include <Coyote/coyote.h>
 
-using namespace casa;
-using namespace casa::refim;
-using namespace casacore;
-using namespace std;
 
-/// @brief This function makes an empty image for the sky model.
-/// @param vi2 is the visibility iterator.
-/// @param selectedMS is the MeasurementSet object.
-/// @param msSelection is the MSSelection object.
-/// @param imageName is the name of the image.
-/// @param imSize is the size of the image.
-/// @param cellSize is the cell size of the image.
-/// @param phaseCenter is the phase center of the image.
-/// @param stokes is the Stokes parameter of the image.
-/// @param refFreq is the reference frequency of the image.
-/// @return 
+
 PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
 					 const MeasurementSet& selectedMS,
 					 MSSelection& msSelection,
@@ -136,13 +90,7 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   return PagedImage<Complex>(imshape, csys, imageParams.imageName);
 }
 
-/// @brief Sets the Polarization Outer Product (POP) object.
-/// @param vb2 is the VisBuffer2 object.
-/// @param visPolMap is the vector of Stokes::StokesTypes.
-/// @param polMap is the vector of polarization indices.
-/// @param stokes is the Stokes parameter.
-/// @param mType is the Muller parameter.
-/// @return 
+
 CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<casacore::Stokes::StokesTypes> visPolMap,
 					  Vector<int> polMap,
@@ -173,10 +121,7 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   return pop_l;
 }
 
-/// @brief This function returns the fileList of CFs to fill.
-/// @param cfCacheName is the name of the CF cache.
-/// @param regexList is the list of regexes.
-/// @return 
+
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList)
 {
@@ -216,30 +161,8 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
   return selectedCF;
 }
 
-/// @brief Is a Function to generate a list of CFs which can be filled usinga  different mode
-/// @param MSNBuf is the name of the MeasurementSet.
-/// @param telescopeName is the name of the telescope.
-/// @param NX is the size of the image.
-/// @param cellSize is the cell size of the image.
-/// @param stokes is the Stokes parameter.
-/// @param refFreqStr is the reference frequency.
-/// @param nW is the number of W-terms.
-/// @param cfCacheName is the name of the CF cache.
-/// @param imageNamePrefix is the prefix of the image name.
-/// @param WBAwp is the flag for WBAwp.
-/// @param psTerm is the flag for psTerm.
-/// @param aTerm is the flag for aTerm.
-/// @param mType is	the Muller parameter.
-/// @param pa is the parallactic angle.
-/// @param dpa is the delta parallactic angle.
-/// @param fieldStr is the field selection string.
-/// @param spwStr is the spectral window selection string.
-/// @param phaseCenter is the phase center.
-/// @param conjBeams is the flag for conjBeams.
-/// @param cfBufferSize is the CF buffer size.
-/// @param cfOversampling is the CF oversampling.
-/// @param cfList is the list of CFs.
-/// @param mode is the mode which can be either dryrun or fillcf.
+
+
 void Coyote(//bool &restartUI, int &argc, char **argv,
 	    string &MSNBuf, 
 	    string &telescopeName,
@@ -257,7 +180,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
-  LogIO log_l(LogOrigin("coyote", "Coyote_func"));
+  LogIO log_l(LogOrigin("coyote", "Coyote"));
   
   try
     {
@@ -559,4 +482,4 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       log_l << e.what() << endl;
     }
 }
-#endif
+
