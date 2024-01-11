@@ -50,32 +50,34 @@ link_directories(${DEPLIB} /usr/local/lib  ${USRLIB})
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${DEPLIB}")
+set(CMAKE_INSTALL_RPATH "${DEPLIB};${CMAKE_SOURCE_DIR}/install")
 set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-# SEEMS TO BE OLD CODE, NOT IN USE NOW
 set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo)
- foreach(APP IN LISTS APP_LIST)
+foreach(APP IN LISTS APP_LIST)
    set(APP_DIR ${APP})
    string(TOLOWER ${APP_DIR} APP_NAME)
-   add_subdirectory(src/${APP_DIR})
- endforeach()
+   list(APPEND APP_SOURCES "${APP_DIR}/${APP_NAME}.cc")
+endforeach()
 
-# set(CL_LIST roadrunner)
+add_subdirectory(src)
 
-# add and build the wrapper
-set(BUILD_CLWRAPPER ON)
-if(BUILD_CLWRAPPER)
-  add_subdirectory(src/interface/cl_wrapper)
-endif()
 
 # add and build the wrapper
-set(BUILD_PYWRAPPER ON)
-if(BUILD_PYWRAPPER)
-  add_subdirectory(src/interface/python_wrapper)
-endif()
+# OLD CODE
+#set(BUILD_CLWRAPPER ON)
+#if(BUILD_CLWRAPPER)
+#  add_subdirectory(src/interface/cl_wrapper)
+#endif()
+
+# add and build the wrapper
+# OLD CODE
+#set(BUILD_PYWRAPPER ON)
+#if(BUILD_PYWRAPPER)
+#  add_subdirectory(src/interface/python_wrapper)
+#endif()
 
 # add and build googletest
 if(Apps_BUILD_TESTS)
