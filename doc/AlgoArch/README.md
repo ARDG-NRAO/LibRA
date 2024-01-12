@@ -42,20 +42,21 @@ expressed as
 $V(\vec{u_{ij}}) = G_{ij} \int P_{ij}(\vec{s}) I(\vec{s}) e^{-2\pi \vec{u_{ij}}.\vec{s}} d\vec{s} + n_{ij}$
 
 where $V$ is a full-polarization vector of length 4 representing the
-measurement from two antennas separated by the vector
-$\vec{U_{ij}}$ij$ (the visibility), $G_{ij}$ is a 4x4 matrix that
-models the direction-independent corruptions (instrumental or
-atmospheric) and $P_{ij}$ models the direction-dependent effects, $I$
-representations the sky brightness distribution and $n_{ij}$ is the
-additive noise with Normal probability distribution.  In linear
-algebra notation this can be written as
+measurement from two antennas separated by the vector $\vec{u_{ij}}$
+(the visibility), $G_{ij}$ is a 4x4 matrix that models the
+direction-independent (DI) corruptions (instrumental or atmospheric) and
+$P_{ij}$ models the direction-dependent (DD) effects, $I$ representations
+the sky brightness distribution and $n_{ij}$ is the additive noise
+with Normal probability distribution.  In linear algebra notation this
+can be written as
 
 $V = G A I + n$
 
-where $A$ is an operator that transforms $I$ to the data domain.  The
+where $G$ is the DI corruption operator and $A$ an operator that
+transforms $I$ to the data domain and includes the DD effects.  The
 goal of calibration algorithms is to correct for the effects of $G$,
 and the goal of imaging algorithms is to derive $I$ given $V$, $G$ and
 a statistical description of $n$.  It can be shown that $A$ is
-singular.  The process of imaging to derive a model for $I$ that
-leaves residuals consistent with $n$ is therefore an ill-posed inverse
-problem which _fundamentally_ requires iterative algorithms.
+singular.  The process of imaging to derive a model for $I$ consistent
+with $n$ is therefore an ill-posed inverse problem which
+_fundamentally_ requires iterative algorithms.
