@@ -141,7 +141,7 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 	for (auto y : tmp) selectedCF.push_back(y);
       }
       if (selectedCF.size() == 0)
-	throw(SynthesisFTMachineError(String("CF selection leads to a NULL set!")));
+	throw(SynthesisFTMachineError(String("fileList: CF selection leads to a NULL set!")));
       // Guard against user error that includes WTCF* in the supplied list of CFs to fill.
       // The list of WTCFs is constructed internally to match the list of CFs.
       {
@@ -149,13 +149,13 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 	for(auto x:selectedCF)
 	  {
 	    if (regex.fullMatch(x.c_str(),x.size()))
-	      throw(SynthesisFTMachineError(String("The list of CFs to fill contains WTCFs. Please supply list of only CFs")));
+	      throw(SynthesisFTMachineError(String("fileList: The list of CFs to fill contains WTCFs. Please supply list of only CFs")));
 	  }
       }
     }
   catch(AipsError& x)
     {
-      throw(SynthesisFTMachineError(String("Error while reading CF disk cache: ")
+      throw(SynthesisFTMachineError(String("fileList: Error in making a list of CFs to fill")
 				    +x.getMesg()));
     }
   return selectedCF;
@@ -200,8 +200,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       bool wTerm = (nW > 1)? true : false;
 
       //-------------------------------------------------------------------------------------------------
-      // Instantiate AWCF object so we can use it to make cf.
-      // The AWCF::makeConvFunc requires the following objects
+      // Instantiate AWCF object for making the CFs later.
       //
       CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
       CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
@@ -211,8 +210,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
       if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
 
-      CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);
-      awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
+      CountedPtr<refim::ConvolutionFunction> //awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);
+	awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------
@@ -276,7 +275,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    }
 	  else
 	    {
-	      throw(AipsError("Don't know what to do with mode="+mode+"!"));
+	      throw(AipsError("Coyote: Don't know what to do with mode="+mode+"!"));
 	    }
 	}
       catch (CFSupportZero &e)
