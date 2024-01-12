@@ -35,4 +35,27 @@ focus on solving real outstanding problems.
 
 ## Mathematical Framework
 
-The relationship between the raw data and the image of the sky is expressed via a linear equation $V = G A I + n$.  $V$ is the raw data (the visibilities), $G$ models the direction-independent corruptions (instrumental or atmospheric), $I$ is a representations of the sky brightness distribution and $n$ is the additive noise with Normal probablity distribution.  $A$ is an operator that transforms $I$ to the data domain.  The goal of calibration algorithms is to correct for the effects of $G$, and the goal of imaging algorithms is derive $I$ given $V$, $G$ and a statistical description of $n$.  It can be shown that $A$ is singualr.  The process of imaging to derive a model for $I$ that leaves residuals consistent with $n$ is therefore an ill-posed problem which _fundamentally_ requires iteration algorithms.
+The relationship between the raw data measured by a pair of antennas
+denoted by subscripts $i$ and $j$ and the image of the sky is
+expressed as
+
+$V(\vec{u_{ij}}) = G_{ij} \int P_{ij}(\vec{s}) I(\vec{s}) e^{-2\pi \vec{u_{ij}}.\vec{s}} d\vec{s} + n_{ij}$
+
+where $V$ is a full-polarization vector of length 4 representing the
+measurement from two antennas separated by the vector
+$\vec{U_{ij}}$ij$ (the visibility), $G_{ij}$ is a 4x4 matrix that
+models the direction-independent corruptions (instrumental or
+atmospheric) and $P_{ij}$ models the direction-dependent effects, $I$
+representations the sky brightness distribution and $n_{ij}$ is the
+additive noise with Normal probability distribution.  In linear
+algebra notation this can be written as
+
+$V = G A I + n$
+
+where $A$ is an operator that transforms $I$ to the data domain.  The
+goal of calibration algorithms is to correct for the effects of $G$,
+and the goal of imaging algorithms is to derive $I$ given $V$, $G$ and
+a statistical description of $n$.  It can be shown that $A$ is
+singular.  The process of imaging to derive a model for $I$ that
+leaves residuals consistent with $n$ is therefore an ill-posed inverse
+problem which _fundamentally_ requires iterative algorithms.
