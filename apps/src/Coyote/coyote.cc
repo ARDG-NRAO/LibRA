@@ -31,8 +31,9 @@
 
 #include <Coyote/coyote.h>
 
-
-
+//
+//--------------------------------------------------------------------------
+//
 PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
 					 const MeasurementSet& selectedMS,
 					 MSSelection& msSelection,
@@ -89,8 +90,9 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
   return PagedImage<Complex>(imshape, csys, imageParams.imageName);
 }
-
-
+//
+//--------------------------------------------------------------------------
+//
 CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<casacore::Stokes::StokesTypes> visPolMap,
 					  Vector<int> polMap,
@@ -120,8 +122,9 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   
   return pop_l;
 }
-
-
+//
+//--------------------------------------------------------------------------
+//
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList)
 {
@@ -160,9 +163,9 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
     }
   return selectedCF;
 }
-
-
-
+//
+//--------------------------------------------------------------------------
+//
 void Coyote(//bool &restartUI, int &argc, char **argv,
 	    string &MSNBuf, 
 	    string &telescopeName,
@@ -481,4 +484,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       log_l << e.what() << endl;
     }
 }
+//
+//--------------------------------------------------------------------------
+//
 
