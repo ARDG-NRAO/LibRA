@@ -9,7 +9,7 @@ BEGIN{i=2;}
 	def=$4
 	type=$3
 
-	if (type ~ "\[")
+	if (type ~ "\\[")
 	{
 	    ob="[";
 	    cb="]";

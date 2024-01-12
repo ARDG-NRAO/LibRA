@@ -39,7 +39,7 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$V(\vec{u_{ij}}) = G_{ij} \int P_{ij}(\vec{s}) I(\vec{s}) e^{-2\pi \vec{u_{ij}}.\vec{s}} d\vec{s} + n_{ij}$
+$V(\vec{u_{ij}}) = G_{ij} \int I(\vec{s})~P_{ij}(\vec{s})~e^{-\iota \vec{u_{ij}}.\vec{s}}~d\vec{s} + n_{ij}$
 
 where $V$ is a full-polarization vector of length 4 representing the
 measurement from two antennas separated by the vector $\vec{u_{ij}}$
