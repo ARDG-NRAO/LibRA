@@ -34,3 +34,5 @@ need to be re-implemented/reinvented, and instead their research can
 focus on solving real outstanding problems.
 
 ## Mathematical Framework
+
+$\int a^2 + 2x +3 dx$
