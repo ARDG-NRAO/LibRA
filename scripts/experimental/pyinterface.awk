@@ -2,7 +2,11 @@
 awk -F : '					\
 BEGIN{i=2;}
 {
-    if ($1 == "%%N") AppName=$1;
+    if ($1 == "%%N") AppName=$2;
+    preamble="m.doc() = \"pybind11-based "AppName" python plugin\";\n m.def("
+    postscript=")";
+    if (NR==1) printf("%s",preamble);
+
     if ($1=="%%P")
     {
 	name=$2
@@ -33,5 +37,5 @@ BEGIN{i=2;}
 	i=i+1;
     }
 }
-END{printf("\n");}
+END{printf("%s\n",postscript);}
 ' $1
