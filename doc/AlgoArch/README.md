@@ -1,5 +1,4 @@
 # Algorithm Architecture
-
 ## Description
 
 This document describes a _stable and scalable_ architecture which
@@ -39,7 +38,7 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$V(\vec{u_{ij}}) = G_{ij} \int I(\vec{s})~P_{ij}(\vec{s})~e^{-\iota \vec{u_{ij}}.\vec{s}}~d\vec{s} + n_{ij}$
+$V(\vec{u}_{ij}) = G_{ij} \int I(\vec{s})~P_{ij}(\vec{s})~e^{-\iota \vec{u}_{ij}.\vec{s}}~d\vec{s} + n_{ij}$
 
 where $V$ is a full-polarization vector of length 4 representing the
 measurement from two antennas separated by the vector $\vec{u_{ij}}$
@@ -50,13 +49,6 @@ the sky brightness distribution and $n_{ij}$ is the additive noise
 with Normal probability distribution.  In linear algebra notation this
 can be written as
 
-$V = G A I + n$
+$\vec V = [G]~[A]~\vec I + \vec n$
 
-where $G$ is the DI corruption operator and $A$ an operator that
-transforms $I$ to the data domain and includes the DD effects.  The
-goal of calibration algorithms is to correct for the effects of $G$,
-and the goal of imaging algorithms is to derive $I$ given $V$, $G$ and
-a statistical description of $n$.  It can be shown that $A$ is
-singular.  The process of imaging to derive a model for $I$ consistent
-with $n$ is therefore an ill-posed inverse problem which
-_fundamentally_ requires iterative algorithms.
+where $G$ is the DI corruption operator and $A$ an operator that transforms $I$ to the data domain and includes the DD effects.  The goal of calibration algorithms is to correct for the effects of $G$. The goal of imaging algorithms is to derive $I$ given $V$, $G$ and a statistical description of $n$, which essentially requires computing $=A^{-1}$. However it can be shown that $A$ is singular.  Image reconsturction is therefore fundamentally an ill-posed inverse problem and _requires_ iterative algorithms to find an optimal solution (a model for the sky brightness distribution consistent with $n$).
