@@ -38,10 +38,10 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$V(\vec{u}_{ij}) = G_{ij} \int I(\vec{s}) P_{ij}(\vec{s}) e^{-\iota \vec{u}_{ij} . \vec{s}} d\vec{s} + n_{ij}$
+$V(u_{ij}) = G_{ij} \int I(\vec{s}) P_{ij}(\vec{s}) e^{-\iota u_{ij} . \vec{s}} d\vec{s} + n_{ij}$
 
 where $V$ is a full-polarization vector of length 4 representing the
-measurement from two antennas separated by the vector $\vec{u_{ij}}$
+measurement from two antennas separated by the vector $\vec{u}_{ij}$
 (the visibility), $G_{ij}$ is a 4x4 matrix that models the
 direction-independent (DI) corruptions (instrumental or atmospheric) and
 $P_{ij}$ models the direction-dependent (DD) effects, $I$ representations
