@@ -38,26 +38,11 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$V(\vec{u_{ij}}) = G_{ij} \int I(\vec{s}) P_{ij}(\vec{s}) e^{-\iota \vec{u_{ij}} . \vec{s}} d\vec{s} + n_{ij}$
+$\vec V_{ij} = M^{DI}_{ij}A_{ij}I(\vec s) + n_{ij}$
 
-where $V$ is a full-polarization vector of length 4 representing the
-measurement from two antennas separated by the vector $\vec{u_{ij}}$
-(the visibility), $G_{ij}$ is a 4x4 matrix that models the
-direction-independent (DI) corruptions (instrumental or atmospheric) and
-$P_{ij}$ models the direction-dependent (DD) effects, $I$ representations
-the sky brightness distribution and $n_{ij}$ is the additive noise
-with Normal probability distribution.  In linear algebra notation this
-can be written as
 
-$\vec V = [G] ~ [A] ~ \vec I + \vec n$
+where $\vec V_{ij}$ is a full-polarization vector of representing the
+measurement from a pair of antennas represented by subscripts $i$ and $j$, $M^{DI}_{ij}$ is the direction-independent (DI) Mueller matries that models the corruptions (instrumental or atmospheric), and $I$ representations the sky brightness distribution and $n_{ij}$ is the additive noise with Normal probability distribution.  
 
-where $G$ is the DI corruption operator and $A$ an operator that
-transforms $I$ to the data domain and includes the DD effects.  The
-goal of calibration algorithms is to correct for the effects of
-$G$. The goal of imaging algorithms is to derive $I$ given $V$, $G$
-and a statistical description of $n$, which essentially requires
-computing $=A^{-1}$. However it can be shown that $A$ is singular.
-Image reconsturction is therefore fundamentally an ill-posed inverse
-problem and _requires_ iterative algorithms to find an optimal
-solution (a model for the sky brightness distribution consistent with
+$A_{ij}$ is an operator that transforms $I$ to the data domain including the DD effects and can be constructed as $A_{ij}=F~S_{ij}~M^{DD}_{ij}(\vec s)$ where $F_{ij}$ represents the Fourier transform, $S_{ij}$ is the data domain sampling function and $M^{DD}_{ij}$ is the direction-dependent (DD) Mueller matrix that represents the direction-dependent mixing of the input poliarization vector.  The goal of calibration algorithms is to correct for the effects of $M^{DI}_{ij}$ and $M^{DD}_{ij}$. The goal of imaging algorithms is to derive $I$ given $V$ and a statistical description of $n$.  This essentially requires computing $A^{-1}$. However it can be shown that $A$ is singular. Image reconsturction is therefore a fundamentally ill-posed inverse problem requires _requires_ iterative algorithms to find an optimal solution (a model for the sky brightness distribution consistent with
 $n$).
