@@ -38,10 +38,10 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$V(u_{ij}) = G_{ij} \int I(\vec{s}) P_{ij}(\vec{s}) e^{-\iota u_{ij} . \vec{s}} d\vec{s} + n_{ij}$
+$V(\vec{u_{ij}}) = G_{ij} \int I(\vec{s}) P_{ij}(\vec{s}) e^{-\iota \vec{u_{ij}} . \vec{s}} d\vec{s} + n_{ij}$
 
 where $V$ is a full-polarization vector of length 4 representing the
-measurement from two antennas separated by the vector $\vec{u}_{ij}$
+measurement from two antennas separated by the vector $\vec{u_{ij}}$
 (the visibility), $G_{ij}$ is a 4x4 matrix that models the
 direction-independent (DI) corruptions (instrumental or atmospheric) and
 $P_{ij}$ models the direction-dependent (DD) effects, $I$ representations
@@ -51,4 +51,13 @@ can be written as
 
 $\vec V = [G] ~ [A] ~ \vec I + \vec n$
 
-where $G$ is the DI corruption operator and $A$ an operator that transforms $I$ to the data domain and includes the DD effects.  The goal of calibration algorithms is to correct for the effects of $G$. The goal of imaging algorithms is to derive $I$ given $V$, $G$ and a statistical description of $n$, which essentially requires computing $=A^{-1}$. However it can be shown that $A$ is singular.  Image reconsturction is therefore fundamentally an ill-posed inverse problem and _requires_ iterative algorithms to find an optimal solution (a model for the sky brightness distribution consistent with $n$).
+where $G$ is the DI corruption operator and $A$ an operator that
+transforms $I$ to the data domain and includes the DD effects.  The
+goal of calibration algorithms is to correct for the effects of
+$G$. The goal of imaging algorithms is to derive $I$ given $V$, $G$
+and a statistical description of $n$, which essentially requires
+computing $=A^{-1}$. However it can be shown that $A$ is singular.
+Image reconsturction is therefore fundamentally an ill-posed inverse
+problem and _requires_ iterative algorithms to find an optimal
+solution (a model for the sky brightness distribution consistent with
+$n$).
