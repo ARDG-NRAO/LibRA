@@ -38,7 +38,7 @@ The relationship between the raw data measured by a pair of antennas
 denoted by subscripts $i$ and $j$ and the image of the sky is
 expressed as
 
-$\vec V_{ij} = {M^{DI}}_{ij} A_{ij} I( \vec s ) + n_{ij}$
+$\vec V_{ij} = M_{ij} A_{ij} I( \vec s ) + n_{ij}$
  
 
 where $\vec V_{ij}$ is a full-polarization vector of representing the
