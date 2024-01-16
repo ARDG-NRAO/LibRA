@@ -1,6 +1,5 @@
 # Algorithm Architecture
-## Description
-
+## Introduction
 This document describes a _stable and scalable_ architecture which
 must scale for computing load and complexity as well as for continued
 evolution of algorithms.  On the one hand this architecture must be
@@ -25,7 +24,7 @@ imaging in radio astronomy).
 
 The "end-users" from our point of view are both -- researchers who use
 these algorithmic components for data processing directly to produce
-astronomical results, and also individual and groups engaged in
+astronomical results, and also individuals and groups engaged in
 algorithms R&D and may use these core algorithmic components in their
 software.  For the latter group, the implementation must provide easy
 and direct access to well established algorithms so that those don't
@@ -34,14 +33,35 @@ focus on solving real outstanding problems.
 
 ## Mathematical Framework
 
-The relationship between the raw data measured by a pair of antennas
-denoted by subscripts $i$ and $j$ and the image of the sky is
+The relationship between the raw data and the image of the sky is
 expressed as
 
 $\vec V_{ij} = M^{DI}_ {ij} A_{ij} I( \vec s ) + n_{ij}$
  
+where $\vec V_{ij}$ is a full-polarization vector representing the
+measurement from a pair of antennas represented by subscripts $i$ and
+$j$, $M^{DI}_ {ij}$ is the direction-independent (DI) Mueller matrices
+that models the corruptions (instrumental or atmospheric), $I$
+is the sky brightness distribution and $n_{ij}$ is the
+additive noise with Normal probability distribution.
 
-where $\vec V_{ij}$ is a full-polarization vector of representing the
-measurement from a pair of antennas represented by subscripts $i$ and $j$, $M^{DI}_ {ij}$ is the direction-independent (DI) Mueller matries that models the corruptions (instrumental or atmospheric), and $I$ representations the sky brightness distribution and $n_{ij}$ is the additive noise with Normal probability distribution.  
-
-$A_{ij}$ is an operator that transforms $I$ to the data domain including the DD effects and can be constructed as $A_{ij}=F~S_{ij} ~ M^{DD}_ {ij}(\vec s)$ where $F_{ij}$ represents the Fourier transform, $S_{ij}$ is the data domain sampling function and $M^{DD}_ {ij}$ is the direction-dependent (DD) Mueller matrix that represents the DD mixing of the poliarization vector.  The goal of calibration algorithms is to correct for the effects of $M^{DI}_ {ij}$ and $M^{DD}_ {ij}$. The goal of imaging algorithms is to derive $I$ given $V$ and a statistical description of $n$.  This essentially requires computing $A^{-1}$. However it can be shown that $A$ is singular. Image reconsturction is therefore a fundamentally ill-posed inverse problem requires _requires_ iterative algorithms to find a solution (a model for the sky brightness distribution) that is consistent with $n$.
+$A_{ij}$ is an operator that transforms $I$ to the data domain
+including the DD effects and is constructed as $A_{ij}=F_{ij}~S_{ij} ~
+M^{DD}_ {ij}(\vec s)$ where $F_{ij}$ represents the Fourier transform,
+$S_{ij}$ the data domain sampling function and $M^{DD}_ {ij}$ the
+direction-dependent (DD) Mueller matrix that encodes the DD mixing of
+the poliarization vector respectively.  The goal of calibration
+algorithms is to derive models for $M^{DI}_ {ij}$ and $M^{DD}_ {ij}$,
+given $V$, a model for $I$ and statistical characterization of
+$n$. The goal of image reconstruction algorithms is to derive $I$,
+given $V$ corrected for $M^{DI}_ {ij}$, a model for $M^{DD}_ {ij}$ and
+a statistical description of $n$.  This essentially requires computing
+$A^{-1}$. However it can be shown that $A$ is singular.  Image
+reconstruction is therefore a fundamentally ill-posed inverse problem
+that _requires_ iterative algorithms to find a solution (a model for
+the sky brightness distribution) consistent with the chosen metric for
+convergence.  Unsurprisingly, numerically successful and
+computationally efficient algorithms for both calibration and imaging
+have been fundamentally directed-search algorithms requiring
+calculation of the derivative of the metric, or variants involving
+derivative calculation (or directed-search itself) as a critical step.
