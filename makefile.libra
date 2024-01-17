@@ -27,6 +27,7 @@ CASACORE_BUILD_TYPE = RelWithDebInfo
 CASA_BRANCH      = visdata_bucket
 FFTW_VERSION     = 3.3.10
 KOKKOS_VERSION   = 4.1.00
+KOKKOS_TOOLS_VERSION = develop
 HPG_VERSION      = v2.0.1
 PARAFEED_VERSION = activedev
 #CASACORE_VERSION = v3.5.0
@@ -34,8 +35,10 @@ CASACORE_VERSION = fix_regex_v3.5.0
 EIGEN_VERSION	 = 3.4.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
+KOKKOS_TOOLS_REPOS 	= https://github.com/kokkos/kokkos-tools.git
 FFTW_REPOS          = http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz
-HPG_REPOS           = https://gitlab.nrao.edu/mpokorny/hpg.git
+#HPG_REPOS           = https://gitlab.nrao.edu/mpokorny/hpg.git
+HPG_REPOS           = https://HPG:glpat-BNVcKcoR_Tr9pYCxruRW@gitlab.nrao.edu/pjaganna/hpg.git
 PARAFEED_REPOS      = https://github.com/sanbee/parafeed.git
 SAKURA_REPOS        = https://github.com/tnakazato/sakura/archive/refs/tags/libsakura-5.1.3.tar.gz
 CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
@@ -125,6 +128,7 @@ kokkos-build:
 	      -DKokkos_ENABLE_CUDA=ON \
 	      -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
+		  -DKokkos_ENABLE_PROFILING=ON \
 	      ${INSTALLOPTS} \
 	      -DBUILD_SHARED_LIBS=ON ${DEPENDSRCDIR}/kokkos; \
 	make -j ${NCORES} install
@@ -132,6 +136,23 @@ kokkos-clean:
 	cd ${DEPENDBUILDDIR}/kokkos; gmake clean
 
 #####----------------------------------------------------------------------------------------------------
+#####  Kokkos Tools build
+kokkos-tools: kokkos-tools-clone kokkos-tools-build
+
+kokkos-tools-clone:
+	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_TOOLS_VERSION} ${KOKKOS_TOOLS_REPOS}
+
+kokkos-tools-build:
+	mkdir -p ${DEPENDBUILDDIR}/kokkos-tools; 
+	cd ${DEPENDBUILDDIR}/kokkos-tools; \
+	cmake -DKokkos_DIR=${INSTALLDIR} \
+			${INSTALLOPTS} \
+			${DEPENDSRCDIR}/kokkos-tools; \
+	make -j ${NCORES} install
+
+kokkos-tools-clean:
+	cd ${DEPENDBUILDDIR}/kokkos-tools; make clean
+
 ###### Install FFTW for HPG ########
 # turns out the --configure install avoids missing cmake errors. Not needed for HPG 1.2.2 so can ignore.
 # On RHEL* machines with fftw-devel install it can't find it for libsynthesis so still useful
@@ -280,8 +301,8 @@ casacore-clean:
 casa: casa-clone casa-build
 casa-clone:
 	$(info INFORMATION: casa-clone is a NoOp.  CASA6 code has been in-sourced in LibRA src directory.)
-	# cd ${DEPENDSRCDIR};\
-	# git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
+# cd ${DEPENDSRCDIR};\
+# git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
 casa-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/casacpp
@@ -348,6 +369,8 @@ apps-clean:
 allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
 allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean apps-clean
 allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
+kokkos-profile-clone: init kokkos-clone kokkos-tools-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
+kokkos-profile-build: kokkos-build kokkos-tools-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
 
 bak2sq1:
 	\rm -rf ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDDIR} 
