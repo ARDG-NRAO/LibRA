@@ -1,15 +1,15 @@
 # Algorithm Architecture
 ## Introduction
 
-A _stable and scalable_ architecture which must scale for computing
-load and complexity as well as for continued evolution of algorithms.
-On the one hand this architecture must be rooted firmly in the theory
-of interferometry, optics and signal processing to provide a stable
-basis for a scalable software in terms of computing, development costs
-and inevitable evolution of the algorithms in the future.  On the
-other hand, the architecture must be rooted firmly in modern
-scientific software design principles for the resulting software
-implementation to be scalable and stable over time.
+A _stable and scalable_ architecture must scale for computing load and
+complexity as well as for continued evolution of algorithms.  On the
+one hand this architecture must be rooted firmly in the theory of
+interferometry, optics and signal processing to provide a stable basis
+for a scalable software in terms of computing, development costs and
+inevitable evolution of the algorithms in the future.  On the other
+hand, the architecture must be rooted firmly in modern scientific
+software design principles for the resulting software implementation
+to be scalable and stable over time.
 
 For the end-users the architecture must provide direct access to core
 architecturally significant components, implemented such that they do
