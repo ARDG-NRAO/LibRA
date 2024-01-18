@@ -1,7 +1,6 @@
 # Algorithm Architecture
 ## Introduction
 
-<<<<<<< HEAD
 A _stable and scalable_ architecture must scale for computing load and
 complexity as well as for continued evolution of algorithms.  On the
 one hand this architecture must be rooted firmly in the theory of
@@ -11,17 +10,6 @@ inevitable evolution of the algorithms in the future.  On the other
 hand, the architecture must be rooted firmly in modern scientific
 software design principles for the resulting software implementation
 to be scalable and stable over time.
-=======
-A _stable and scalable_ architecture which must scale for computing
-load and complexity as well as for continued evolution of algorithms.
-On the one hand this architecture must be rooted firmly in the theory
-of interferometry, optics and signal processing to provide a stable
-basis for a scalable software in terms of computing, development costs
-and inevitable evolution of the algorithms in the future.  On the
-other hand, the architecture must be rooted firmly in modern
-scientific software design principles for the resulting software
-implementation to be scalable and stable over time.
->>>>>>> 86b7e7b2 (Minor edits.)
 
 For the end-users the architecture must provide direct access to core
 architecturally significant components, implemented such that they do
@@ -60,29 +48,15 @@ additive noise with Normal probability distribution.
 
 
 $A_{ij}$ is an operator that transforms $I$ to the data domain
-<<<<<<< HEAD
 including the DD effects and is constructed as $A_{ij}=S_{ij} ~ F ~M^{DD}_ {ij} (\vec s)$ where $S_{ij}$ the data domain sampling
 function, $F$ is the Fourier transform operator, and $M^{DD}_ {ij}$ the direction-dependent (DD) Mueller matrix that encodes the DD
 mixing of the elements of the poliarization vector respectively.
 The equation above can be expanded as:
-=======
-including the DD effects and is constructed as $A_{ij}=F_{ij}~S_{ij} ~
-M^{DD}_ {ij} (\vec s)$ where $F_{ij}$ represents the Fourier
-transform, $S_{ij}$ the data domain sampling function and $M^{DD}_
-{ij}$ the direction-dependent (DD) Mueller matrix that encodes the DD
-mixing of the poliarization vector respectively.  The equation above
-can be expanded as
->>>>>>> 86b7e7b2 (Minor edits.)
 
 $\vec V_{ij} = M^{DI}_ {ij} S_{ij} F M^{DD}_ {ij} I( \vec s ) + n_{ij}$
 
-<<<<<<< HEAD
 The goal of calibration algorithms is to derive models for $M^{DI}_ {ij}$
 and $M^{DD}_ {ij}$, given $V$, a model for $I$ and statistical
-=======
-The goal of calibration algorithms is to derive models for $M^{DI}_
-{ij}$ and $M^{DD}_ {ij}$, given $V$, a model for $I$ and statistical
->>>>>>> 86b7e7b2 (Minor edits.)
 characterization of $n$. The goal of image reconstruction algorithms
 is to derive $I$, given $V$ corrected for $M^{DI}_ {ij}$, a model for
 $M^{DD}_ {ij}$ and a statistical description of $n$.  This essentially
@@ -95,8 +69,4 @@ successful and computationally efficient algorithms for both
 calibration and imaging have been fundamentally directed-search
 algorithms requiring calculation of the derivative of the metric, or
 variants involving derivative calculation (or directed-search itself)
-<<<<<<< HEAD
 as a critical step.
-=======
-as a critical step.
->>>>>>> 86b7e7b2 (Minor edits.)
