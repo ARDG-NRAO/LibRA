@@ -25,7 +25,7 @@ imaging in radio astronomy).
 
 The "end-users" from our point of view are both -- researchers who use
 these algorithmic components for data processing directly to produce
-astronomical results, and also individuals and groups engaged in
+scientific results, and also individuals and groups engaged in
 algorithms R&D and may use these core algorithmic components in their
 software.  For the latter group, the implementation must provide easy
 and direct access to well established algorithms so that those don't
