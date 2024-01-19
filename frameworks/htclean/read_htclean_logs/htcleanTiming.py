@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import plotly.express as px
+from datetime import datetime, timedelta
 
 from glob import glob
 
@@ -77,8 +78,9 @@ class htcleanTiming():
             app_logs += applog
         
         # Append gatherPSF logs to log lists
-        condor_logs += ['gatherPSF.imcycle0']
-        app_logs += glob('casalogs/gatherPSF-*.log')
+        if len(glob('gatherPSF.*')) > 0:
+            condor_logs += ['gatherPSF.imcycle0']
+            app_logs += glob('casalogs/gatherPSF-*.log')
         
         # Append makeDirtyImage logs to log lists
         for i in range(1, n_parts + 1):
@@ -106,6 +108,7 @@ class htcleanTiming():
         
         # Append makeFinalImages to log lists
         if len(glob('makeFinalImages.*.condor.log')) > 0:
+            if imcycles == 0: imcycle = 1
             condor_logs += ['makeFinalImages.imcycle' + str(imcycle)]
             app_logs += glob('casalogs/makeFinalImages-*.log')
         
@@ -128,6 +131,40 @@ Higher level functions available are:\n\
 Import module htcleanTiming in a Python shell or program for more log parsing functionality.")
 
         self.jobTimings = jobTimings
+
+    def plotConcurrencyCount(self, timebin = 1):
+        """
+        Makes a detailed plot showing the number of jobs running in each timebin interval.
+
+        Parameters
+        ----------
+        timebin : float, optional
+            Duration of the bin interval, in minutes
+            Default is 1
+        """
+
+        df = pd.DataFrame()
+
+        start_time = self.jobTimings[0].transferIn['start']
+        end_time   = self.jobTimings[-1].transferOut['end']
+
+        time = start_time
+
+        while time <= end_time:
+            bin_count = 0
+            max_time = time + timedelta(minutes = timebin)
+            center_time = time + timedelta(minutes = timebin / 2)
+            for job in self.jobTimings:
+                if job.transferIn['start'] < time and job.transferOut['end'] > max_time :
+                    bin_count += 1
+            df = df.append(dict(Time = center_time, Count = bin_count), ignore_index = True)
+            time += timedelta(minutes = timebin)
+
+        print(df)
+
+        fig = px.bar(df, x = 'Time', y = 'Count')
+        fig.show()
+
 
     def concurrencyPlot(self):
         """
