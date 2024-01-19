@@ -3,6 +3,7 @@
 #from casac import casac
 #from mstransform_cli import mstransform_cli as mstransform
 import glob
+import shutil
 
 
 import os
@@ -155,6 +156,8 @@ class HTCSynthesisImager(PySynthesisImager):
 
         if gather:
             self._gather(imtype, partname, scatter)
+            imgname = self.allimpars['0']['imagename'];
+            shutil.copytree(imgname + '.residual', imgname + '.residual.noiter')
 
         stop = self.hasConverged()
 
