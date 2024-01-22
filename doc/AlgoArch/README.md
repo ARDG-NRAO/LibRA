@@ -48,8 +48,8 @@ additive noise with Normal probability distribution.
 
 $A_{ij}$ is an operator that transforms $I$ to the data domain
 including the DD effects and is constructed as $A_{ij}=F_{ij}~S_{ij} ~ M^{DD}_ {ij} (\vec s)$ where $F_{ij}$ represents the Fourier
-transform, $S_{ij}$ the data domain sampling function and $M^{DD}_
-{ij}$ the direction-dependent (DD) Mueller matrix that encodes the DD
+transform, $S_{ij}$ the data domain sampling function and $M^{DD}_ {ij}$ 
+the direction-dependent (DD) Mueller matrix that encodes the DD
 mixing of the poliarization vector respectively.  The equation above
 can be expanded as
 
