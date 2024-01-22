@@ -722,7 +722,6 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		auto gridWeightsPtr = ftm_g->getSumWeightsPtr(gridWeightsCount);
 	      }
 	  }
-
 	  // Normalize the image.  normalize=True will divide the FFT'ed
 	  // image by the weights (which is SoW)
 	  //
