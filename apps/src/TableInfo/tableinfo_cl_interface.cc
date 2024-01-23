@@ -73,7 +73,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       string mesgs;
 
       if (MSNBuf=="")
-       mesgs += "Input table name not set.\n";
+       mesgs += "Input table name needs to be set.\n";
 
       if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
