@@ -492,7 +492,8 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       // .psf, or .residual runs is the appropriate one is unresolved.
       // Probably all should be used, but this needs to be carefully
       // worked out.
-      if (!normalize) ftm_g->setPBReady(true);
+      //if (!normalize)
+	ftm_g->setPBReady(true);
 
       if (imagingMode=="predict")
 	ftm_g->initializeToVis(cgrid,*(db.vb_l));
