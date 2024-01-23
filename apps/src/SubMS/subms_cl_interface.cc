@@ -48,12 +48,14 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
       BeginCL(argc,argv);
       clInteractive(0);
     }
-  else
-   clRetry();
+  //else
+  // clRetry();
+  REENTER:
   try
     {
       int i;
-      MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr="";
+      // can't init the follwoing; otherwise, the values passed through the non-interactive UI would be reset.
+      //MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr="";
       i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("outms",OutMSBuf,i);  
       clgetFullValp("datacolumn",WhichColStr);
@@ -85,10 +87,11 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
   catch (clError& x)
     {
       x << x << endl;
+      if (x.Severity() == CL_FATAL) exit(1);
       //clRetry();
-      exit(1);
+      RestartUI(REENTER);
     }
-    
+
 }
 //
 //-------------------------------------------------------------------------

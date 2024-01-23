@@ -55,13 +55,15 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       BeginCL(argc,argv);
       clInteractive(0);
     }
-  else
-   clRetry();
+  //else
+  //clRetry();
+  REENTER:
   try
     {
       int i;
-
-      MSNBuf=OutBuf="";
+       
+      // can't init the follwoing; otherwise, the values passed through the non-interactive UI would be reset.
+      //MSNBuf=OutBuf="";
       i=1;clgetSValp("table", MSNBuf,i);  
       i=1;clgetSValp("outfile",OutBuf,i);  
       i=1;clgetBValp("verbose",verbose,i);  
@@ -76,11 +78,12 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
-  catch (clError& x)
+    catch (clError& x)
     {
       x << x << endl;
+      if (x.Severity() == CL_FATAL) exit(1);
       //clRetry();
-      exit(1);
+      RestartUI(REENTER);
     }
   
 }
