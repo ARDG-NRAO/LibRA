@@ -228,8 +228,9 @@ casacore-clean:
 
 casa: casa-clone casa-build
 casa-clone:
-	cd ${DEPENDSRCDIR};\
-	git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
+	$(info INFORMATION: casa-clone is a NoOp.  CASA6 code has been in-sourced in LibRA src directory.)
+	#cd ${DEPENDSRCDIR};\
+	#git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
 casa-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/casacpp
