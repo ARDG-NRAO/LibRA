@@ -36,11 +36,13 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 
-void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, 
+void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, 
 	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
 	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
 	string& uvdistStr,string& taqlStr,float& integ)
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
       BeginCL(argc,argv);
@@ -68,17 +70,25 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf,
       clSetOptions("datacolumn", {"data","model","corrected","all","(a list of comma-separated names)"});
 
       EndCL();
+
+      // do some input parameter checking now.
+      string mesgs;
+
+      if (MSNBuf=="")
+       mesgs += "Input MS name not set.\n";
+      if (OutMSBuf=="")
+       mesgs += "Output MS name not set.\n";
+
+      if (mesgs != "")
+       clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
-  catch (clError x)
+  catch (clError& x)
     {
       x << x << endl;
-      clRetry();
+      //clRetry();
+      exit(1);
     }
-  if (MSNBuf == "")
-    throw(clError("Need an input MS name", "###UserError"));
     
-  if (OutMSBuf == "")
-    throw(clError("Need an output MS name", "###UserError"));
 }
 //
 //-------------------------------------------------------------------------
@@ -104,7 +114,9 @@ int main(int argc, char **argv)
 	taqlStr=scanStr=corrStr=arrayStr="";
       WhichColStr="data"; fieldStr="*"; spwStr="*";
       deepCopy=0;
-      UI(restartUI,argc, argv, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
+      bool interactive = true;
+
+      UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
 	 fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
       restartUI = false;
       corrStr.resize(0);

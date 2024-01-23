@@ -42,7 +42,8 @@
 
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
-void UI(bool restart, int argc, char **argv, string& MSNBuf,
+void UI(bool restart, int argc, char **argv, bool interactive,
+  string& MSNBuf,
 	//string& imageName,
 	string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
@@ -57,6 +58,8 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	//	std::vector<std::string>& wtCFList,
 	string& mode)
 {
+  clSetPrompt(interactive);
+  
   if (!restart)
     {
       BeginCL(argc,argv);
@@ -173,8 +176,10 @@ int main(int argc, char **argv)
   bool aTerm = true;
   float pa=-200.0, // Get PA from the MS
     dpa=360.0; // Don't rotate CFs for PA
-  
-  UI(restartUI, argc, argv, MSNBuf,
+  bool interactive = true;
+
+  UI(restartUI, argc, argv, interactive, 
+     MSNBuf,
      //imageName,
      telescopeName,
      NX, cellSize, stokes, refFreqStr, nW,
