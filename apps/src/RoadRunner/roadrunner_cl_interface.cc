@@ -47,7 +47,8 @@
 
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
-void UI(Bool restart, int argc, char **argv, string& MSNBuf,
+void UI(Bool restart, int argc, char **argv, bool interactive, 
+  string& MSNBuf,
 	string& imageName, string& modelImageName,string& dataColumnName,
 	string& sowImageExt,
 	string& cmplxGridName, int& ImSize, int& nW,
@@ -64,6 +65,8 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
 	vector<float> &posigdev,
 	Bool& doSPWDataIter)
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
 	BeginCL(argc,argv);
@@ -172,7 +175,7 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf,
     {
       x << x << endl;
       //      if (x.Severity() == CL_FATAL)
-	exit(1);
+	    exit(1);
       //clRetry();
       //RestartUI(REENTER);
     }
@@ -231,8 +234,10 @@ int main(int argc, char **argv)
   float pbLimit=1e-3;
   bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
+  bool interactive = true;
 
-  UI(restartUI, argc, argv, MSNBuf,imageName, modelImageName, dataColumnName,
+  UI(restartUI, argc, argv, interactive,
+     MSNBuf,imageName, modelImageName, dataColumnName,
      sowImageExt, cmplxGridName, NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
      ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,

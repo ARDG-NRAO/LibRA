@@ -19,22 +19,26 @@
 //
 
 
-void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, bool& deepCopy,
+void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, bool& deepCopy,
 	string& fieldStr, string& timeStr, string& spwStr, string& baselineStr,
 	string& scanStr, string& arrayStr, string& uvdistStr,string& taqlStr, string& polnStr,
 	string& stateObsModeStr, string& observationStr)
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
       BeginCL(argc,argv);
       clInteractive(0);
     }
-  else
-   clRetry();
+  //else
+  // clRetry();
+  REENTER:
   try
     {
       int i;
-      MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr=polnStr=stateObsModeStr="";
+      // can't init the follwoing; otherwise, the values passed through the non-interactive UI would be reset.
+      //MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr=polnStr=stateObsModeStr="";
       i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("outms",OutMSBuf,i);  
       i=1;clgetBValp("deepcopy",deepCopy,i);
@@ -50,14 +54,23 @@ void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, b
       clgetFullValp("observation",observationStr);  
       dbgclgetFullValp("taql",taqlStr);  
       EndCL();
+
+      // do some input parameter checking now.
+      string mesgs;
+
+      if (MSNBuf=="")
+       mesgs += "Input MS name not set.\n";
+
+      if (mesgs != "")
+       clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
-  catch (clError x)
+  catch (clError& x)
     {
       x << x << endl;
-      clRetry();
+      if (x.Severity() == CL_FATAL) exit(1);
+      //clRetry();
+      RestartUI(REENTER);
     }
-  if (MSNBuf=="")
-    throw(AipsError("Input table name not set."));
 }
 
 int main(int argc, char **argv)
@@ -70,7 +83,7 @@ int main(int argc, char **argv)
     uvdistStr,taqlStr,scanStr,arrayStr, polnStr,stateObsModeStr,
     observationStr;
   Bool deepCopy=0;
-  Bool restartUI=False;;
+  Bool restartUI=False;
 
  RENTER:// UI re-entry point.
   //
@@ -86,7 +99,9 @@ int main(int argc, char **argv)
 	deepCopy=0;
 	fieldStr=spwStr="*";
 	fieldStr=spwStr="";
-	UI(restartUI,argc, argv, MSNBuf,OutMSBuf, deepCopy,
+        bool interactive = true;
+
+	UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, deepCopy,
 	   fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,
 	   uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
 	restartUI = False;

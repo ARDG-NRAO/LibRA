@@ -304,7 +304,8 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 
 
-void UI(Bool restart, int argc, char **argv, string& MSNBuf,
+void UI(Bool restart, int argc, char **argv, bool interactive, 
+  string& MSNBuf,
   string& imageName, string& modelImageName,string& dataColumnName,
   string& sowImageExt,
   string& cmplxGridName, int& ImSize, int& nW,

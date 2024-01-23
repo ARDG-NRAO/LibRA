@@ -115,4 +115,37 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");
 }
 
+TEST(HummbeeTest, UIFactory) {
+    // The Factory Settings.
+  int argc = 1;
+  char* argv[] = {"./hummbee"};
+
+  // The Factory Settings.
+  string imageName, modelImageName, deconvolver="hogbom", specmode="mfs";
+  bool restartUI=false;
+
+  vector<float> scales;
+  float largestscale = -1;
+  float fusedthreshold = 0;
+  int nterms=2;
+  float gain=0.1; 
+  float threshold=0.0;
+  float nsigma=0.0;
+  int cycleniter=-1;
+  float cyclefactor=1.0;
+  vector<string> mask; 
+  bool interactive = false;
+
+  UI(restartUI, argc, argv, interactive,
+    imageName, modelImageName, 
+    deconvolver,
+    scales,
+    largestscale, fusedthreshold,
+    nterms,
+    gain, threshold,
+    nsigma,
+    cycleniter, cyclefactor,
+    mask, specmode);
+}
+
 };

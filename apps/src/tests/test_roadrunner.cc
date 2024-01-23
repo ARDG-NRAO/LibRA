@@ -140,9 +140,81 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 
 }
 
-//TEST(RoadrunnerTest, UIWeight) {
+TEST(RoadrunnerTest, UIFactory) {
+    // The Factory Settings.
+  int argc = 1;
+  char* argv[] = {"./roadrunner"};
 
-//}
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName, modelImageName,cmplxGridName="", stokes="I",
+    weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="none";
+
+  string phaseCenter = "J2000 19h57m44.44s  040d35m46.3s";
+
+  string refFreqStr="3.0e9"; 
+  float cellSize=0.025;
+  float robust=0.0;
+  int NX=4000, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+
+  UI(restartUI, argc, argv, interactive,
+     MSNBuf,imageName, modelImageName, dataColumnName,
+     sowImageExt, cmplxGridName, NX, nW, cellSize,
+     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+     doSPWDataIter);
+}
+
+
+/*TEST(RoadrunnerTest, UIThrow) {
+  int argc = 1;
+  char* argv[] = {"./roadrunner"};
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
+    refFreqStr="3.0e9", weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="none";
+
+  float cellSize=0;
+  float robust=0.0;
+  int NX=0, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+
+  
+           UI(restartUI, argc, argv, interactive,
+              MSNBuf,imageName, modelImageName, dataColumnName,
+            sowImageExt, cmplxGridName, NX, nW, cellSize,
+            stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+            ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+            doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+            doSPWDataIter);
+
+  if (HasFatalFailure()) return;
+
+}*/
 
 
 };
