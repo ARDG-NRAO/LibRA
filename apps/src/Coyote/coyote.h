@@ -148,6 +148,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param restart A boolean parameter indicating whether to restart the UI.
  * @param argc The number of command line arguments.
  * @param argv The command line arguments.
+ * @param interactive A boolean parameter indicating whether to run in the interactive mode
  * @param MSNBuf A string parameter.
  * @param telescopeName The name of the telescope.
  * @param ImSize The image size.
@@ -172,7 +173,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param cfList The list of convolution functions.
  * @param mode The mode of operation.
  */
-void UI(bool restart, int argc, char **argv, string& MSNBuf,
+void UI(bool restart, int argc, char **argv, bool interactive, 
+	    string& MSNBuf,
         //string& imageName,
         string& telescopeName, int& ImSize,
         float& cellSize, string& stokes, string& refFreqStr,

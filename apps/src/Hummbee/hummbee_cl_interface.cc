@@ -52,7 +52,7 @@
 
 
 //
-void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
+void UI(bool restart, int argc, char **argv, bool interactive, 
 	string& imageName, string& modelImageName,
 	/*int& ImSize, int& nW,
 	float& cellSize, string& stokes, string& refFreqStr,
@@ -74,6 +74,8 @@ void UI(bool restart, int argc, char **argv, /*string& MSNBuf,*/
 // how about min/maxpsffraction, smallscalbias?
   )
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
 	BeginCL(argc,argv);
@@ -212,8 +214,10 @@ int main(int argc, char **argv)
   int cycleniter=-1;
   float cyclefactor=1.0;
   vector<string> mask; 
+  bool interactive = true;
 
-  UI(restartUI, argc, argv, /*MSNBuf,*/imageName, modelImageName, 
+  UI(restartUI, argc, argv, interactive,
+    imageName, modelImageName, 
     /*NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, robust,
      cfCache, fieldStr,spwStr

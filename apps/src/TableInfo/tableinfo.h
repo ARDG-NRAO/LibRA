@@ -61,13 +61,14 @@ void TableInfo_func(const string& MSNBuf="",
  * @param restart A boolean flag indicating whether the function is being called for the first time or being restarted.
  * @param argc The number of command-line arguments.
  * @param argv The array of command-line arguments.
+ * @param interactive  A boolean parameter indicating whether to run in the interactive mode
  * @param MSNBuf A string reference to store the input table name.
  * @param OutBuf A string reference to store the output file name.
  * @param verbose A boolean reference to store the verbosity flag.
  * 
  * @throws AipsError if the input table name is not set.
  */
-void UI(Bool restart, int argc, char **argv, 
+void UI(Bool restart, int argc, char **argv, bool interactive,
 	string& MSNBuf, string& OutBuf,
 	bool& verbose);
 
