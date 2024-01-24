@@ -36,22 +36,26 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 
-void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, 
+void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, 
 	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
 	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
 	string& uvdistStr,string& taqlStr,float& integ)
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
       BeginCL(argc,argv);
       clInteractive(0);
     }
-  else
-   clRetry();
+  //else
+  // clRetry();
+  REENTER:
   try
     {
       int i;
-      MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr="";
+      // can't init the follwoing; otherwise, the values passed through the non-interactive UI would be reset.
+      //MSNBuf=OutMSBuf=timeStr=baselineStr=uvdistStr=scanStr=arrayStr="";
       i=1;clgetSValp("ms", MSNBuf,i);  
       i=1;clgetSValp("outms",OutMSBuf,i);  
       clgetFullValp("datacolumn",WhichColStr);
@@ -68,17 +72,26 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf,
       clSetOptions("datacolumn", {"data","model","corrected","all","(a list of comma-separated names)"});
 
       EndCL();
+
+      // do some input parameter checking now.
+      string mesgs;
+
+      if (MSNBuf=="")
+       mesgs += "Input MS name not set.\n";
+      if (OutMSBuf=="")
+       mesgs += "Output MS name not set.\n";
+
+      if (mesgs != "")
+       clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
-  catch (clError x)
+  catch (clError& x)
     {
       x << x << endl;
-      clRetry();
+      if (x.Severity() == CL_FATAL) exit(1);
+      //clRetry();
+      RestartUI(REENTER);
     }
-  if (MSNBuf == "")
-    throw(clError("Need an input MS name", "###UserError"));
-    
-  if (OutMSBuf == "")
-    throw(clError("Need an output MS name", "###UserError"));
+
 }
 //
 //-------------------------------------------------------------------------
@@ -104,7 +117,9 @@ int main(int argc, char **argv)
 	taqlStr=scanStr=corrStr=arrayStr="";
       WhichColStr="data"; fieldStr="*"; spwStr="*";
       deepCopy=0;
-      UI(restartUI,argc, argv, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
+      bool interactive = true;
+
+      UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
 	 fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
       restartUI = false;
       corrStr.resize(0);

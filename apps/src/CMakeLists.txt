@@ -20,13 +20,22 @@ endif()
 
 foreach(APP_DIR IN LISTS APP_LIST)
    string(TOLOWER ${APP_DIR} APP_NAME)
-   # build app CI interface binary
+ 
+
+   # build app CL interface binary
    set(BUILD_CLWRAPPER ON)
    if(BUILD_CLWRAPPER)
      message("building CL binary ${APP_NAME}")
      add_executable(${APP_NAME} "${APP_DIR}/${APP_NAME}_cl_interface.cc")
      target_link_libraries(${APP_NAME} ${APP_LINK_LIBRARIES} libra)
      install(TARGETS ${APP_NAME} DESTINATION "${CMAKE_SOURCE_DIR}/install") 
+   endif()
+
+   # build individual app CL interface lib for unit tests
+   if(Apps_BUILD_TESTS)
+    add_library(${APP_NAME}_cl_interface SHARED "${APP_DIR}/${APP_NAME}_cl_interface.cc")
+    target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra "-Wl,--disable-new-dtags")
+    install(TARGETS ${APP_NAME}_cl_interface DESTINATION "${CMAKE_SOURCE_DIR}/install") 
    endif()
    
    # build app python wrapper
@@ -38,4 +47,3 @@ foreach(APP_DIR IN LISTS APP_LIST)
      install(TARGETS ${APP_NAME}2py DESTINATION "${CMAKE_SOURCE_DIR}/install")
    endif()
 endforeach()
-
