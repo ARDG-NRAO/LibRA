@@ -50,9 +50,11 @@ using namespace casacore;
  * @brief Prints information about a given table.
  * @param tableName The name of the table to print information about.
  */
-void acme_func(const string& MSNBuf="",
-	       const string& OutBuf="",
-	       const bool& verbose=false);
+void acme_func(std::string& imageName, std::string& deconvolver,
+		string& normtype, string& workdir,
+		float& pblimit, int& nterms, int& facets,
+		float& psfcutoff,
+		vector<float>& restoringbeam);
 
 
 /**
@@ -68,7 +70,10 @@ void acme_func(const string& MSNBuf="",
  * @throws AipsError if the input table name is not set.
  */
 void UI(Bool restart, int argc, char **argv, 
-	string& MSNBuf, string& OutBuf,
-	bool& verbose);
+	string& imageName, string& deconvolver,
+        string& normtype, string& workdir,
+        float& pblimit, int& nterms, int& facets,
+        float& psfcutoff,
+        vector<float>& restoringbeam);
 
 #endif

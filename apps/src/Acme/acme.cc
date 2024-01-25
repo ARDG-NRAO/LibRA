@@ -23,14 +23,16 @@
 // # $Id$
 
 
-#include <acme/acme.h>
+#include <Acme/acme.h>
 
 //
 //-------------------------------------------------------------------------
 
-void acme_func(const string& MSNBuf,
-	       const string& OutBuf,
-	       const bool& verbose)
+void acme_func(std::string& imageName, std::string& deconvolver,
+               string& normtype, string& workdir,
+               float& pblimit, int& nterms, int& facets,
+               float& psfcutoff,
+               vector<float>& restoringbeam)
 {
   //
   //---------------------------------------------------
@@ -43,11 +45,11 @@ void acme_func(const string& MSNBuf,
       //
       String type;
       {
-	Table table(MSNBuf,TableLock(TableLock::AutoNoReadLocking));
+	Table table(imageName,TableLock(TableLock::AutoNoReadLocking));
 	TableInfo& info = table.tableInfo();
 	type=info.type();
       }
-      ofstream ofs(OutBuf.c_str());
+      //ofstream ofs(OutBuf.c_str());
       
       ostringstream os;
       //      StreamLogSink sink(LogMessage::NORMAL, ofs);
@@ -60,7 +62,7 @@ void acme_func(const string& MSNBuf,
       //
       if (type=="Image")
       	{
-      	  LatticeBase* lattPtr = ImageOpener::openImage (MSNBuf);
+      	  LatticeBase* lattPtr = ImageOpener::openImage (imageName);
       	  ImageInterface<Float> *fImage;
       	  ImageInterface<Complex> *cImage;
 
@@ -74,7 +76,7 @@ void acme_func(const string& MSNBuf,
       	      logio << "Image data type  : Float" << LogIO::NORMAL;
 	      ImageSummary<Float> ims(*fImage);
       	      Vector<String> list = ims.list(logio);
-	      ofs << (os.str().c_str()) << endl;
+	      //ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=fImage->miscInfo();
       	    }
       	  else if (cImage != 0)
@@ -82,7 +84,7 @@ void acme_func(const string& MSNBuf,
       	      logio << "Image data type  : Complex" << LogIO::NORMAL;
       	      ImageSummary<Complex> ims(*cImage);
       	      Vector<String> list = ims.list(logio);
-      	      ofs << (os.str().c_str()) << endl;
+      	      //ofs << (os.str().c_str()) << endl;
       	      miscInfoRec=cImage->miscInfo();
       	    }
       	  else

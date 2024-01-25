@@ -33,7 +33,7 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <acme/acme.h>
+#include <Acme/acme.h>
 
 
 //
@@ -44,9 +44,12 @@
 //
 
 
-void UI(Bool restart, int argc, char **argv, 
-	string& MSNBuf, string& OutBuf,
-	bool& verbose)
+void UI(Bool restart, int argc, char **argv,
+	std::string& imageName, std::string& deconvolver,
+        string& normtype, string& workdir,
+        float& pblimit, int& nterms, int& facets,
+        float& psfcutoff,
+        vector<float>& restoringbeam)
 {
   if (!restart)
     {
@@ -59,10 +62,18 @@ void UI(Bool restart, int argc, char **argv,
     {
       int i;
 
-      MSNBuf=OutBuf="";
-      i=1;clgetSValp("table", MSNBuf,i);  
-      i=1;clgetSValp("outfile",OutBuf,i);  
-      i=1;clgetBValp("verbose",verbose,i);  
+      i=1;clgetSValp("imagename", imageName,i);  
+      i=1;clgetSValp("deconvolver", deconvolver,i);  
+      i=1;clgetSValp("normtype", normtype,i);
+      i=1;clgetSValp("workdir", workdir,i);
+      i=1;clgetFValp("pblimit", pblimit,i);
+      i=1;clgetIValp("nterms", nterms,i);
+      i=1;clgetIValp("facets", facets,i);
+      i=1;clgetFValp("psfcutoff", psfcutoff,i);
+
+      int N;
+      N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
+      
       EndCL();
     }
   catch (clError x)
@@ -70,8 +81,8 @@ void UI(Bool restart, int argc, char **argv,
       x << x << endl;
       clRetry();
     }
-  if (MSNBuf=="")
-    throw(AipsError("Input table name not set."));
+  if (imageName=="")
+    throw(AipsError("Input image name not set."));
 }
 //
 //-------------------------------------------------------------------------
@@ -81,19 +92,22 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  string MSNBuf,OutBuf;
-  Bool verbose=0, restartUI=False;;
+  string imageName, deconvolver="hogbom", normtype="flatnoise", workdir;
+  float pblimit=0.005, psfcutoff=0.35;
+  int nterms=1, facets=1;
+  vector<float> restoringbeam;
+  Bool restartUI=False;;
 
  RENTER:// UI re-entry point.
   try
     {
-      MSNBuf=OutBuf="";
-      UI(restartUI,argc, argv, MSNBuf,OutBuf,verbose);
+      imageName="";
+      UI(restartUI,argc, argv, imageName, deconvolver, normtype, workdir, pblimit, nterms, facets, psfcutoff, restoringbeam);
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      acme_func(MSNBuf, OutBuf, verbose);
+      acme_func(imageName, deconvolver, normtype, workdir, pblimit, nterms, facets, psfcutoff, restoringbeam);
     }
   catch (clError& x)
     {
