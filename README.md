@@ -7,9 +7,9 @@ used in Radio Astronomy (RA) for image reconstruction from
 interferometric telescopes.  The primary target users are research
 groups (R&D groups at observatories, at university departments) and
 individual researchers (faculty, students, post-docs) who may benefit
-from a software system with prodiction-quality implementation of the
+from a software system with production-quality implementation of the
 core algorithms which are also easy to use, deploy locally and modify
-as necessary.  Therefore, a strong requirement deriving this work is
+as necessary.  Therefore, a strong requirement driving this work is
 to keep the interface simple, the software stack shallow and software
 dependency graph small.
 
@@ -44,13 +44,13 @@ part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph. A suite of [standalone
-applications]((#available-standalone-applications-apps) are also
+applications](#available-standalone-applications-apps) are also
 available which can be built as relocatable Linux executable (this may
 also be possible for MacOS, but we haven't test it).
 
-The resulting software stack is shown below.  Figure on the left shows
+The resulting software stack is shown below.  Figure on the left/top shows
 our current software stack where the RA Algorithms layer is built on
-the RA-specificdata data access and CASACore layers.  _Work is in
+the RA-specific data-access and CASACore layers.  _Work is in
 progress to decouple the RA Algorithms layer from RA-specific layers
 with the algorithms API based _only_ on the C++ Standard Template
 Library (STL)_.  With a translation layer RA-specific libraries
@@ -71,7 +71,7 @@ Algorithms in other domains.
 ### The repository contains
 
 - [ ] scientific code to build a software library of algorithms for image reconstruction
-- [ ] a suite of [standalone applications (apps)]((#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
+- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
 - [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
 
 
