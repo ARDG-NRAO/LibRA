@@ -159,7 +159,8 @@ namespace casa{
 				const char *cfName,
 				const char *qualifier,
 				const Quantity &pa, const Quantity& dPA,
-				const Int& ant1, const Int& ant2)
+				const Int& ant1, const Int& ant2,
+				const bool useThreads)
   {
     LogIO log_l(LogOrigin("CFStore2", "makePersistent(pa)[R&D]"));
     (void)cfName;
@@ -172,14 +173,15 @@ namespace casa{
 	  << LogIO::POST;
     ostringstream name;
     name << String(qualifier) << "CFS_" << paNdx << "_" << antNdx;
-    storage_p(paNdx,antNdx)->makePersistent(dir, name.str().c_str());
+    storage_p(paNdx,antNdx)->makePersistent(dir, name.str().c_str(),useThreads);
   }
   //
   //---------------------------------------------------------------
   //
   void CFStore2::makePersistent(const char *dir,
 				const char *cfName,
-				const char *qualifier)
+				const char *qualifier,
+				const bool useThreads)
   {
     (void)cfName;
     LogIO log_l(LogOrigin("CFStore2.2", "makePersistent[R&D]"));
@@ -194,7 +196,7 @@ namespace casa{
 	  name << String(qualifier) << "CFS_" << i << "_" << j;
 	  // if (String(cfName) == "") formedName = name.str().c_str();
 	  // else              formedName = cfName;
-	  storage_p(i,j)->makePersistent(dir,name.str().c_str());
+	  storage_p(i,j)->makePersistent(dir,name.str().c_str(),useThreads);
 	}
   }
   //

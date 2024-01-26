@@ -18,8 +18,7 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-end-user via [standalone
-applications](#available-standalone-applications-apps) to conveniently
+end-user via [standalone applications](#available-standalone-applications-apps) to conveniently
 configure and execute the algorithms from a Linux shell.  The
 low-level algorithms exposed by these interfaces are factorized to be
 used as components in a higher-level _generalized_ [Algorithm
@@ -44,7 +43,8 @@ the CASA project but contains _only_ the algorithmically-significant
 part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
-dependency graph. A suite of standalone applications are also
+dependency graph. A suite of [standalone
+applications]((#available-standalone-applications-apps) are also
 available which can be built as relocatable Linux executable (this may
 also be possible for MacOS, but we haven't test it).
 
@@ -71,7 +71,7 @@ Algorithms in other domains.
 ### The repository contains
 
 - [ ] scientific code to build a software library of algorithms for image reconstruction
-- [ ] a suite of standalone applications (apps) to configure and trigger the algorithms from commandline, and
+- [ ] a suite of [standalone applications (apps)]((#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
 - [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
 
 

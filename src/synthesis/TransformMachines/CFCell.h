@@ -128,8 +128,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       casacore::Bool dummy;
       cfst.CFCStorage = getStorage()->getStorage(dummy);
       cfst.coordSys = coordSys_p;
-      cfst.shape[0]=cfShape_p[0];
-      cfst.shape[1]=cfShape_p[1];
+      if (cfShape_p.nelements()==0)
+	cfst.shape[0]=cfst.shape[1]=0;
+      else
+	{
+	  cfst.shape[0]=cfShape_p[0];
+	  cfst.shape[1]=cfShape_p[1];
+	}
       cfst.sampling=sampling_p;
       cfst.xSupport=xSupport_p;
       cfst.ySupport=ySupport_p;
