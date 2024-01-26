@@ -46,6 +46,7 @@ that models the corruptions (instrumental or atmospheric), $I$
 is the sky brightness distribution and $n_{ij}$ is the
 additive noise with Normal probability distribution.
 
+
 $A_{ij}$ is an operator that transforms $I$ to the data domain
 including the DD effects and is constructed as $A_{ij}=S_{ij} ~ F ~M^{DD}_ {ij} (\vec s)$ where $S_{ij}$ the data domain sampling
 function, $F$ is the Fourier transform operator, and $M^{DD}_ {ij}$ the direction-dependent (DD) Mueller matrix that encodes the DD
