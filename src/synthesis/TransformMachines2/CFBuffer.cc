@@ -27,9 +27,11 @@
 //# $Id$
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/Utils.h>
+#include <synthesis/TransformMachines2/ParallelFor.h>
 #include <casacore/casa/Utilities/BinarySearch.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/Assert.h>
+#include <mutex>
 
 using namespace casacore;
 using namespace casa::vi;
@@ -209,7 +211,7 @@ namespace casa{
     else bandName="UNKNOWABLE";
     float diameter; miscInfo.get("Diameter", diameter);
     // In the absense of evidence, assume that users are sensible and
-    // are using AWProjection where it is really need it and not for
+    // are using AWProjection where it is really needed and not for
     // using it as a replacement for rotatially symmetric stuff.  So
     // by default, the CFs are assumed to be rotationally asymmetric.
     bool isRotationallySymmetric=True; 
@@ -222,7 +224,7 @@ namespace casa{
 				     diameter);
     //    miscInfo.print(cerr);
     cfCells_p(ndx(0),ndx(1),ndx(2))->isRotationallySymmetric_p = isRotationallySymmetric;
-    if (miscInfo.isDefined("isFilled"))
+    if (miscInfo.isDefined("IsFilled"))
       miscInfo.get("IsFilled", cfCells_p(ndx(0),ndx(1),ndx(2))->isFilled_p);
 
     return ndx;
@@ -479,21 +481,39 @@ namespace casa{
     os << "---------------------------------------------------------" << endl;
   }
 
-  void CFBuffer::makePersistent(const char *dir, const char *cfName)
+  void CFBuffer::makePersistent(const char *dir, const char *cfName,
+				const bool useThreads)
   {
-    for (Int i=0;i<cfCells_p.shape()(0);i++)
-      for (Int j=0;j<cfCells_p.shape()(1);j++)
-	for (Int k=0;k<cfCells_p.shape()(2);k++)
-	  {
-	    ostringstream name;
-	    name << String(cfName) << "_CF_" << i << "_" << j << "_" << k << ".im";
-	    //cerr << "CFB Name : " << name.str() << endl;
-	    // const char *formedName;
-	    // if (cfName != "" ) formedName = name.str().c_str();
-	    // else               formedName = cfName;
-	    // cerr << "Formed name = " << formedName << endl;
-	    cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
-	  }
+    std::string cfNameStr(cfName);
+    //    std::mutex cfc_mutex;
+
+    //    auto writeCFCell = [this,&dir,&cfNameStr,&cfc_mutex](const int istart, const int iend)
+    auto writeCFCell = [this,&dir,&cfNameStr](const int istart, const int iend)
+    {
+      for (int i=istart; i<iend; i++)
+	for (int j=0; j<cfCells_p.shape()(1); j++)
+	  for (int k=0; k< cfCells_p.shape()(2); k++)
+	    {
+	      ostringstream name;
+	      name << cfNameStr << "_CF_" << i << "_" << j << "_" << k << ".im";
+	      //	      std::lock_guard<std::mutex> guard(cfc_mutex);
+	      cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
+	    }
+
+    };
+
+    //writeCFCell(0,cfCells_p.shape()(0));
+    //    bool useThreads=true;
+    parallel_for(cfCells_p.shape()(0),writeCFCell,useThreads);
+
+    // for (int i=0;i<cfCells_p.shape()(0);i++)
+    //   for (int j=0;j<cfCells_p.shape()(1);j++)
+    // 	for (int k=0; k< cfCells_p.shape()(2); k++)
+    // 	  {
+    // 	    ostringstream name;
+    // 	    name << String(cfName) << "_CF_" << i << "_" << j << "_" << k << ".im";
+    // 	    cfCells_p(i,j,k)->makePersistent(dir, name.str().c_str());
+    // 	  }
   }
 
   Int CFBuffer::nearestFreqNdx(const Double& freqVal) 

@@ -93,17 +93,12 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<int> polMap,
 					  std::string &stokes, std::string &mType);
 
-
-
-
 /// @brief This function returns the fileList of CFs to fill.
 /// @param cfCacheName is the name of the CF cache.
 /// @param regexList is the list of regexes.
 /// @return 
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList);
-
-
 
 
 /// @brief Is a Function to generate a list of CFs which can be filled usinga  different mode
@@ -144,8 +139,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &cfBufferSize, int &cfOversampling,
 	    std::vector<std::string>& cfList,
 	    string& mode);
-
-
 
 // UI Funtions 
  
@@ -195,8 +188,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         std::vector<std::string>& cfList,
         //      std::vector<std::string>& wtCFList,
        string& mode);
-
-
 
 
 #endif

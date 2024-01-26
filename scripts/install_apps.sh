@@ -1,4 +1,8 @@
-ROOT=/home/dhruva/disk1/sanjay/Packages/LibRA/libra
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <LibRA ROOT PATH>"
+    exit 0;
+fi
+ROOT=$1
 local_exodus=$PWD/l_exodus
 apps="roadrunner coyote hummbee mssplit tableinfo subms"
 apps_bundle=libra.sh
