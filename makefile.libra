@@ -79,7 +79,8 @@ TESTDIR        = ${ROOT}/test
 DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
-INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
+#INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
+INSTALLDIR     = ${ROOT}/install/linux_64b
 #CASASRC        = ${DEPENDSRCDIR}/casa6
 CASASRC        = ${ROOT}/src
 CASACORESRC    = ${DEPENDSRCDIR}/casacore
@@ -89,7 +90,6 @@ PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
 APPSBUILDDIR   = ${APPSDIR}/build
-APPSINSTALLDIR = ${APPSDIR}/install
 
 INSTALLPREFIX  = ${INSTALLDIR}
 INSTALLSBINDIR = ${INSTALLPREFIX}/sbin
@@ -103,7 +103,7 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
-	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSINSTALLDIR} ${APPSBUILDDIR}
+	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSBUILDDIR}
 
 
 #####----------------------------------------------------------------------------------------------------
@@ -352,7 +352,7 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  \
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}  \
         -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} \
 	${APPSDIR} 
 
@@ -361,7 +361,6 @@ apps-build: apps-cmake
 
 apps-clean:
 	cd ${APPSBUILDDIR}/; gmake clean
-	\rm -rf ${APPSINSTALLDIR}
 
 ##################### ---------------------------
 
