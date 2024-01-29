@@ -13,10 +13,10 @@ set(OPT "-g -O2 ")
 set(BUILD_TYPE "RelWithDebInfo")
 
 set(ARCH "linux_64b")
-set(INSTALLDIR "install/${ARCH}")
-set(DEPDIR "${CMAKE_CURRENT_LIST_DIR}/../dependencies")
-set(DEPINC "${DEPDIR}/${INSTALLDIR}/include")
-set(DEPLIB "${DEPDIR}/${INSTALLDIR}/lib")
+set(INSTALLDIR "${CMAKE_CURRENT_LIST_DIR}/../install/${ARCH}")
+message("APPS INSTALLDIR ${INSTALLDIR}")
+set(DEPINC "${INSTALLDIR}/include")
+set(DEPLIB "${INSTALLDIR}/lib")
 set(USRLIB "/usr/lib64")
 
 set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
@@ -50,7 +50,8 @@ link_directories(${DEPLIB} /usr/local/lib  ${USRLIB})
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${DEPLIB};${CMAKE_SOURCE_DIR}/install")
+#set(CMAKE_INSTALL_RPATH "${DEPLIB};${CMAKE_SOURCE_DIR}/install")
+set(CMAKE_INSTALL_RPATH "${DEPLIB}")
 set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
@@ -64,20 +65,6 @@ endforeach()
 
 add_subdirectory(src)
 
-
-# add and build the wrapper
-# OLD CODE
-#set(BUILD_CLWRAPPER ON)
-#if(BUILD_CLWRAPPER)
-#  add_subdirectory(src/interface/cl_wrapper)
-#endif()
-
-# add and build the wrapper
-# OLD CODE
-#set(BUILD_PYWRAPPER ON)
-#if(BUILD_PYWRAPPER)
-#  add_subdirectory(src/interface/python_wrapper)
-#endif()
 
 # add and build googletest
 if(Apps_BUILD_TESTS)

@@ -134,7 +134,7 @@ make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/k
 
 The binary [standalone
 applications](#available-standalone-applications-apps) will be install
-in ```apps/install``` directory.
+in ```libra/install/linux_64b/bin``` directory.
 
 ### Setting up the various variables in `makefile.libra`
 
