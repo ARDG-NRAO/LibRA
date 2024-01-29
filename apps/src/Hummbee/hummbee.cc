@@ -341,7 +341,7 @@ float Hummbee(//string& MSNBuf,
 
    
       //SynthesisDeconvolver itsDeconvolver;
-      Record iterBotRec;
+      //Record iterBotRec;
       //itsDeconvolver.setupDeconvolution(decPars_p);
       itsDeconvolver.initMinorCycle(); // makeImageStore and StartModel, originally part of hasConverged
       //itsDeconvolver.setIterDone(); // don't need this. Controlled by cycleniter

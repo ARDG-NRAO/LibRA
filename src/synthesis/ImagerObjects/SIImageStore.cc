@@ -300,10 +300,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  }
 	else
 	  {
-	    if(!noRequireSumwt) // .sumwt image required? -> probably not for just the minor cycle (aka task deconvolve)
-	      {throw( AipsError( "SumWt information does not exist. Please create either a PSF or Residual" ) );}
-	    else
-	      {
+	    //if(!noRequireSumwt) // .sumwt image not required for just the minor cycle (aka hummbee or maybe task deconvolve)
+	      //{throw( AipsError( "SumWt information does not exist. Please create either a PSF or Residual" ) );}
+	    //else
+	      //{
 		os << "SumWt does not exist. Proceeding only with PSF" << LogIO::POST;
 		std::shared_ptr<ImageInterface<Float> > imptr;
 		//imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt")) );
@@ -318,7 +318,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		itsPBScaleFactor=1.0;
 		itsCoordSys = imptr->coordinates();
 		itsMiscInfo=imptr->miscInfo();
-	      }
+	      //}
 	  }
       }// if psf or residual exist...
 
