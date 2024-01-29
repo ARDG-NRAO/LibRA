@@ -13,7 +13,7 @@ as necessary.  Therefore, a strong requirement driving this work is
 to keep the interface simple, the software stack shallow and software
 dependency graph small.
 
-This repository therefore contains _only_ the
+This repository contains _only_ the
 algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
@@ -80,10 +80,14 @@ A containerized means of building the LibRA project is available
 
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
-### Available Standalone Applications (apps)
-Below is a list of currently available standalone applications (apps) which give access 
-to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.
+### Standalone Applications (apps)
+Standalone applications (apps) give access to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.  More detailed documentation for the user interfaces can be found via the following links:
+- [ ] [Full User Manual](https://github.com/sanbee/parafeed/blob/wiki/UserDoc.md)
+- [ ] [Commands in interactive mode](https://github.com/sanbee/parafeed/blob/wiki/UserDoc.md#user-commands)
+- [ ] [Non-interactive mode (the `help` keyword setting)](https://github.com/sanbee/parafeed/blob/wiki/UserDoc.md#the-help-keyword)
+- [ ] [Customization](https://github.com/sanbee/parafeed/blob/wiki/UserDoc.md#customization)
 
+#### Currently available Apps
 - [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
 - [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] `coyote` : An application to build the CF Cache used as input to the `roadrunner` application.
