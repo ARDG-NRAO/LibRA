@@ -44,8 +44,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
       //---------------------------------------------------
       //
       String type;
+      /********** Block to add simple normalization functionality **********/
+      String residualName = imageName + String(".residual");
+      String weightName   = imageName + String(".weight");
+      String sumwtName    = imageName + String(".sumwt");
+      /*********************************************************************/
+
       {
-	Table table(imageName,TableLock(TableLock::AutoNoReadLocking));
+	Table table(residualName,TableLock(TableLock::AutoNoReadLocking));
 	TableInfo& info = table.tableInfo();
 	type=info.type();
       }
@@ -62,22 +68,38 @@ void acme_func(std::string& imageName, std::string& deconvolver,
       //
       if (type=="Image")
       	{
-      	  LatticeBase* lattPtr = ImageOpener::openImage (imageName);
-      	  ImageInterface<Float> *fImage;
+      	  LatticeBase* lattPtr = ImageOpener::openImage (residualName);
+      	  ImageInterface<Float> *reImage;
       	  ImageInterface<Complex> *cImage;
 
-      	  fImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+      	  reImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
       	  cImage = dynamic_cast<ImageInterface<Complex>*>(lattPtr);
+
+          /********** Block to add simple normalization functionality **********/
+
+          LatticeBase* wPtr = ImageOpener::openImage(weightName);
+          ImageInterface<Float> *wImage;
+          wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+
+          //LatticeBase* swPtr = ImageOpener::openImage(weightName);
+          //ImageInterface<Float> *swImage;
+          //wImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+
+          LatticeExpr<Float> ratio;
+          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)));// * abs(*swImage)));
+          ratio = ( *reImage / deno);
+          reImage->copyData(ratio);
+          /*********************************************************************/
 
       	  ostringstream oss;	      
       	  Record miscInfoRec;
-      	  if (fImage != 0)
+      	  if (reImage != 0)
       	    {
       	      logio << "Image data type  : Float" << LogIO::NORMAL;
-	      ImageSummary<Float> ims(*fImage);
+	      ImageSummary<Float> ims(*reImage);
       	      Vector<String> list = ims.list(logio);
 	      //ofs << (os.str().c_str()) << endl;
-	      miscInfoRec=fImage->miscInfo();
+	      miscInfoRec=reImage->miscInfo();
       	    }
       	  else if (cImage != 0)
       	    {
