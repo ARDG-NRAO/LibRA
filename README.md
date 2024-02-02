@@ -110,7 +110,7 @@ The following list of packages need to be installed. Following is a typical comm
 
 - [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
 
-- [ ] An installation of the appropriate version of CUDA  is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.
+- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  _Note that for only building the software, an actual GPU on the build-host is not necessary._  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.
       
       export distro=rhel8
       export arch=x86_64
