@@ -35,6 +35,18 @@ application in such fields and enable cross-discipline R&D, the API to
 the library is based on C++ STL for portability and wider use that
 does not required RA-specific software stack and dependencies.
 
+### The repository contains
+
+- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
+
+
+A containerized means of building the LibRA project is available
+[here](https://gitlab.nrao.edu/ardg/libra-containers).
+
+The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
+
 ### The LibRA software stack
 
 The `src` directory contains the implementation of the basic
@@ -68,17 +80,6 @@ Algorithms in other domains.
 
 [`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
 
-### The repository contains
-
-- [ ] scientific code to build a software library of algorithms for image reconstruction
-- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
-
-
-A containerized means of building the LibRA project is available
-[here](https://gitlab.nrao.edu/ardg/libra-containers).
-
-The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 ### Standalone Applications (apps)
 Standalone applications (apps) give access to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.  More detailed documentation for the user interfaces can be found via the following links:
