@@ -10,7 +10,7 @@ individual researchers (faculty, students, post-docs) who may benefit
 from a software system with production-quality implementation of the
 core algorithms which are also easy to use, deploy locally and modify
 as necessary.  Therefore, a strong requirement driving this work is
-to keep the interface simple, the software stack shallow and software
+to keep the interface simple, the software stack shallow and the software
 dependency graph small.
 
 This repository contains _only_ the
@@ -69,12 +69,9 @@ Library (STL)_.  With a translation layer RA-specific libraries
 (CASACore, RA Data Access/Iterators) may be replaced for use of RA
 Algorithms in other domains.
 
-                      Current Stack                                                        Target Stack
-
-![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
-
+| Current Stack | Target Stack |
+| :----:         | :----:        |
+| ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack") | ![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
