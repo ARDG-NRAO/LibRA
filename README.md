@@ -10,7 +10,7 @@ individual researchers (faculty, students, post-docs) who may benefit
 from a software system with production-quality implementation of the
 core algorithms which are also easy to use, deploy locally and modify
 as necessary.  Therefore, a strong requirement driving this work is
-to keep the interface simple, the software stack shallow and software
+to keep the interface simple, the software stack shallow and the software
 dependency graph small.
 
 This repository contains _only_ the
@@ -35,6 +35,18 @@ application in such fields and enable cross-discipline R&D, the API to
 the library is based on C++ STL for portability and wider use that
 does not required RA-specific software stack and dependencies.
 
+### The repository contains
+
+- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
+
+
+A containerized means of building the LibRA project is available
+[here](https://gitlab.nrao.edu/ardg/libra-containers).
+
+The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
+
 ### The LibRA software stack
 
 The `src` directory contains the implementation of the basic
@@ -57,28 +69,14 @@ Library (STL)_.  With a translation layer RA-specific libraries
 (CASACore, RA Data Access/Iterators) may be replaced for use of RA
 Algorithms in other domains.
 
-                      Current Stack                                                        Target Stack
-
-![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack")  &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;  &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
-
+| Current Stack | Target Stack |
+| :----:         | :----:        |
+| ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack") | ![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
 [`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
 
-### The repository contains
-
-- [ ] scientific code to build a software library of algorithms for image reconstruction
-- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
-
-
-A containerized means of building the LibRA project is available
-[here](https://gitlab.nrao.edu/ardg/libra-containers).
-
-The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).
 
 ### Standalone Applications (apps)
 Standalone applications (apps) give access to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.  More detailed documentation for the user interfaces can be found via the following links:
@@ -109,7 +107,7 @@ The following list of packages need to be installed. Following is a typical comm
 
 - [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
 
-- [ ] An installation of the appropriate version of CUDA  is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.
+- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.  _Note that for only building the software, an actual GPU on the build-host is not necessary._
       
       export distro=rhel8
       export arch=x86_64
