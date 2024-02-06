@@ -81,12 +81,12 @@ void acme_func(std::string& imageName, std::string& deconvolver,
           ImageInterface<Float> *wImage;
           wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
 
-          //LatticeBase* swPtr = ImageOpener::openImage(weightName);
-          //ImageInterface<Float> *swImage;
-          //wImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+          LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
+          ImageInterface<Float> *swImage;
+          swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
 
           LatticeExpr<Float> ratio;
-          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)));// * abs(*swImage)));
+          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage) * abs(*swImage)));
           ratio = ( *reImage / deno);
           reImage->copyData(ratio);
           /*********************************************************************/
