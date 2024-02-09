@@ -24,6 +24,9 @@
 
 
 #include <TableInfo/tableinfo.h>
+#include <synthesis/TransformMachines2/Utils.h>
+using namespace casa;
+using  namespace refim;
 
 //
 //-------------------------------------------------------------------------
@@ -36,7 +39,7 @@ void TableInfo_func(const string& MSNBuf,
   //---------------------------------------------------
   //
 
-  // try
+  try
     {
       //
       //---------------------------------------------------
@@ -106,23 +109,29 @@ void TableInfo_func(const string& MSNBuf,
       	      logio << oss.str() << LogIO::NORMAL;
       	    }
        	}
+      else
+      	{
+	  casacore::Record rec = SynthesisUtils::readRecord(MSNBuf);
+	  logio << "Raw print of the Record:" << LogIO::NORMAL;
+	  rec.print(cerr);
+	}
     }
   // catch (clError& x)
   //   {
   //     x << x.what() << endl;
-  //     restartUI=True;
+  //     //      restartUI=True;
   //   }
-  // //
-  // // Catch any exception thrown by AIPS++ libs.  Do your cleanup here
-  // // before returning to the UI (if you choose to).  Without this, all
-  // // exceptions (AIPS++ or otherwise) are caught in the default
-  // // exception handler clDefaultErrorHandler (installed by the CLLIB).
-  // //
-  // catch (AipsError& x)
-  //   {
-  //     cerr << "###AipsError: " << x.getMesg() << endl;
-  //     restartUI=True;
-  //     //      exit(0);
-  //   }
+  //
+  // Catch any exception thrown by AIPS++ libs.  Do your cleanup here
+  // before returning to the UI (if you choose to).  Without this, all
+  // exceptions (AIPS++ or otherwise) are caught in the default
+  // exception handler clDefaultErrorHandler (installed by the CLLIB).
+  //
+  catch (AipsError& x)
+    {
+      cerr << "###AipsError: " << x.getMesg() << endl;
+      //      restartUI=True;
+      //      exit(0);
+    }
   // if (restartUI) RestartUI(RENTER);
 }
