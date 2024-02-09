@@ -44,7 +44,7 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <casacore/casa/System/ProgressMeter.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <hpg/hpg.hpp>
+//#include <hpg/hpg.hpp>
 
 using namespace std;
 /**

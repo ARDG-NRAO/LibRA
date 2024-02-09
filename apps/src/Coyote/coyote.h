@@ -52,7 +52,7 @@
 #include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/casa/Utilities/Regex.h>
 
-#include <hpg/hpg.hpp>
+// #include <hpg/hpg.hpp>
 #include <unistd.h>
 
 using namespace casa;

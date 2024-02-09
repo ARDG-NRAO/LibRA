@@ -212,15 +212,21 @@ public:
     {
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
       std::vector<int> vb_SPWIDList;
+      std::unordered_set<double> pa_set;
       vb_l=vi2_l->getVisBuffer();
       vi2_l->originChunks();
       for (vi2_l->originChunks();vi2_l->moreChunks(); vi2_l->nextChunk())
 	{
 	  vi2_l->origin(); // So that the global vb is valid
 	  vb_SPWIDList.push_back(vb_l->spectralWindows()(0));
-	}
 
-      log_l << "...done." << LogIO::POST;
+	  pa_set.insert(getPA(*vb_l));
+	  //vb_PAList.push_back(getPA(*vb_l));
+	}
+      std::vector<double> vb_PAList(pa_set.begin(), pa_set.end());
+      log_l << "...done." << endl
+	    << vb_SPWIDList.size() << " SPWs, " << vb_PAList.size() << " PA values found."
+	    << LogIO::POST;
 
       //
       // Since the SPWIDList is determined by iterating over the

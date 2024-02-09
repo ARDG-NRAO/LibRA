@@ -156,6 +156,9 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
      // do some input parameter checking now.
      string mesgs;
+     if (CFCache == "")
+       mesgs += "The cfcache parameter needs to be set.\n";
+
      if (phaseCenter == "")
        mesgs += "The phasecenter parameter needs to be set.\n";
 

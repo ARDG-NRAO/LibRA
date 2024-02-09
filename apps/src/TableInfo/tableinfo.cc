@@ -112,8 +112,8 @@ void TableInfo_func(const string& MSNBuf,
       else
       	{
 	  casacore::Record rec = SynthesisUtils::readRecord(MSNBuf);
-	  logio << "Raw print of the Record:" << LogIO::NORMAL;
 	  rec.print(cerr);
+	  cerr << "------------------------------" << endl;
 	}
     }
   // catch (clError& x)
