@@ -187,11 +187,15 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
   
   try
     {
-      if (mode=="fillcf")
-	cfList = fileList(cfCacheName,cfList);
-
       std::vector<std::string> wtCFList;
-      for(auto x : cfList) wtCFList.push_back("WT"+x);
+      if (mode=="fillcf")
+	{
+	  cfList = fileList(cfCacheName,cfList);
+
+	  cerr << "Found " << cfList.size() << " elements to fill." << endl;
+
+	  for(auto x : cfList) wtCFList.push_back("WT"+x);
+	}
       
       // Make a name for the temp image that will be unique for multiple
       // instances on different computers but writing to the same
@@ -243,6 +247,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 		{
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
 					   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+		  cfCacheObj_l->initCache2(false, dpa, -1.0,
+					   casacore::String(imageNamePrefix)+casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
 		}
 	      catch (CFCIsEmpty& e)
 		{
@@ -295,6 +301,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
 	  cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
 	}
+      // cfs2_l->show("Coyote: CFS::show(CF): ",cerr,false);
+      // cfswt2_l->show("Coyote: CFS::show(WTCF): ",cerr,false);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------
@@ -441,8 +449,10 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // casacore::Tables.  Writing these with multi-threadings
 	  // seems to be work.  The bool parameter is therefore set to
 	  // true (it is false in the default interface).
-	  cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
-	  cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  // cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  // cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", true);
+	  cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",true);
 	}
       else
 	{

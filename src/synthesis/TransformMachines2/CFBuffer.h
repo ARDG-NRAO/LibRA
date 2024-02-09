@@ -130,12 +130,13 @@ using namespace casa::vi;
     //------------------------------------------------------------------
     //
     CFBuffer(): wValues_p(), maxXSupport_p(-1), maxYSupport_p(-1), pointingOffset_p(), cfHitsStats(),
-		freqNdxMapsReady_p(false), freqNdxMap_p(), conjFreqNdxMap_p(), cfCacheDirName_p(), maxCFSize_p(-1)
+		freqNdxMapsReady_p(false), dirty_p(false), freqNdxMap_p(), conjFreqNdxMap_p(),
+		cfCacheDirName_p(), maxCFSize_p(-1)
     {};
     
     CFBuffer(casacore::Int maxXSup, casacore::Int maxYSup):
       wValues_p(), maxXSupport_p(maxXSup), maxYSupport_p(maxYSup), pointingOffset_p(), cfHitsStats(),
-      freqNdxMapsReady_p(false), freqNdxMap_p(), conjFreqNdxMap_p(), cfCacheDirName_p()
+      freqNdxMapsReady_p(false), dirty_p(false), freqNdxMap_p(), conjFreqNdxMap_p(), cfCacheDirName_p()
     {
       // storage_p.resize(1,1,1); 
       // storage_p(0,0,0) = new casacore::Array<TT>(dataPtr);
@@ -367,6 +368,7 @@ using namespace casa::vi;
     // Returns true if the internal storage is not yet initialized.
     //
     casacore::Bool null() {return (cfCells_p.nelements() == 0);};
+    bool isDirty() {return dirty_p==true;};
     
     casacore::Cube<casacore::CountedPtr<CFCell> >& getStorage() {return cfCells_p;};
     void makePersistent(const char *dir, const char *cfName="",const bool useThreads=false);
@@ -430,7 +432,7 @@ using namespace casa::vi;
     casacore::Int nPol_p, nChan_p, nW_p, maxXSupport_p, maxYSupport_p;
     casacore::Vector<casacore::Vector<casacore::Double> > pointingOffset_p;
     casacore::Cube<casacore::Int> cfHitsStats;
-    casacore::Bool freqNdxMapsReady_p;
+    casacore::Bool freqNdxMapsReady_p, dirty_p;
     casacore::Vector<casacore::Vector<casacore::Int> > freqNdxMap_p, conjFreqNdxMap_p;
     void ASSIGNVVofI(casacore::Int** &target,casacore::Vector<casacore::Vector<casacore::Int> >& source, casacore::Bool& doAlloc);
     casacore::String cfCacheDirName_p;

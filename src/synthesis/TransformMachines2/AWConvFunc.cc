@@ -999,30 +999,30 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     int cfDone=0;
     for(Int ib=0;ib<uniqueBaselineTypeList.shape()(0);ib++)
       {
+	//
+	// Resize the CFStore if a new PA or unique baseline type is
+	// detected.
+	//
 	Vector<Int> pos;
 	pos=cfs2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1)); 
 	pos=cfwts2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1)); 
 	//
-	// Re-size the CFBuffer object.  It holds the 2D convolution
-	// functions index by (FreqValue, WValue, MuellerElement).
+	// Get and re-size the CFBuffer object.  It holds the 2D
+	// convolution functions index by (FreqValue, WValue,
+	// MuellerElement).
 	//    
 	cfb_p=cfs2.getCFBuffer(paQuant, dPA, uniqueBaselineTypeList(ib,0),uniqueBaselineTypeList(ib,1));
 	cfwtb_p=cfwts2.getCFBuffer(paQuant, dPA, uniqueBaselineTypeList(ib,0),uniqueBaselineTypeList(ib,1));
 	cfb_p->setPointingOffset(pixFieldGrad_p);
+
 	// cfb_p->resize(wValues,freqValues,muellerMatrix);
 	// cfwtb_p->resize(wValues,freqValues,muellerMatrix);
-	
 	cfb_p->resize(wScale, freqScale, wValues,freqValues,polMap, polIndexMap,conjPolMap, conjPolIndexMap);
 	cfwtb_p->resize(wScale, freqScale, wValues,freqValues,polMap, polIndexMap,conjPolMap, conjPolIndexMap);
 	
 	IPosition start(4, 0, 0, 0, 0);
 	IPosition pbSlice(4, convSize, convSize, 1, 1);
 	
-	//	Matrix<Complex> screen(convSize, convSize);
-
-	// WTerm wterm_l;
-	// PSTerm psTerm_l;
-
 	//Initiate construction of the "ConvolveGridder" object inside
 	//PSTerm.  This is, for historical reasons, used to access the
 	//"standard" Prolate Spheroidal function implementaion.  This
@@ -1959,7 +1959,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     Vector<Double> skyIncr;
     CountedPtr<PagedImage<Complex> > skyImage_l;
     ImageInformation<Complex> imInfo;
-
     //
     // Get the sky image coordinates and shape.
     //
