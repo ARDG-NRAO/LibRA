@@ -168,7 +168,7 @@ TEST(RoadrunnerTest, UIFactory) {
   bool doSPWDataIter=false;
   vector<float> posigdev = {300.0,300.0};
   bool interactive = false;
-
+  string cfCache="test";
   UI(restartUI, argc, argv, interactive,
      MSNBuf,imageName, modelImageName, dataColumnName,
      sowImageExt, cmplxGridName, NX, nW, cellSize,
