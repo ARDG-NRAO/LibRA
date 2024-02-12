@@ -172,7 +172,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    string& imageNamePrefix,
 	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
@@ -242,13 +241,15 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	      // or not.
 	      //
 	      cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
-	      cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
+	      //	      cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
 	      try
 		{
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
-					   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+					   //casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+					   casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
-					   casacore::String(imageNamePrefix)+casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
+					   //casacore::String(imageNamePrefix)+casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
+					   casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
 		}
 	      catch (CFCIsEmpty& e)
 		{

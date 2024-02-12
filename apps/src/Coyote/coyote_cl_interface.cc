@@ -47,7 +47,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 	//string& imageName,
 	string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
-	int& nW, string& CFCache, string& imageNamePrefix,
+	int& nW, string& CFCache, 
 	bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
 	float& pa, float& dpa,
 	string& fieldStr, string& spwStr, string& phaseCenter,
@@ -90,7 +90,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       
       i=1;clgetIValp("wplanes", nW,i);  
       i=1;clgetSValp("cfcache", CFCache,i);
-      i=1;clgetSValp("nameprefix", imageNamePrefix,i);
       
       i=1;clgetBValp("wbawp", WBAwp,i);
       i=1;clgetBValp("aterm", aTerm,i); 
@@ -162,7 +161,7 @@ int main(int argc, char **argv)
   string MSNBuf="", cfCache="", fieldStr="", spwStr="*",
     imageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr, telescopeName="EVLA", mType="diagonal",
-    imageNamePrefix="",mode="dryrun";
+    mode="dryrun";
   std::vector<std::string> cfList;
   //  std::vector<std::string> wtCFList;
   
@@ -181,7 +180,7 @@ int main(int argc, char **argv)
      MSNBuf,
      telescopeName, NX, cellSize,
      stokes, refFreqStr, nW,
-     cfCache, imageNamePrefix,
+     cfCache, 
      WBAwp,
      aTerm, psTerm, mType, pa, dpa,
      fieldStr,spwStr, phaseCenter,
@@ -197,7 +196,7 @@ int main(int argc, char **argv)
       Coyote(MSNBuf,
 	     telescopeName, NX, cellSize,
 	     stokes, refFreqStr, nW,
-	     cfCache, imageNamePrefix,
+	     cfCache, 
 	     WBAwp,
 	     aTerm, psTerm, mType, pa, dpa,
 	     fieldStr,spwStr, phaseCenter,
