@@ -170,8 +170,6 @@ int main(int argc, char **argv)
   int NX=0, nW=1, cfBufferSize=0, cfOversampling=20;
   bool WBAwp=true;
   bool restartUI=false;
-  bool doPointing=false;
-  bool normalize=false;
   bool conjBeams= true;
   bool psTerm = false;
   bool aTerm = true;
@@ -181,32 +179,31 @@ int main(int argc, char **argv)
 
   UI(restartUI, argc, argv, interactive, 
      MSNBuf,
-     //imageName,
-     telescopeName,
-     NX, cellSize, stokes, refFreqStr, nW,
-     cfCache, imageNamePrefix, WBAwp,
-     psTerm, aTerm, mType, pa, dpa,
-     fieldStr, spwStr, phaseCenter, conjBeams,
+     telescopeName, NX, cellSize,
+     stokes, refFreqStr, nW,
+     cfCache, imageNamePrefix,
+     WBAwp,
+     aTerm, psTerm, mType, pa, dpa,
+     fieldStr,spwStr, phaseCenter,
+     conjBeams,
      cfBufferSize, cfOversampling,
      cfList,
-     //     wtCFList,
      mode);
   
   set_terminate(NULL);
   
   try
     {
-      Coyote(MSNBuf,//imageName, 
+      Coyote(MSNBuf,
 	     telescopeName, NX, cellSize,
 	     stokes, refFreqStr, nW,
 	     cfCache, imageNamePrefix,
 	     WBAwp,
-	     psTerm, aTerm, mType, pa, dpa,
+	     aTerm, psTerm, mType, pa, dpa,
 	     fieldStr,spwStr, phaseCenter,
 	     conjBeams,
 	     cfBufferSize, cfOversampling,
 	     cfList,
-	     //wtCFList,
 	     mode);
       
     }
