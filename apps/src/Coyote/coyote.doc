@@ -1,5 +1,5 @@
 %%N coyote
-	A LibRA app to build a new CFCache, or add CFs to and exisiting CFCache.
+	A LibRA app to build a new CFCache, or add CFs to and existing CFCache.
 
 %%P Author
 	sbhatnag@nrao.edu
@@ -69,7 +69,7 @@
 
 %%A conjbeams (default=1)
 
-	Parameter to control if the frequency dependens of the PB should be projected out.
+	Parameter to control if the frequency dependence of the PB should be projected out.
 
 
 %%A muellertype (default=diagonal)
@@ -88,7 +88,7 @@
 
            For pa value within the [-180,180] range, CFs at the given
            PA value will be constructed.  If an existing CF is found
-           that satisifes abs(CF_PA - pa) <= dpa, a new CF will not be
+           that satisfies abs(CF_PA - pa) <= dpa, a new CF will not be
            added or computed.  For pa values that fail this this test,
            new CFs at the given value will be added to the CFCache. 
 	
@@ -112,7 +112,7 @@
 
 %%A spw (default=)
 
-	The spectral window selection speicification for the input MS.
+	The spectral window selection specification for the input MS.
 
 
 %%A buffersize (default=0)
@@ -133,11 +133,11 @@
 
         mode=dryrun will construct empty CFs with only the meta-data
         required to compute the pixel values is saved in the CFCache.
-        This is typically used to first contrust a blank CFCache,
+        This is typically used to first construct a blank CFCache,
         which can then be filled in parallel with the appropriate
         settings of the cflist, pa, and dpa values.
 
-        mode=fillcf is used to fill the CFs specificed in the cflist
+        mode=fillcf is used to fill the CFs specified in the cflist
         based on the settings of the pa and dpa parameters.
 
 
