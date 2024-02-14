@@ -212,15 +212,15 @@ namespace casa{
 
     if (cfFileNames.nelements() > 0)
       {
-	log_l << "Loading misc info from CFs" << LogIO::POST;
+	log_l << "Loading misc info from CFs.  " << LogIO::POST;
 	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
-	log_l << "Loaded misc info from " << memCache2_p[0].size() << " CFs. CFC shape: " << memCache2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << memCache2_p[0].getShape() << LogIO::POST;
       }
     if (cfWtFileNames.nelements() > 0)
       {
-	log_l << "Loading misc info from WTCFs" << LogIO::POST;
+	log_l << "Loading misc info from WTCFs. " << LogIO::POST;
 	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, true, selectedPA, dPA, verbose);
-	log_l << "Loaded misc info from " << memCacheWt2_p[0].size() << " WTCFs. CFC shape: " << memCacheWt2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << memCacheWt2_p[0].getShape() << LogIO::POST;
       }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();

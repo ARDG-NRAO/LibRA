@@ -208,7 +208,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     aTerm.cacheVBInfo(vb);
     Int totalCFs=muellerElements.shape().product()*freqValues.shape().product()*wValues.shape().product()*2,
       cfsDone=0;
-  
+
     ProgressMeter pm(1.0, Double(totalCFs), "fillCF", "","","",true);
 
     for (uInt imx=0;imx<muellerElements.nelements();imx++) // Loop over all MuellerElements
@@ -538,19 +538,20 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		      }
 		    else
 		      SynthesisUtils::makeFTCoordSys(cs_l, cfWtBuf.shape()(0), ftRef, ftCoords);
-		    
+
 		    CountedPtr<CFCell> cfCellPtr;
 		    cfWtb.setParams(inu,iw,imx,imy,//muellerElements(imx)(imy),
 				    freqValues(inu), String(""), wValues(iw), muellerElements(imx)(imy),
 				    ftCoords, samplingWt, xSupportWt, ySupportWt,
 				    String(""), // Default ==> don't set it in the CFCell
 				    conjFreq, conjPol[0]);
-		    
+
 		    cfCellPtr = cfWtb.getCFCellPtr(freqValues(inu), wValues(iw), 
 						   muellerElements(imx)(imy));
 		    cfCellPtr->pa_p=Quantity(vbPA,"rad");
 		    cfCellPtr->telescopeName_p = aTerm.getTelescopeName();
 		    cfCellPtr->isRotationallySymmetric_p = aTerm.isNoOp();
+
 		    //cerr << "AWConvFunc: Telescope name = " << cfCellPtr->telescopeName_p << " " << aTerm.getTelescopeName() << endl;
 		    //tim.show("CSStuff:");
 		    // setUpCFSupport(cfBuf, xSupport, ySupport, sampling);
@@ -626,11 +627,20 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 				  ftCoords, sampling, xSupport, ySupport,
 				  String(""), // Default ==> Don't set in the CFCell
 				  conjFreq, conjPol[0]);
+
+		    // Setting CFCell internal parameters works if set
+		    // here, not earlier than this!  Not really sure
+		    // why (SB).
 		    cfCellPtr=cfb.getCFCellPtr(freqValues(inu), wValues(iw), 
 					       muellerElements(imx)(imy));
 		    cfCellPtr->pa_p=Quantity(vbPA,"rad");
 		    cfCellPtr->telescopeName_p = aTerm.getTelescopeName();
 		    cfCellPtr->isRotationallySymmetric_p = aTerm.isNoOp();
+
+		    cfCellPtr->aTermOn_p = !aTerm.isNoOp();
+		    cfCellPtr->psTermOn_p = !psTerm.isNoOp();
+		    cfCellPtr->wTermOn_p = !wTerm.isNoOp();
+		    cfCellPtr->conjBeams_p = conjPB_p;
 		    //
 		    // Now tha the CFs have been computed, cache its
 		    // paramters in CFCell for quick access in tight
@@ -860,8 +870,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     //
     convSampling=getOversampling(*psTerm_p, *wTerm_p, *aTerm_p);
     convSize=aTerm_p->getConvSize();
-//    cout<<"Conv Sampling listed in aipsrc is : "<<convSampling<<endl;
-//    cout<<"Conv Size is : "<<convSize<<endl;
     //
     // Make a two dimensional image to calculate auto-correlation of
     // the ideal illumination pattern. We want this on a fine grid in
@@ -1685,20 +1693,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       Bool doSquint=true; 
       ftATerm_l.set(Complex(1.0,0.0));   ftATermSq_l.set(Complex(1.0,0.0));
       Double freq_l=miscInfo.freqValue;
-      // {
-      // 	Vector<String> csList;
-      // 	IPosition dummy;
-      // 	cout << "CoordSys:===================== ";
-      // 	//      	csList = ftATermSq_l.coordinates().list(log_l,MDoppler::RADIO,dummy,dummy);
 
-      // 	csList = cs_l.list(log_l,MDoppler::RADIO,dummy,dummy);
-      // 	cout << csList << endl;
-      // 	csList = conjPolCS_l.list(log_l,MDoppler::RADIO,dummy,dummy);
-      // 	cout << csList << endl;
-      // }
-
-      //if (!isDryRun)
-      // cerr << "#########$$$$$$ " << pbshp << " " << nx << " " << freq_l << " " << conjFreq << endl;
       {
 	aTerm.applySky(ftATerm_l, vbPA, doSquint, 0, miscInfo.muellerElement,freq_l);//freqHi);
 	if (conjBeams) aTerm.applySky(ftATermSq_l, vbPA, doSquint, 0, miscInfo.muellerElement, conjFreq);//freqHi);
@@ -1923,6 +1918,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	thisCell->xSupport_p = xSupport;
 	thisCell->ySupport_p = ySupport;
 	thisCell->isRotationallySymmetric_p = aTerm.isNoOp();
+	thisCell->conjBeams_p = conjBeams;
+	thisCell->aTermOn_p  = !aTerm.isNoOp();
+	thisCell->psTermOn_p = !psTerm.isNoOp();
+	thisCell->wTermOn_p  = !wTerm.isNoOp();
+
 	(cfWtb.getCFCellPtr(miscInfo.freqValue, miscInfo.wValue, miscInfo.muellerElement))->initCache();
 	(cfb.getCFCellPtr(miscInfo.freqValue, miscInfo.wValue, miscInfo.muellerElement))->initCache();
 	//tim.show("End*2:");
@@ -2018,7 +2018,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
     //Matrix<Int> uniqueBaselineTypeList=makeBaselineList(aTerm_p->getAntTypeList());
     Bool wbAWP, wTermOn;
-
     for (int iPA=0; iPA<cfsShape[0]; iPA++)
       for (int iB=0; iB<cfsShape[1]; iB++)
 	  {
@@ -2031,127 +2030,165 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
 	    IPosition cfbShape = cfb_p->shape();
 	    for (int iNu=0; iNu<cfbShape(0); iNu++)       // Frequency axis
-	      for (int iPol=0; iPol<cfbShape(2); iPol++)     // Polarization axis
-		for (int iW=0; iW<cfbShape(1); iW++)   // W axis
-		  {
-		    CFCStruct miscInfo;
-		    CoordinateSystem cs_l;
-		    Int xSupport, ySupport;
-		    Float sampling;
+	      {
+		for (int iPol=0; iPol<cfbShape(2); iPol++)     // Polarization axis
+		  for (int iW=0; iW<cfbShape(1); iW++)   // W axis
+		    {
+		      CFCStruct miscInfo;
+		      CoordinateSystem cs_l;
+		      Int xSupport, ySupport;
+		      Float sampling;
 
-		    CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
-		    // cerr << "--------------------------- " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
-		    // tt->show("",cout);
+		      CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
+		      // cerr << "--------------------------- " << iNu << " " << iW << " " << iPol << " " << tt->cfShape_p <<  endl;
+		      // tt->show("",cout);
 
-		    // Fill the CFCell if it isn't already filled.
-		    if ((tt->isFilled_p==false) && (tt->shape_p.nelements() != 0))
-		       {
-			 //(*cfb_p)(iNu,iW,iPol).getAsStruct(miscInfo); // Get misc. info. for this CFCell
-			 tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
+		      // Fill the CFCell if it isn't already filled.
+		      if ((tt->isFilled_p==false) && (tt->shape_p.nelements() != 0))
+			{
+			  tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
 
-			 if (miscInfo.shape[0] == miscInfo.xSupport*2*miscInfo.sampling + 4*miscInfo.sampling+1)
-			   break;
-			 {
-			   //This code uses the BeamCalc class to get
-			   //the nominal min. freq. of the band in
-			   //use.  While not accurate, may be
-			   //sufficient for the purpose of the
-			   //anti-aliasing operator.
-			   Int bandID = BeamCalc::Instance()->getBandID(miscInfo.freqValue,miscInfo.telescopeName,miscInfo.bandName);
-			   skyMinFreq = casa::EVLABandMinFreqDefaults[bandID];
-			 }
-			 wbAWP=True; // Always true since the Freq. value is got from the coord. sys.
-			 wTermOn=(miscInfo.wValue > 0.0);
+			  if (miscInfo.shape[0] == miscInfo.xSupport*2*miscInfo.sampling + 4*miscInfo.sampling+1)
+			    break;
+			  wbAWP=True; // Always true since the Freq. value is got from the coord. sys.
+			  wTermOn=(miscInfo.wValue > 0.0);
 
-			 CountedPtr<ConvolutionFunction> awCF = AWProjectFT::makeCFObject(miscInfo.telescopeName,
-											  aTermOn, psTermOn, wTermOn, True, wbAWP, conjBeams);
-			 (static_cast<AWConvFunc &>(*awCF)).aTerm_p->cacheVBInfo(miscInfo.telescopeName, miscInfo.diameter);
-			 //aTerm_p->cacheVBInfo(miscInfo.telescopeName, miscInfo.diameter);
+			  {
+			    //This code uses the BeamCalc class to get
+			    //the nominal min. freq. of the band in
+			    //use.  While not accurate, may be
+			    //sufficient for the purpose of the
+			    //anti-aliasing operator.
+			    try
+			      {
+				Int bandID = BeamCalc::Instance()->getBandID(miscInfo.freqValue,miscInfo.telescopeName,miscInfo.bandName);
+				skyMinFreq = casa::EVLABandMinFreqDefaults[bandID];
+			      }
+			    catch(AipsError &e)
+			      {
+				log_l << "Determining the minimum frequency from sky image." << LogIO::POST;
+				Int index= skyCoords.findCoordinate(Coordinate::SPECTRAL);
+				SpectralCoordinate SpCS = skyCoords.spectralCoordinate(index);
+				skyMinFreq=SpCS.referenceValue()(0);
+			      }
+			  }
 
-			 String bandName;
-			 cfb_p->getParams(cs_l, sampling, xSupport, ySupport,bandName,iNu,iW,iPol);
-			 convSampling=miscInfo.sampling;
+			  bool aTermOn_l=aTermOn, psTermOn_l=psTermOn, wTermOn_l=wTermOn, conjBeams_l=conjBeams;
+			  {
+			    // Read the miscinfo for the currect CFCell.
+			    ImageInformation<Complex> imInfo(cfCachePath+"/"+tt->fileName_p);
+			    Record miscInfoRec = imInfo.getMiscInfo();
+			    //
+			    // Older CFCs which do not have miscInfo.rec will not have the following parameters defined.
+			    //
+			    // So, if the parameters are defined in the CFCell's miscInfo.rec, use them.
+			    // Else use the values supplied as parameters to this method.
+			    //
+			    if (miscInfoRec.isDefined("aTermOn"))  miscInfoRec.get("aTermOn",  aTermOn_l);
+			    if (miscInfoRec.isDefined("psTermOn")) miscInfoRec.get("psTermOn", psTermOn_l);
+			    if (miscInfoRec.isDefined("wTermOn"))  miscInfoRec.get("wTermOn",  wTermOn_l);
+			    if (miscInfoRec.isDefined("conjBeams"))  miscInfoRec.get("conjBeams",  conjBeams_l);
+			  }
+			  CountedPtr<ConvolutionFunction> awCF = AWProjectFT::makeCFObject(miscInfo.telescopeName,
+											   aTermOn_l,
+											   psTermOn_l,
+											   wTermOn_l,
+											   True,
+											   wbAWP,
+											   conjBeams_l);
+			  if (aTermOn_l==false)
+			    {
+			      (static_cast<AWConvFunc &>(*awCF)).aTerm_p->setOpCode(CFTerms::NOOP);
+			      (static_cast<AWConvFunc &>(*awCF)).aTerm_p->cacheVBInfo(miscInfo.telescopeName, miscInfo.diameter);
+			    }
+			  if (psTermOn_l==false) (static_cast<AWConvFunc &>(*awCF)).psTerm_p->setOpCode(CFTerms::NOOP);
+			  if (wTermOn_l==false) (static_cast<AWConvFunc &>(*awCF)).wTerm_p->setOpCode(CFTerms::NOOP);
 
-			 //convSize=miscInfo.shape[0];
-			 // This method loads "empty CFs".  Those have
-			 // support size equal to the CONVBUF size
-			 // required.  So use that, instead of the
-			 // "shape" information from CFs, since the
-			 // latter for empty CFs can be small (to save
-			 // disk space and i/o -- the CFs are supposed
-			 // to be empty anyway at this stage!)
-			 convSize=xSupport; 
+			  //aTerm_p->cacheVBInfo(miscInfo.telescopeName, miscInfo.diameter);
 
-			 IPosition start(4, 0, 0, 0, 0);
-			 IPosition pbSlice(4, convSize, convSize, 1, 1);
-			 
-			 //			 Matrix<Complex> screen(convSize, convSize);
-			 
-			 {
-			   // Set up the anti-aliasing operator (psTerm_p) for this CF.
-			   Int inner=convSize/(convSampling);
+			  String bandName;
+			  cfb_p->getParams(cs_l, sampling, xSupport, ySupport,bandName,iNu,iW,iPol);
+			  convSampling=miscInfo.sampling;
 
-			   //Float psScale = (2*coords.increment()(0))/(nx*image.coordinates().increment()(0));
-			   Float innerQuaterFraction=1.0;
-			   innerQuaterFraction=refim::SynthesisUtils::getenv("AWCF.FUDGE",innerQuaterFraction);
-			 
-			   Double lambdaByD = innerQuaterFraction*1.22*C::c/skyMinFreq/miscInfo.diameter;
-			   Double FoV_x = fabs(skyNX*skyIncr(0));
-			   Double FoV_y = fabs(skyNY*skyIncr(1));
-			   Vector<Double> uvScale_l(3);
-			   uvScale_l(0) = (FoV_x < lambdaByD) ? FoV_x : lambdaByD;
-			   uvScale_l(1) = (FoV_y < lambdaByD) ? FoV_y : lambdaByD;
-			   uvScale_l(2) = 0.0;
+			  //convSize=miscInfo.shape[0];
+			  // This method loads "empty CFs".  Those have
+			  // support size equal to the CONVBUF size
+			  // required.  So use that, instead of the
+			  // "shape" information from CFs, since the
+			  // latter for empty CFs can be small (to save
+			  // disk space and i/o -- the CFs are supposed
+			  // to be empty anyway at this stage!)
+			  convSize=xSupport; 
 
-			   Float psScale = 2.0/(innerQuaterFraction*convSize/convSampling);// nx*image.coordinates().increment()(0)*convSampling/2;
-			   ((static_cast<AWConvFunc &>(*awCF)).psTerm_p)->init(IPosition(2,inner,inner), uvScale_l, uvOffset,psScale);
-			 }
-			 
-			 //
-			 // By this point, the all the 4 axis (Time/PA, Freq, Pol,
-			 // Baseline) of the CFBuffer objects have been setup.  The CFs
-			 // will now be filled using the supplied PS-, W- ad A-term objects.
-			 //
-			 
-			 try
-			   {
-			     // A note for future cleanup: The cfb_p,
-			     // cfwtb_p and convSize information now
-			     // should not be required since those are
-			     // in miscInfo. Any information is
-			     // currently derived from CFBs should be
-			     // made available via miscInfo.  This
-			     // will also make this call more CASACore
-			     // agnostic (and some day exposed for
-			     // direct use).
-			     AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize, 
-							     //skyImage_l,
-							     NULL,
-							     miscInfo,
-							     *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
-							     *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
-							     *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
-							     conjBeams);
-			   }
-			 catch (CFSupportZero& e)
-			   {
-			     LogIO log_l(LogOrigin("AWConvFunc", "makeConvFunction2"));
-			     log_l << e.what() << LogIO::POST
-				   << "We are assuming that the CF (\"" << tt->fileName_p <<"\") is already filled"
-				   << LogIO::POST;
-			   }
-			 // Mark this CFCell as filled.  The decision
-			 // to trigger filling of the CF and WTCF
-			 // earlier is based on checking isFilled_p
-			 // only for CF, but since
-			 // fillConvFuncBuffer2() fills both CF and
-			 // WTCF, mark the latter as filled also.
-			 tt->isFilled_p=true;
-			 ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->isFilled_p=true;
+			  IPosition start(4, 0, 0, 0, 0);
+			  IPosition pbSlice(4, convSize, convSize, 1, 1);
+			  {
+			    // Set up the anti-aliasing operator (psTerm_p) for this CF.
+			    Int inner=convSize/(convSampling);
 
-			 //cfb_p->show(NULL,cerr);
-		       }
-		  }
+			    //Float psScale = (2*coords.increment()(0))/(nx*image.coordinates().increment()(0));
+			    Float innerQuaterFraction=1.0;
+			    innerQuaterFraction=refim::SynthesisUtils::getenv("AWCF.FUDGE",innerQuaterFraction);
+
+			    Double lambdaByD = innerQuaterFraction*1.22*C::c/skyMinFreq/miscInfo.diameter;
+			    Double FoV_x = fabs(skyNX*skyIncr(0));
+			    Double FoV_y = fabs(skyNY*skyIncr(1));
+			    Vector<Double> uvScale_l(3);
+			    uvScale_l(0) = (FoV_x < lambdaByD) ? FoV_x : lambdaByD;
+			    uvScale_l(1) = (FoV_y < lambdaByD) ? FoV_y : lambdaByD;
+			    uvScale_l(2) = 0.0;
+
+			    Float psScale = 2.0/(innerQuaterFraction*convSize/convSampling);// nx*image.coordinates().increment()(0)*convSampling/2;
+			    ((static_cast<AWConvFunc &>(*awCF)).psTerm_p)->init(IPosition(2,inner,inner), uvScale_l, uvOffset,psScale);
+			  }
+			  //
+			  // By this point, the all the 4 axis (Time/PA, Freq, Pol,
+			  // Baseline) of the CFBuffer objects have been setup.  The CFs
+			  // will now be filled using the supplied PS-, W- ad A-term objects.
+			  //
+			  try
+			    {
+			      // A note for future cleanup: The cfb_p,
+			      // cfwtb_p and convSize information now
+			      // should not be required since those are
+			      // in miscInfo. Any information is
+			      // currently derived from CFBs should be
+			      // made available via miscInfo.  This
+			      // will also make this call more CASACore
+			      // agnostic (and some day exposed for
+			      // direct use).
+			      AWConvFunc::fillConvFuncBuffer2(*cfb_p, *cfwtb_p, convSize, convSize,
+							      NULL,
+							      miscInfo,
+							      *((static_cast<AWConvFunc &>(*awCF)).psTerm_p),
+							      *((static_cast<AWConvFunc &>(*awCF)).wTerm_p),
+							      *((static_cast<AWConvFunc &>(*awCF)).aTerm_p),
+							      conjBeams_l);
+			    }
+			  catch (CFSupportZero& e)
+			    {
+			      LogIO log_l(LogOrigin("AWConvFunc", "makeConvFunction2"));
+			      log_l << e.what() << LogIO::POST
+				    << "We are assuming that the CF (\"" << tt->fileName_p <<"\") is already filled"
+				    << LogIO::POST;
+			    }
+			  // Mark this CFCell as filled.  The decision
+			  // to trigger filling of the CF and WTCF
+			  // earlier is based on checking isFilled_p
+			  // only for CF, but since
+			  // fillConvFuncBuffer2() fills both CF and
+			  // WTCF, mark the latter as filled also.
+			  tt->isFilled_p=true;
+			  ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->isFilled_p  = true;
+			  ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->conjBeams_p = conjBeams_l;
+			  ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->aTermOn_p   = aTermOn_l;
+			  ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->psTermOn_p  = psTermOn_l;
+			  ((*cfwtb_p).getCFCellPtr(iNu, iW, iPol))->wTermOn_p   = wTermOn_l;
+
+			  //cfb_p->show(NULL,cerr);
+			}
+		    } // End of loop over W terms
+	      } // End of loop over frequencies
 	  } // End of loop over baselines
 
     //
@@ -2171,11 +2208,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     else os=psTerm.getOversampling();
     return os;
   }
-
-
-
-
-
   //
   //----------------------------------------------------------------------
   //

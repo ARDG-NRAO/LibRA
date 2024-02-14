@@ -103,10 +103,10 @@ namespace casa{
       return; // nothing to do (assuming the databases haven't changed)
     }
 
-    cout << "Processing request for geometries from observatory " << obsName << ", antenna type " << antType << endl;
-
     LogIO os;
     os << LogOrigin("BeamCalc", "setBeamCalcGeometries()");
+    os << "Processing request for geometries from observatory " << obsName << ", antenna type " << antType << endl;
+
 
     if(obsName!=""){
       obsName_p = obsName;
@@ -125,8 +125,8 @@ namespace casa{
 
     Bool useInternal = false;
 
-    os <<  LogIO::NORMAL << "Initialisation of geometries for observatory " << obsName_p 
-       << ", antenna type " << antType_p << LogIO::POST;
+    // os <<  LogIO::NORMAL << "Initialisation of geometries for observatory " << obsName_p 
+    //    << ", antenna type " << antType_p << LogIO::POST;
 
     if(otherAntRayPath.empty()){
       if(!MeasTable::AntennaResponsesPath(antRespPath, obsName_p)) {

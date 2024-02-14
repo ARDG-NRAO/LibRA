@@ -130,7 +130,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    bool &WBAwp, bool& aTerm, bool &psTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
@@ -171,7 +171,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param mode The mode of operation.
  */
 void UI(bool restart, int argc, char **argv, bool interactive, 
-	    string& MSNBuf,
+	string& MSNBuf,
         //string& imageName,
         string& telescopeName, int& ImSize,
         float& cellSize, string& stokes, string& refFreqStr,
@@ -184,7 +184,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         int& cfOversampling,
         std::vector<std::string>& cfList,
         //      std::vector<std::string>& wtCFList,
-       string& mode);
+	string& mode);
 
 
 #endif

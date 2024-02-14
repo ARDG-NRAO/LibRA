@@ -35,7 +35,10 @@
 #include <casacore/images/Images/PagedImage.h>
 #include <casacore/images/Images/TempImage.h>
 #include <msvis/MSVis/VisBuffer2.h>
+#include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/casa/Containers/Block.h>
+#define CONVSIZE (1024*2)
+#define OVERSAMPLING 20
 
 namespace casa{
   namespace refim{
@@ -63,6 +66,32 @@ namespace casa{
 
     virtual void setOpCode(OpCodes code) {opCode_p = code;}
     virtual casacore::Bool isNoOp() {return opCode_p==NOOP;};
+
+    //
+    // This method sets the policy for setting the internal buffer
+    // used for computing the CF pixels, and the oversampling parameters.
+    // This is used in all CF terms (ATerm, WTerm, PSTerm).
+    //
+    void setConvSizeAndOversampling(int& convSize, int& overSampling)
+    {
+      int userValue;
+
+      if (overSampling <= 0)
+	{
+	  overSampling=OVERSAMPLING;
+	  userValue = SynthesisUtils::getenv("ATerm.OVERSAMPLING",OVERSAMPLING);
+	  if (userValue != overSampling)
+	    overSampling = userValue;
+	}
+
+      if (convSize <= 0)
+	{
+	  convSize=CONVSIZE;
+	  userValue = SynthesisUtils::getenv("ATerm.CONVSIZE",CONVSIZE);
+	  if (userValue != convSize)
+	    convSize = userValue;
+	}
+    }
 
     virtual casacore::String name() = 0;
 
@@ -110,6 +139,7 @@ namespace casa{
 
     virtual casacore::Int getConvSize() = 0;
     virtual void setConvSize(const casacore::Int val) = 0;
+    virtual void setConvOversampling(const casacore::Int val) = 0;
     virtual casacore::Int getOversampling() = 0;
 
     virtual casacore::Float getConvWeightSizeFactor() = 0;
@@ -141,6 +171,7 @@ namespace casa{
     casacore::Vector<casacore::Int> polMap_p_base;
     OpCodes opCode_p;
     casacore::String telescopeName_p, bandName_p;
+    casacore::Int cachedOverSampling_p, cachedConvSize_p;
   };
 
   }///refim

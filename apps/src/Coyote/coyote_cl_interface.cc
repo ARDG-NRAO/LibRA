@@ -43,7 +43,7 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 void UI(bool restart, int argc, char **argv, bool interactive,
-  string& MSNBuf,
+	string& MSNBuf,
 	//string& imageName,
 	string& telescopeName, int& ImSize, 
 	float& cellSize, string& stokes, string& refFreqStr,
@@ -131,12 +131,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       
 	  if (cellSize <= 0)
 	    mesgs += "The cell parameter needs to be set to a positive finite value.\n ";
-      
-	  if (cfBufferSize <= 0)
-	    mesgs += "The buffersize parameter needs to be set to a positive finite value.\n ";
-      
-	  if (cfOversampling <= 0)
-	    mesgs += "The oversampling parameter needs to be set to a positive value.\n ";
 	}
       if (mesgs != "")
 	clThrowUp(mesgs,"###Fatal", CL_FATAL);

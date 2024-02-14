@@ -61,6 +61,10 @@ namespace casa{
     cfShape_p.assign(other.cfShape_p);
     conjFreq_p = other.conjFreq_p;
     conjPoln_p = other.conjPoln_p;
+    psTermOn_p = other.psTermOn_p;
+    wTermOn_p = other.wTermOn_p;
+    aTermOn_p = other.aTermOn_p;
+    conjBeams_p = other.conjBeams_p;
   }
 
   void CFCell::show(const char *Mesg,ostream &os)
@@ -71,14 +75,17 @@ namespace casa{
        << "Sampling: "           << sampling_p  << endl
        << "xSupport, ySupport: " << xSupport_p  << " " << ySupport_p << endl
        << "wValues: "            << wValue_p    << endl
-       << "wIncr: "            << wIncr_p    << endl
+       << "wIncr: "              << wIncr_p    << endl
        << "FreqValues: "         << freqValue_p << endl
        << "ConjFreq: "           << conjFreq_p  << endl
        << "ConjPoln: "           << conjPoln_p  << endl
        << "MuellerElements: "    << muellerElement_p << endl
        << "Data shape: "         << storage_p->shape() << " " << shape_p << endl
        << "Parallactic Angle(d): "  << pa_p.getValue("deg") << endl
-       << "isFilled: "  << isFilled_p
+       << "psTermOn: "           << psTermOn_p << endl
+       << "wTermOn: "            << wTermOn_p << endl
+       << "aTermOn: "            << aTermOn_p << endl
+       << "conjBeams: "          << conjBeams_p << endl
        << endl;
     // IPosition dummy;
     // Vector<String> csList;
@@ -126,6 +133,10 @@ namespace casa{
     miscinfo.define("Diameter", diameter_p);
     miscinfo.define("OpCode",isRotationallySymmetric_p);
     miscinfo.define("IsFilled",isFilled_p);
+    miscinfo.define("aTermOn",aTermOn_p);
+    miscinfo.define("psTermOn",psTermOn_p);
+    miscinfo.define("wTermOn",wTermOn_p);
+    miscinfo.define("conjBeams",conjBeams_p);
 
     if (isFilled_p==true)
       {

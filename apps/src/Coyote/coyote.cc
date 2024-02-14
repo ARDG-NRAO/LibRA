@@ -172,7 +172,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    bool &WBAwp, bool& aTerm, bool &psTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
@@ -209,15 +209,22 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       // Instantiate AWCF object for making the CFs later.
       //
       CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
+
       CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
       CountedPtr<refim::WTerm> WTerm_l = new WTerm();
+
+      ATerm_l->setConvSize(cfBufferSize);
+      ATerm_l->setConvOversampling(cfOversampling);
 
       if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
       if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
       if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
 
-      CountedPtr<refim::ConvolutionFunction> //awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);
-	awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
+      cerr << "coyote: " << conjBeams << endl;
+      CountedPtr<refim::ConvolutionFunction> awcf_l
+	= new AWConvFunc(ATerm_l, PSTerm_l ,WTerm_l ,WBAwp, conjBeams);
+
+      //AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------

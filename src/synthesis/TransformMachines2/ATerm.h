@@ -40,9 +40,7 @@
 #include <synthesis/TransformMachines2/CFTerms.h>
 #include <synthesis/TransformMachines2/CFStore.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
-#define CONVSIZE (1024*2)
 #define CONVWTSIZEFACTOR 1
-#define OVERSAMPLING 20
 #define THRESHOLD 1E-4
 
 namespace casa{
@@ -140,38 +138,13 @@ namespace casa{
     virtual void getPolMap(casacore::Vector<casacore::Int>& polMap) {polMap.resize(0); polMap = polMap_p_base;};
     virtual casacore::Vector<casacore::Int> getAntTypeList() {casacore::Vector<casacore::Int> tt(1);tt(0)=0;return tt;};
 
-    virtual void setConvSize(const casacore::Int convSize) {cachedConvSize_p=convSize;}
-    virtual casacore::Int getConvSize()  {return cachedConvSize_p;};
-    // {
-    //   casacore::Int defaultConvSize=CONVSIZE;
-    //   defaultConvSize= SynthesisUtils::getenv("CONVSIZE",CONVSIZE);
-    //   // if (envStr != "")
-    //   // 	{
-    //   // 	  sscanf(envStr.c_str,"%d",&defaultConvSize);
-    //   cerr << "ConvFuncSize set to " << defaultConvSize << endl;
-    //   // 	}
-    //   return defaultConvSize;
-    // };
+    virtual void setConvSize(const int convSize) {cachedConvSize_p=convSize;}
+    virtual void setConvOversampling(const int os) {cachedOverSampling_p=os;}
+    virtual casacore::Int getConvSize()  {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedConvSize_p;};
+    virtual casacore::Int getOversampling() {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedOverSampling_p;}
 
-    virtual casacore::Int getOversampling() {return cachedOverSampling_p;}
-    // {
-    //   casacore::Int defaultOverSampling=OVERSAMPLING;
-    //   char *envStr;
-    //   if ((envStr = getenv("OVERSAMPLING")) != NULL)
-    // 	{
-    // 	  sscanf(envStr,"%d",&defaultOverSampling);
-    // 	  cerr << "Oversampling set to " << defaultOverSampling << endl;
-    // 	}
-    //   return defaultOverSampling;
-    // }
     virtual casacore::Float getConvWeightSizeFactor() {return CONVWTSIZEFACTOR;};
     virtual casacore::Float getSupportThreshold() {return THRESHOLD;};
-
-    // virtual casacore::Vector<casacore::Int> vbRow2CFKeyMap(const VisBuffer2& vb, casacore::Int& nUnique) = 0;
-    // virtual casacore::Int getConvSize() = 0;
-    // virtual casacore::Int getOversampling() = 0;
-    // virtual casacore::Float getConvWeightSizeFactor() = 0;
-    // virtual casacore::Float getSupportThreshold() = 0;
 
     virtual void normalizeImage(casacore::Lattice<casacore::Complex>& skyImage,
 				const casacore::Matrix<casacore::Float>& weights) 
@@ -200,11 +173,11 @@ namespace casa{
     casacore::String getTelescopeName() {return telescopeName_p;};
     virtual casacore::Bool rotationallySymmetric() {return true;};
 
+    void setConvSize_Oversampling();
   protected:
     casacore::LogIO& logIO() {return logIO_p;}
     casacore::LogIO logIO_p;
     casacore::Vector<casacore::Int> polMap_p_base;
-    casacore::Int cachedOverSampling_p, cachedConvSize_p;
 
     casacore::Float Diameter_p, Nant_p, HPBW, sigma;
   };
