@@ -17,7 +17,7 @@ TEST(CoyoteTest, UIFactory) {
   string MSNBuf="", cfCache="test", fieldStr="", spwStr="*",
     imageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
-    imageNamePrefix="",mode="dryrun";
+    mode="dryrun";
   std::vector<std::string> cfList;
   
   float cellSize=0.025;//refFreq=3e09, freqBW=3e9;
@@ -38,7 +38,7 @@ TEST(CoyoteTest, UIFactory) {
      MSNBuf,
      telescopeName,
      NX, cellSize, stokes, refFreqStr, nW,
-     cfCache, imageNamePrefix, WBAwp,
+     cfCache, WBAwp,
      psTerm, aTerm, mType, pa, dpa,
      fieldStr, spwStr, phaseCenter, conjBeams,
      cfBufferSize, cfOversampling,
