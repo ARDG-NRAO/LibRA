@@ -1,4 +1,4 @@
-# Algorithm Architecture
+# Algorithm Architecture [!UNDER CONSTRUCTION!]
 ## Introduction
 
 A _stable and scalable_ architecture must scale for computing load and
