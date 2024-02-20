@@ -55,8 +55,8 @@ The equation above can be expanded as:
 
 $\vec V_{ij} = M^{DI}_ {ij} S_{ij} F M^{DD}_ {ij} I( \vec s ) + n_{ij}$
 
-The goal of calibration algorithms is to derive models for $M^{DI}_
-{ij}$ and $M^{DD}_ {ij}$, given $V$, a model for $I$ and statistical
+The goal of calibration algorithms is to derive models for $M^{DI}_ {ij}$ and $M^{DD}_ {ij}$,
+given $V$, a model for $I$ and statistical
 characterization of $n$. The goal of image reconstruction algorithms
 is to derive $I$, given $V$ corrected for $M^{DI}_ {ij}$, a model for
 $M^{DD}_ {ij}$ and a statistical description of $n$.  This essentially
