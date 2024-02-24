@@ -105,10 +105,18 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       i=1;clgetIValp("buffersize", cfBufferSize,i);
       i=1;clgetIValp("oversampling", cfOversampling,i);
 
-      InitMap(watchPoints,exposedKeys);exposedKeys.resize(0);
+      InitMap(watchPoints,exposedKeys);
+      // Expose cflist for mode=fillcf. Hide aterm,psterm,conjbeams
+      exposedKeys.resize(0);
       exposedKeys.push_back("cflist");
-      //      exposedKeys.push_back("wtcflist");
       watchPoints["fillcf"]=exposedKeys;
+
+      // // Expose aterm,psterm,conjbeams for mode=dryrun. Hide fillcf.
+      // exposedKeys.resize(0);
+      // exposedKeys.push_back("aterm");
+      // exposedKeys.push_back("psterm");
+      // exposedKeys.push_back("conjbeams");
+      // watchPoints["dryrun"]=exposedKeys;
 
       i=1;clgetSValp("mode", mode,i,watchPoints);clSetOptions("mode",{"dryrun","fillcf"});
       i=0;clgetNSValp("cflist", cfList,i);

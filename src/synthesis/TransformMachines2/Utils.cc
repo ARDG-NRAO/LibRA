@@ -1639,10 +1639,20 @@ namespace casa
 	}
       catch (AipsError &er)
 	{
-	  // Read record stored as a Table.
-	  Table tab(fileName, Table::Update);
-	  rr=tab.keywordSet().asRecord("record");
-	  return rr;
+	  try
+	    {
+	      // Read record stored as a Table with write access
+	      Table tab(fileName, Table::Update);
+	      rr=tab.keywordSet().asRecord("record");
+	      return rr;
+	    }
+	  catch (AipsError &er2)
+	    {
+	      // Read record stored as a Table with read-only access
+	      Table tab(fileName, Table::Old);
+	      rr=tab.keywordSet().asRecord("record");
+	      return rr;
+	    }
 	}
     }
     void SynthesisUtils::writeRecord(const casacore::String& fileName,
