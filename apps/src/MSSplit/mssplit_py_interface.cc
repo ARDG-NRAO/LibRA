@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "mssplit.h"
+#include <mssplit.h>
 
 namespace py = pybind11;
 

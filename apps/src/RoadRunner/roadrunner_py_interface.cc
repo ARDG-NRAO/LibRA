@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include <string>
 #include <iostream>
-#include <RoadRunner/roadrunner.h>
+#include <roadrunner.h>
 
 using namespace pybind11;
 using namespace std;

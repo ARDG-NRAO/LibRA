@@ -24,7 +24,7 @@
 // #
 // # $Id$
 
-#include <MSSplit/mssplit.h>
+#include <mssplit.h>
 
 
 void showTableCache()

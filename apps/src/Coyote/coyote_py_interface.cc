@@ -5,7 +5,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <Coyote/coyote.h>
+#include <coyote.h>
 
 namespace py = pybind11;
 using namespace py::literals;  // to bring in the "_a" literal
