@@ -33,7 +33,7 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <TableInfo/tableinfo.h>
+#include <tableinfo.h>
 
 
 //

@@ -25,10 +25,10 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   mask.resize(1);
   mask[0] ="circle[[256pix,290pix],140pix]";
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.sumwt", current_path()/"unittest_hummbee.sumwt", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.sumwt", current_path()/"unittest_hummbee.sumwt", copy_options::recursive);
 
   float PeakRes = Hummbee(imageName, modelImageName,
                  deconvolver,
@@ -80,10 +80,10 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   mask[1] = "box[[1794pix,1828pix],[2225pix,2232pix]]";
   mask[2] = "box[[2077pix,1989pix],[3270pix,2616pix]]";
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"unittest_hummbee_mfs_revE.weight", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"unittest_hummbee_mfs_revE.weight", copy_options::recursive);
 
   float PeakRes = Hummbee(imageName, modelImageName,
                  deconvolver,
