@@ -47,7 +47,7 @@
 //#include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <RoadRunner/ThreadCoordinator.h>
+#include "ThreadCoordinator.h"
 #ifdef ROADRUNNER_USE_HPG
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>

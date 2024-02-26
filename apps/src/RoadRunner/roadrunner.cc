@@ -29,11 +29,11 @@
 //================================================================================
 //
 #define ROADRUNNER_USE_HPG
-#include <RoadRunner/rWeightor.h>
-#include <RoadRunner/DataIterations.h>
-#include <RoadRunner/DataBase.h>
-#include <RoadRunner/MakeComponents.h>
-#include <RoadRunner/roadrunner.h>
+#include <rWeightor.h>
+#include <DataIterations.h>
+#include <DataBase.h>
+#include <MakeComponents.h>
+#include <roadrunner.h>
 
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);

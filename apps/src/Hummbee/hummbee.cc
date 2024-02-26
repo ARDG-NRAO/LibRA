@@ -24,7 +24,7 @@
 //#
 //# $Id$
 
-#include <Hummbee/hummbee.h>
+#include <hummbee.h>
 
 
 /*bool synthesisimager::setupdeconvolution(const casac::record& decpars)
@@ -327,10 +327,10 @@ float Hummbee(//string& MSNBuf,
       PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
       Float psffraction = MaxPsfSidelobe * CycleFactor;
-      psffraction = max(psffraction, minpsffraction);
-      psffraction = min(psffraction, maxpsffraction);
+      psffraction = casacore::max(psffraction, minpsffraction);
+      psffraction = casacore::min(psffraction, maxpsffraction);
       Float cyclethreshold = PeakResidual * psffraction;
-      threshold = max(threshold, cyclethreshold);   
+      threshold = casacore::max(threshold, cyclethreshold);   
 
       iterBotRec_p.define("cycleniter", Int(cycleniter));
       iterBotRec_p.define("loopgain", Float(gain));

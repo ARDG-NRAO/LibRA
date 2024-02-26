@@ -48,7 +48,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <Hummbee/hummbee.h>
+#include <hummbee.h>
 
 
 //

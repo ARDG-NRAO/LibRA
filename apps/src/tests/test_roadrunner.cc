@@ -47,8 +47,8 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -110,8 +110,8 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,

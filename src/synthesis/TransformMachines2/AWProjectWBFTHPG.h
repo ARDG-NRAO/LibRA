@@ -149,7 +149,7 @@ namespace casa
 	  Int inx = lattice->shape()(0);
 	  Int iny = lattice->shape()(1);
 
-	  Int npixCorr= max(inx,iny);
+	  Int npixCorr= casacore::max(inx,iny);
 	  Vector<Float> sincConv(npixCorr);
 	  Vector<Complex> correction(npixCorr);
 	  for (Int ix=0;ix<npixCorr;ix++)

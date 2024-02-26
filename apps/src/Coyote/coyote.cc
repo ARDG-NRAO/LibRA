@@ -25,11 +25,11 @@
 // # $Id$
 
 
-#include <RoadRunner/rWeightor.h>
-#include <RoadRunner/DataBase.h>
-#include <RoadRunner/MakeComponents.h>
+#include <rWeightor.h>
+#include <DataBase.h>
+#include <MakeComponents.h>
 
-#include <Coyote/coyote.h>
+#include <coyote.h>
 
 //
 //--------------------------------------------------------------------------
