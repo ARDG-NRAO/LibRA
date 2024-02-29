@@ -1487,7 +1487,7 @@ namespace casa
       assert(wVals.nelements() >= wprojplanes);
       
       // Make list of W-CF indexes
-      int nWCFs=(wprojplanes<=1)?wprojplanes:wVals.nelements();
+      int nWCFs=(wprojplanes<=wVals.nelements())?wprojplanes:wVals.nelements();
       wNdxList.resize(nWCFs);
       for(int i=0;i<nWCFs;i++) wNdxList[i] = i;
       
