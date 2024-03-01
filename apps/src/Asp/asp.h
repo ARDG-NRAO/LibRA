@@ -45,9 +45,16 @@
 using namespace casa;
 using namespace casacore;
 
-template <typename T, size_t size_x, size_t size_y>
-void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[size_x][size_y],
-  T (&mask)[size_x][size_y], 
+//template <typename T>
+//void Asp(T **model, T **psf, T **residual,
+//  T **mask,
+//  size_t size_x, size_t size_y, 
+template <typename T>
+void Asp(std::vector<std::vector<T>>& model, 
+  std::vector<std::vector<T>>& psf, 
+  std::vector<std::vector<T>>& residual,
+  std::vector<std::vector<T>>& mask,
+  size_t size_x, size_t size_y, 
   float& psfwidth,
   float& largestscale, float& fusedthreshold,
   int& nterms,
@@ -61,8 +68,8 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
   AspMatrixCleaner itsCleaner;
 
 
-  IPosition shape(2, size_y, size_x);
-  Matrix<T> psfMatT(shape, *psf); //itsMatPsf is arrar<float>
+  //IPosition shape(2, size_y, size_x);
+  //Matrix<T> psfMatT(shape, *psf); //itsMatPsf is arrar<float>
   /*for (int j = 0; j < size_x; j++)
   {
     for (int i = 0; i < size_y; i++)
@@ -71,7 +78,8 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
       cout << "psfMatT[" << i << "," << j << "] = " << psfMatT(i,j) << endl;
     }
   }*/
-  Matrix<T> psfMat(transpose(psfMatT));
+  //Matrix<T> psfMat(transpose(psfMatT));
+
   /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
@@ -79,20 +87,14 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
       cout << "psfMat[" << i << "," << j << "] = " << psfMat(i,j) << endl;
     }
   }*/
-
-
-  //bool isCopy;
-  //T *tempPtr = tempMat.getStorage(isCopy);
-   /*for (int j = 0; j < size_y; j++)
+  Matrix<T> psfMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
-      //psf[i][j] = tempPtr[i + j*size_x];
-      psf[i][j] = psfMat(i,j);
-
-      cout << "psf[" << i << "," << j << "] = " << psf[i][j] << endl;
+      psfMat(i,j) = psf[i][j];
     }
-  }*/
+  }
   itsCleaner.setPsf(psfMat);
   
 
@@ -102,7 +104,6 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
   itsCleaner.setUserLargestScale(largestscale);
 
   itsCleaner.setInitScaleXfrs(psfwidth);
-
 
   itsCleaner.stopPointMode(-1);
   itsCleaner.ignoreCenterBox(true); // Clean full image
@@ -117,24 +118,31 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
   itsCleaner.setFusedThreshold(fusedthreshold);
   
    
-  Matrix<T> maskMatT(shape, *mask); 
-  Matrix<T> maskMat(transpose(maskMatT));
-  /*for (int j = 0; j < size_y; j++)
+  ////Matrix<T> maskMatT(shape, *mask); 
+  ////Matrix<T> maskMat(transpose(maskMatT));
+  Matrix<T> maskMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
-      cout << "maskMat[" << i << "," << j << "] = " << maskMat(i,j) << endl;
+      maskMat(i,j) = mask[i][j];
     }
-  }*/
+  }
 
   itsCleaner.setInitScaleMasks(maskMat);  //Array<Float> itsMatMask; 
   itsCleaner.setaspcontrol(0, 0, 0, Quantity(0.0, "%"));// Needs to come before the rest
 
-  //Matrix<Float> tempMat1;
-  //tempMat1.reference(itsMatResidual);
 
-  Matrix<T> dirtyMatT(shape, *residual); 
-  Matrix<T> dirtyMat(transpose(dirtyMatT));
+  //Matrix<T> dirtyMatT(shape, *residual); 
+  //Matrix<T> dirtyMat(transpose(dirtyMatT));
+  Matrix<T> dirtyMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
+  {
+    for (int i = 0; i < size_x; i++)
+    {
+      dirtyMat(i,j) = residual[i][j];
+    }
+  }
   itsCleaner.setDirty(dirtyMat);
 
   // InitScaleXfrs and InitScaleMasks should already be set
@@ -152,10 +160,17 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
   // takeOneStep
   Quantity thresh(threshold, "Jy");
   itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
-  //Matrix<Float> tempModel;
-  //tempModel.reference( itsMatModel ); 
-  Matrix<T> modelMatT(shape, *model); 
-  Matrix<T> modelMat(transpose(modelMatT));
+   
+  //Matrix<T> modelMatT(shape, *model); 
+  //Matrix<T> modelMat(transpose(modelMatT));
+  Matrix<T> modelMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
+  {
+    for (int i = 0; i < size_x; i++)
+    {
+      modelMat(i,j) = model[i][j];
+    }
+  }
   
 
   // get initial peak residual
@@ -184,9 +199,8 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
     startpeakresidual = max(abs(dirtyMat));
   }
 
-  cout << "startpeakresidual " << startpeakresidual << ", masksum " << masksum << endl;
+  //cout << "startpeakresidual " << startpeakresidual << ", masksum " << masksum << endl;
 
-  //float startpeakresidual = validMask ? getPeakResidualWithinMask() : getPeakResidual();
 
   // retval
   //  1 = converged
@@ -209,8 +223,6 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
     for (int i = 0; i < size_x; i++)
     {
       residual[i][j] = dirtyMat(i,j);
-      
-      cout << "residual[" << i << "," << j << "] = " << residual[i][j] << endl;
     }
   }
 
@@ -223,8 +235,6 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
     for (int i = 0; i < size_x; i++)
     {
       model[i][j] = modelMat(i,j);
-      
-      cout << "model[" << i << "," << j << "] = " << model[i][j] << endl;
     }
   }
 
@@ -306,11 +316,6 @@ void Asp(T (&model)[size_x][size_y], T (&psf)[size_x][size_y], T (&residual)[siz
 
      os << LogIO::POST;
 }
-
-
-
-
-void hello() {std::cout << "hello world " << std::endl;}
 
 
 #endif

@@ -1,5 +1,6 @@
 #include <filesystem>
 #include "Asp/asp.h"
+#include "translation/casacore_asp.h"
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -20,24 +21,56 @@ TEST(AspTest, FuncLevel) {
   float psfwidth = 5.0;
   float nsigmathreshold = 1;
 
-  float psf[2][5] =
+  size_t nx = 2;
+  size_t ny = 5;
+  /*float psfa[nx][ny] =
     {
         {1,8,12,20,25},
         {5,9,13,24,26}
     };
 
-  float model[2][5] = {0};
-  float residual[2][5] = {
+  float modela[nx][ny] = {0};
+  float residuala[nx][ny] = {
         {1,8,12,-20,-25},
         {5,9,-13,24,26}
     };
-  float mask[2][5] = {
+  float maska[nx][ny] = {
         {1,8,0,20,25},
         {5,9,13,24,0}
     };
 
-  Asp<float>(model, psf, residual,
-       mask,
+  float *psfb[nx];
+  float *modelb[nx];
+  float *residualb[nx];
+  float *maskb[nx];
+
+  for (size_t i = 0; i < nx; ++i)
+  {
+        psfb[i] = psfa[i];
+        modelb[i] = modela[i];
+        residualb[i] = residuala[i];
+        maskb[i] = maska[i];
+  }*/
+
+  vector<vector<float>> psfb =
+    {
+        {1,8,12,20,25},
+        {5,9,13,24,26}
+    };
+
+  vector<vector<float>> modelb(nx,vector<float>(ny,0));
+  vector<vector<float>> residualb = {
+        {1,8,12,-20,-25},
+        {5,9,-13,24,26}
+    };
+  vector<vector<float>> maskb = {
+        {1,8,0,20,25},
+        {5,9,13,24,0}
+    };
+
+  Asp<float>(modelb, psfb, residualb,
+       maskb,
+       nx, ny,
        psfwidth,
        largestscale, fusedthreshold,
        nterms,
@@ -47,11 +80,57 @@ TEST(AspTest, FuncLevel) {
        cycleniter, cyclefactor,
        specmode
        );
-  hello();
 
-  EXPECT_EQ(psf[1][0],5.0);
-  EXPECT_EQ(residual[0][3],-20.0);
+  EXPECT_EQ(psfb[1][0],5.0);
+  EXPECT_EQ(residualb[0][3],-20.0);
   
+
+}
+
+
+TEST(AspTest, casacore_asp_mfs) {
+
+  // Check that the return value is true
+  string imageName = "unittest_hummbee_mfs_revE";
+  string modelImageName = "unittest_hummbee_mfs_revE.image";
+  string specmode="mfs";
+  float largestscale = -1;
+  float fusedthreshold = 0.007;
+  int nterms=2;
+  float gain=0.2;
+  float threshold=2.6e-07;
+  float nsigma=0.0;
+  int cycleniter=3;
+  float cyclefactor=1.0;
+  //vector<string> mask;
+  //mask.resize(1);
+  //mask[0] ="circle[[256pix,290pix],140pix]";
+
+  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+
+  casacore_asp(imageName, modelImageName,
+                 largestscale, fusedthreshold,
+                 nterms,
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor,
+                 specmode
+                 );
+
+  PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
+
+  float tol = 0.1;
+  float goldValLoc0 = 0.000332008;
+  float goldValLoc1 = 0.000176319;
+  EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);
+
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
 
 }
 

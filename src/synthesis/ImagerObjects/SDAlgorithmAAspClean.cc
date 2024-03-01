@@ -90,6 +90,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsImages->psf()->get( itsMatPsf, true );
     itsImages->mask()->get( itsMatMask, true );
 
+    cout << " itsMatPsf.shape() " << itsMatPsf.shape() << endl;
+
     // Initialize the AspMatrixCleaner.
     // If it's single channel, this only needs to be computed once.
     // Otherwise, it needs to be called repeatedly at each minor cycle start to
@@ -97,6 +99,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if (itsMCsetup)
     {
       Matrix<Float> tempMat(itsMatPsf);
+      cout << " matPsf.shape() " << tempMat.shape() << endl;
       itsCleaner.setPsf(tempMat);
       // Initial scales are unchanged and only need to be
       // computed when psf width is updated

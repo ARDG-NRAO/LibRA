@@ -71,3 +71,6 @@ if(Apps_BUILD_TESTS)
   add_subdirectory(src/tests)
 endif()
 
+# add and build translation layer
+add_subdirectory(src/translation)
+

@@ -321,6 +321,8 @@ float Hummbee(//string& MSNBuf,
       Bool validMask = ( masksum > 0 );
       PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
+      std::cout << "masksum " << masksum << std::endl;
+      
       float minpsffraction = 0.05;
       float maxpsffraction = 0.8;
       float CycleFactor = 1.0;

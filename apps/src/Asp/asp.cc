@@ -1,4 +1,4 @@
-//# SDAlgorithmAAspClean.cc: Implementation of SDAlgorithmAAspClean classes
+//# asp.cc: Implementation of SDAlgorithmAAspClean classes
 //# Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003
 //# Associated Universities, Inc. Washington DC, USA.
 //#
