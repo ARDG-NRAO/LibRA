@@ -9,7 +9,7 @@
 #include <cl.h> // C++ized version
 #include <clinteract.h>
 
-#include <MSSplit/mssplit.h>
+#include <mssplit.h>
 
 //
 //-------------------------------------------------------------------------

@@ -23,7 +23,7 @@
 // # $Id$
 
 
-#include <TableInfo/tableinfo.h>
+#include <tableinfo.h>
 #include <synthesis/TransformMachines2/Utils.h>
 using namespace casa;
 using  namespace refim;

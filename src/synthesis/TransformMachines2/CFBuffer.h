@@ -252,8 +252,8 @@ using namespace casa::vi;
     
     inline casacore::Int nearestWNdx(const casacore::Double& wVal) 
     {
-      return max(0,
-		 min(
+      return casacore::max(0,
+		 casacore::min(
 		     (int)round(sqrt(wValIncr_p*abs(wVal))),
 		     (int)(wValues_p.nelements()-1)
 		     )

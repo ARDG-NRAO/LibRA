@@ -33,7 +33,7 @@
 #include <clinteract.h>
 #include <clgetBaseCode.h>
 
-#include <Coyote/coyote.h>
+#include <coyote.h>
 
 //#include <synthesis/TransformMachines2/AWConvFunc.h>
 

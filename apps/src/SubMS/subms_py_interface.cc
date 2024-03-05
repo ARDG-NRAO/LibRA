@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "subms.h"
+#include <subms.h>
 
 namespace py = pybind11;
 
