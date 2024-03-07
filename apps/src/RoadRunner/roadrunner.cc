@@ -320,11 +320,11 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
   try
     {
-      casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
-      if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
+      casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
+      //if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
 
-      if (dataColumnName=="data")  dataCol_l=casa::refim::FTMachine::OBSERVED;
-      else if (dataColumnName=="model") dataCol_l=casa::refim::FTMachine::MODEL;
+      if      (dataColumnName=="data")      dataCol_l=casa::refim::FTMachine::OBSERVED;
+      else if (dataColumnName=="model")     dataCol_l=casa::refim::FTMachine::MODEL;
       else if (dataColumnName=="corrected") dataCol_l=casa::refim::FTMachine::CORRECTED;
 
       // Install a terminate handler to inform that Libhpg() RAII

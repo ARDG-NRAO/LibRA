@@ -71,7 +71,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			 const casacore::CountedPtr<WTerm> wTerm,
 			 const casacore::Bool wbAWP,
 			 const casacore::Bool conjPB):
-    ConvolutionFunction(),aTerm_p(aTerm),psTerm_p(psTerm), wTerm_p(wTerm), pixFieldGrad_p(), 
+    ConvolutionFunction(),aTerm_p(aTerm),psTerm_p(psTerm), wTerm_p(wTerm), pixFieldGrad_p(),
     wbAWP_p(wbAWP), conjPB_p(conjPB), baseCFB_p()
   {
     if (psTerm->isNoOp() && aTerm->isNoOp())
@@ -84,7 +84,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	//log_l << "wbawp=True is ineffective when aterm is OFF.  Setting wbawp to False." << LogIO::NORMAL1;
 	wbAWP_p=false;
       }
-    
+
     pixFieldGrad_p.resize(2);pixFieldGrad_p(0)=0.0; pixFieldGrad_p(1)=0.0;
   }
 
@@ -93,7 +93,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //
   AWConvFunc& AWConvFunc::operator=(const AWConvFunc& other)
   {
-    if(this!=&other) 
+    if(this!=&other)
       {
 	aTerm_p = other.aTerm_p;
 	psTerm_p = other.psTerm_p;
@@ -113,7 +113,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     ArrayLattice<Complex> lat(buf, true);
     LatticeStepper latStepper(lat.shape(), cursorShape,axisPath);
     LatticeIterator<Complex> latIter(lat, latStepper);
-    
+
     IPosition start0(4,0,0,0,0), start1(4,0,0,1,0), length(4, pbShape(0), pbShape(1),1,1);
     Slicer slicePol0(start0, length), slicePol1(start1, length);
     if (pbShape(2) > 1)
@@ -185,14 +185,14 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 				      const Int&,// skyNX,
 				      const Int&,// skyNY,
 				      const Vector<Double>&,// skyIncr,
-				      const Int& nx, const Int& ny, 
+				      const Int& nx, const Int& ny,
 				      const Vector<Double>& freqValues,
 				      const Vector<Double>& wValues,
 				      const Double& wScale,
 				      const Double& vbPA, const Double& freqHi,
 				      const PolMapType& muellerElements,
 				      const PolMapType& muellerElementsIndex,
-				      const VisBuffer2& vb, 
+				      const VisBuffer2& vb,
 				      const Float& psScale,
 				      PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
 				      Bool isDryRun)
@@ -223,13 +223,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		String bandName;
 		// Extract the parameters index by (MuellerElement, Freq, W)
 		cfWtb.getParams(cs_l, samplingWt, xSupportWt, ySupportWt, bandName,
-				freqValues(inu), 
-				//				wValues(iw), 
-				wValues(0), 
+				freqValues(inu),
+				//				wValues(iw),
+				wValues(0),
 				muellerElements(imx)(imy));
 		cfb.getParams(cs_l, sampling, xSupport, ySupport, bandName,
-			      freqValues(inu), 
-			      wValues(0), 
+			      freqValues(inu),
+			      wValues(0),
 			      muellerElements(imx)(imy));
 		aTerm.setBandName(bandName);
 
@@ -243,14 +243,14 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		//   uvScale_l(2) = 0.0;
 
 		//   //Hints that only uvScale needs to be updated in PSTerm.
-		//   IPosition dummy; 
+		//   IPosition dummy;
 		//   Vector<Double> dummyoffset;
 		//   Double pss = -1;
 		//   //cerr << "############ " << freqValues(inu) << " " << skyIncr << skyNX << " " << uvScale_l << endl;
 		//   psTerm.reinit(dummy, uvScale_l, dummyoffset,pss);
 		// }
-		
-		
+
+
 		IPosition pbshp(4,nx, ny,1,1);
 		// Set the shape to 2x2 pixel images for dry gridding
 		if (isDryRun) pbshp[0]=pbshp[1]=2;
@@ -262,13 +262,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		Int conjFreqIndex;
 		conjFreq=SynthesisUtils::nearestValue(freqValues, conjFreq, conjFreqIndex);
 
-//		cout<<"Muller Array = "<<muellerElements(imx)(imy)<<"\n" ;
 		// USEFUL DEBUG MESSAGE
-//		 cerr << "Freq. values: " 
-//		      << freqValues(inu) << " " 
-//		      << imRefFreq_p << " " 
-//		      << conjFreq << " " 
-//		      << endl;
+		// cerr<<"Muller Array = "<<muellerElements(imx)(imy)<<"\n" ;
+		// cerr << "Freq. values: "
+		//      << freqValues(inu) << " "
+		//      << imRefFreq_p << " "
+		//      << conjFreq << " "
+		//      << endl;
 
 		CoordinateSystem conjPolCS_l=cs_l;  AWConvFunc::makeConjPolAxis(conjPolCS_l);
 		TempImage<Complex> ftATerm_l(pbshp, cs_l), ftATermSq_l(pbshp,conjPolCS_l);
@@ -284,13 +284,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		//   Int index = skyCS.findCoordinate(Coordinate::SPECTRAL);
 		//   SpectralCoordinate SpC = skyCS.spectralCoordinate(index);
 		//   Vector<Double> refVal = SpC.referenceValue();
-		  
+
 		//   Double ff = refVal[0];
 		//   cerr << "Freq, ConjFreq: " << freqValues(inu) << " " << conjFreq << " " << ff << endl;
 		// }
 
 
-		Bool doSquint=true; 
+		Bool doSquint=true;
 		//		Bool doSquint=false; Complex tt;
 		ftATerm_l.set(Complex(1.0,0.0));   ftATermSq_l.set(Complex(1.0,0.0));
 
@@ -306,7 +306,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    //tt=max(ftATerm_l.get()); ftATerm_l.put(ftATerm_l.get()/tt);
 		    if (conjPB_p) aTerm.applySky(ftATermSq_l, vb, doSquint, 0,me,conjFreq);
 		    else aTerm.applySky(ftATermSq_l, vb, doSquint, 0,me,freqValues(inu));
-		   
+
 		  }
 
 		//tt=max(ftATermSq_l.get()); ftATermSq_l.put(abs(ftATermSq_l.get()/tt));
@@ -338,8 +338,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			LogIO log_l(LogOrigin("AWConvFunc2", "fillConvFuncBuffer[R&D]"));
 
 			log_l << " CF("
-			      << "M:"<<muellerElements(imx)(imy) 
-			      << ",C:" << inu 
+			      << "M:"<<muellerElements(imx)(imy)
+			      << ",C:" << inu
 			      << ",W:" << iw << "): ";
 		      }
 		    // {
@@ -348,21 +348,21 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    //   cerr << "ConjFreq: " << thisCell->conjFreq_p << " " << inu << " " << iw << " " << muellerElements(imx)(imy) << endl;
 		    // }
 
-    		    Array<Complex> &cfWtBuf=(*(cfWtb.getCFCellPtr(freqValues(inu), wValues(iw), 
+    		    Array<Complex> &cfWtBuf=(*(cfWtb.getCFCellPtr(freqValues(inu), wValues(iw),
 								  muellerElements(imx)(imy))->storage_p));
-		    Array<Complex> &cfBuf=(*(cfb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    Array<Complex> &cfBuf=(*(cfb.getCFCellPtr(freqValues(inu), wValues(iw),
 							      muellerElements(imx)(imy))->storage_p));
-    		    // IPosition cfWtBufShape= cfWtb.getCFCellPtr(freqValues(inu), wValues(iw), 
+    		    // IPosition cfWtBufShape= cfWtb.getCFCellPtr(freqValues(inu), wValues(iw),
 		    // 					       muellerElements(imx)(imy))->shape_p;
-		    // IPosition cfBufShape=cfb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    // IPosition cfBufShape=cfb.getCFCellPtr(freqValues(inu), wValues(iw),
 		    // 					  muellerElements(imx)(imy))->shape_p;
-		    
+
 		    cfWtBuf.resize(pbshp);
 		    cfBuf.resize(pbshp);
 
 		    const Vector<Double> sampling_l(2,sampling);
 		    //		    Double wval = wValues[iw];
-		    Matrix<Complex> cfBufMat(cfBuf.nonDegenerate()), 
+		    Matrix<Complex> cfBufMat(cfBuf.nonDegenerate()),
 		      cfWtBufMat(cfWtBuf.nonDegenerate());
 		    //
 		    // Apply the Prolate Spheroidal and W-Term kernels
@@ -414,10 +414,10 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    // WKernel applied (too bad that TempImages can't be
 		    // made with existing buffers)
 		    //
-		    //-------------------------------------------------------------		    
+		    //-------------------------------------------------------------
 		    TempImage<Complex> twoDPB_l(pbShape, cs_l);
 		    TempImage<Complex> twoDPBSq_l(pbShape,cs_l);
-		    //-------------------------------------------------------------		    
+		    //-------------------------------------------------------------
 		    // WBAWP CODE BEGIN -- ftATermSq_l has conj. PolCS
 		    cfWtBuf *= ftATerm_l.get()*conj(ftATermSq_l.get());
 		    //tim.mark();
@@ -426,7 +426,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    //tim.show("W*A*2: ");
 		    // WBAWP CODE END
 
-		    
+
 
 		    // cfWtBuf = sqrt(cfWtBuf);
 		    // psTerm.applySky(cfWtBufMat,true);
@@ -441,11 +441,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
 		    //		    twoDPBSq_l *= ftATermSq_l;//*conj(ftATerm_l);
 
-		    // To accumulate avgPB2, call this function. 
+		    // To accumulate avgPB2, call this function.
 		    // PBSQWeight
 		    Bool PBSQ = false;
-		    if(PBSQ) makePBSq(twoDPBSq_l); 
-		    
+		    if(PBSQ) makePBSq(twoDPBSq_l);
+
 
 		    //
 		    // Set the ref. freq. of the co-ordinate system to
@@ -455,7 +455,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     		    CoordinateSystem cs=twoDPB_l.coordinates();
     		    Int index= twoDPB_l.coordinates().findCoordinate(Coordinate::SPECTRAL);
     		    SpectralCoordinate SpCS = twoDPB_l.coordinates().spectralCoordinate(index);
-		    
+
     		    Double cfRefFreq=SpCS.referenceValue()(0);
     		    Vector<Double> refValue; refValue.resize(1); refValue(0)=cfRefFreq;
     		    SpCS.setReferenceValue(refValue);
@@ -488,14 +488,14 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    IPosition shp(twoDPB_l.shape());
 		    IPosition start(4, 0, 0, 0, 0), pbSlice(4, shp[0]-1, shp[1]-1,1/*polInUse*/, 1),
 		      sliceLength(4,cfBuf.shape()[0]-1,cfBuf.shape()[1]-1,1,1);
-		    
+
 		    cfBuf(Slicer(start,sliceLength)).nonDegenerate()
 		      =(twoDPB_l.getSlice(start, pbSlice, true));
-		    
+
 		    shp = twoDPBSq_l.shape();
 		    IPosition pbSqSlice(4, shp[0]-1, shp[1]-1, 1, 1),
 		      sqSliceLength(4,cfWtBuf.shape()(0)-1,cfWtBuf.shape()[1]-1,1,1);
-		    
+
 		    cfWtBuf(Slicer(start,sqSliceLength)).nonDegenerate()
 		      =(twoDPBSq_l.getSlice(start, pbSqSlice, true));
 		    //tim.show("Slicer*2:");
@@ -546,7 +546,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 				    String(""), // Default ==> don't set it in the CFCell
 				    conjFreq, conjPol[0]);
 
-		    cfCellPtr = cfWtb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    cfCellPtr = cfWtb.getCFCellPtr(freqValues(inu), wValues(iw),
 						   muellerElements(imx)(imy));
 		    cfCellPtr->pa_p=Quantity(vbPA,"rad");
 		    cfCellPtr->telescopeName_p = aTerm.getTelescopeName();
@@ -555,7 +555,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    //cerr << "AWConvFunc: Telescope name = " << cfCellPtr->telescopeName_p << " " << aTerm.getTelescopeName() << endl;
 		    //tim.show("CSStuff:");
 		    // setUpCFSupport(cfBuf, xSupport, ySupport, sampling);
-		    //		    if (iw==0) 
+		    //		    if (iw==0)
 		    //tim.mark();
 		    //Int supportBuffer = (Int)(aTerm->getOversampling()*1.5);
 
@@ -621,7 +621,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		      }
 		    else
 		      SynthesisUtils::makeFTCoordSys(cs_l, cfBuf.shape()(0), ftRef, ftCoords);
-		      
+
 		    cfb.setParams(inu,iw,imx,imy,//muellerElements(imx)(imy),
 				  freqValues(inu), String(""), wValues(iw), muellerElements(imx)(imy),
 				  ftCoords, sampling, xSupport, ySupport,
@@ -631,7 +631,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    // Setting CFCell internal parameters works if set
 		    // here, not earlier than this!  Not really sure
 		    // why (SB).
-		    cfCellPtr=cfb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    cfCellPtr=cfb.getCFCellPtr(freqValues(inu), wValues(iw),
 					       muellerElements(imx)(imy));
 		    cfCellPtr->pa_p=Quantity(vbPA,"rad");
 		    cfCellPtr->telescopeName_p = aTerm.getTelescopeName();
@@ -647,9 +647,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    // loops (in the re-sampler, e.g.).
 		    //
 
-		    (cfWtb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    (cfWtb.getCFCellPtr(freqValues(inu), wValues(iw),
 					muellerElements(imx)(imy)))->initCache(isDryRun);
-		    (cfb.getCFCellPtr(freqValues(inu), wValues(iw), 
+		    (cfb.getCFCellPtr(freqValues(inu), wValues(iw),
 				      muellerElements(imx)(imy)))->initCache(isDryRun);
 
 		    pm.update((Double)cfsDone++);
@@ -662,7 +662,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //
   //----------------------------------------------------------------------
   //
-  Complex AWConvFunc::cfArea(Matrix<Complex>& cf, 
+  Complex AWConvFunc::cfArea(Matrix<Complex>& cf,
 			     const Int& xSupport, const Int& ySupport,
 			     const Float& sampling)
   {
@@ -740,8 +740,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     Matrix<Double> freqRangePerSpw(fminmax.shape()(1),2);
     for (uInt j=0;j<fminmax.shape()(1);j++) // SPW
       {
-	freqRangePerSpw(j,0)=0; 
-	freqRangePerSpw(j,1)=MAX_FREQ; 
+	freqRangePerSpw(j,0)=0;
+	freqRangePerSpw(j,1)=MAX_FREQ;
 	for (uInt i=0;i<fminmax.shape()(0);i++) //MSes
 	  {
 	    if (freqRangePerSpw(j,0) < fminmax(i,j,0)) freqRangePerSpw(j,0)=fminmax(i,j,0);
@@ -755,7 +755,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       }
 
     return freqRangePerSpw;
-  } 
+  }
   //
   //----------------------------------------------------------------------
   // Given the VB and the uv-grid, make a list of frequency values to
@@ -767,7 +767,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   // of the supplied image, and converting Resolution Element to
   // 1/Cellsize, this expression translates to deltaNU<FMin/Nx (!)
   Vector<Double> AWConvFunc::makeFreqValList(Double &dNU,
-					     const VisBuffer2& vb, 
+					     const VisBuffer2& vb,
 					     const ImageInterface<Complex>& uvGrid,
 					     Vector<String>& bandNames)
   {
@@ -783,13 +783,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     else
       {
 	fValues.resize(nSpw);
-	for(Int i=0;i<nSpw;i++) 
+	for(Int i=0;i<nSpw;i++)
 	  fValues(i)=spwFreqSelection_p(i,2);
       }
-    
+
     bandNames.resize(nSpw);
     ScalarColumn<String> spwNames=vb.subtableColumns().spectralWindow().name();
-    for(Int i=0;i<nSpw;i++) 
+    for(Int i=0;i<nSpw;i++)
       {
 	int s=spwFreqSelection_p(i,0);
 	// LogIO os;
@@ -824,20 +824,20 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     Double cfRefFreq=-1, freqScale=1e8;
     Quantity paQuant(pa,"rad");
 
-    
+
     Int nx=image.shape()(0);//, ny=image.shape()(1);
     Vector<Double> skyIncr;
-    
+
     log_l << "Making a new convolution function for PA="
 	  << pa*(180/C::pi) << "deg"
 	  << " for field ID " << vb.fieldId()(0);
     // log_l << "TimeStamps(0-10) ";
-    // for (Int i=0;i<10;i++) 
+    // for (Int i=0;i<10;i++)
     //   //log_l << MVTime(vb.time()(i)).string(MVTime::TIME) << " ";
     //   log_l << vb.time()(i)/1e8 << " ";
     log_l << LogIO::NORMAL << LogIO::POST;
-    
-    if(wConvSize>0) 
+
+    if(wConvSize>0)
       {
 	log_l << "Using " << wConvSize << " planes for W-projection" << LogIO::POST;
 	Double maxUVW;
@@ -848,11 +848,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	maxUVW=1.0/abs(image.coordinates().increment()(0)*WFUDGE);
 	log_l << "Estimating maximum possible W = " << maxUVW
 	      << " (wavelengths)" << LogIO::POST;
-	
+
 	// Double invLambdaC=vb.getFrequencies(0)(0)/C::c;
 	// Int nFreq = (vb.getFrequencies(0).nelements())-1;
 	// Double invMinL = vb.getFrequencies(0)(nFreq)/C::c;
-	// log_l << "wavelength range = " << 1.0/invLambdaC << " (m) to " 
+	// log_l << "wavelength range = " << 1.0/invLambdaC << " (m) to "
 	//       << 1.0/invMinL << " (m)" << LogIO::POST;
 	if (wConvSize > 1)
 	  {
@@ -861,12 +861,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		  << " wavelengths per pixel" << LogIO::POST;
 	  }
       }
-    //  
+    //
     // Get the coordinate system
     //
     CoordinateSystem coords(image.coordinates());
     //
-    // Set up the convolution function. 
+    // Set up the convolution function.
     //
     convSampling=getOversampling(*psTerm_p, *wTerm_p, *aTerm_p);
     convSize=aTerm_p->getConvSize();
@@ -884,16 +884,16 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     DirectionCoordinate dc=coords.directionCoordinate(index);
     Vector<Double> sampling;
     skyIncr = sampling = dc.increment();
-//    cout<<"The image sampling is set to :"<<sampling<<endl; 
+//    cout<<"The image sampling is set to :"<<sampling<<endl;
     sampling*=Double(convSampling);
     sampling*=Double(nx)/Double(convSize);
 //    cout<<"The resampled increment is :"<<sampling<<endl;
     dc.setIncrement(sampling);
-    
+
     Vector<Double> unitVec(2);
     unitVec=convSize/2;
     dc.setReferencePixel(unitVec);
-    
+
     // Set the reference value to that of the image
     coords.replaceCoordinate(dc, index);
     //
@@ -901,7 +901,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     // no. of vis. poln. planes that will be used in making the user
     // defined Stokes image.
     //
-    polInUse=aTerm_p->makePBPolnCoords(vb, convSize, convSampling, 
+    polInUse=aTerm_p->makePBPolnCoords(vb, convSize, convSampling,
 				       image.coordinates(),nx,nx,
 				       coords);//,feedStokes_l);
     //------------------------------------------------------------------
@@ -911,11 +911,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     IPosition pbShape(4, convSize, convSize, polInUse, 1);
     TempImage<Complex> twoDPB(pbShape, coords);
     IPosition pbSqShp(pbShape);
-    
+
     unitVec=pbSqShp[0]/2;
     dc.setReferencePixel(unitVec);
     coords.replaceCoordinate(dc, index);
-    
+
     TempImage<Complex> twoDPBSq(pbSqShp,coords);
     twoDPB.set(Complex(1.0,0.0));
     twoDPBSq.set(Complex(1.0,0.0));
@@ -929,7 +929,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     CountedPtr<CFBuffer> cfb_p, cfwtb_p;
     // cfs2.rememberATerm(aTerm_p);
     // cfwts2.rememberATerm(aTerm_p);
-    
+
     Vector<Quantity> paList(1); paList[0]=paQuant;
     //
     // Determine the "Mueller Matrix" (called PolOuterProduct here for
@@ -945,7 +945,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     // requested Stokes to the appropriate Pol cross-product.  When
     // the off-diagonal elements of the outer-product are significant,
     // this will lead to more than one outer-product element per
-    // Stokes.  
+    // Stokes.
     //
     // The code below still assume a diagonally dominant
     // outer-product.  This is probably OK for antenna arrays. After the
@@ -964,13 +964,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     conjPolIndexMap = pop->getConjPol2CFMat();
 
     // cerr << "AWCF: " << polMap << endl << polIndexMap << endl << conjPolMap << endl << conjPolIndexMap << endl;
-    
+
     // for(uInt ip=0;ip<pp.nelements();ip++)
     // 	pp(ip)=translateStokesToCrossPol(skyStokes(ip));
-    
+
     // PolOuterProduct pOP; pOP.makePolMap(pp);
     // const Matrix<Int> muellerMatrix=pOP.getPolMap();
-    
+
     Vector<Double> wValues    = makeWValList(wScale, wConvSize);
     Vector<String> bandNames;
     Vector<Double> freqValues = makeFreqValList(freqScale,vb,image,bandNames);
@@ -988,11 +988,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     // 	  freqScale=2*(rFreq-min(freqValues));
     // 	freqValues.resize(1);freqValues(0)=rFreq;
     //   }
-    log_l << "CFB Freq. axis [N, Min, Max, Incr. (GHz)]: " 
+    log_l << "CFB Freq. axis [N, Min, Max, Incr. (GHz)]: "
 	  << freqValues.nelements()  << " "
-	  << min(freqValues)/1e9 << " " 
+	  << min(freqValues)/1e9 << " "
 	  << max(freqValues)/1e9 << " "
-	  << freqScale/1e9 
+	  << freqScale/1e9
 	  << LogIO::POST;
     //
     // Re-size the CFStore object.  It holds CFBuffers index by PA and
@@ -1012,13 +1012,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// detected.
 	//
 	Vector<Int> pos;
-	pos=cfs2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1)); 
-	pos=cfwts2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1)); 
+	pos=cfs2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1));
+	pos=cfwts2.resize(paQuant, dPA, uniqueBaselineTypeList(ib,0), uniqueBaselineTypeList(ib,1));
 	//
 	// Get and re-size the CFBuffer object.  It holds the 2D
 	// convolution functions index by (FreqValue, WValue,
 	// MuellerElement).
-	//    
+	//
 	cfb_p=cfs2.getCFBuffer(paQuant, dPA, uniqueBaselineTypeList(ib,0),uniqueBaselineTypeList(ib,1));
 	cfwtb_p=cfwts2.getCFBuffer(paQuant, dPA, uniqueBaselineTypeList(ib,0),uniqueBaselineTypeList(ib,1));
 	cfb_p->setPointingOffset(pixFieldGrad_p);
@@ -1027,10 +1027,10 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// cfwtb_p->resize(wValues,freqValues,muellerMatrix);
 	cfb_p->resize(wScale, freqScale, wValues,freqValues,polMap, polIndexMap,conjPolMap, conjPolIndexMap);
 	cfwtb_p->resize(wScale, freqScale, wValues,freqValues,polMap, polIndexMap,conjPolMap, conjPolIndexMap);
-	
+
 	IPosition start(4, 0, 0, 0, 0);
 	IPosition pbSlice(4, convSize, convSize, 1, 1);
-	
+
 	//Initiate construction of the "ConvolveGridder" object inside
 	//PSTerm.  This is, for historical reasons, used to access the
 	//"standard" Prolate Spheroidal function implementaion.  This
@@ -1071,7 +1071,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// wvalues in the CFBuffer for the currenct CFStore object.
 	//
 	//cerr<<"Mueller matrix of row length:"<<polMap.nelements()<<" at the start of the CFBuf Loop" <<endl;
-	for (Int iw=0;iw<wConvSize;iw++) 
+	for (Int iw=0;iw<wConvSize;iw++)
 	  {
 	    for(uInt inu=0;inu<freqValues.nelements(); inu++)
 	      {
@@ -1088,7 +1088,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		      StokesCoordinate stokesCS=cfb_cs.stokesCoordinate(sIndex);
 		      Int fIndex=coords.findCoordinate(Coordinate::SPECTRAL);
 		      SpectralCoordinate spCS = coords.spectralCoordinate(fIndex);
-		      Vector<Double> refValue, incr; 
+		      Vector<Double> refValue, incr;
 		      refValue = spCS.referenceValue();
 		      incr = spCS.increment();
 		      cfRefFreq=freqValues(inu);
@@ -1103,10 +1103,10 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		      //
 		      Float s=convSampling;
 		      // cfb_p->setParams(convSize,convSize,cfb_cs,s,
-		      // 		       convSize, convSize, 
+		      // 		       convSize, convSize,
 		      // 		       freqValues(inu), wValues(iw), polMap(ipolx)(ipoly));
 		      // cfwtb_p->setParams(convSize,convSize,cfb_cs,s,
-		      // 			 convSize, convSize, 
+		      // 			 convSize, convSize,
 		      // 			 freqValues(inu), wValues(iw), polMap(ipolx)(ipoly));
 		      cfb_p->setParams(inu, iw, ipolx,ipoly,//polMap(ipolx)(ipoly),
 		      		       freqValues(inu), bandNames(inu), wValues(iw), polMap(ipolx)(ipoly),
@@ -1137,12 +1137,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	  // Double vbPA = getPA(vb);
 	  Double freqHi;
 
-	  
+
 	  Vector<Double> chanFreq = vb.getFrequencies(0);
 	  index = image.coordinates().findCoordinate(Coordinate::SPECTRAL);
 	  SpectralCoordinate SpC = cfb_cs.spectralCoordinate(index);
 	  Vector<Double> refVal = SpC.referenceValue();
-	
+
 	  freqHi = refVal[0];
 	  fillConvFuncBuffer(*cfb_p, *cfwtb_p, nx, nx, skyIncr, convSize, convSize, freqValues, wValues, wScale,
 			     paQuant.getValue(),//;vbPA,
@@ -1153,18 +1153,18 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// cfb_p->show(NULL,cerr);
 	// cfb_p->makePersistent("test.cf");
 	// cfwtb_p->makePersistent("test.wtcf");
-	
+
       } // End of loop over baselines
-    
+
     index=coords.findCoordinate(Coordinate::SPECTRAL);
     spCS = coords.spectralCoordinate(index);
     Vector<Double> refValue; refValue.resize(1);refValue(0)=cfRefFreq;
     spCS.setReferenceValue(refValue);
     coords.replaceCoordinate(spCS,index);
-    
-    // cfs.coordSys=coords;         cfwts.coordSys=coords; 
+
+    // cfs.coordSys=coords;         cfwts.coordSys=coords;
     // cfs.pa=paQuant;   cfwts.pa=paQuant;
-    
+
     //    aTerm_p->makeConvFunction(image,vb,wConvSize,pa,cfs,cfwts);
   }
   //
@@ -1179,12 +1179,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     // they are same for all poln. planes).
     //
     xSupport = ySupport = -1;
-    Int convFuncOrigin=cffunc.shape()[0]/2, R; 
+    Int convFuncOrigin=cffunc.shape()[0]/2, R;
     Bool found=false;
     Float threshold;
     // Threshold as a fraction of the peak (presumed to be the center pixel).
     if (abs(peak) != 0) threshold = real(abs(peak));
-    else 
+    else
       threshold   = real(abs(cffunc(IPosition(4,convFuncOrigin,convFuncOrigin,0,0))));
 
     //threshold *= aTerm_p->getSupportThreshold();
@@ -1192,7 +1192,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     //threshold *= 7.5e-2;
 
     //    threshold *=  0.1;
-    // if (aTerm_p->isNoOp()) 
+    // if (aTerm_p->isNoOp())
     //   threshold *= 1e-3; // This is the threshold used in "standard" FTMchines
     // else
 
@@ -1224,7 +1224,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	xSupport = ySupport = (Int)(convFuncOrigin/sampling-1);
       }
 
-    if(xSupport<1) 
+    if(xSupport<1)
       {
 	throw(casa::CFSupportZero("AWConvFunc2::setupCFSupport(): Convolution function is misbehaved - support seems to be zero"));
       }
@@ -1238,16 +1238,16 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   {
     //LogIO log_l(LogOrigin("AWConvFunc2", "resizeCF[R&D]"));
     Int ConvFuncOrigin=func.shape()[0]/2;  // Conv. Func. is half that size of convSize
-    
+
     Bool found = setUpCFSupport(func, xSupport, ySupport, sampling,peak);
 
     //Int supportBuffer = (Int)(aTerm_p->getOversampling()*1.5);
-    Int bot=(Int)(ConvFuncOrigin-sampling*xSupport-supportBuffer),//-convSampling/2, 
+    Int bot=(Int)(ConvFuncOrigin-sampling*xSupport-supportBuffer),//-convSampling/2,
       top=(Int)(ConvFuncOrigin+sampling*xSupport+supportBuffer);//+convSampling/2;
     //    bot *= 2; top *= 2;
     bot = max(0,bot);
     top = min(top, func.shape()(0)-1);
-    
+
     Array<Complex> tmp;
     IPosition blc(4,bot,bot,0,0), trc(4,top,top,0,0);
     //
@@ -1256,21 +1256,21 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     //
     tmp = func(blc,trc);
     func.resize(tmp.shape());
-    func = tmp; 
+    func = tmp;
     return found;
   }
   //
   //----------------------------------------------------------------------
   // A global method for use in OMP'ed findSupport() below
   //
-  void archPeak(const Float& threshold, const Int& origin, const Block<Int>& cfShape, const Complex* funcPtr, 
+  void archPeak(const Float& threshold, const Int& origin, const Block<Int>& cfShape, const Complex* funcPtr,
 		const Int& nCFS, const Int& PixInc,const Int& th, const Int& R, Block<Int>& maxR)
   {
     Block<Complex> vals;
     Block<Int> ndx(nCFS);	ndx=0;
     Int NSteps;
     //Check every PixInc pixel along a circle of radius R
-    NSteps = 90*R/PixInc; 
+    NSteps = 90*R/PixInc;
     vals.resize((Int)(NSteps+0.5));
     uInt valsNelements=vals.nelements();
     vals=0;
@@ -1279,7 +1279,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       {
 	ndx[0]=(int)(origin + R*sin(2.0*M_PI*pix*PixInc/R));
 	ndx[1]=(int)(origin + R*cos(2.0*M_PI*pix*PixInc/R));
-	
+
 	if ((ndx[0] < cfShape[0]) && (ndx[1] < cfShape[1]))
 	  //vals[pix]=func(ndx);
 	  vals[pix]=funcPtr[ndx[0]+ndx[1]*cfShape[1]+ndx[2]*cfShape[2]+ndx[3]*cfShape[3]];
@@ -1297,12 +1297,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //
   //----------------------------------------------------------------------
   //
-  Bool AWConvFunc::findSupport(Array<Complex>& func, Float& threshold, 
+  Bool AWConvFunc::findSupport(Array<Complex>& func, Float& threshold,
 			       Int& origin, Int& radius)
   {
     return awFindSupport(func, threshold, origin, radius);
   }
-  Bool AWConvFunc::awFindSupport(Array<Complex>& func, Float& threshold, 
+  Bool AWConvFunc::awFindSupport(Array<Complex>& func, Float& threshold,
 			       Int& origin, Int& radius)
   {
     //LogIO log_l(LogOrigin("AWConvFunc2", "findSupport[R&D]"));
@@ -1322,7 +1322,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 #ifdef _OPENMP
     Nth = max(omp_get_max_threads()-2,1);
 #endif
-    
+
     Block<Int> maxR(Nth);
 
     funcPtr = func.getStorage(dummy);
@@ -1335,7 +1335,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
 //#pragma omp parallel default(none) firstprivate(R0,R1)  private(R,threadID) shared(origin,threshold,PixInc,maxR,cfShape,nCFS,funcPtr) num_threads(Nth)
 #pragma omp parallel firstprivate(R0,R1)  private(R,threadID) shared(PixInc,maxR,cfShape,nCFS,funcPtr) num_threads(Nth)
-	    { 
+	    {
 #pragma omp for
 	      for(R=R0;R>R1;R--)
 		{
@@ -1344,7 +1344,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 #endif
 		  archPeak(threshold, origin, cfShape, funcPtr, nCFS, PixInc, threadID, R, maxR);
 		}
-	    }///omp 	    
+	    }///omp
 
 	    for (uInt th=0;th<Nth;th++)
 	      if (maxR[th] > 0)
@@ -1370,14 +1370,14 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //   for(R=convSize/2-2;R>1;R--)
   //     {
   // 	//Check every PixInc pixel along a circle of radius R
-  // 	NSteps = 90*R/PixInc; 
+  // 	NSteps = 90*R/PixInc;
   // 	vals.resize((Int)(NSteps+0.5));
   // 	vals=0;
   // 	for(Int th=0;th<NSteps;th++)
   // 	  {
   // 	    ndx(0)=(int)(origin + R*sin(2.0*M_PI*th*PixInc/R));
   // 	    ndx(1)=(int)(origin + R*cos(2.0*M_PI*th*PixInc/R));
-	    
+
   // 	    if ((ndx(0) < cfShape(0)) && (ndx(1) < cfShape(1)))
   // 	      vals(th)=func(ndx);
   // 	  }
@@ -1390,7 +1390,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //
   //----------------------------------------------------------------------
   //
-  Bool AWConvFunc::makeAverageResponse(const VisBuffer2& vb, 
+  Bool AWConvFunc::makeAverageResponse(const VisBuffer2& vb,
 				       const ImageInterface<Complex>& image,
 				       ImageInterface<Float>& theavgPB,
 				       Bool reset)
@@ -1398,34 +1398,34 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     TempImage<Complex> complexPB;
     Bool pbMade;
     pbMade = makeAverageResponse(vb, image, complexPB,reset);
-    normalizeAvgPB(complexPB, theavgPB);	
+    normalizeAvgPB(complexPB, theavgPB);
     return pbMade;
   }
   //
   //----------------------------------------------------------------------
   //
-  Bool AWConvFunc::makeAverageResponse(const VisBuffer2& vb, 
+  Bool AWConvFunc::makeAverageResponse(const VisBuffer2& vb,
 				       const ImageInterface<Complex>& image,
 				       ImageInterface<Complex>& theavgPB,
 				       Bool reset)
   {
     LogIO log_l(LogOrigin("AWConvFunc2","makeAverageResponse(Complex)[R&D]"));
-    
-    log_l << "Making the average response for " << aTerm_p->name() 
+
+    log_l << "Making the average response for " << aTerm_p->name()
 	  << LogIO::NORMAL  << LogIO::POST;
-    
+
     if (reset)
       {
 	log_l << "Initializing the average PBs"
 	      << LogIO::NORMAL << LogIO::POST;
-	theavgPB.resize(image.shape()); 
+	theavgPB.resize(image.shape());
 	theavgPB.setCoordinateInfo(image.coordinates());
 	theavgPB.set(1.0);
       }
-    
+
     aTerm_p->applySky(theavgPB, vb, true, 0);
-    
-    return true; // i.e., an average PB was made 
+
+    return true; // i.e., an average PB was made
   }
   //
   //----------------------------------------------------------------------
@@ -1434,19 +1434,19 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 				  ImageInterface<Float>& outImage)
   {
     LogIO log_l(LogOrigin("AWConvFunc2", "normalizeAvgPB[R&D]"));
-    
+
     String name("avgpb.im");
     storeImg(name,inImage);
     IPosition inShape(inImage.shape()),ndx(4,0,0,0,0);
     Vector<Complex> peak(inShape(2));
-    
+
     outImage.resize(inShape);
     outImage.setCoordinateInfo(inImage.coordinates());
-    
+
     Bool isRefIn;
     Array<Complex> inBuf;
     Array<Float> outBuf;
-    
+
     isRefIn  = inImage.get(inBuf);
     //isRefOut = outImage.get(outBuf);
     log_l << "Normalizing the average PBs to unity"
@@ -1465,7 +1465,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		for(ndx(0)=0;ndx(0)<inShape(0);ndx(0)++)
 		  if (abs(inBuf(ndx)) > peak(ndx(2)))
 		    peak(ndx(2)) = inBuf(ndx);
-	      
+
 	      for(ndx(1)=0;ndx(1)<inShape(1);ndx(1)++)
 		for(ndx(0)=0;ndx(0)<inShape(0);ndx(0)++)
 		  //		      avgPBBuf(ndx) *= (pbPeaks(ndx(2))/peak(ndx(2)));
@@ -1473,7 +1473,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	    }
 	if (isRefIn) inImage.put(inBuf);
       }
-    
+
     ndx=0;
     for(ndx(1)=0;ndx(1)<inShape(1);ndx(1)++)
       for(ndx(0)=0;ndx(0)<inShape(0);ndx(0)++)
@@ -1501,23 +1501,23 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   // Legacy code.  Should ultimately be deleteted after re-facatoring
   // is finished.
   //
-  Bool AWConvFunc::makeAverageResponse_org(const VisBuffer2& vb, 
+  Bool AWConvFunc::makeAverageResponse_org(const VisBuffer2& vb,
 					   const ImageInterface<Complex>& image,
 					   ImageInterface<Float>& theavgPB,
 					   Bool reset)
   {
     LogIO log_l(LogOrigin("AWConvFunc2", "makeAverageResponse_org[R&D]"));
     TempImage<Float> localPB;
-    
-    log_l << "Making the average response for " 
-	  << aTerm_p->name() 
+
+    log_l << "Making the average response for "
+	  << aTerm_p->name()
 	  << LogIO::NORMAL << LogIO::POST;
-    
+
     localPB.resize(image.shape()); localPB.setCoordinateInfo(image.coordinates());
     if (reset)
       {
 	log_l << "Initializing the average PBs" << LogIO::NORMAL << LogIO::POST;
-	theavgPB.resize(localPB.shape()); 
+	theavgPB.resize(localPB.shape());
 	theavgPB.setCoordinateInfo(localPB.coordinates());
 	theavgPB.set(0.0);
       }
@@ -1525,18 +1525,18 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     // Make the Stokes PB
     //
     localPB.set(1.0);
-    
+
     // Block<CountedPtr<ImageInterface<Float > > > tmpBlock(1);
     // tmpBlock[0]=CountedPtr<ImageInterface<Float> >(&localPB, false);
     // aTerm_p->applySky(tmpBlock, vb, 0, false);
     aTerm_p->applySky(localPB, vb, false, 0);
-    
+
     IPosition twoDPBShape(localPB.shape());
     TempImage<Complex> localTwoDPB(twoDPBShape,localPB.coordinates());
     //    localTwoDPB.setMaximumCacheSize(cachesize);
     Int NAnt;
     NAnt=1;
-    
+
     for(Int ant=0;ant<NAnt;ant++)
       { //Ant loop
 	{
@@ -1556,7 +1556,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	  Array<Complex> cbuf;
 	  isRefF=theavgPB.get(fbuf);
 	  //isRefC=localTwoDPB.get(cbuf);
-	  
+
 	  IPosition fs(fbuf.shape());
 	  IPosition ndx(4,0,0,0,0),avgNDX(4,0,0,0,0);
 	  for(ndx(3)=0,avgNDX(3)=0;ndx(3)<fs(3);ndx(3)++,avgNDX(3)++)
@@ -1588,7 +1588,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     CFBuffer *cfb, *cbPtr=0;
     CFCell  *cfc, *baseCFC=NULL;
     ATerm *aTerm_l=&*aTerm_p;
-    
+
     cfb=&*(theMap[0]);
     cfc = &*(cfb->getCFCellPtr(0,0,0));
     Double actualPA = getPA(vb), currentCFPA = cfc->pa_p.getValue("rad");
@@ -1614,8 +1614,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	    // are in a heterogeneous-array case
 	    //
 	    LogIO log_l(LogOrigin("AWConvFunc2", "prepareConvFunction"));
-	    log_l << "Rotating the base CFB from PA=" << cfb->getCFCellPtr(0,0,0)->pa_p.getValue("deg") 
-		  << " to " << actualPA*57.2957795131 
+	    log_l << "Rotating the base CFB from PA=" << cfb->getCFCellPtr(0,0,0)->pa_p.getValue("deg")
+		  << " to " << actualPA*57.2957795131
 		  << " " << cfb->getCFCellPtr(0,0,0)->shape_p
 		  << LogIO::DEBUG1 << LogIO::POST;
 
@@ -1657,7 +1657,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   //----------------------------------------------------------------------
   //
   void AWConvFunc::fillConvFuncBuffer2(CFBuffer& cfb, CFBuffer& cfWtb,
-				       const Int& nx, const Int& ny, 
+				       const Int& nx, const Int& ny,
 				       const ImageInterface<Complex>* skyImage,
 				       const CFCStruct& miscInfo,
 				       PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
@@ -1690,7 +1690,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       CoordinateSystem conjPolCS_l=cs_l;  AWConvFunc::makeConjPolAxis(conjPolCS_l, thisCell->conjPoln_p);
       IPosition pbshp(4,nx,ny,1,1);
       TempImage<Complex> ftATerm_l(pbshp, cs_l), ftATermSq_l(pbshp,conjPolCS_l);
-      Bool doSquint=true; 
+      Bool doSquint=true;
       ftATerm_l.set(Complex(1.0,0.0));   ftATermSq_l.set(Complex(1.0,0.0));
       Double freq_l=miscInfo.freqValue;
 
@@ -1733,13 +1733,13 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	{
 	  log_l << e.what() << endl << "This is an internal error." << LogIO::EXCEPTION;
 	}
-	
+
       //cerr << "#########$$$$$$ " << cellSize << endl;
 
       // Int directionIndex=cs_l.findCoordinate(Coordinate::DIRECTION);
       // DirectionCoordinate dc=cs_l.directionCoordinate(directionIndex);
       // cellSize = dc.increment();
-      
+
       //
       // Now compute the PS x W-Term and apply the cached
       // A-Term to build the full CF.
@@ -1751,12 +1751,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	      << ",W:" << miscInfo.wValue << "): ";
 	Array<Complex> &cfWtBuf=(*(cfWtb.getCFCellPtr(miscInfo.freqValue, miscInfo.wValue, miscInfo.muellerElement))->storage_p);
 	Array<Complex> &cfBuf=(*(cfb.getCFCellPtr(miscInfo.freqValue, miscInfo.wValue, miscInfo.muellerElement))->storage_p);
-		    
+
 	cfWtBuf.resize(pbshp);
 	cfBuf.resize(pbshp);
 
 	const Vector<Double> sampling_l(2,sampling);
-	Matrix<Complex> cfBufMat(cfBuf.nonDegenerate()), 
+	Matrix<Complex> cfBufMat(cfBuf.nonDegenerate()),
 	  cfWtBufMat(cfWtBuf.nonDegenerate());
 	//
 	// Apply the Prolate Spheroidal and W-Term kernels
@@ -1787,10 +1787,10 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	// WKernel applied (too bad that TempImages can't be
 	// made with existing buffers)
 	//
-	//-------------------------------------------------------------		    
+	//-------------------------------------------------------------
 	TempImage<Complex> twoDPB_l(pbShape, cs_l);
 	TempImage<Complex> twoDPBSq_l(pbShape,cs_l);
-	//-------------------------------------------------------------		    
+	//-------------------------------------------------------------
 	// WBAWP CODE BEGIN -- ftATermSq_l has conj. PolCS
 
 	  cfWtBuf *= ftATerm_l.get()*conj(ftATermSq_l.get());
@@ -1804,11 +1804,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	twoDPBSq_l.putSlice(cfWtBuf, PolnPlane);
 	//tim.show("putSlice:");
 
-	// To accumulate avgPB2, call this function. 
+	// To accumulate avgPB2, call this function.
 	// PBSQWeight
 	// Bool PBSQ = false;
-	// if(PBSQ) makePBSq(twoDPBSq_l); 
-		    
+	// if(PBSQ) makePBSq(twoDPBSq_l);
+
 	//
 	// Set the ref. freq. of the co-ordinate system to
 	// that set by ATerm::applySky().
@@ -1817,12 +1817,12 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	CoordinateSystem cs=twoDPB_l.coordinates();
 	Int index= twoDPB_l.coordinates().findCoordinate(Coordinate::SPECTRAL);
 	SpectralCoordinate SpCS = twoDPB_l.coordinates().spectralCoordinate(index);
-		    
+
 	Double cfRefFreq=SpCS.referenceValue()(0);
 	Vector<Double> refValue; refValue.resize(1); refValue(0)=cfRefFreq;
 	SpCS.setReferenceValue(refValue);
 	cs.replaceCoordinate(SpCS,index);
-	
+
 	//tim.mark();
 	// if (!isDryRun)
 	  {
@@ -1835,14 +1835,14 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	IPosition shp(twoDPB_l.shape());
 	IPosition start(4, 0, 0, 0, 0), pbSlice(4, shp[0]-1, shp[1]-1,1/*polInUse*/, 1),
 	  sliceLength(4,cfBuf.shape()[0]-1,cfBuf.shape()[1]-1,1,1);
-		    
+
 	cfBuf(Slicer(start,sliceLength)).nonDegenerate()
 	  =(twoDPB_l.getSlice(start, pbSlice, true));
-		    
+
 	shp = twoDPBSq_l.shape();
 	IPosition pbSqSlice(4, shp[0]-1, shp[1]-1, 1, 1),
 	  sqSliceLength(4,cfWtBuf.shape()(0)-1,cfWtBuf.shape()[1]-1,1,1);
-		    
+
 	cfWtBuf(Slicer(start,sqSliceLength)).nonDegenerate()
 	  =(twoDPBSq_l.getSlice(start, pbSqSlice, true));
 	//tim.show("Slicer*2:");
@@ -1867,7 +1867,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	ftRef(1)=cfWtBuf.shape()(1)/2.0;
 	CoordinateSystem ftCoords=cs_l;
 	SynthesisUtils::makeFTCoordSys(cs_l, cfWtBuf.shape()(0), ftRef, ftCoords);
-	
+
 	thisCell=cfWtb.getCFCellPtr(miscInfo.freqValue, miscInfo.wValue, miscInfo.muellerElement);
 	thisCell->pa_p=Quantity(vbPA,"rad");
 	thisCell->coordSys_p = ftCoords;
@@ -1884,11 +1884,11 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	  }
 	//tim.show("Peaknorm:");
 
-	// if (!isDryRun) 
+	// if (!isDryRun)
 	  AWConvFunc::resizeCF(cfBuf, xSupport, ySupport, supportBuffer, sampling,0.0);
 
 	log_l << "CF Support: " << xSupport << " (" << xSupportWt << ") " << "pixels" <<  LogIO::POST;
-	
+
 	ftRef(0)=cfBuf.shape()(0)/2.0;
 	ftRef(1)=cfBuf.shape()(1)/2.0;
 
@@ -1902,7 +1902,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	    cfWtNorm = AWConvFunc::cfArea(cfWtBufMat, xSupportWt, ySupportWt, sampling);
 	  }
 	//tim.show("Area*2:");
-	
+
 	//tim.mark();
 	  if (cfNorm != Complex(0.0))    cfBuf /= cfNorm;
 	  if (cfWtNorm != Complex(0.0)) cfWtBuf /= cfWtNorm;
@@ -1948,7 +1948,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     LogIO log_l(LogOrigin("AWConvFunc2", "makeConvFunction2[R&D]"));
     Int convSize, convSampling;//, polInUse;
     Array<Complex> convFunc_l, convWeights_l;
-    //  
+    //
     // Get the coordinate system
     //
     Int skyNX,skyNY;
@@ -1997,7 +1997,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	imInfo.save();
 	skyCoords = imInfo.getCoordinateSystem();
 	imShape = imInfo.getImShape();
-      }	
+      }
 
     {
       // skyNX=skyImage_l->shape()(0);
@@ -2010,9 +2010,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
       DirectionCoordinate dc=skyCoords.directionCoordinate(directionIndex);
       skyIncr = dc.increment();
     }
-    
+
     CountedPtr<CFBuffer> cfb_p, cfwtb_p;
-    
+
     IPosition cfsShape = cfs2.getShape();
     IPosition wCFStShape = cfwts2.getShape();
 
@@ -2118,7 +2118,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			  // latter for empty CFs can be small (to save
 			  // disk space and i/o -- the CFs are supposed
 			  // to be empty anyway at this stage!)
-			  convSize=xSupport; 
+			  convSize=xSupport;
 
 			  IPosition start(4, 0, 0, 0, 0);
 			  IPosition pbSlice(4, convSize, convSize, 1, 1);
@@ -2216,7 +2216,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   // {
   //   Assert(po_p.null()==False && "Pointingoffset call has not been initialized in AWProjectFT call being made");
   //       return po_p->findPointingOffset(image,vb,doPointing);
-  //   //    if (!doPointing) 
+  //   //    if (!doPointing)
   //   //      {cerr<<"AWCF: Using mosaic pointing \n";return po_p->findMosaicPointingOffset(image,vb);}
   //   //    else
   //   //      {cerr<<"AWCF: Using antenna pointing table \n";return po_p->findAntennaPointingOffset(image,vb);}

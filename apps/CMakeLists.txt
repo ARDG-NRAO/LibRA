@@ -75,6 +75,8 @@ foreach(APP IN LISTS APP_LIST)
    set(APP_DIR ${APP})
    string(TOLOWER ${APP_DIR} APP_NAME)
    list(APPEND APP_SOURCES "${APP_DIR}/${APP_NAME}.cc")
+   file(GLOB APP_SOURCE "${APP_DIR}/*.h")
+   list(APPEND APP_SOURCES)
 endforeach()
 
 add_subdirectory(src)

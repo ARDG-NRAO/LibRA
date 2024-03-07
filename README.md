@@ -37,9 +37,9 @@ does not required RA-specific software stack and dependencies.
 
 ### The repository contains
 
-- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] scientific code of algorithms for data calibration and image reconstruction
 - [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
+- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and build all the dependencies, other than the [System Requirements](#system-requirements).
 
 
 A containerized means of building the LibRA project is available
@@ -95,7 +95,7 @@ Standalone applications (apps) give access to algorithms via commandline options
 - [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
 - [ ] `subms` : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
 
-## System requirements
+## System requirementsq
 The following come default with RHEL8 or similar systems:
 
 - [ ] GCC 8.x or later
