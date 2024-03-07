@@ -125,8 +125,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       watchPoints["predict"]=exposedKeys;
       
       // Expose the datacolumn parameter only for mode=residual
-      exposedKeys.push_back("datacolumn");
-      watchPoints["residual"]=exposedKeys;
+      // exposedKeys.push_back("datacolumn");
+      // watchPoints["residual"]=exposedKeys;
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
 
       i=1;clgetValp("wbawp", WBAwp,i);

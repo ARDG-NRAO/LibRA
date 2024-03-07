@@ -37,9 +37,9 @@ does not required RA-specific software stack and dependencies.
 
 ### The repository contains
 
-- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] scientific code of algorithms for data calibration and image reconstruction
 - [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
+- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps), and all the dependencies other than the [System Requirements](#system-requirements).
 
 
 A containerized means of building the LibRA project is available

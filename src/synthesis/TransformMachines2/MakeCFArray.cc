@@ -269,7 +269,7 @@ namespace casa{
 	      //    	      cerr  << mNdx[r] << endl;
     	    }
     	  nPolCF = p2m.size();
-    	  log_l << "CFBuffer shape (nW x nF x nPol): " << nWCF << " x " << nFreqCF << " x " << nPolCF << LogIO::POST;
+    	  log_l << "CFBuffer shape (nF x nW x nPol): " << nFreqCF << " x " << nWCF << " x " << nPolCF << LogIO::POST;
 	  
     	  nCF = nWCF * nFreqCF;
     	  log_l << "Setting cfArray size: " << "nCF: " << nCF << " x " << nPolCF << " sampling: " << sampling(0) << LogIO::POST;

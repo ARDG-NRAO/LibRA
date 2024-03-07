@@ -320,19 +320,20 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
   try
     {
-      casa::refim::FTMachine::Type      dataCol_l=casa::refim::FTMachine::CORRECTED;
+      casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
+      //if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
 
-      if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
-      else if (dataColumnName=="data")  dataCol_l=casa::refim::FTMachine::OBSERVED;
-      else if (dataColumnName=="model") dataCol_l=casa::refim::FTMachine::MODEL;
+      if      (dataColumnName=="data")      dataCol_l=casa::refim::FTMachine::OBSERVED;
+      else if (dataColumnName=="model")     dataCol_l=casa::refim::FTMachine::MODEL;
+      else if (dataColumnName=="corrected") dataCol_l=casa::refim::FTMachine::CORRECTED;
 
       // Install a terminate handler to inform that Libhpg() RAII
-      // class could not be instnaciated (typically because of CUDA
-      // issues. E.g. when gridder=awphpg, but there is not CUDA and
-      // or a GPU).
+      // class could not be instanciated (typically because of CUDA
+      // issues. E.g. when gridder=awphpg, but there is no CUDA and/or
+      // a GPU).
       std::set_terminate([]()
 			 {
-			   std::cout << "Unhandled exception from Libhpg::Libhpg()"
+			   std::cout << "Unhandled exception, or an error not reported as a C++ exception"
 				     << endl << std::flush;
 			   std::abort();
 			 });
