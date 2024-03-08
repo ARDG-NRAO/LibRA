@@ -62,10 +62,8 @@ endif()
 # Ensure NCORES is not less than 1
 if(NCORES LESS 1)
   set(NCORES 1)
-  message("${LIBRA_ID} Setting NCORES to 1")
-else()
-  message("${LIBRA_ID} Setting NCORES to ${NCORES}")
 endif()
+message("${LIBRA_ID} Setting NCORES to ${NCORES}")
 
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
