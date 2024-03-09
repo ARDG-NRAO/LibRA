@@ -277,7 +277,7 @@ ExternalProject_Add(
     SOURCE_DIR      ${CMAKE_SOURCE_DIR}/apps
     DOWNLOAD_COMMAND ""
     BINARY_DIR      ${BUILD_DIR}/Libra/apps
-    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11
+    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11 GTest
     CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
