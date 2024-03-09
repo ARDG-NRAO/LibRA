@@ -26,6 +26,7 @@ set(Kokkos_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos)
 set(pybind11_DIR ${CMAKE_INSTALL_PREFIX}/share/cmake/pybind11)
 set(casacore_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore)
 set(casacpp_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp)
+set(GTest_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest)
 
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message("hpg_DIR: ${hpg_DIR}")
