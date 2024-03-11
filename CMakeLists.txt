@@ -10,7 +10,7 @@ project("LibRA Apps"
   HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
   LANGUAGES CXX Fortran C)
 
-
+set(LIBRA_ID "LibRA INFO: ")
 set (CMAKE_CXX_STANDARD 11)
 
 
@@ -46,31 +46,31 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
 )  
 
-message("BUILD_DIR: ${BUILD_DIR}")
-message("INSTALL_DIR: ${INSTALL_DIR}")
-message("Installing all libraries to ${INSTALL_DIR}/lib")
-message("Installing all headers to ${INSTALL_DIR}/include")
-message("Installing all binaries to ${INSTALL_DIR}/bin")
-#set number of cores
-execute_process(COMMAND nproc --all OUTPUT_VARIABLE ncores)
+message("${LIBRA_ID} BUILD_DIR: ${BUILD_DIR}")
+message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
+message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
+message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
+message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
 
-# Subtract 2 from the number of processors to get ncores
-math(EXPR ncores "${ncores} - 2")
-
-# Ensure ncores is not less than 1
-if(ncores LESS 1)
-  set(ncores 1)
-  message("Setting ncores to 1")
-else()
-  message("Setting ncores to ${ncores}")
+if (NOT DEFINED NCORES)
+  #set number of cores
+  execute_process(COMMAND nproc --all OUTPUT_VARIABLE NCORES)
+  # Subtract 2 from the number of processors to get NCORES
+  math(EXPR NCORES "${NCORES} - 2")
 endif()
+
+# Ensure NCORES is not less than 1
+if(NCORES LESS 1)
+  set(NCORES 1)
+endif()
+message("${LIBRA_ID} Setting NCORES to ${NCORES}")
 
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
 if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
   # Add Kokkos as an external project
-  message("Kokkos_CUDA_ARCH_NAME: ${Kokkos_CUDA_ARCH_NAME}")
+  message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME: ${Kokkos_CUDA_ARCH_NAME}")
   ExternalProject_Add(
     Kokkos
     GIT_REPOSITORY https://github.com/kokkos/kokkos.git
@@ -86,11 +86,11 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
   	               -DKokkos_ENABLE_SERIAL=ON
   		             -DKokkos_ENABLE_PROFILING=ON
   	               -DBUILD_SHARED_LIBS=ON
-  BUILD_COMMAND   make -j ${ncores}
+  BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   )
 else()
-  message("Kokkos_CUDA_ARCH_NAME is empty. Will automatically detect the CUDA architecture")
+  message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME is empty. Will automatically detect the CUDA architecture")
   ExternalProject_Add(
     Kokkos
     GIT_REPOSITORY https://github.com/kokkos/kokkos.git
@@ -105,7 +105,7 @@ else()
                    -DKokkos_ENABLE_SERIAL=ON
                    -DKokkos_ENABLE_PROFILING=ON
                    -DBUILD_SHARED_LIBS=ON
-  BUILD_COMMAND   make -j ${ncores}
+  BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   )
 endif()
@@ -116,7 +116,7 @@ ExternalProject_Add(
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR}
-  BUILD_COMMAND   make -j ${ncores}
+  BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
@@ -147,7 +147,7 @@ ExternalProject_Add(
                  -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_USE_MIXED_PRECISION=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
-  BUILD_COMMAND   make -j ${ncores};
+  BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
 
@@ -162,7 +162,7 @@ ExternalProject_Add(
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_BUILD_TYPE=RelWithDebInfo 
                  -DBUILD_SHARED_LIBS=ON
-  BUILD_COMMAND make -j ${ncores}
+  BUILD_COMMAND make -j ${NCORES}
   INSTALL_COMMAND make install
 )
 
@@ -197,7 +197,7 @@ ExternalProject_Add(
                  -DBUILD_PYTHON3=OFF
                  -DBUILD_DYSCO=ON
                  -DUseCcache=1 
-  BUILD_COMMAND  make -j${ncores}
+  BUILD_COMMAND  make -j${NCORES}
   INSTALL_COMMAND make install
   DEPENDS DataDownload
 )
@@ -216,7 +216,7 @@ ExternalProject_Add(
                  -DPYTHON_BINDING:BOOL=OFF
                  -DSIMD_ARCH=GENERIC
                  -DENABLE_TEST:BOOL=OFF
-  BUILD_COMMAND   make -j ${ncores};
+  BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
 
@@ -230,11 +230,27 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DPYBIND11_TEST=OFF
-  BUILD_COMMAND   make -j ${ncores}; 
+  BUILD_COMMAND   make -j ${NCORES}; 
   INSTALL_COMMAND make install
 )
 
-
+#if(Apps_BUILD_TESTS)
+# Add GTest as an external project
+ExternalProject_Add(
+  GTest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.14.0
+  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/gtest
+  BINARY_DIR     ${BUILD_DIR}/gtest
+  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                 -DCMAKE_INSTALL_LIBDIR=lib
+                 -DBUILD_GMOCK=OFF
+                 -DBUILD_GTEST=ON
+                 -DBUILD_SHARED_LIBS=ON
+  BUILD_COMMAND   make -j ${ncores};
+  INSTALL_COMMAND make install
+)
+#endif()
 # Add Libra/src as an external project
 ExternalProject_Add(
   Casacpp
@@ -251,25 +267,30 @@ ExternalProject_Add(
                   -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
-  BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${ncores}
+  BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
   INSTALL_COMMAND make install
 )
 
+# If not defined on the command line, switch off apps testing
+if(NOT DEFINED Apps_BUILD_TESTS)
+  set(Apps_BUILD_TESTS OFF)
+endif()
+message ("${LIBRA_ID} Apps_BUILD_TESTS=${Apps_BUILD_TESTS}")
 # Add Libra/apps as an external project
 ExternalProject_Add(
     Apps
     SOURCE_DIR      ${CMAKE_SOURCE_DIR}/apps
     DOWNLOAD_COMMAND ""
     BINARY_DIR      ${BUILD_DIR}/Libra/apps
-    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11
+    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11 GTest
     CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
                     -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
-                    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DApps_BUILD_TESTS=ON
-    BUILD_COMMAND   make -j${ncores}
+		    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
+    BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
 )
 
@@ -285,9 +306,7 @@ foreach(APP IN LISTS APP_LIST)
     string(TOLOWER ${APP} APP_NAME)
     list(APPEND APP_SOURCES "${APP_DIR}/${APP_NAME}.cc")
 endforeach()
-message("APP_SOURCES: ${APP_SOURCES}")
-message(("{APP_DIR}: ${APP_DIR}"))
-message("APP_NAME: ${APP_NAME}")
-message("APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
-
-
+message("${LIBRA_ID} APP_SOURCES: ${APP_SOURCES}")
+message("${LIBRA_ID} {APP_DIR}: ${APP_DIR}")
+message("${LIBRA_ID} APP_NAME: ${APP_NAME}")
+message("${LIBRA_ID} APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
