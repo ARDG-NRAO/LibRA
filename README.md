@@ -56,10 +56,13 @@ the CASA project but contains _only_ the algorithmically-significant
 part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
-dependency graph. A suite of [standalone
-applications](#available-standalone-applications-apps) are also
-available which can be built as relocatable Linux executable (this may
-also be possible for MacOS, but we haven't test it).
+dependency graph (compared to the [CASA software stack and
+depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite
+of [standalone
+applications](#available-standalone-applications-apps). A suite of
+[standalone applications](#available-standalone-applications-apps) are
+also available which can be built as relocatable Linux executable
+(this may also be possible for MacOS, but we haven't test it).
 
 The resulting software stack is shown below.  Figure on the left/top shows
 our current software stack where the RA Algorithms layer is built on

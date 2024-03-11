@@ -234,7 +234,23 @@ ExternalProject_Add(
   INSTALL_COMMAND make install
 )
 
-
+#if(Apps_BUILD_TESTS)
+# Add GTest as an external project
+ExternalProject_Add(
+  GTest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.14.0
+  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/gtest
+  BINARY_DIR     ${BUILD_DIR}/gtest
+  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                 -DCMAKE_INSTALL_LIBDIR=lib
+                 -DBUILD_GMOCK=OFF
+                 -DBUILD_GTEST=ON
+                 -DBUILD_SHARED_LIBS=ON
+  BUILD_COMMAND   make -j ${ncores};
+  INSTALL_COMMAND make install
+)
+#endif()
 # Add Libra/src as an external project
 ExternalProject_Add(
   Casacpp
@@ -266,7 +282,7 @@ ExternalProject_Add(
     SOURCE_DIR      ${CMAKE_SOURCE_DIR}/apps
     DOWNLOAD_COMMAND ""
     BINARY_DIR      ${BUILD_DIR}/Libra/apps
-    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11
+    DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11 GTest
     CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
