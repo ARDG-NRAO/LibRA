@@ -122,6 +122,28 @@ The following list of packages need to be installed. Following is a typical comm
 
 ## Getting started
 
+A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
+
+```
+git clone https://github.com/ARDG-NRAO/LibRA.git
+cd libra
+mkdir build 
+cd build
+# A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
+# Default behaviour is to determined CUDA ARCH automatically.  
+# Default behaviour is Apps_BUILD_TESTS=OFF
+cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+make
+```
+
+The binary [standalone
+applications](#available-standalone-applications-apps) will be installed
+in ```libra/install/bin``` directory.
+
+### Makefile Based Building
+
+Below are the instructions for the older build system based on `makefile.libra`.  This can still be used, but we recommend using the `cmake` based build system with the instructions above.
+
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the ```makefile.libra``` file to compile this code and for download and building all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
 ```
@@ -138,7 +160,7 @@ The binary [standalone
 applications](#available-standalone-applications-apps) will be install
 in ```libra/install/linux_64b/bin``` directory.
 
-### Setting up the various variables in `makefile.libra`
+##### Setting up the various variables in `makefile.libra`
 
 - [ ] `Kokkos_CUDA_ARCH`: This is set via the commandline as `Kokkos_CUDA_ARCH=<CUDA ARCH>`.  
                           Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  
@@ -150,14 +172,15 @@ in ```libra/install/linux_64b/bin``` directory.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
 - [ ] `Apps_BUILD_TESTS`: Whether to build apps unit tests. Default is OFF.
 
-### Resources
+## Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers).
 This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 
-### ToDo List
-- [ ] Make a top-level `cmake` file.
-- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.  
-Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
+## ToDo List
+- [ ] An app for (self-) calibration
+- [ ] ~~Make a top-level `cmake` file.~~
+- [ ] ~~A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.~~ 
+A `slurm` based framework is in place.  [GNU Parallel](https://www.gnu.org/software/parallel) based one may also be useful.
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
 Such a list can be used by other components of the algorithm
       architecture to make a potentially smaller sub-CFC, specially
