@@ -122,6 +122,23 @@ The following list of packages need to be installed. Following is a typical comm
 
 ## Getting started
 
+A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
+
+```
+git clone https://github.com/ARDG-NRAO/LibRA.git
+cd libra
+mkdir build 
+cd build
+cmake -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+make
+```
+
+The binary [standalone
+applications](#available-standalone-applications-apps) will be installed
+in ```libra/install/bin``` directory.
+
+## Makefile Based Building.
+
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the ```makefile.libra``` file to compile this code and for download and building all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
 ```
