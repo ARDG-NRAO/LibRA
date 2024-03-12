@@ -137,7 +137,7 @@ The binary [standalone
 applications](#available-standalone-applications-apps) will be installed
 in ```libra/install/bin``` directory.
 
-## Makefile Based Building
+### Makefile Based Building
 
 Below are the instructions for the older build system based on `makefile.libra`.  This can still be used, but we recommend using the `cmake` based build system with the instructions above.
 
