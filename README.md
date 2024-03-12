@@ -169,14 +169,15 @@ in ```libra/install/linux_64b/bin``` directory.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
 - [ ] `Apps_BUILD_TESTS`: Whether to build apps unit tests. Default is OFF.
 
-### Resources
+## Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers).
 This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 
-### ToDo List
-- [ ] Make a top-level `cmake` file.
-- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.  
-Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
+## ToDo List
+- [ ] An app for (self-) calibration
+- [ ] ~~Make a top-level `cmake` file.~~
+- [ ] ~~A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.~~ 
+A `slurm` based framework is in place.  [GNU Parallel](https://www.gnu.org/software/parallel) based one may also be useful.
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
 Such a list can be used by other components of the algorithm
       architecture to make a potentially smaller sub-CFC, specially
