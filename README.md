@@ -157,7 +157,7 @@ The binary [standalone
 applications](#available-standalone-applications-apps) will be install
 in ```libra/install/linux_64b/bin``` directory.
 
-### Setting up the various variables in `makefile.libra`
+##### Setting up the various variables in `makefile.libra`
 
 - [ ] `Kokkos_CUDA_ARCH`: This is set via the commandline as `Kokkos_CUDA_ARCH=<CUDA ARCH>`.  
                           Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  
