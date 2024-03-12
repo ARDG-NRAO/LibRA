@@ -18,6 +18,33 @@ set (CMAKE_CXX_STANDARD 11)
 include(ExternalProject)
 include(FindPkgConfig)
 
+# Find system information
+
+cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
+cmake_host_system_information(RESULT NTHREADS QUERY NUMBER_OF_LOGICAL_CORES)
+message("Number of physical cores: ${NCORES}")
+message("Number of logical cores: ${NTHREADS}")
+
+cmake_host_system_information(RESULT OS_NAME QUERY OS_NAME)
+cmake_host_system_information(RESULT OS_RELEASE QUERY OS_RELEASE)
+cmake_host_system_information(RESULT OS_VERSION QUERY OS_VERSION)
+cmake_host_system_information(RESULT OS_PLATFORM QUERY OS_PLATFORM)
+cmake_host_system_information(RESULT AVAILABLE_PHYSICAL_MEMORY QUERY AVAILABLE_PHYSICAL_MEMORY)
+cmake_host_system_information(RESULT TOTAL_PHYSICAL_MEMORY QUERY TOTAL_PHYSICAL_MEMORY)
+cmake_host_system_information(RESULT TOTAL_VIRTUAL_MEMORY QUERY TOTAL_VIRTUAL_MEMORY)
+message("OS Name: ${OS_NAME}")
+message("OS Release: ${OS_RELEASE}")
+message("OS Version: ${OS_VERSION}")
+message("OS Platform: ${OS_PLATFORM}")
+message("Available Physical Memory: ${AVAILABLE_PHYSICAL_MEMORY} BYTES")
+message("Total Physical Memory: ${TOTAL_PHYSICAL_MEMORY} BYTES")
+if ($NCORES LESS 1)
+  set(NCORES 1)
+else()
+  math(EXPR NCORES "${NCORES} - 2")
+endif()
+message("Setting number of cores to ${NCORES}")
+
 # Set the top-level build and install directories
 set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
@@ -51,19 +78,6 @@ message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
 message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
 message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
 message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
-
-if (NOT DEFINED NCORES)
-  #set number of cores
-  execute_process(COMMAND nproc --all OUTPUT_VARIABLE NCORES)
-  # Subtract 2 from the number of processors to get NCORES
-  math(EXPR NCORES "${NCORES} - 2")
-endif()
-
-# Ensure NCORES is not less than 1
-if(NCORES LESS 1)
-  set(NCORES 1)
-endif()
-message("${LIBRA_ID} Setting NCORES to ${NCORES}")
 
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
