@@ -85,11 +85,18 @@ void acme_func(std::string& imageName, std::string& deconvolver,
           ImageInterface<Float> *swImage;
           swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
 
+          float itsPBScaleFactor = 1.0;
+
+
           LatticeExpr<Float> ratio;
-          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage) * abs(*swImage)));
-          ratio = ( *reImage / deno);
+          Float scalepb = 1.0;
+          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)) * abs(*swImage));
+          scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+          LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
+          LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
+          ratio = ( (*reImage) * mask / (deno + maskinv));
           reImage->copyData(ratio);
-          /*********************************************************************/
+	  /*********************************************************************/
 
       	  ostringstream oss;	      
       	  Record miscInfoRec;
