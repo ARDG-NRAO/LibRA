@@ -48,7 +48,7 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 void UI(Bool restart, int argc, char **argv, bool interactive, 
-  string& MSNBuf,
+	string& MSNBuf,
 	string& imageName, string& modelImageName,string& dataColumnName,
 	string& sowImageExt,
 	string& cmplxGridName, int& ImSize, int& nW,
