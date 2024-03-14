@@ -220,7 +220,7 @@ int main(int argc, char **argv)
   //
   // The Factory Settings.
   string MSNBuf,ftmName=defaultFtmName,
-    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
     imagingMode="residual",rmode="none";

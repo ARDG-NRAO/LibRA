@@ -320,9 +320,11 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
   try
     {
+      // Set safe defaults...
       casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
-      //if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
+      if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
 
+      // ...override with user-settings (since they insist).
       if      (dataColumnName=="data")      dataCol_l=casa::refim::FTMachine::OBSERVED;
       else if (dataColumnName=="model")     dataCol_l=casa::refim::FTMachine::MODEL;
       else if (dataColumnName=="corrected") dataCol_l=casa::refim::FTMachine::CORRECTED;
