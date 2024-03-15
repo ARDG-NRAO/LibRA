@@ -116,8 +116,29 @@ The following list of packages need to be installed. Following is a typical comm
       sudo dnf clean expire-cache
       sudo dnf module install nvidia-driver:latest-dkms
       
-
 ## Getting started
+
+A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
+
+```
+git clone https://github.com/ARDG-NRAO/LibRA.git
+cd libra
+mkdir build 
+cd build
+# A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
+# Default behaviour is to determined CUDA ARCH automatically.  
+# Default behaviour is Apps_BUILD_TESTS=OFF
+cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+make
+```
+
+The binary [standalone
+applications](#available-standalone-applications-apps) will be installed
+in ```libra/install/bin``` directory.
+
+### Makefile Based Building - Temporarily broken
+
+Below are the instructions for the older build system based on `makefile.libra`.  This can still be used, but we recommend using the `cmake` based build system with the instructions above.
 
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the ```makefile.libra``` file to compile this code and for download and building all other dependencies.  For now, follow the following sequence of commands to clone and build the system:
 
