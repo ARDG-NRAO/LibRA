@@ -299,8 +299,14 @@ makeMNdx(const string& fileName,
   return make_tuple(mndx,conj_mndx);
 }
 
+double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBase>& vr)
+{
+  if (vr->name()=="HPGResampler")
+    return ((AWVisResamplerHPG*)(&*vr))->getMakeHPGVBTime();
+  return 0.0;
+}
 
-void Roadrunner(//bool& restartUI, int& argc, char** argv,
+auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
 		string& sowImageExt, string& cmplxGridName,
@@ -312,11 +318,12 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& fieldStr, string& spwStr, string& uvDistStr,
 		bool& doPointing, bool& normalize, bool& doPBCorr,
 		bool& conjBeams, float& pbLimit, vector<float>& posigdev,
-		bool& doSPWDataIter)
+		bool& doSPWDataIter) -> RRReturnType
 {
   LogFilter filter(LogMessage::NORMAL);
   LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
+  RRReturnType rrr;
 
   try
     {
@@ -358,7 +365,6 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 
       Timer timer;
       double griddingTime=0;
-
       {
 	Directory dirObj(modelImageName);
 	if ((modelImageName!="") && ((!dirObj.exists()) || (!dirObj.isReadable())))
@@ -686,6 +692,7 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       // End of data iteration loops
       //-----------------------------------------------------------------------------------
 
+      rrr[CUMULATIVE_GRIDDING_ENGINE_TIME]=griddingEngine_time;
       cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
       unsigned long allVol=vol;
       log_l << "Total rows processed: " << allVol << LogIO::POST;
@@ -703,6 +710,10 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  ftm_g->finalizeToSky();
 
 	  griddingTime += timer.real();
+
+	  rrr[IMAGING_TIME]=griddingTime;
+	  rrr[IMAGING_RATE]=allVol/griddingTime;
+
 	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
 
 	  if (cmplxGridName!="")
@@ -743,6 +754,7 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    for (auto j=0;j<shp(1);j++)
 	      sow(IPosition(4,i,j,0,0))=sow_dp(i,j);
 
+	  rrr[SOW]=sow(IPosition(4,0,0,0,0));
 	  log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
 	  cerr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
 
@@ -774,9 +786,13 @@ void Roadrunner(//bool& restartUI, int& argc, char** argv,
       //MSes are detach for cleaning up when the DataBase object goes
       //out of scope here.
       log_l << "...done" << LogIO::POST;
+      rrr[NVIS] = visResampler->getVisGridded();
+      rrr[DATA_VOLUME] = visResampler->getDataVolume();
+      rrr[MAKEVB_TIME] = getMakeHPGVBTime(visResampler);
     }
   catch(AipsError& er)
     {
       log_l << er.what() << LogIO::SEVERE;
     }
+  return rrr;
 }

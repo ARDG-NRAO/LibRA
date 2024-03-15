@@ -240,6 +240,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		   const int& nVBAntenna, const int& nVBChannels,
 		   const PolMapType& mVals,  const PolMapType& mNdx,
 		   const PolMapType& conjMVals, const PolMapType& conjMNdx);
+    double getMakeHPGVBTime() {return mkHPGVB_duration.count();}
     //
     //------------------------------------------------------------------------------
     //
