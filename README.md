@@ -128,7 +128,7 @@ cd build
 # A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 # Default behaviour is to determined CUDA ARCH automatically.  
 # Default behaviour is Apps_BUILD_TESTS=OFF
-cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+cmake -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
 make
 ```
 
