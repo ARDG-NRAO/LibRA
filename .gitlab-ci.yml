@@ -48,5 +48,5 @@ test-job:
   artifacts:
     when: always
     reports:
-      junit: ${base_path}/build/Libra/apps/src/tests/report.xml 
+      junit: ${base_path}/apps/src/tests/report.xml 
 
