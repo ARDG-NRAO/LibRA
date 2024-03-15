@@ -39,7 +39,7 @@ test-job:
 
   script:
     - echo $PWD
-    - base_path = $PWD
+    - base_path=$PWD
     - echo "Entering $PWD/build/Libra/apps/src/tests to run apps unit tests"
     # - cd $PWD/build/Libra/apps/src/tests
     - cd ${base_path}/apps/src/tests
