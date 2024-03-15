@@ -119,7 +119,6 @@ The following list of packages need to be installed. Following is a typical comm
       sudo dnf clean expire-cache
       sudo dnf module install nvidia-driver:latest-dkms
       
-
 ## Getting started
 
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
