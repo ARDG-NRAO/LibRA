@@ -15,8 +15,8 @@ sh $ROOT/scripts/install_exodus.sh $local_exodus;
 strip $apps
 $local_exodus/bin/exodus $apps -o $apps_bundle
 
-mkdir -p $ROOT/{bin,lib,include}
-cp $apps $apps_bundle $ROOT/bin
-cp *.so $ROOT/lib
+#mkdir -p $ROOT/{bin,lib,include}
+#cp $apps $apps_bundle $ROOT/bin
+#cp *.so $ROOT/lib
 
 # The appropriate .h files aren't in apps/install yet

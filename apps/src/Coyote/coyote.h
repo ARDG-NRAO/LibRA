@@ -52,7 +52,7 @@
 #include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/casa/Utilities/Regex.h>
 
-#include <hpg/hpg.hpp>
+// #include <hpg/hpg.hpp>
 #include <unistd.h>
 
 using namespace casa;
@@ -110,7 +110,6 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 /// @param refFreqStr is the reference frequency.
 /// @param nW is the number of W-terms.
 /// @param cfCacheName is the name of the CF cache.
-/// @param imageNamePrefix is the prefix of the image name.
 /// @param WBAwp is the flag for WBAwp.
 /// @param psTerm is the flag for psTerm.
 /// @param aTerm is the flag for aTerm.
@@ -131,8 +130,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    string& imageNamePrefix,
-	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    bool &WBAwp, bool& aTerm, bool &psTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
@@ -157,7 +155,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param refFreqStr The reference frequency string.
  * @param nW The number of W-planes.
  * @param CFCache The convolution function cache.
- * @param imageNamePrefix The image name prefix.
  * @param WBAwp A boolean parameter indicating whether to use WBAwp.
  * @param aTerm A boolean parameter indicating whether to use aTerm.
  * @param psTerm A boolean parameter indicating whether to use psTerm.
@@ -174,11 +171,11 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param mode The mode of operation.
  */
 void UI(bool restart, int argc, char **argv, bool interactive, 
-	    string& MSNBuf,
+	string& MSNBuf,
         //string& imageName,
         string& telescopeName, int& ImSize,
         float& cellSize, string& stokes, string& refFreqStr,
-        int& nW, string& CFCache, string& imageNamePrefix,
+        int& nW, string& CFCache, 
         bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
 	float& pa, float& dpa,
         string& fieldStr, string& spwStr, string& phaseCenter,
@@ -187,7 +184,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         int& cfOversampling,
         std::vector<std::string>& cfList,
         //      std::vector<std::string>& wtCFList,
-       string& mode);
+	string& mode);
 
 
 #endif

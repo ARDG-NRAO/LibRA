@@ -37,9 +37,9 @@ does not required RA-specific software stack and dependencies.
 
 ### The repository contains
 
-- [ ] scientific code to build a software library of algorithms for image reconstruction
+- [ ] scientific code of algorithms for data calibration and image reconstruction
 - [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps) and all dependencies, other than the System Requirements below.
+- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps), and all the dependencies other than the [System Requirements](#system-requirements).
 
 
 A containerized means of building the LibRA project is available
@@ -56,10 +56,13 @@ the CASA project but contains _only_ the algorithmically-significant
 part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
-dependency graph. A suite of [standalone
-applications](#available-standalone-applications-apps) are also
-available which can be built as relocatable Linux executable (this may
-also be possible for MacOS, but we haven't test it).
+dependency graph (compared to the [CASA software stack and
+depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite
+of [standalone
+applications](#available-standalone-applications-apps). A suite of
+[standalone applications](#available-standalone-applications-apps) are
+also available which can be built as relocatable Linux executable
+(this may also be possible for MacOS, but we haven't test it).
 
 The resulting software stack is shown below.  Figure on the left/top shows
 our current software stack where the RA Algorithms layer is built on
@@ -128,7 +131,7 @@ cd build
 # A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 # Default behaviour is to determined CUDA ARCH automatically.  
 # Default behaviour is Apps_BUILD_TESTS=OFF
-cmake -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
 make
 ```
 
@@ -136,7 +139,7 @@ The binary [standalone
 applications](#available-standalone-applications-apps) will be installed
 in ```libra/install/bin``` directory.
 
-### Makefile Based Building - Temporarily broken
+### Makefile Based Building
 
 Below are the instructions for the older build system based on `makefile.libra`.  This can still be used, but we recommend using the `cmake` based build system with the instructions above.
 
@@ -156,7 +159,7 @@ The binary [standalone
 applications](#available-standalone-applications-apps) will be install
 in ```libra/install/linux_64b/bin``` directory.
 
-### Setting up the various variables in `makefile.libra`
+##### Setting up the various variables in `makefile.libra`
 
 - [ ] `Kokkos_CUDA_ARCH`: This is set via the commandline as `Kokkos_CUDA_ARCH=<CUDA ARCH>`.  
                           Set it to the value appropriate for the CUDA architecture of the GPU used with the `ftm=awphpg` setting of the `roadrunner` app.  
@@ -168,14 +171,15 @@ in ```libra/install/linux_64b/bin``` directory.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
 - [ ] `Apps_BUILD_TESTS`: Whether to build apps unit tests. Default is OFF.
 
-### Resources
+## Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers).
 This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 
-### ToDo List
-- [ ] Make a top-level `cmake` file.
-- [ ] A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.  
-Perhaps using [GNU Parallel](https://www.gnu.org/software/parallel)?
+## ToDo List
+- [ ] An app for (self-) calibration
+- [ ] ~~Make a top-level `cmake` file.~~
+- [ ] ~~A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.~~ 
+A `slurm` based framework is in place.  [GNU Parallel](https://www.gnu.org/software/parallel) based one may also be useful.
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
 Such a list can be used by other components of the algorithm
       architecture to make a potentially smaller sub-CFC, specially

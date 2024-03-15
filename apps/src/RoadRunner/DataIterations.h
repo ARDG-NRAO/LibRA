@@ -44,7 +44,7 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <casacore/casa/System/ProgressMeter.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <hpg/hpg.hpp>
+//#include <hpg/hpg.hpp>
 
 using namespace std;
 /**
@@ -97,37 +97,91 @@ public:
 	     )
   {
     int vol=0;
-
+    // // Get pointers to the reader and writer methods in VB2 and VI2.
+    // auto vi2Writer = [dataCol]()
+    // {
+    //   if (dataCol==casa::refim::FTMachine::MODEL)
+    // 	return &vi::VisibilityIterator2::writeVisModel;
+    //   else if (dataCol==casa::refim::FTMachine::CORRECTED)
+    // 	return &vi::VisibilityIterator2::writeVisCorrected;
+    //   else
+    // 	return &vi::VisibilityIterator2::writeVisObserved;
+    // };
+    
+    // auto vb2Reader = [dataCol]()
+    // {
+    //   if (dataCol==casa::refim::FTMachine::MODEL)
+    // 	return &vi::VisBuffer2::visCubeModel;
+    //   else if (dataCol==casa::refim::FTMachine::CORRECTED)
+    // 	return &vi::VisBuffer2::visCubeCorrected;
+    //   else
+    // 	return &vi::VisBuffer2::visCube;
+    // };
+    
+    // for (vi2->origin(); vi2->more(); vi2->next())
+    //   {
+    // 	//
+    // 	// Non-working code that attempts to use pointers to reader
+    // 	// and writer.  If this can be made to work it eliminates
+    // 	// if-statements below in every iteration.
+    // 	//
+    // 	vb->setVisCube((vb->*(vb2Reader())());
+    // 	if (imagingMode=="predict")
+    // 	  {
+    // 	    ftm->get(*vb,0);
+    
+    // 	    (vi2->*vi2Writer)((vb->*vb2Reader)());
+    // 	  }
+    // 	else
+    // 	  ftm->put(*vb,-1,doPSF);
+    
+    // 	vol+=vb->nRows();
+    
+    // 	cfSentNotifier(nVB);
+    
+    // 	nVB++;
+    //   }
+    
     for (vi2->origin(); vi2->more(); vi2->next())
       {
-	//cerr << "interVB: vol=" << vol << " " << nVB << endl;
-	if (dataCol==casa::refim::FTMachine::CORRECTED)
-	  vb->setVisCube(vb->visCubeCorrected());
-	else if (dataCol==casa::refim::FTMachine::MODEL)
-	  vb->setVisCube(vb->visCubeModel());
-	else
-	  vb->setVisCube(vb->visCube());
-
 	if (imagingMode=="predict")
 	  {
+	    // Predict the data into the VB (presumably the name get()
+	    // means "get the data from the complex grid into the VB")
 	    ftm->get(*vb,0);
-	    vi2->writeVisModel(vb->visCubeModel());
-	    //vi2->writeVisModel(vb->visCube());
+	    
+	    // Write the VB to the specific data column.  Predicted data
+	    // in the in-memory model is always in the VB::visCubeModel.
+	    // So always make that persistent in the specified column of
+	    // the VI.
+	    if (dataCol==casa::refim::FTMachine::MODEL)          vi2->writeVisModel(vb->visCubeModel());
+	    else if (dataCol==casa::refim::FTMachine::CORRECTED) vi2->writeVisCorrected(vb->visCubeModel());//vb->visCubeCorrected());
+	    else                                                 vi2->writeVisObserved(vb->visCubeModel());//vb->visCube());
 	  }
 	else
-	  ftm->put(*vb,-1,doPSF);
-
+	  {
+	    // Read the data from a specific data column into the
+	    // in-memory buffer
+	    if (dataCol==casa::refim::FTMachine::CORRECTED)   vb->setVisCube(vb->visCubeCorrected());
+	    else if (dataCol==casa::refim::FTMachine::MODEL)  vb->setVisCube(vb->visCubeModel());
+	    else                                              vb->setVisCube(vb->visCube());
+	    
+	    // Grid the data from the VB (presumably the name put()
+	    // means "put the data from the VB into the complex grid")
+	    ftm->put(*vb,-1,doPSF);
+	  }
+	
 	vol+=vb->nRows();
-
+	
 	cfSentNotifier(nVB);
-
+	
 	nVB++;
       }
-
+    
     return vol;
   };
-
-   /**
+  
+  /**
    * @brief Iterates over a VisibilityIterator2 object with chunking.
    *
    * This function iterates over a VisibilityIterator2 object with chunking, applying the specified FTMachine to each VisBuffer2 object and writing the results to the specified data column.
@@ -150,40 +204,39 @@ public:
 	   std::function<void(int&, int& )> waitForCFReady=[](int&, int&){},//NoOp
 	   std::function<void(const int&)> cfSentNotifier= [](const int&){} //NoOp
 	   )
-
+    
   {
     int vol=0;
     int nVB=0;
     int spwNdx=0;
     double griddingEngine_time=0;
 
-    //    casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
-    if (imagingMode=="predict")
-      {
-	if (!vi2->ms().tableDesc().isColumn("MODEL_DATA"))
-	  {
-	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup."
-	      //<< LogIO::EXCEPTION
-		  << LogIO::POST;
-	    exit(0);
-	  }
-      }
-    else
-      {
-	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	if (dataCol_l == casa::refim::FTMachine::MODEL)
-	  log_l << "Using MODEL_DATA column." << LogIO::POST;
-	else
-	  {
-	    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
-	    else
-	      {
-		log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
-		dataCol_l = casa::refim::FTMachine::OBSERVED;
-	      }
-	  }
-      }
+    // if (imagingMode=="predict")
+    //   {
+    // 	if (!vi2->ms().tableDesc().isColumn("MODEL_DATA"))
+    // 	  {
+    // 	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+    // 	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup."
+    // 	      //<< LogIO::EXCEPTION
+    // 		  << LogIO::POST;
+    // 	    exit(0);
+    // 	  }
+    //   }
+    // else
+    // {
+    // 	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+    // 	if (dataCol_l == casa::refim::FTMachine::MODEL)
+    // 	  log_l << "Using MODEL_DATA column." << LogIO::POST;
+    // 	else
+    // 	  {
+    // 	    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+    // 	    else
+    // 	      {
+    // 		log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
+    // 		dataCol_l = casa::refim::FTMachine::OBSERVED;
+    // 	      }
+    // 	  }
+    // }
     ProgressMeter pm(1.0, vi2->ms().nrow(),
 		     "dataIter", "","","",true);
 
@@ -215,7 +268,7 @@ public:
   	vi2->origin(); // So that the global vb is valid
 
 	waitForCFReady(nVB,spwNdx);
-	
+
   	std::chrono::time_point<std::chrono::steady_clock> griddingEngine_start
   	  = std::chrono::steady_clock::now();
 
@@ -238,7 +291,7 @@ public:
   };
 private:
   bool isRoot_p;
-    /**
+  /**
    * @brief The type of data column to use.
    */
   casa::refim::FTMachine::Type dataCol_l;

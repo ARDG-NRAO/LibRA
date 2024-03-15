@@ -62,9 +62,14 @@ namespace casa{
 	os << "Data Shape: " << storage_p.shape() << endl;
 	os << "Ant1: " << ant1_p << endl;
 	os << "Ant2: " << ant2_p << endl;
-	os << "PA = "; for (uInt i=0;i<pa_p.nelements();i++)
-			 os << pa_p[i].get("deg") << endl;
+	os << "PA: ";
+	for(auto x:pa_p) os << x.get("deg") << " ";
+	os << endl;
 
+	os << "Dirty: ";
+	for(auto x:storage_p) os << x->isDirty() << " ";
+	os << endl;
+	
 	if (verbose)
 	  for (int i=0; i<storage_p.shape()(0); i++)
 	    for(int j=0;j<storage_p.shape()(1);j++)
@@ -168,7 +173,7 @@ namespace casa{
     getIndex(pa,dPA,ant1,ant2,paNdx, antNdx);
     
     log_l << "Saving " << qualifier << " CFStore of shape " << storage_p(paNdx,antNdx)->shape() 
-	  << " for PA = " << pa.getValue("deg") 
+	  << " for PA = " << pa.getValue("deg") << "deg "
 	  << " BaselineType(antType1, antType2) = (" << ant1 << "," << ant2 << ")" 
 	  << LogIO::POST;
     ostringstream name;
@@ -190,7 +195,7 @@ namespace casa{
     for (Int i=0;i<storage_p.shape()(0);i++)
       for (Int j=0;j<storage_p.shape()(1);j++)
 	{
-	  log_l << "Writing CFStore("<<i<<","<<j<<") of shape " << storage_p(i,j)->shape() << LogIO::POST;
+	  log_l << "Writing " << qualifier << " CFStore("<<i<<","<<j<<") of shape " << storage_p(i,j)->shape() << LogIO::POST;
 	  ostringstream name;
 	  //name << dir << "/" << qualifier << "CFS_" << i << "_" << j;
 	  name << String(qualifier) << "CFS_" << i << "_" << j;
@@ -270,9 +275,6 @@ void CFStore2::clear()
       for(Int i=0;i<n;i++)
 	{
 	  cpa = pa_p(i).getValue("rad");
-	  //	  cerr << "##### " << i << " " << cpa*57.2956 << " " << paVal*57.2956 << " " << dpa*57.2956 << " " << (fabs(cpa - paVal))*57.2956 << endl; 
-	  // if (fabs(cpa - paVal) > dpa) 
-	  //   {cout << "%%%%% "; cin >> junk;}
 	  if (fabs(cpa - paVal) < dpa) {junk=i;break;}
 	}
       return junk;

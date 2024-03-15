@@ -48,7 +48,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class CFStore2
   {
   public:
-    CFStore2():storage_p(), pa_p(),lazyFillOn_p(casacore::False),  mosPointingPos_p(0), currentSPWID_p(-1), cfCacheDir_p("") {};
+    CFStore2():storage_p(), pa_p(),lazyFillOn_p(false), mosPointingPos_p(0), currentSPWID_p(-1), cfCacheDir_p("") {};
 
     // CFStore2(CFBuffer<casacore::Complex> *dataPtr, casacore::Quantity PA, casacore::Int mosPointing):
     //   storage_p(), pa_p(PA), mosPointingPos_p(mosPointing)
@@ -80,6 +80,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //-------------------------------------------------------------------------
     void initPolMaps(PolMapType& polMap, PolMapType& conjPolMap);
     //-------------------------------------------------------------------------
+    int size() {return storage_p.size();};
     casacore::Bool null() {return (storage_p.size() == 0);};
     //-------------------------------------------------------------------------
     casacore::Double memUsage();

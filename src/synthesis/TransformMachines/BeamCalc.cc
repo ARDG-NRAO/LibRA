@@ -103,10 +103,10 @@ namespace casa{
       return; // nothing to do (assuming the databases haven't changed)
     }
 
-    cout << "Processing request for geometries from observatory " << obsName << ", antenna type " << antType << endl;
-
     LogIO os;
-    os << LogOrigin("BeamCalc", "setBeamCalcGeometries()");
+    // os << LogOrigin("BeamCalc", "setBeamCalcGeometries()");
+    // os << "Processing request for geometries from observatory " << obsName << ", antenna type " << antType << endl;
+
 
     if(obsName!=""){
       obsName_p = obsName;
@@ -125,8 +125,8 @@ namespace casa{
 
     Bool useInternal = false;
 
-    os <<  LogIO::NORMAL << "Initialisation of geometries for observatory " << obsName_p 
-       << ", antenna type " << antType_p << LogIO::POST;
+    // os <<  LogIO::NORMAL << "Initialisation of geometries for observatory " << obsName_p 
+    //    << ", antenna type " << antType_p << LogIO::POST;
 
     if(otherAntRayPath.empty()){
       if(!MeasTable::AntennaResponsesPath(antRespPath, obsName_p)) {
@@ -222,7 +222,7 @@ namespace casa{
 
 
 	if(obsName_p=="VLA" && antType_p=="STANDARD"){
-	  os <<  LogIO::NORMAL << "Will use default geometries for VLA STANDARD." << LogIO::POST;
+	  //os <<  LogIO::NORMAL << "Will use default geometries for VLA STANDARD." << LogIO::POST;
 	  BeamCalc_NumBandCodes_p = VLABeamCalc_NumBandCodes;
 	  BeamCalcGeometries_p.resize(BeamCalc_NumBandCodes_p);
 	  bandMinFreq_p.resize(BeamCalc_NumBandCodes_p);
@@ -236,7 +236,7 @@ namespace casa{
 	  antRespPath_p = fullFileName + "/nrao/VLA";
 	}
 	else if(obsName_p=="EVLA" && antType_p=="STANDARD"){
-	  os <<  LogIO::NORMAL << "Will use default geometries for EVLA STANDARD." << LogIO::POST;
+	  //os <<  LogIO::NORMAL << "Will use default geometries for EVLA STANDARD." << LogIO::POST;
 	  BeamCalc_NumBandCodes_p = EVLABeamCalc_NumBandCodes;
 	  BeamCalcGeometries_p.resize(BeamCalc_NumBandCodes_p);
 	  bandMinFreq_p.resize(BeamCalc_NumBandCodes_p);
@@ -250,7 +250,7 @@ namespace casa{
 	  antRespPath_p = fullFileName + "/nrao/VLA";
 	}
 	else if(obsName_p=="ALMA" && (antType_p=="DA" || antType_p=="DV" || antType_p=="PM")){
-	  os <<  LogIO::NORMAL << "Will use default geometries for ALMA DA, DV, and PM." << LogIO::POST;
+	  //os <<  LogIO::NORMAL << "Will use default geometries for ALMA DA, DV, and PM." << LogIO::POST;
 	  BeamCalc_NumBandCodes_p = ALMABeamCalc_NumBandCodes;
 	  BeamCalcGeometries_p.resize(BeamCalc_NumBandCodes_p);
 	  bandMinFreq_p.resize(BeamCalc_NumBandCodes_p);
@@ -277,7 +277,7 @@ namespace casa{
     }
     
     
-    os <<  LogIO::NORMAL << "from file " << antRayPath << endl;
+    //    os <<  LogIO::NORMAL << "from file " << antRayPath << endl;
     
     try {
       // read temp table from ASCII file

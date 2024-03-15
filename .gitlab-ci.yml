@@ -30,7 +30,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compiling the code..."
     - mkdir build
     - cd build
-    - cmake .. #- make -f makefile.libra allclone 
+    - cmake -DApps_BUILD_TESTS=ON .. #- make -f makefile.libra allclone 
     - make #- make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
     - echo "Compile complete."
 
@@ -39,12 +39,14 @@ test-job:
 
   script:
     - echo $PWD
+    - base_path=$PWD
     - echo "Entering $PWD/build/Libra/apps/src/tests to run apps unit tests"
-    - cd $PWD/build/Libra/apps/src/tests
-    - ./LibRATests --gtest_output="xml:report.xml"
+    # - cd $PWD/build/Libra/apps/src/tests
+    - cd ${base_path}/apps/src/tests
+    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
 
   artifacts:
     when: always
     reports:
-      junit: $PWD/build/Libra/apps/src/tests/report.xml 
+      junit: ${base_path}/build/Libra/apps/src/tests/report.xml 
 
