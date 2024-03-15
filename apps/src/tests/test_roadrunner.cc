@@ -18,6 +18,16 @@ TEST(RoadrunnerTest, InitializeTest) {
 }
 
 TEST(RoadrunnerTest, AppLevelSNRPSF) {
+  // create dir AppLevelSNRPSF
+  std::filesystem::create_directory("AppLevelSNRPSF");
+
+  //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
+  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF/CYGTST.corespiral.ms", copy_options::recursive);
+  //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
+  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF/4k_nosquint.cfc", copy_options::recursive);
+  //Step into AppLevelSNRPSF
+  std::filesystem::current_path("AppLevelSNRPSF");
+
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
    string imageName="htclean_gpu_newpsf.psf";
@@ -47,8 +57,8 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -78,9 +88,21 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   remove_all(current_path()/"htclean_gpu_newpsf.psf");
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+
+  //move to parent directory
+  std::filesystem::current_path("..");
 }
 
 TEST(RoadrunnerTest, AppLevelWeight) {
+  // create dir AppLevelWeight
+  std::filesystem::create_directory("AppLevelWeight");
+  //copy over CYGTST.corespiral.ms from gold_standard to AppLevelWeight
+  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelWeight/CYGTST.corespiral.ms", copy_options::recursive);
+  //copy over 4k_nosquint.cfc from gold_standard to AppLevelWeight
+  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelWeight/4k_nosquint.cfc", copy_options::recursive);
+  //Step into AppLevelWeight
+  std::filesystem::current_path("AppLevelWeight");
+
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
    string imageName="htclean_gpu_newpsf.weight";
@@ -110,8 +132,8 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -137,6 +159,9 @@ TEST(RoadrunnerTest, AppLevelWeight) {
    remove_all(current_path()/"4k_nosquint.cfc");
    remove_all(current_path()/"htclean_gpu_newpsf.weight");
    remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+
+  //move to parent directory
+  std::filesystem::current_path("..");
 
 }
 
