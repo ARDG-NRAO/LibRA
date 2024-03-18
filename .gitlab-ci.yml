@@ -33,7 +33,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - which nvcc
     - mkdir build
     - cd build
-    - cmake -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
+    - VERBOSE=1 cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
     - make #- make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
     - echo "Compile complete."
 
