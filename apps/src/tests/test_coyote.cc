@@ -19,6 +19,46 @@ namespace test{
 
   // Global absolute location of the test dir
   std::string testDir=string(fs::current_path())+"/CoyoteDryRun";
+  //
+  //-----------------------------------------------------------------------------------------
+  //
+    string msName = "refim_point_wterm_vlad.ms";
+    string sourceTestMS="gold_standard/"+msName;
+    string telescopeName = "EVLA";
+    int NX = 2048;
+    float cellSize = 10.0;
+    string stokes = "I";
+    string refFreqStr = "1.0e9";
+    int nW = 16;
+    string cfCacheName = "use_awp.cf";
+    bool WBAwp = true;
+    bool aTerm = true;
+    bool psTerm = false;
+    string mType = "diagonal";
+    float pa = 0.0;
+    float dpa = 360.0;
+    string fieldStr = "";
+    string spwStr = "*";
+    string phaseCenter = "19:59:28.5 40.43.21.5 J2000";
+    bool conjBeams = true;
+    int cfBufferSize = 3072;
+    int cfOversampling = 20;
+    std::vector<std::string> cfList;
+    string mode = "dryrun";
+  //
+  //-----------------------------------------------------------------------------------------
+  //
+  void cleanUp(const std::string& base_path)
+  {
+    for (auto& path : std::filesystem::directory_iterator(base_path))
+      {
+	std::filesystem::remove_all(path);
+      }
+    //  fs::remove_all(path);
+  }
+  //
+  //-----------------------------------------------------------------------------------------
+  //
 
   TEST(CoyoteTest, UIFactory) {
     // The Factory Settings.
@@ -60,11 +100,9 @@ namespace test{
   }
 
   TEST(CoyoteTest, CoyoteDryRun) {
-    std::string msName = "refim_point_wterm_vlad.ms";
-    std::string sourceTestMS="gold_standard/"+msName;
     std::string targetTestMS=testDir+"/"+msName;
 
-    fs::remove_all(test::testDir);
+    cleanUp(test::testDir);
 
     //create directory CoyoteDryRun
     fs::create_directory(test::testDir);
@@ -73,27 +111,6 @@ namespace test{
     //change directory to CoyoteDryRun
     fs::current_path(test::testDir);
 
-    string telescopeName = "EVLA";
-    int NX = 2048;
-    float cellSize = 10.0;
-    string stokes = "I";
-    string refFreqStr = "1.0e9";
-    int nW = 16;
-    string cfCacheName = "use_awp.cf";
-    bool WBAwp = true;
-    bool aTerm = true;
-    bool psTerm = false;
-    string mType = "diagonal";
-    float pa = 0.0;
-    float dpa = 360.0;
-    string fieldStr = "";
-    string spwStr = "*";
-    string phaseCenter = "19:59:28.5 40.43.21.5 J2000";
-    bool conjBeams = true;
-    int cfBufferSize = 3072;
-    int cfOversampling = 20;
-    std::vector<std::string> cfList;
-    string mode = "dryrun";
 
     Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
            WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
@@ -107,6 +124,7 @@ namespace test{
       }
     }
 
+    //cleanUp(test::testDir);
     //    fs::remove_all(test::testDir);
 
   }
@@ -117,7 +135,6 @@ namespace test{
 
     // Get MiscInfo
     string dryrunMiscInfo = "use_awp.cf/CFS_0_0_CF_0_0_0.im/miscInfo.rec";
-    casacore::Record miscInfo = SynthesisUtils::readRecord(casacore::String(dryrunMiscInfo));
 
     // Below is the expected miscInfo
     //
@@ -143,28 +160,37 @@ namespace test{
     
     // Add assertions here to verify the behavior of the Coyote function in dryrun mode produces the required misc info.
     double WIncr=0.043633231299858244;
+    bool isFilled=false;
+    
+    auto verifyMiscInfo = [&WIncr,&isFilled](const string& name)
+    {
+      casacore::Record miscInfo = SynthesisUtils::readRecord(casacore::String(name));
+      double  dVal;
+      int iVal;
+      float fVal;
+      bool bVal;
+      casacore::String sVal;
+      miscInfo.get("Xsupport",iVal);         ASSERT_TRUE(iVal == 3072);
+      miscInfo.get("Ysupport",iVal);         ASSERT_TRUE(iVal == 3072);
+      miscInfo.get("Sampling",fVal);         ASSERT_TRUE(fVal == 20);
+      miscInfo.get("ParallacticAngle",dVal); EXPECT_DOUBLE_EQ(dVal, 0.0);
+      miscInfo.get("MuellerElement",iVal);   ASSERT_TRUE(iVal == 0);
+      miscInfo.get("WIncr",dVal);            EXPECT_DOUBLE_EQ(dVal, WIncr);
+      miscInfo.get("Name",sVal);             ASSERT_TRUE(sVal == "CFS_0_0_CF_0_0_0.im");
+      miscInfo.get("ConjFreq",dVal);         EXPECT_DOUBLE_EQ(dVal,1e9);
+      miscInfo.get("ConjPoln",iVal);         ASSERT_TRUE(iVal == 8);
+      miscInfo.get("TelescopeName",sVal);    ASSERT_TRUE(sVal == "EVLA");
+      miscInfo.get("BandName",sVal);         ASSERT_TRUE(sVal == "LBand");
+      miscInfo.get("Diameter", fVal);        ASSERT_TRUE(fVal == 25.0);
+      miscInfo.get("OpCode",bVal);           ASSERT_FALSE(bVal);
+      miscInfo.get("IsFilled",bVal);         ASSERT_TRUE(bVal == isFilled);
+      miscInfo.get("aTermOn",bVal);          ASSERT_TRUE(bVal);
+      miscInfo.get("psTermOn",bVal);         ASSERT_FALSE(bVal);
+      miscInfo.get("wTermOn",bVal);          ASSERT_TRUE(bVal);
+      miscInfo.get("conjBeams",bVal);        ASSERT_TRUE(bVal);
+    };
 
-    double  dVal;
-    int iVal;
-    float fVal;
-    bool bVal;
-    casacore::String sVal;
-    miscInfo.get("Xsupport",iVal);         ASSERT_TRUE(iVal == 3072);
-    miscInfo.get("Ysupport",iVal);         ASSERT_TRUE(iVal == 3072);
-    miscInfo.get("Sampling",fVal);         ASSERT_TRUE(fVal == 20);
-    miscInfo.get("ParallacticAngle",dVal); ASSERT_TRUE(dVal == 0);
-    miscInfo.get("MuellerElement",iVal);   ASSERT_TRUE(iVal == 0);
-    miscInfo.get("WIncr",dVal);            EXPECT_DOUBLE_EQ(dVal, WIncr);
-    miscInfo.get("Name",sVal);             ASSERT_TRUE(sVal == "CFS_0_0_CF_0_0_0.im");
-    miscInfo.get("ConjFreq",dVal);         EXPECT_DOUBLE_EQ(dVal,1e9);
-    miscInfo.get("ConjPoln",iVal);         ASSERT_TRUE(iVal == 8);
-    miscInfo.get("TelescopeName",sVal);    ASSERT_TRUE(sVal == "EVLA");
-    miscInfo.get("BandName",sVal);         ASSERT_TRUE(sVal == "LBand");
-    miscInfo.get("Diameter", fVal);        ASSERT_TRUE(fVal == 25.0);
-    miscInfo.get("aTermOn",bVal);          ASSERT_TRUE(bVal);
-    miscInfo.get("psTermOn",bVal);         ASSERT_FALSE(bVal);
-    miscInfo.get("wTermOn",bVal);          ASSERT_TRUE(bVal);
-    miscInfo.get("conjBeams",bVal);        ASSERT_TRUE(bVal);
+    verifyMiscInfo(dryrunMiscInfo);
 
     // Add assertions here to verify the behavior of the Coyote
     // function in dryrun mode produces the required values in
@@ -172,42 +198,39 @@ namespace test{
   }
 
   TEST(CoyoteTest, CoyoteFillCF) {
-    string MSNBuf = "refim_point_wterm_vlad.ms";
-    string telescopeName = "EVLA";
-    int NX = 2048;
-    float cellSize = 10.0;
-    string stokes = "I";
-    string refFreqStr = "1.0e9";
-    int nW = 16;
-    string cfCacheName = "use_awp.cf";
-    bool WBAwp = true;
-    bool aTerm = true;
-    bool psTerm = false;
-    string mType = "diagonal";
-    float pa = 0.0;
-    float dpa = 360.0;
-    string fieldStr = "";
-    string spwStr = "*";
-    string phaseCenter = "19:59:28.5 40.43.21.5 J2000";
-    bool conjBeams = true;
-    int cfBufferSize = 3072;
-    int cfOversampling = 20;
-    string mode = "fillcf";
 
+    // char *CASAPATH = std::getenv("CASAPATH");
+    // if (CASAPATH == nullptr)
+    //   {
+    //   //      throw(AipsError("CASAPATH for CoyoteFillCF test not defined"));
+    //   cout  << "[INFO] CASAPATH for CoyoteFillCF test not defined" << endl;
+    //   }
+    // else
+      {
+	fs::current_path(test::testDir);
 
-    std::vector<std::string> cfList;
-    for (int j = 0; j < 16; j++) {
-      for (int i = 0; i < 2; i++) {
-	std::string filePath = "CFS_0_0_CF_0_" + std::to_string(j) + "_" + std::to_string(i) + ".im";
-	cfList.push_back(filePath);
+	std::vector<int> wList={0,5,10},
+	  polList={0,1};
+	std::vector<std::string> cfList;
+
+	for (auto iw : wList) {
+	  for (auto ip : polList) {
+	    std::stringstream filePath;
+	    filePath << "CFS_0_0_CF_0_" << iw << "_" << ip << ".im";
+	    cfList.push_back(filePath.str());
+	  }
+	}
+
+	//for(auto cf : cfList) cerr << cf << " "; cerr << endl;
+
+	string mode_l="fillcf";
+	Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
+	       WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
+	       conjBeams, cfBufferSize, cfOversampling, cfList, mode_l);
+
+	// Add assertions here to verify the behavior of the Coyote function in fillcf mode
+	//    fs::remove_all(test::testDir);
       }
-    }
-    // Coyote(MSNBuf, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
-    //  WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
-    //  conjBeams, cfBufferSize, cfOversampling, cfList, mode);
-
-    // Add assertions here to verify the behavior of the Coyote function in fillcf mode
-    //    fs::remove_all(test::testDir);
   }
 
 };
