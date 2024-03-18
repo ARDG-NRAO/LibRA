@@ -15,7 +15,6 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
 
   before_script:
-    - export PATH="/usr/local/cuda-12.2/bin:/usr/bin/ccache:$PATH"
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
@@ -33,7 +32,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - which nvcc
     - mkdir build
     - cd build
-    - VERBOSE=1 cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CUDA_COMPILER_LAUNCHER=ccache -DCMAKE_NVCC_COMPILER_LAUNCHER=ccache -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
+    - VERBOSE=1 cmake -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
     - make #- make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
     - echo "Compile complete."
 
