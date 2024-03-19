@@ -15,7 +15,6 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
 
   before_script:
-    - export PATH="/usr/bin/ccache:$PATH"
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
@@ -28,6 +27,9 @@ build-job:       # This job runs in the build stage, which runs first.
 
   script:
     - echo "Compiling the code..."
+    - echo $PATH
+    - nvidia-smi
+    - which nvcc
     - mkdir build
     - cd build
     - cmake -DApps_BUILD_TESTS=ON .. #- make -f makefile.libra allclone 
