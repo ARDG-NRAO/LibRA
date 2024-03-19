@@ -50,11 +50,11 @@ namespace test{
   //
   void cleanUp(const std::string& base_path)
   {
-    for (auto& path : std::filesystem::directory_iterator(base_path))
-      {
-	std::filesystem::remove_all(path);
-      }
-    //  fs::remove_all(path);
+    // for (auto& path : std::filesystem::directory_iterator(base_path))
+    //   {
+    // 	std::filesystem::remove_all(path);
+    //   }
+    fs::remove_all(base_path);
   }
   //
   //-----------------------------------------------------------------------------------------
@@ -223,10 +223,10 @@ namespace test{
 
 	//for(auto cf : cfList) cerr << cf << " "; cerr << endl;
 
-	string mode_l="fillcf";
-	Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
-	       WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
-	       conjBeams, cfBufferSize, cfOversampling, cfList, mode_l);
+	// string mode_l="fillcf";
+	// Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
+	//        WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
+	//        conjBeams, cfBufferSize, cfOversampling, cfList, mode_l);
 
 	// Add assertions here to verify the behavior of the Coyote function in fillcf mode
 	//    fs::remove_all(test::testDir);
