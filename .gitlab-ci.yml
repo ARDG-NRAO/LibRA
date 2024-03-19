@@ -3,34 +3,30 @@ stages:          # List of stages for jobs, and their order of execution
   - test
 
 variables:
-  CCACHE_BASEDIR: $CI_PROJECT_DIR
-  CCACHE_DIR: $CI_PROJECT_DIR/ccache
+  #CCACHE_BASEDIR: $CI_PROJECT_DIR
+  #CCACHE_DIR: $CI_PROJECT_DIR/ccache
   GIT_CLEAN_FLAGS: none  # do not remove the build directories afterwards, so "test-job" can use it.
 
-cache:
-    key: ccache_main # this is the global location.
-    paths:
-      - $CCACHE_DIR
+#cache:
+#    key: ccache_main # this is the global location.
+#    paths:
+#      - $CCACHE_DIR
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
 
   before_script:
-    - export PATH="/usr/bin/ccache:$PATH"
-    - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_DIR="$PWD/ccache"
-    - export CCACHE_COMPILERCHECK=content
-    - ccache --zero-stats || true
-    - ccache --show-stats || true
     - git clean -ffdx #clean build
-  after_script:
-    - export CCACHE_DIR="$PWD/ccache"
-    - ccache --show-stats
 
   script:
     - echo "Compiling the code..."
+    - echo $PATH
+    - export PATH=/usr/local/cuda/bin:$PATH
+    - export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    - which nvcc
+    - nvcc --version
     - mkdir build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON .. #- make -f makefile.libra allclone 
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
     - make #- make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
     - echo "Compile complete."
 
@@ -41,12 +37,11 @@ test-job:
     - echo $PWD
     - base_path=$PWD
     - echo "Entering $PWD/build/Libra/apps/src/tests to run apps unit tests"
-    # - cd $PWD/build/Libra/apps/src/tests
     - cd ${base_path}/apps/src/tests
     - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
 
   artifacts:
     when: always
     reports:
-      junit: ${base_path}/apps/src/tests/report.xml 
+      junit: ${base_path}/build/Libra/apps/src/tests/report.xml 
 
