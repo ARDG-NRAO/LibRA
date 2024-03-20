@@ -179,6 +179,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual void saveGriddedData(const std::string&,const casacore::CoordinateSystem&) {};
  
+    virtual double getVisGridded()=0;
+
+    virtual unsigned long getDataVolume()=0;
+
     casacore::Double runTimeG_p, runTimeDG_p, runTimeG1_p, runTimeG2_p, runTimeG3_p, runTimeG4_p, runTimeG5_p, runTimeG6_p, runTimeG7_p,griddingTime;
     casacore::Timer timer_p;
     //

@@ -57,9 +57,7 @@ part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph (compared to the [CASA software stack and
-depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite
-of [standalone
-applications](#available-standalone-applications-apps). A suite of
+depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
 [standalone applications](#available-standalone-applications-apps) are
 also available which can be built as relocatable Linux executable
 (this may also be possible for MacOS, but we haven't test it).

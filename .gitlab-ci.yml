@@ -15,15 +15,18 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
 
   before_script:
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_DIR="$PWD/ccache"
+    - export CCACHE_COMPILERCHECK=content
+    - ccache --zero-stats || true
+    - ccache --show-stats || true
     - git clean -ffdx #clean build
 
   script:
     - echo "Compiling the code..."
     - echo $PATH
-    - export PATH=/usr/local/cuda/bin:$PATH
-    - export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    - nvidia-smi
     - which nvcc
-    - nvcc --version
     - mkdir build
     - cd build
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 

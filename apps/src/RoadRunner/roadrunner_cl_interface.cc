@@ -220,7 +220,7 @@ int main(int argc, char **argv)
   //
   // The Factory Settings.
   string MSNBuf,ftmName=defaultFtmName,
-    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
     imagingMode="residual",rmode="none";
@@ -248,22 +248,22 @@ int main(int argc, char **argv)
      doSPWDataIter);
 
   set_terminate(NULL);
-
+  RRReturnType rrr;
   try
     {
-      Roadrunner(//restartUI, argc, argv,
-		 MSNBuf,imageName, modelImageName,dataColumnName,
-		 sowImageExt, cmplxGridName, NX, nW, cellSize,
-		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-		 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-		 doSPWDataIter);
+      rrr=Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
+		     sowImageExt, cmplxGridName, NX, nW, cellSize,
+		     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+		     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+		     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+		     doSPWDataIter);
     }
   catch(AipsError& er)
     {
       cerr << er.what() << endl;
     }
 
-
+  // An example code below for extracting the info from RRRetrunType (a std::unordered_map).
+  //  cerr << rrr[MAKEVB_TIME] << " " << rrr[NVIS] << " " << rrr[DATA_VOLUME] << " " << rrr[IMAGING_RATE] << " " << rrr[NVIS]/rrr[CUMULATIVE_GRIDDING_ENGINE_TIME] << " vis/sec" << endl;
   return 0;
 }
