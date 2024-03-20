@@ -4,7 +4,15 @@ stages:
   - production
 
 variables:
+  CCACHE_BASEDIR: $CI_PROJECT_DIR
+  CCACHE_DIR: $CI_PROJECT_DIR/ccache
   GIT_CLEAN_FLAGS: none
+
+cache:
+  key: ccache_main
+  paths:
+    - $CCACHE_DIR
+
 
 build-job:
   stage: build
@@ -37,6 +45,10 @@ build-job:
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
     - echo "Compile complete."
+    
+  after_script:
+    - export CCACHE_DIR="$PWD/ccache"
+    - ccache --show-stats || true
 
 test-job:
   stage: test
