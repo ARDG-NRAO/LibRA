@@ -24,9 +24,9 @@ build-job:
     - if: '$CI_COMMIT_REF_NAME == "main"'
       when: always
     - changes:
-        - README.md
-        - scripts/**/*
-        - doc/**/*
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
@@ -60,9 +60,9 @@ test-job:
     - if: '$CI_COMMIT_REF_NAME == "main"'
       when: always
     - changes:
-        - README.md
-        - scripts/**/*
-        - doc/**/*
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
   script:
     - echo $PWD
     - base_path=$PWD
