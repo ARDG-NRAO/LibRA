@@ -46,10 +46,11 @@
 
 void UI(Bool restart, int argc, char **argv,
 	std::string& imageName, std::string& deconvolver,
-        string& normtype, string& workdir,
+        string& normtype, string& workdir, string& imType,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
-        vector<float>& restoringbeam)
+        vector<float>& restoringbeam,
+	bool computePB)
 {
   if (!restart)
     {
@@ -66,10 +67,12 @@ void UI(Bool restart, int argc, char **argv,
       i=1;clgetSValp("deconvolver", deconvolver,i);  
       i=1;clgetSValp("normtype", normtype,i);
       i=1;clgetSValp("workdir", workdir,i);
+      i=1;clgetSValp("imType", imType, i);
       i=1;clgetFValp("pblimit", pblimit,i);
       i=1;clgetIValp("nterms", nterms,i);
       i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
+      i=1;clgetBValp("computePB", computePB, i);
 
       int N;
       N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
@@ -92,22 +95,23 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  string imageName, deconvolver="hogbom", normtype="flatnoise", workdir;
+  string imageName, deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
+  Bool computePB=False;
   Bool restartUI=False;;
 
  RENTER:// UI re-entry point.
   try
     {
       imageName="";
-      UI(restartUI,argc, argv, imageName, deconvolver, normtype, workdir, pblimit, nterms, facets, psfcutoff, restoringbeam);
+      UI(restartUI,argc, argv, imageName, deconvolver, normtype, workdir, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      acme_func(imageName, deconvolver, normtype, workdir, pblimit, nterms, facets, psfcutoff, restoringbeam);
+      acme_func(imageName, deconvolver, normtype, workdir, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
     }
   catch (clError& x)
     {

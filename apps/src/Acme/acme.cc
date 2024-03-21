@@ -29,10 +29,11 @@
 //-------------------------------------------------------------------------
 
 void acme_func(std::string& imageName, std::string& deconvolver,
-               string& normtype, string& workdir,
+               string& normtype, string& workdir, string& imType,
                float& pblimit, int& nterms, int& facets,
                float& psfcutoff,
-               vector<float>& restoringbeam)
+               vector<float>& restoringbeam,
+	       bool computePB)
 {
   //
   //---------------------------------------------------
@@ -43,11 +44,26 @@ void acme_func(std::string& imageName, std::string& deconvolver,
       //
       //---------------------------------------------------
       //
-      String type;
+      String type, residualName, weightName, sumwtName, pbName;
+      
+      ostringstream os;
+      LogSink sink(LogMessage::NORMAL,&os);
+      LogIO logio(sink);
+
       /********** Block to add simple normalization functionality **********/
-      String residualName = imageName + String(".residual");
-      String weightName   = imageName + String(".weight");
-      String sumwtName    = imageName + String(".sumwt");
+      if ((imType == "residual") || (imType == "psf")) {
+          residualName = imageName + String(".") + imType;
+	  printf("Image name is %s\n", residualName.c_str());
+      }
+      else
+          logio << "Unrecognized imType. Allowed values are psf and residual." << LogIO::EXCEPTION;
+
+      weightName   = imageName + String(".weight");
+      sumwtName    = imageName + String(".sumwt");
+
+      if (computePB)
+          pbName   = imageName + String(".pb");
+
       /*********************************************************************/
 
       {
@@ -55,47 +71,42 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	TableInfo& info = table.tableInfo();
 	type=info.type();
       }
-      //ofstream ofs(OutBuf.c_str());
-      
-      ostringstream os;
-      //      StreamLogSink sink(LogMessage::NORMAL, ofs);
-      LogSink sink(LogMessage::NORMAL,&os);
-      LogIO logio(sink);
-      //      ostream os(logio.output());
 
-      //
-      // We need polymorphic TableSummary class.
-      //
       if (type=="Image")
       	{
       	  LatticeBase* lattPtr = ImageOpener::openImage (residualName);
       	  ImageInterface<Float> *reImage;
-      	  ImageInterface<Complex> *cImage;
 
       	  reImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
-      	  cImage = dynamic_cast<ImageInterface<Complex>*>(lattPtr);
 
           /********** Block to add simple normalization functionality **********/
 
-          LatticeBase* wPtr = ImageOpener::openImage(weightName);
+	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
           ImageInterface<Float> *wImage;
-          wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+	  wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
 
-          LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
+	  LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
           ImageInterface<Float> *swImage;
           swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
 
-          float itsPBScaleFactor = 1.0;
+	  float itsPBScaleFactor = 1.0;
 
+	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
+	  
+	  LatticeExpr<Float> ratio;
+	  Float scalepb = 1.0;
+	  LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)/abs(*swImage)));
+	  scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+	  LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
+	  LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
+	  ratio = ((newIM) * mask / (deno + maskinv));
+	  reImage->copyData(ratio);
 
-          LatticeExpr<Float> ratio;
-          Float scalepb = 1.0;
-          LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)) * abs(*swImage));
-          scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
-          LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
-          LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
-          ratio = ( (*reImage) * mask / (deno + maskinv));
-          reImage->copyData(ratio);
+/*	  if (computePB) {
+	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
+	      // add code to create and write the .pb image
+	  }*/
+
 	  /*********************************************************************/
 
       	  ostringstream oss;	      
@@ -107,14 +118,6 @@ void acme_func(std::string& imageName, std::string& deconvolver,
       	      Vector<String> list = ims.list(logio);
 	      //ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=reImage->miscInfo();
-      	    }
-      	  else if (cImage != 0)
-      	    {
-      	      logio << "Image data type  : Complex" << LogIO::NORMAL;
-      	      ImageSummary<Complex> ims(*cImage);
-      	      Vector<String> list = ims.list(logio);
-      	      //ofs << (os.str().c_str()) << endl;
-      	      miscInfoRec=cImage->miscInfo();
       	    }
       	  else
       	    logio << "Unrecognized image data type." << LogIO::EXCEPTION;
