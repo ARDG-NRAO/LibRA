@@ -102,32 +102,15 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  ratio = ((newIM) * mask / (deno + maskinv));
 	  reImage->copyData(ratio);
 
+	  IPosition loc(4,1000,1000,1,1);
+	  float pix = reImage->get(loc);
 /*	  if (computePB) {
 	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
 	      // add code to create and write the .pb image
 	  }*/
 
-	  /*********************************************************************/
-
-      	  ostringstream oss;	      
-      	  Record miscInfoRec;
-      	  if (reImage != 0)
-      	    {
-      	      logio << "Image data type  : Float" << LogIO::NORMAL;
-	      ImageSummary<Float> ims(*reImage);
-      	      Vector<String> list = ims.list(logio);
-	      //ofs << (os.str().c_str()) << endl;
-	      miscInfoRec=reImage->miscInfo();
-      	    }
-      	  else
-      	    logio << "Unrecognized image data type." << LogIO::EXCEPTION;
-
-      	  if (miscInfoRec.nfields() > 0)
-      	    {
-      	      logio << endl << "Attached miscellaneous Information : " << endl << LogIO::NORMAL;
-      	      miscInfoRec.print(oss,25," MiscInfo : ");
-      	      logio << oss.str() << LogIO::NORMAL;
-      	    }
        	}
+      else
+	logio << "Input in not an image type." << LogIO::EXCEPTION;
     }
 }

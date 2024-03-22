@@ -64,18 +64,18 @@ void UI(Bool restart, int argc, char **argv,
       int i;
 
       i=1;clgetSValp("imagename", imageName,i);  
-      i=1;clgetSValp("deconvolver", deconvolver,i);  
+      //i=1;clgetSValp("deconvolver", deconvolver,i);  
       i=1;clgetSValp("normtype", normtype,i);
       i=1;clgetSValp("workdir", workdir,i);
-      i=1;clgetSValp("imType", imType, i);
+      i=1;clgetSValp("imtype", imType, i); clSetOptions("imtype",{"psf","residual"});
       i=1;clgetFValp("pblimit", pblimit,i);
-      i=1;clgetIValp("nterms", nterms,i);
-      i=1;clgetIValp("facets", facets,i);
+      //      i=1;clgetIValp("nterms", nterms,i);
+      //      i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
-      i=1;clgetBValp("computePB", computePB, i);
+      i=1;clgetBValp("computepb", computePB, i);
 
       int N;
-      N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
+      //      N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
       
       EndCL();
     }
