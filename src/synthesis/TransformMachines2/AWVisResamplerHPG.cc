@@ -234,13 +234,10 @@ namespace casa{
     log_l << "Finalizing gridding..." << LogIO::POST;
     if (hpgVBBucket_p.counter() != 0)
       {
-	log_l << "Sending the last of the " << hpgVBBucket_p.counter() << " data points!!!" << LogIO::POST;
-	// log_l << "nVisGridded_p<--in: " << nVisGridded_p << LogIO::POST;
+	log_l << "Sending the last of the " << hpgVBBucket_p.counter() << " data points" << LogIO::POST;
 	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
 				 sizeofVisData_p, (HPGModelImageName_p != ""));
-	// log_l << "nVisGridded_p-->out: " << nVisGridded_p << LogIO::POST;
 	hpgGridder_p->fence();
-	assert(hpgVBBucket_p.size()==0);
       }
     
     hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
@@ -604,21 +601,21 @@ namespace casa{
     //if (VBBucket.isFull() && (VBBucket.counter()>0))
     if (VBBucket.counter()>0)
       {
-	// Shrink the internal storage of the bucket to be length to
-	// which it is filled (so that unfilled content does not reach
+	// Shrink the internal storage of the bucket to be length
+	// it is filled (so that unfilled content does not reach
 	// the gridder).
-	hpgVBBucket_p.shrink();
+	VBBucket.shrink();
 
 
 	timer_p.mark();
 	unsigned nHPGVBRows = VBBucket.counter();
 
-	// cerr << nHPGVBRows << " " << VBBucket.totalUnits() << " " << VBBucket.size() << endl;
+	//	cerr << nHPGVBRows << " " << VBBucket.totalUnits() << " " << VBBucket.size() << endl;
 	nVisGridded += nHPGVBRows*HPGNPOL;
 	nDataBytes += sizeofVisData*nHPGVBRows;
 
 	hpg::opt_t<hpg::Error> err;
-	//cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
+
 	if (do_degrid)
 	  err = hpgGridder_p->degrid_grid_visibilities(
 						       hpg::Device::OpenMP,
@@ -631,6 +628,7 @@ namespace casa{
 						//std::move(hpgVBList_p[i])
 						std::move(VBBucket.hpgVB_p)
 						);
+	assert(VBBucket.size()==0);
 	VBBucket.reset();
 	    
 	if (err)

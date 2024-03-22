@@ -6,8 +6,7 @@ project(LibRATests   VERSION 1.0
 
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
-link_directories(${CMAKE_SOURCE_DIR}/install)
-#message("link_dir is ${CMAKE_SOURCE_DIR}/install")
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 # Find the Google Test library
 FetchContent_Declare(
@@ -18,13 +17,13 @@ FetchContent_Declare(
 # Configure Google Test
 FetchContent_MakeAvailable(gtest)
 
-add_executable(LibRATests test_hummbee.cc test_roadrunner.cc)
+add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc)
 
 #message("PROJECT_BINARY_DIR is ${PROJECT_BINARY_DIR}")
 #message("PROJECT_SOURCE_DIR is ${PROJECT_SOURCE_DIR}")
 
 # Link with Google Test
-target_link_libraries(LibRATests GTest::gtest_main stdc++fs ${APP_LINK_LIBRARIES} libra)
+target_link_libraries(LibRATests GTest::gtest_main stdc++fs ${APP_LINK_LIBRARIES} libra roadrunner_cl_interface coyote_cl_interface hummbee_cl_interface mssplit_cl_interface subms_cl_interface tableinfo_cl_interface)
 
 # Add the test executable as a test target
 add_test(NAME LibRATests COMMAND LibRATests)

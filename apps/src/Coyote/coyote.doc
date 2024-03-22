@@ -1,0 +1,149 @@
+%%N coyote
+	A LibRA app to build a new CFCache, or add CFs to and existing CFCache.
+
+%%P Author
+	sbhatnag@nrao.edu
+
+%%A vis (default=)
+
+	The input data base in the MS format.
+
+
+%%A telescope (default=EVLA)
+
+	Name of the telescope.  This is required to compute the appropriate A-term. 
+
+
+%%A imsize (default=0)
+
+	Size of the sky-image.
+
+
+%%A cell (default=0)
+
+	Cell size in arcsec of the sky-image
+
+
+%%A stokes (default=I) Options:[ I IV]
+
+	Stokes value of the sky-image.
+
+
+%%A reffreq (default=)
+
+	The reference frequency of the sky image with units (e.g. 3.GHz).
+
+
+%%A phasecenter (default=)
+
+	Phase center of the sky-image.
+
+
+%%A wplanes (default=1)
+
+	Number of wterms.
+
+
+%%A cfcache (default=)
+
+	Name of the output CFCache.  If this does not exist, a new one
+	will be created.  If it exists, meta-information from the
+	exists CFs will be considered adding new CFs or for filling
+	existing ones (mode=fillcf cflist=... below).
+
+
+%%A wbawp (default=1)
+
+	Parameter to control if the CFs should be frequency dependent.
+
+
+%%A aterm (default=1)
+
+	Parameter to include (or not) the A-term in the CFs.
+
+
+%%A psterm (default=0)
+
+	Parameter to include (or not) the PS-term in the CFs.
+
+
+%%A conjbeams (default=1)
+
+	Parameter to control if the frequency dependence of the PB should be projected out.
+
+
+%%A muellertype (default=diagonal)
+
+	Mueller matrix type.  Only the "diagonal" is supported for now.
+
+
+%%A pa (default=-200)
+
+	***This keyword is exposed with a command-line argument of "help=dbg"***
+
+        mode=dryrun:
+
+	   The PA value at which the CFs are computed is determined
+	   from the MS for pa > 360.
+
+           For pa value within the [-180,180] range, CFs at the given
+           PA value will be constructed.  If an existing CF is found
+           that satisfies abs(CF_PA - pa) <= dpa, a new CF will not be
+           added or computed.  For pa values that fail this this test,
+           new CFs at the given value will be added to the CFCache. 
+	
+        mode=fillcf:
+
+	   For pa > 360, all existing CFs in the cflist will be
+	   filled.  Essentially, pa and dpa settings will be ignored.
+
+           For pa <= 360.0, all CFs in the cflist that satisfy
+           abs(CF_PA - pa) <= dpa will be filled.
+	   
+%%A dpa (default=360)
+
+	The tolerance within which all PA values are considered as
+	equivalent to each other.
+
+%%A field (default=)
+
+	The field selection specification for the input MS.
+
+
+%%A spw (default=)
+
+	The spectral window selection specification for the input MS.
+
+
+%%A buffersize (default=0)
+
+	Buffer size used to compute the CFs before being trimmed to
+	the support size of the CF.  This is not yet used.
+
+
+%%A oversampling (default=20)
+
+	Oversampling for computing the CF pixels.  This is not yet used.
+
+
+%%A mode (default=dryrun) Options:[ dryrun fillcf]
+
+	Watched keywords (<VALUE> : <Keywords exposed>):
+          fillcf : cflist 
+
+        mode=dryrun will construct empty CFs with only the meta-data
+        required to compute the pixel values is saved in the CFCache.
+        This is typically used to first construct a blank CFCache,
+        which can then be filled in parallel with the appropriate
+        settings of the cflist, pa, and dpa values.
+
+        mode=fillcf is used to fill the CFs specified in the cflist
+        based on the settings of the pa and dpa parameters.
+
+
+%%A cflist (default=)
+
+	List of CFs to be filled for mode=fillcf based on the setting
+	of the pa and dpa parameters.
+
+

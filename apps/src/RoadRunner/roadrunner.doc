@@ -1,0 +1,185 @@
+%%N roadrunner
+
+	An application to compute the derivative of the Chisq for
+	radio interferometric measurement equation (CITE).  In detail,
+	this works out to be the residual image.
+
+        The application can also be configured to separately compute
+        the weight, PSF, and dirty images respectively.
+
+%%P Author
+	ARDG
+
+%%A vis (default=)
+
+	Name of the input Measurement Set.
+
+
+%%A imagename (default=)
+
+	Name of the image where the output will be save to the disk.
+
+
+%%A modelimagename (default=)
+
+	Input model image name used with mode=predict.
+
+
+%%A datacolumn (default=corrected) Options:[ data model corrected]
+
+	Name of the data column from the MS to use.  The default is to
+	use the CORRECTED_DATA column. If this column in not present,
+	use the DATA column if present.  Otherwise, throw an
+	exception.
+
+        The default for mode=predict is set to MODEL_DATA column,
+        where the predicted visibilities would be written.  This can
+        be overwritten by setting this keyword to the desired column
+        name.
+
+%%A sowimageext (default=)
+
+	A string used as the extension with the imagename to save the
+	sum-of-weights (SoW) image.  If left blank (the default), the
+	SoW image is not saved.
+
+
+%%A complexgrid (default=)
+
+	If specificed, save the complex grid (the gridded data) to the
+	disk in the specified complex image.
+
+
+%%A imsize (default=0)
+
+	<Put the explaination for the keyword here>
+
+
+%%A cell (default=0)
+
+	<Put the explaination for the keyword here>
+
+
+%%A stokes (default=I) Options:[ I IV]
+
+	<Put the explaination for the keyword here>
+
+
+%%A reffreq (default=3.0e9)
+
+	<Put the explaination for the keyword here>
+
+
+%%A phasecenter (default=)
+
+	<Put the explaination for the keyword here>
+
+
+%%A weighting (default=natural) Options:[ natural uniform briggs]
+
+	Watched keywords (<VALUE> : <Keywords exposed>):
+          briggs : rmode robust 
+
+
+	<Put the explaination for the keyword here>
+
+
+%%A rmode (default=none)
+
+	<Put the explaination for the keyword here>
+
+
+%%A robust (default=0)
+
+	<Put the explaination for the keyword here>
+
+
+%%A wprojplanes (default=1)
+
+	The maximum number of W CFs to use from the supplied CFC.
+	This is internally bound to the maximum number of W CFs found
+	in the CFC.  A value less than the maximum number of W CFs in
+	the CFC will use the specified sub-set of the CFC (sometimes
+	useful to reduce the memory footprint).
+
+
+%%A gridder (default=awphpg) Options:[ awphpg awproject]
+
+	<Put the explaination for the keyword here>
+
+
+%%A cfcache (default=)
+
+	<Put the explaination for the keyword here>
+
+
+%%A mode (default=residual) Options:[ weight psf snrpsf residual predict]
+
+	Watched keywords (<VALUE> : <Keywords exposed>):
+          predict : modelimagename 
+          residual : modelimagename datacolumn 
+
+	<Put the explaination for the keyword here>
+
+
+%%A wbawp (default=1)
+
+	<Put the explaination for the keyword here>
+
+
+%%A field (default=)
+
+	<Put the explaination for the keyword here>
+
+
+%%A spw (default=)
+
+	<Put the explaination for the keyword here>
+
+
+%%A uvrange (default=)
+
+	<Put the explaination for the keyword here>
+
+
+%%A pbcor (default=1)
+
+	<Put the explaination for the keyword here>
+
+
+%%A conjbeams (default=1)
+
+	<Put the explaination for the keyword here>
+
+
+%%A pblimit (default=0.001)
+
+	<Put the explaination for the keyword here>
+
+
+%%A usepointing (default=0)
+
+	Watched keywords (<VALUE> : <Keywords exposed>):
+          1 : pointingoffsetsigdev 
+
+
+	<Put the explaination for the keyword here>
+
+
+%%A pointingoffsetsigdev (default=300,300)
+
+	<Put the explaination for the keyword here>
+
+
+%%A normalize (default=0)
+
+	<Put the explaination for the keyword here>
+
+
+	***This keyword is exposed with a command-line argument of "help=dbg"***
+%%A spwdataiter (default=0)
+
+	<Put the explaination for the keyword here>
+
+
+	***This keyword is exposed with a command-line argument of "help=dbg"***

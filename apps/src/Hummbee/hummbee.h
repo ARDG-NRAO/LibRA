@@ -87,7 +87,7 @@ float Hummbee(std::string& imageName, std::string& modelImageName,
         std::vector<std::string>& mask, std::string& specmode);
 
 
-void UI(bool restart, int argc, char **argv, 
+void UI(bool restart, int argc, char **argv, bool interactive, 
   string& imageName, string& modelImageName,
   string& deconvolver,
   vector<float>& scales,

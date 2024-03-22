@@ -33,7 +33,7 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <TableInfo/tableinfo.h>
+#include <tableinfo.h>
 
 
 //
@@ -44,34 +44,48 @@
 //
 
 
-void UI(Bool restart, int argc, char **argv, 
+void UI(Bool restart, int argc, char **argv, bool interactive,
 	string& MSNBuf, string& OutBuf,
 	bool& verbose)
 {
+  clSetPrompt(interactive);
+  
   if (!restart)
     {
       BeginCL(argc,argv);
       clInteractive(0);
     }
-  else
-   clRetry();
+  //else
+  //clRetry();
+  REENTER:
   try
     {
       int i;
-
-      MSNBuf=OutBuf="";
+       
+      // can't init the follwoing; otherwise, the values passed through the non-interactive UI would be reset.
+      //MSNBuf=OutBuf="";
       i=1;clgetSValp("table", MSNBuf,i);  
       i=1;clgetSValp("outfile",OutBuf,i);  
       i=1;clgetBValp("verbose",verbose,i);  
       EndCL();
+
+      // do some input parameter checking now.
+      string mesgs;
+
+      if (MSNBuf=="")
+       mesgs += "Input table name needs to be set.\n";
+
+      if (mesgs != "")
+       clThrowUp(mesgs,"###Fatal", CL_FATAL);
     }
-  catch (clError x)
+    catch (clError& x)
     {
       x << x << endl;
-      clRetry();
+      if (x.Severity() == CL_FATAL) exit(1);
+      //clRetry();
+      RestartUI(REENTER);
     }
-  if (MSNBuf=="")
-    throw(AipsError("Input table name not set."));
+  
 }
 //
 //-------------------------------------------------------------------------
@@ -88,7 +102,8 @@ int main(int argc, char **argv)
   try
     {
       MSNBuf=OutBuf="";
-      UI(restartUI,argc, argv, MSNBuf,OutBuf,verbose);
+      bool interactive = true;
+      UI(restartUI,argc, argv, interactive, MSNBuf,OutBuf,verbose);
       restartUI = False;
       //
       //---------------------------------------------------

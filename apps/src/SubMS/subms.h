@@ -64,6 +64,7 @@ void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
  * @param restart A boolean flag indicating whether to restart the CLI or not.
  * @param argc The number of command line arguments.
  * @param argv An array of command line arguments.
+ * @param interactive  A boolean parameter indicating whether to run in the interactive mode
  * @param MSNBuf A string reference to store the input MS name.
  * @param OutMSBuf A string reference to store the output MS name.
  * @param WhichColStr A string reference to store the data column name.
@@ -78,7 +79,7 @@ void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
  * @param taqlStr A string reference to store the TAQL query.
  * @param integ A float reference to store the integration time.
  */
-void UI(bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, 
+void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, 
 	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
 	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
 	string& uvdistStr,string& taqlStr,float& integ);

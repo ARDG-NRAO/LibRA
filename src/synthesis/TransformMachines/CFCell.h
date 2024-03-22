@@ -83,7 +83,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Double wValue, wIncr, freqValue,freqIncr, conjFreq;    
     casacore::Int muellerElement, conjPoln;
     casacore::String fileName, telescopeName, bandName;
-    bool isRotationallySymmetric,isFilled_p;
+    bool isRotationallySymmetric,isFilled_p,
+      aTermOn, psTermOn, wTermOn, conjBeams;
   };
 
   using namespace CFDefs;
@@ -104,10 +105,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //========================= Administrative Parts ==========================
     //------------------------------------------------------------------
     //
-    CFCell():cfShape_p(),isRotationallySymmetric_p(false),isFilled_p(false){};
+    CFCell():cfShape_p(),isRotationallySymmetric_p(false),isFilled_p(false),
+	     aTermOn_p(true), psTermOn_p(false), wTermOn_p(true), conjBeams_p(true)
+    {};
 
     CFCell(casacore::Array<TT> &dataPtr, casacore::CoordinateSystem& cs, casacore::Float& /*samp*/):
-      isRotationallySymmetric_p(false),isFilled_p(false)
+      isRotationallySymmetric_p(false),isFilled_p(false),
+      aTermOn_p(true), psTermOn_p(false), wTermOn_p(true), conjBeams_p(true)
     {
       if (storage_p.null()) storage_p = new casacore::Array<TT>(dataPtr);
       coordSys_p = cs;
@@ -128,8 +132,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       casacore::Bool dummy;
       cfst.CFCStorage = getStorage()->getStorage(dummy);
       cfst.coordSys = coordSys_p;
-      cfst.shape[0]=cfShape_p[0];
-      cfst.shape[1]=cfShape_p[1];
+      if (cfShape_p.nelements()==0)
+	cfst.shape[0]=cfst.shape[1]=0;
+      else
+	{
+	  cfst.shape[0]=cfShape_p[0];
+	  cfst.shape[1]=cfShape_p[1];
+	}
       cfst.sampling=sampling_p;
       cfst.xSupport=xSupport_p;
       cfst.ySupport=ySupport_p;
@@ -146,6 +155,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       cfst.bandName = bandName_p;
       cfst.isRotationallySymmetric=isRotationallySymmetric_p;
       cfst.isFilled_p=isFilled_p;
+      cfst.aTermOn=aTermOn_p;
+      cfst.psTermOn=psTermOn_p;
+      cfst.wTermOn=wTermOn_p;
+      cfst.conjBeams=conjBeams_p;
     }
     casacore::CountedPtr<casacore::Array<TT> >& getStorage() {return storage_p;}
     void setStorage(casacore::Array<TT>& val) {getStorage()->assign(val); cfShape_p=val.shape().asVector();};
@@ -179,7 +192,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Quantity pa_p;
     casacore::Vector<casacore::Int> cfShape_p;
     casacore::String fileName_p,telescopeName_p, bandName_p;
-    bool isRotationallySymmetric_p, isFilled_p;
+    bool isRotationallySymmetric_p, isFilled_p,aTermOn_p, psTermOn_p, wTermOn_p, conjBeams_p;
   };
 } //# NAMESPACE CASA - END
 #endif

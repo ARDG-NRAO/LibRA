@@ -67,7 +67,7 @@ inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
   if (Table::isReadable(msname))
     thems=MeasurementSet(msname, Table::Update);
   else
-    throw(AipsError(msname+" does exist or is not readable"));
+    throw(AipsError(msname+" does not exist or is not readable"));
   verifyMS(thems);
   //
   //-------------------------------------------------------------------
@@ -212,16 +212,18 @@ public:
     {
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
       std::vector<int> vb_SPWIDList;
+      std::unordered_set<double> pa_set;
       vb_l=vi2_l->getVisBuffer();
       vi2_l->originChunks();
       for (vi2_l->originChunks();vi2_l->moreChunks(); vi2_l->nextChunk())
 	{
 	  vi2_l->origin(); // So that the global vb is valid
 	  vb_SPWIDList.push_back(vb_l->spectralWindows()(0));
+
+	  pa_set.insert(getPA(*vb_l));
+	  //vb_PAList.push_back(getPA(*vb_l));
 	}
-
-      log_l << "...done." << LogIO::POST;
-
+      std::vector<double> vb_PAList(pa_set.begin(), pa_set.end());
       //
       // Since the SPWIDList is determined by iterating over the
       // database, this list could have duplicate entries (e.g. with
@@ -240,6 +242,15 @@ public:
 			 vb_SPWIDList.end());
 
       spwidList.resize(vb_SPWIDList.size());
+
+      vb_PAList.erase(remove_duplicates(vb_PAList.begin(),
+					vb_PAList.end()),
+		      vb_PAList.end());
+
+      log_l << "...done." << endl
+	    << vb_SPWIDList.size() << " SPWs, " << vb_PAList.size() << " PA values found."
+	    << LogIO::POST;
+
       //for(uint i=0; auto id : vb_SPWIDList) spwidList[i++]=id; // Works only in C++-20
       uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
     }
