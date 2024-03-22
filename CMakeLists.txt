@@ -315,7 +315,7 @@ set(APP_LINK_LIBRARIES casacpp_synthesis casacpp_msvis hpg::hpg Kokkos::kokkosco
 # include_directories(${DEPINC} ${DEPINC}/casacore ${DEPINC}/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
 link_directories(/usr/local/lib /usr/lib64 /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib /usr/lib/x86_64-linux-gnu ${INSTALL_DIR}/lib)
 # 
-set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo)
+set(APP_LIST Coyote Hummbee RoadRunner Acme MSSplit SubMS TableInfo)
 set(APP_DIR ${CMAKE_SOURCE_DIR}/apps/src/)
 foreach(APP IN LISTS APP_LIST)
     string(TOLOWER ${APP} APP_NAME)

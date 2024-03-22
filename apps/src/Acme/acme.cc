@@ -23,7 +23,7 @@
 // # $Id$
 
 
-#include <Acme/acme.h>
+#include <acme.h>
 
 //
 //-------------------------------------------------------------------------
@@ -38,34 +38,30 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   //
   //---------------------------------------------------
   //
-
-  // try
-    {
-      //
-      //---------------------------------------------------
-      //
-      String type, residualName, weightName, sumwtName, pbName;
+  String type, residualName, weightName, sumwtName, pbName;
       
-      ostringstream os;
-      LogSink sink(LogMessage::NORMAL,&os);
-      LogIO logio(sink);
+  ostringstream os;
+  LogSink sink(LogMessage::NORMAL,&os);
+  LogIO logio(sink);
 
-      /********** Block to add simple normalization functionality **********/
-      if ((imType == "residual") || (imType == "psf")) {
-          residualName = imageName + String(".") + imType;
-	  printf("Image name is %s\n", residualName.c_str());
-      }
-      else
-          logio << "Unrecognized imType. Allowed values are psf and residual." << LogIO::EXCEPTION;
+  /********** Block to add simple normalization functionality **********/
+  if ((imType == "residual") || (imType == "psf")) {
+    residualName = imageName + String(".") + imType;
+    cout << "Image name is " << residualName << endl;
+  }
+  else
+    logio << "Unrecognized imtype. Allowed values are psf and residual." << LogIO::EXCEPTION;
 
-      weightName   = imageName + String(".weight");
-      sumwtName    = imageName + String(".sumwt");
+  weightName   = imageName + String(".weight");
+  sumwtName    = imageName + String(".sumwt");
 
-      if (computePB)
-          pbName   = imageName + String(".pb");
+  if (computePB)
+    pbName   = imageName + String(".pb");
 
-      /*********************************************************************/
+  /*********************************************************************/
 
+  try
+    {
       {
 	Table table(residualName,TableLock(TableLock::AutoNoReadLocking));
 	TableInfo& info = table.tableInfo();
@@ -73,21 +69,21 @@ void acme_func(std::string& imageName, std::string& deconvolver,
       }
 
       if (type=="Image")
-      	{
-      	  LatticeBase* lattPtr = ImageOpener::openImage (residualName);
-      	  ImageInterface<Float> *reImage;
+	{
+	  LatticeBase* lattPtr = ImageOpener::openImage (residualName);
+	  ImageInterface<Float> *reImage;
 
-      	  reImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+	  reImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
 
-          /********** Block to add simple normalization functionality **********/
+	  /********** Block to add simple normalization functionality **********/
 
 	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
-          ImageInterface<Float> *wImage;
+	  ImageInterface<Float> *wImage;
 	  wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
 
 	  LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
-          ImageInterface<Float> *swImage;
-          swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+	  ImageInterface<Float> *swImage;
+	  swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
 
 	  float itsPBScaleFactor = 1.0;
 
@@ -103,14 +99,17 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  reImage->copyData(ratio);
 
 	  IPosition loc(4,1000,1000,1,1);
-	  float pix = reImage->get(loc);
-/*	  if (computePB) {
-	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
-	      // add code to create and write the .pb image
-	  }*/
-
-       	}
+	  float pix = reImage->getAt(loc);
+	  /*	  if (computePB) {
+		  LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
+		  // add code to create and write the .pb image
+		  }*/
+	}
       else
-	logio << "Input in not an image type." << LogIO::EXCEPTION;
+	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
+    }
+  catch(AipsError& e)
+    {
+      logio << e.what() << LogIO::POST;
     }
 }

@@ -33,7 +33,7 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <Acme/acme.h>
+#include <acme.h>
 
 
 //
