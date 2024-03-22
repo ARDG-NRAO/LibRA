@@ -52,7 +52,7 @@
 #include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/casa/Utilities/Regex.h>
 
-#include <hpg/hpg.hpp>
+// #include <hpg/hpg.hpp>
 #include <unistd.h>
 
 using namespace casa;
@@ -93,17 +93,12 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<int> polMap,
 					  std::string &stokes, std::string &mType);
 
-
-
-
 /// @brief This function returns the fileList of CFs to fill.
 /// @param cfCacheName is the name of the CF cache.
 /// @param regexList is the list of regexes.
 /// @return 
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList);
-
-
 
 
 /// @brief Is a Function to generate a list of CFs which can be filled usinga  different mode
@@ -115,7 +110,6 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 /// @param refFreqStr is the reference frequency.
 /// @param nW is the number of W-terms.
 /// @param cfCacheName is the name of the CF cache.
-/// @param imageNamePrefix is the prefix of the image name.
 /// @param WBAwp is the flag for WBAwp.
 /// @param psTerm is the flag for psTerm.
 /// @param aTerm is the flag for aTerm.
@@ -136,16 +130,13 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    string& imageNamePrefix,
-	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    bool &WBAwp, bool& aTerm, bool &psTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
 	    int &cfBufferSize, int &cfOversampling,
 	    std::vector<std::string>& cfList,
 	    string& mode);
-
-
 
 // UI Funtions 
  
@@ -155,6 +146,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param restart A boolean parameter indicating whether to restart the UI.
  * @param argc The number of command line arguments.
  * @param argv The command line arguments.
+ * @param interactive A boolean parameter indicating whether to run in the interactive mode
  * @param MSNBuf A string parameter.
  * @param telescopeName The name of the telescope.
  * @param ImSize The image size.
@@ -163,7 +155,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param refFreqStr The reference frequency string.
  * @param nW The number of W-planes.
  * @param CFCache The convolution function cache.
- * @param imageNamePrefix The image name prefix.
  * @param WBAwp A boolean parameter indicating whether to use WBAwp.
  * @param aTerm A boolean parameter indicating whether to use aTerm.
  * @param psTerm A boolean parameter indicating whether to use psTerm.
@@ -179,11 +170,12 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
  * @param cfList The list of convolution functions.
  * @param mode The mode of operation.
  */
-void UI(bool restart, int argc, char **argv, string& MSNBuf,
+void UI(bool restart, int argc, char **argv, bool interactive, 
+	string& MSNBuf,
         //string& imageName,
         string& telescopeName, int& ImSize,
         float& cellSize, string& stokes, string& refFreqStr,
-        int& nW, string& CFCache, string& imageNamePrefix,
+        int& nW, string& CFCache, 
         bool& WBAwp, bool& aTerm, bool& psTerm, string& mType,
 	float& pa, float& dpa,
         string& fieldStr, string& spwStr, string& phaseCenter,
@@ -192,9 +184,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
         int& cfOversampling,
         std::vector<std::string>& cfList,
         //      std::vector<std::string>& wtCFList,
-       string& mode);
-
-
+	string& mode);
 
 
 #endif

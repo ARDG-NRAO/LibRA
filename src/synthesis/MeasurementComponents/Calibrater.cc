@@ -205,9 +205,12 @@ Calibrater& Calibrater::operator=(const Calibrater & other)
 Calibrater::~Calibrater()
 {
   cleanup();
-  if (msmc_p) delete msmc_p; msmc_p=0;
-  if (ms_p)   delete ms_p;   ms_p=0;
-  if (hist_p) delete hist_p; hist_p=0;
+  if (msmc_p) delete msmc_p;
+  msmc_p=0;
+  if (ms_p)   delete ms_p;
+  ms_p=0;
+  if (hist_p) delete hist_p;
+  hist_p=0;
 
 }
 
@@ -308,9 +311,12 @@ Bool Calibrater::initialize(MeasurementSet& inputMS,
 	      << LogIO::SEVERE << "Caught exception: " << x.getMesg() 
 	      << LogIO::POST;
     cleanup();
-    if (msmc_p) delete msmc_p; msmc_p=NULL;
-    if (ms_p)   delete ms_p;   ms_p=NULL;
-    if (hist_p) delete hist_p; hist_p=NULL;
+    if (msmc_p) delete msmc_p;
+    msmc_p=NULL;
+    if (ms_p)   delete ms_p;
+    ms_p=NULL;
+    if (hist_p) delete hist_p;
+    hist_p=NULL;
 
     throw(AipsError("Error in Calibrater::initialize()"));
     return false;
@@ -2896,7 +2902,8 @@ Bool Calibrater::smooth(const String& infile,
       svc->storeNCT();
 
       // Clean up
-      if (svc) delete svc; svc=NULL;
+      if (svc) delete svc;
+      svc=NULL;
       
       // Apparently, it worked
       return true;
@@ -2912,7 +2919,8 @@ Bool Calibrater::smooth(const String& infile,
 	      << x.getMesg()
 	      << LogIO::POST;
     // Clean up
-    if (svc) delete svc; svc=NULL;
+    if (svc) delete svc;
+    svc=NULL;
 
     throw(AipsError("Error in Calibrater::smooth."));
 
@@ -2977,7 +2985,8 @@ Bool Calibrater::reRefant(const casacore::String& infile,
     svj->storeNCT();
 
     // Clean up
-    if (svj) delete svj; svj=NULL;
+    if (svj) delete svj;
+    svj=NULL;
       
     // Apparently, it worked
     return true;
@@ -2989,7 +2998,8 @@ Bool Calibrater::reRefant(const casacore::String& infile,
 	      << x.getMesg()
 	      << LogIO::POST;
     // Clean up
-    if (svj) delete svj; svj=NULL;
+    if (svj) delete svj;
+    svj=NULL;
 
     throw(AipsError("Error in Calibrater::reRefant."));
     
@@ -3063,7 +3073,8 @@ Bool Calibrater::listCal(const String& infile,
         svc->listCal(ufldids,uantids,uchanids,  //uchanids(0,0),uchanids(0,1),
                      listfile,pagerows);
         
-        if (svc) delete svc; svc=NULL;
+        if (svc) delete svc;
+	svc=NULL;
         
         return true;
         
@@ -3074,7 +3085,8 @@ Bool Calibrater::listCal(const String& infile,
                   << x.getMesg()
                   << LogIO::POST;
         // Clean up
-        if (svc) delete svc; svc=NULL;
+        if (svc) delete svc;
+	svc=NULL;
         
         throw(AipsError("Error in Calibrater::listCal."));
         
@@ -3160,12 +3172,15 @@ Bool Calibrater::cleanup() {
   reset();
 
   // Delete derived dataset stuff
-  if(mssel_p) delete mssel_p; mssel_p=0;
-  if(mss_p) delete mss_p; mss_p=0;
+  if(mssel_p) delete mssel_p;
+  mssel_p=0;
+  if(mss_p) delete mss_p;
+  mss_p=0;
   frequencySelections_p.reset();
 
   // Delete the current VisEquation
-  if(ve_p) delete ve_p; ve_p=0;
+  if(ve_p) delete ve_p;
+  ve_p=0;
 
   return true;
 
@@ -3940,7 +3955,8 @@ void OldCalibrater::selectvis(const String& time,
     }
 
     // Now, re-create the associated VisSet
-    if(vs_p) delete vs_p; vs_p=0;
+    if(vs_p) delete vs_p;
+    vs_p=0;
     Block<int> sort(0);
     Matrix<Int> noselection;
     // gmoellen 2012/01/30    vs_p = new VisSet(*mssel_p,sort,noselection);
@@ -5410,7 +5426,8 @@ Bool OldCalibrater::smooth(const String& infile,
       svc->storeNCT();
 
       // Clean up
-      if (svc) delete svc; svc=NULL;
+      if (svc) delete svc;
+      svc=NULL;
       
       // Apparently, it worked
       return true;
@@ -5426,7 +5443,8 @@ Bool OldCalibrater::smooth(const String& infile,
 	      << x.getMesg()
 	      << LogIO::POST;
     // Clean up
-    if (svc) delete svc; svc=NULL;
+    if (svc) delete svc;
+    svc=NULL;
 
     throw(AipsError("Error in Calibrater::smooth."));
 
@@ -5499,7 +5517,8 @@ Bool OldCalibrater::listCal(const String& infile,
         svc->listCal(ufldids,uantids,uchanids,  //uchanids(0,0),uchanids(0,1),
                      listfile,pagerows);
         
-        if (svc) delete svc; svc=NULL;
+        if (svc) delete svc;
+	svc=NULL;
         
         return true;
         
@@ -5510,7 +5529,8 @@ Bool OldCalibrater::listCal(const String& infile,
                   << x.getMesg()
                   << LogIO::POST;
         // Clean up
-        if (svc) delete svc; svc=NULL;
+        if (svc) delete svc;
+	svc=NULL;
         
         throw(AipsError("Error in Calibrater::listCal."));
         
@@ -5617,8 +5637,10 @@ Bool OldCalibrater::initialize(MeasurementSet& inputMS,
 	      << LogIO::POST;
     cleanup();
     cleanupVisSet();
-    if (ms_p) delete ms_p; ms_p=NULL;
-    if (hist_p) delete hist_p; hist_p=NULL;
+    if (ms_p) delete ms_p;
+    ms_p=NULL;
+    if (hist_p) delete hist_p;
+    hist_p=NULL;
 
     throw(AipsError("Error in Calibrater::initialize()"));
     return false;
@@ -5656,7 +5678,8 @@ Bool OldCalibrater::cleanupVisSet() {
 
   //  logSink() << LogOrigin("OldCalibrater","cleanupVisSet") << LogIO::NORMAL;
 
-  if(vs_p) delete vs_p; vs_p=0;
+  if(vs_p) delete vs_p;
+  vs_p=0;
 
   // Delete chanmask
   initChanMask();

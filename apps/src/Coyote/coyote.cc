@@ -25,14 +25,15 @@
 // # $Id$
 
 
-#include <RoadRunner/rWeightor.h>
-#include <RoadRunner/DataBase.h>
-#include <RoadRunner/MakeComponents.h>
+#include <rWeightor.h>
+#include <DataBase.h>
+#include <MakeComponents.h>
 
-#include <Coyote/coyote.h>
+#include <coyote.h>
 
-
-
+//
+//--------------------------------------------------------------------------
+//
 PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
 					 const MeasurementSet& selectedMS,
 					 MSSelection& msSelection,
@@ -89,8 +90,9 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
   return PagedImage<Complex>(imshape, csys, imageParams.imageName);
 }
-
-
+//
+//--------------------------------------------------------------------------
+//
 CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
 					  Vector<casacore::Stokes::StokesTypes> visPolMap,
 					  Vector<int> polMap,
@@ -120,8 +122,9 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   
   return pop_l;
 }
-
-
+//
+//--------------------------------------------------------------------------
+//
 std::vector<std::string> fileList(const std::string& cfCacheName,
 				  const std::vector<std::string>& regexList)
 {
@@ -141,7 +144,7 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 	for (auto y : tmp) selectedCF.push_back(y);
       }
       if (selectedCF.size() == 0)
-	throw(SynthesisFTMachineError(String("CF selection leads to a NULL set!")));
+	throw(SynthesisFTMachineError(String("fileList: CF selection leads to a NULL set!")));
       // Guard against user error that includes WTCF* in the supplied list of CFs to fill.
       // The list of WTCFs is constructed internally to match the list of CFs.
       {
@@ -149,28 +152,27 @@ std::vector<std::string> fileList(const std::string& cfCacheName,
 	for(auto x:selectedCF)
 	  {
 	    if (regex.fullMatch(x.c_str(),x.size()))
-	      throw(SynthesisFTMachineError(String("The list of CFs to fill contains WTCFs. Please supply list of only CFs")));
+	      throw(SynthesisFTMachineError(String("fileList: The list of CFs to fill contains WTCFs. Please supply list of only CFs")));
 	  }
       }
     }
   catch(AipsError& x)
     {
-      throw(SynthesisFTMachineError(String("Error while reading CF disk cache: ")
+      throw(SynthesisFTMachineError(String("fileList: Error in making a list of CFs to fill")
 				    +x.getMesg()));
     }
   return selectedCF;
 }
-
-
-
+//
+//--------------------------------------------------------------------------
+//
 void Coyote(//bool &restartUI, int &argc, char **argv,
 	    string &MSNBuf, 
 	    string &telescopeName,
 	    int &NX, float &cellSize,
 	    string &stokes, string &refFreqStr, int &nW,
 	    string &cfCacheName,
-	    string& imageNamePrefix,
-	    bool &WBAwp, bool &psTerm, bool aTerm, string &mType,
+	    bool &WBAwp, bool& aTerm, bool &psTerm, string &mType,
 	    float& pa, float& dpa,
 	    string &fieldStr, string &spwStr, string &phaseCenter,
 	    bool &conjBeams,  
@@ -184,11 +186,15 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
   
   try
     {
-      if (mode=="fillcf")
-	cfList = fileList(cfCacheName,cfList);
-
       std::vector<std::string> wtCFList;
-      for(auto x : cfList) wtCFList.push_back("WT"+x);
+      if (mode=="fillcf")
+	{
+	  cfList = fileList(cfCacheName,cfList);
+
+	  cerr << "Found " << cfList.size() << " elements to fill." << endl;
+
+	  for(auto x : cfList) wtCFList.push_back("WT"+x);
+	}
       
       // Make a name for the temp image that will be unique for multiple
       // instances on different computers but writing to the same
@@ -200,19 +206,25 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       bool wTerm = (nW > 1)? true : false;
 
       //-------------------------------------------------------------------------------------------------
-      // Instantiate AWCF object so we can use it to make cf.
-      // The AWCF::makeConvFunc requires the following objects
+      // Instantiate AWCF object for making the CFs later.
       //
       CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
+
       CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
       CountedPtr<refim::WTerm> WTerm_l = new WTerm();
+
+      ATerm_l->setConvSize(cfBufferSize);
+      ATerm_l->setConvOversampling(cfOversampling);
 
       if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
       if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
       if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
 
-      CountedPtr<refim::ConvolutionFunction> awcf_l = new AWConvFunc(ATerm_l, PSTerm_l, WTerm_l, WBAwp, conjBeams);
-      awcf_l = AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
+      cerr << "coyote: " << conjBeams << endl;
+      CountedPtr<refim::ConvolutionFunction> awcf_l
+	= new AWConvFunc(ATerm_l, PSTerm_l ,WTerm_l ,WBAwp, conjBeams);
+
+      //AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------
@@ -236,11 +248,15 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	      // or not.
 	      //
 	      cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
-	      cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
+	      //	      cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
 	      try
 		{
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
-					   casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+					   //casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+					   casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+		  cfCacheObj_l->initCache2(false, dpa, -1.0,
+					   //casacore::String(imageNamePrefix)+casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
+					   casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
 		}
 	      catch (CFCIsEmpty& e)
 		{
@@ -264,6 +280,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	      // really internal detals of how these objects work together
 	      // leaks all the way to the client layers.
 	      int verbose=0;
+	      cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
 	      casacore::Vector<casacore::String> cfNames(cfList);
 	      casacore::Vector<casacore::String> wtCFNames(wtCFList);
 
@@ -275,8 +292,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	    }
 	  else
 	    {
-	      throw(AipsError("Don't know what to do with mode="+mode+"!"));
-	      exit(-1);
+	      throw(AipsError("Coyote: Don't know what to do with mode="+mode+"!"));
 	    }
 	}
       catch (CFSupportZero &e)
@@ -293,6 +309,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  cfs2_l = CountedPtr<CFStore2>(&(cfCacheObj_l->memCache2_p)[0],false);//new CFStore2;
 	  cfswt2_l =  CountedPtr<CFStore2>(&cfCacheObj_l->memCacheWt2_p[0],false);//new CFStore2;
 	}
+      // cfs2_l->show("Coyote: CFS::show(CF): ",cerr,false);
+      // cfswt2_l->show("Coyote: CFS::show(WTCF): ",cerr,false);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------
@@ -429,6 +447,20 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 				   vbFreqSelection,
 				   *cfs2_l, *cfswt2_l,
 				   fillCF);
+	  //
+	  // AWConvFunc::makeConvFunction() does not make the memory
+	  // model (CFStore) persistent.  So save the contents of the
+	  // CFStore on the disk.
+	  //
+	  // [07Jan2024] In the dryrun mode, only the meta info is
+	  // written as casacore::Records conerted to
+	  // casacore::Tables.  Writing these with multi-threadings
+	  // seems to be work.  The bool parameter is therefore set to
+	  // true (it is false in the default interface).
+	  // cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  // cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0,true);
+	  cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", true);
+	  cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",true);
 	}
       else
 	{
@@ -453,11 +485,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
       //      cfs2_l->show("CFStore",cerr,true);
 
-      //
-      // Save the contents of the CFStore on the disk.
-      //
-      cfs2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","", Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
-      cfswt2_l->makePersistent(cfCacheObj_l->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),Quantity(dpa,"rad"),0,0);
 
       // Report some stats.
       Double memUsed=cfs2_l->memUsage();
@@ -475,4 +502,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       log_l << e.what() << endl;
     }
 }
+//
+//--------------------------------------------------------------------------
+//
 

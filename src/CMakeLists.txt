@@ -111,37 +111,26 @@ endif()
 
 #parafeed dependency
 find_package(parafeed REQUIRED)
+
+# if defined(parafeed_FOUND AND ${parafeed_FOUND})
+  # add_definitions(-DUSE_PARAFEED)
+# endif()
+
 pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
-#find_package(parafeed CONFIG)
-#if(DEFINED parafeed_FOUND AND ${parafeed_FOUND})
-#  add_definitions(-DUSE_PARAFEED)
-#endif()
 
 
 # Create a list with all the components
 if (CMAKE_LIBIMAGING_ONLY)
   set(casacpp_all_components
-    #  alma
     asdmstman
     atmosphere
-    #  atnf
-    #  calanalysis
-    #  casadbus
     casatools
     casa_sakura
     components
     imageanalysis
-    #  flagging
-    #  graphics
-    #  miriad
     mstransform
     msvis
     nrao
-    #  parallel
-    #  protobuf_generated
-    #  singledish
-    #  singledishfiller
-    #  spectrallines
     stdcasa
     synthesis
     )
@@ -177,3 +166,9 @@ endif()
 foreach(_component IN LISTS casacpp_all_components)
   add_subdirectory(${CMAKE_SOURCE_DIR}/${_component})
 endforeach()
+
+
+# install the casacpp.pc.in file
+configure_file(casacpp.pc.in casacpp.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/casacpp.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}") 

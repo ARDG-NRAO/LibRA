@@ -48,7 +48,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class CFStore2
   {
   public:
-    CFStore2():storage_p(), pa_p(),lazyFillOn_p(casacore::False),  mosPointingPos_p(0), currentSPWID_p(-1), cfCacheDir_p("") {};
+    CFStore2():storage_p(), pa_p(),lazyFillOn_p(false), mosPointingPos_p(0), currentSPWID_p(-1), cfCacheDir_p("") {};
 
     // CFStore2(CFBuffer<casacore::Complex> *dataPtr, casacore::Quantity PA, casacore::Int mosPointing):
     //   storage_p(), pa_p(PA), mosPointingPos_p(mosPointing)
@@ -60,7 +60,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //-------------------------------------------------------------------------
     void show(const char *Mesg=NULL,ostream &os=cerr, const casacore::Bool verbose=false);
     //-------------------------------------------------------------------------
-    void makePersistent(const char *dir,const char *name="", const char *qualifier="");
+    void makePersistent(const char *dir,const char *name="", const char *qualifier="",
+			const bool useThreads=false);
     //-------------------------------------------------------------------------
     // This version saves only those pixels of CFStore that correspond
     // to [PA,(Ant1,Ant2)] co-ordiantes ([PA, BaselineType]
@@ -69,7 +70,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			const char *cfName,
 			const char *qualifier,
 			const casacore::Quantity &pa, const casacore::Quantity& dPA,
-			const int& ant1, const int& ant2);
+			const int& ant1, const int& ant2,
+			const bool useThreads=false);
     //-------------------------------------------------------------------------
     void primeTheCFB();
     //-------------------------------------------------------------------------
@@ -78,6 +80,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //-------------------------------------------------------------------------
     void initPolMaps(PolMapType& polMap, PolMapType& conjPolMap);
     //-------------------------------------------------------------------------
+    int size() {return storage_p.size();};
     casacore::Bool null() {return (storage_p.size() == 0);};
     //-------------------------------------------------------------------------
     casacore::Double memUsage();

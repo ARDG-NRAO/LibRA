@@ -393,13 +393,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     uvOffset(1)=ny/2;
     uvOffset(2)=0;
     
-    if(gridder) delete gridder; gridder=0;
+    if(gridder) delete gridder;
+    gridder=0;
     gridder = new ConvolveGridder<Double, Complex>(IPosition(2, nx, ny),
 						   uvScale, uvOffset,
 						   "SF");
     
     // Set up image cache needed for gridding. 
-    if(imageCache) delete imageCache;   imageCache=0;
+    if(imageCache) delete imageCache;
+    imageCache=0;
     
     // The tile size should be large enough that the
     // extended convolution function can fit easily
@@ -466,8 +468,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   // This is nasty, we should use CountedPointers here.
   nPBWProjectFT::~nPBWProjectFT() 
   {
-      if(imageCache) delete imageCache; imageCache=0;
-      if(gridder) delete gridder; gridder=0;
+      if(imageCache) delete imageCache;
+      imageCache=0;
+      if(gridder) delete gridder;
+      gridder=0;
       
       Int NCF=convFuncCache.nelements();
       for(Int i=0;i<NCF;i++) delete convFuncCache[i];
@@ -2164,7 +2168,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	imageCache->showCacheStatistics(o);
 	logIO() << o.str() << LogIO::POST;
       }
-    if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if(pointingToImage) delete pointingToImage;
+    pointingToImage=0;
   }
   //
   //---------------------------------------------------------------
@@ -2241,7 +2246,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	imageCache->showCacheStatistics(o);
 	logIO() << o.str() << LogIO::POST;
       }
-    if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if(pointingToImage) delete pointingToImage;
+    pointingToImage=0;
     PAIndex = -1;
 
     paChangeDetector.reset();

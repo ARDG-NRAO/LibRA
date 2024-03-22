@@ -33,6 +33,7 @@ PARAFEED_VERSION = activedev
 #CASACORE_VERSION = v3.5.0
 CASACORE_VERSION = fix_regex_v3.5.0
 EIGEN_VERSION	 = 3.4.0
+GTEST_VERSION 	= v1.14.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
 KOKKOS_TOOLS_REPOS 	= https://github.com/kokkos/kokkos-tools.git
@@ -47,6 +48,8 @@ CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
 #CASACORE_REPOS      = https://github.com/casacore/casacore.git
 CASACORE_REPOS      = https://github.com/preshanth/casacore.git
 EIGEN_REPOS	    = https://gitlab.com/libeigen/eigen.git
+GTEST_REPOS     = https://github.com/google/googletest.git
+
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
@@ -79,7 +82,8 @@ TESTDIR        = ${ROOT}/test
 DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
-INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
+#INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
+INSTALLDIR     = ${ROOT}/install/linux_64b
 #CASASRC        = ${DEPENDSRCDIR}/casa6
 CASASRC        = ${ROOT}/src
 CASACORESRC    = ${DEPENDSRCDIR}/casacore
@@ -89,7 +93,6 @@ PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
 APPSBUILDDIR   = ${APPSDIR}/build
-APPSINSTALLDIR = ${APPSDIR}/install
 
 INSTALLPREFIX  = ${INSTALLDIR}
 INSTALLSBINDIR = ${INSTALLPREFIX}/sbin
@@ -103,7 +106,7 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
-	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSINSTALLDIR} ${APPSBUILDDIR}
+	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSBUILDDIR}
 
 
 #####----------------------------------------------------------------------------------------------------
@@ -345,6 +348,24 @@ pybind11-clean:
 
 
 ###### --------------------------------
+##### Build google test
+
+gtest: gtest-clone gtest-build
+gtest-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone -b ${GTEST_VERSION} ${GTEST_REPOS}
+
+gtest-cmake:
+	mkdir -p ${DEPENDBUILDDIR}/googletest
+	cd ${DEPENDBUILDDIR}/googletest; \
+	cmake -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX}  ${DEPENDSRCDIR}/googletest
+
+gtest-build: gtest-cmake
+	cd ${DEPENDBUILDDIR}/googletest; make install -j ${NCORES}
+
+gtest-clean:
+	cd ${DEPENDBUILDDIR}/googletest; gmake clean
+
 
 ##### Build the apps
 apps: apps-cmake apps-build
@@ -352,7 +373,7 @@ apps: apps-cmake apps-build
 apps-cmake:
 	mkdir -p ${APPSBUILDDIR};
 	cd ${APPSBUILDDIR}/
-	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${APPSINSTALLDIR}  \
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}  \
         -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} \
 	${APPSDIR} 
 
@@ -361,14 +382,13 @@ apps-build: apps-cmake
 
 apps-clean:
 	cd ${APPSBUILDDIR}/; gmake clean
-	\rm -rf ${APPSINSTALLDIR}
 
 ##################### ---------------------------
 
 
-allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
-allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean apps-clean
-allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
+allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone pybind11-clone gtest-clone
+allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean apps-clean pybind11-clean gtest-clean
+allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build pybind11-build gtest-build
 kokkos-profile-clone: init kokkos-clone kokkos-tools-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
 kokkos-profile-build: kokkos-build kokkos-tools-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
 

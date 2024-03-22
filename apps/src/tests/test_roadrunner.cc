@@ -18,6 +18,16 @@ TEST(RoadrunnerTest, InitializeTest) {
 }
 
 TEST(RoadrunnerTest, AppLevelSNRPSF) {
+  // create dir AppLevelSNRPSF
+  std::filesystem::create_directory("AppLevelSNRPSF");
+
+  //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
+  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF/CYGTST.corespiral.ms", copy_options::recursive);
+  //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
+  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF/4k_nosquint.cfc", copy_options::recursive);
+  //Step into AppLevelSNRPSF
+  std::filesystem::current_path("AppLevelSNRPSF");
+
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
    string imageName="htclean_gpu_newpsf.psf";
@@ -47,8 +57,8 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -78,9 +88,21 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   remove_all(current_path()/"htclean_gpu_newpsf.psf");
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+
+  //move to parent directory
+  std::filesystem::current_path("..");
 }
 
 TEST(RoadrunnerTest, AppLevelWeight) {
+  // create dir AppLevelWeight
+  std::filesystem::create_directory("AppLevelWeight");
+  //copy over CYGTST.corespiral.ms from gold_standard to AppLevelWeight
+  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelWeight/CYGTST.corespiral.ms", copy_options::recursive);
+  //copy over 4k_nosquint.cfc from gold_standard to AppLevelWeight
+  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelWeight/4k_nosquint.cfc", copy_options::recursive);
+  //Step into AppLevelWeight
+  std::filesystem::current_path("AppLevelWeight");
+
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
    string imageName="htclean_gpu_newpsf.weight";
@@ -110,8 +132,8 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  copy(current_path()/"../../../src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -138,11 +160,86 @@ TEST(RoadrunnerTest, AppLevelWeight) {
    remove_all(current_path()/"htclean_gpu_newpsf.weight");
    remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
 
+  //move to parent directory
+  std::filesystem::current_path("..");
+
 }
 
-//TEST(RoadrunnerTest, UIWeight) {
+TEST(RoadrunnerTest, UIFactory) {
+    // The Factory Settings.
+  int argc = 1;
+  char* argv[] = {"./roadrunner"};
 
-//}
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName, modelImageName,cmplxGridName="", stokes="I",
+    weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="none";
+
+  string phaseCenter = "J2000 19h57m44.44s  040d35m46.3s";
+
+  string refFreqStr="3.0e9"; 
+  float cellSize=0.025;
+  float robust=0.0;
+  int NX=4000, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+  cfCache="test";
+  UI(restartUI, argc, argv, interactive,
+     MSNBuf,imageName, modelImageName, dataColumnName,
+     sowImageExt, cmplxGridName, NX, nW, cellSize,
+     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+     doSPWDataIter);
+}
+
+
+/*TEST(RoadrunnerTest, UIThrow) {
+  int argc = 1;
+  char* argv[] = {"./roadrunner"};
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
+    refFreqStr="3.0e9", weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="none";
+
+  float cellSize=0;
+  float robust=0.0;
+  int NX=0, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+
+  
+           UI(restartUI, argc, argv, interactive,
+              MSNBuf,imageName, modelImageName, dataColumnName,
+            sowImageExt, cmplxGridName, NX, nW, cellSize,
+            stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+            ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+            doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+            doSPWDataIter);
+
+  if (HasFatalFailure()) return;
+
+}*/
 
 
 };

@@ -91,6 +91,7 @@ void MSSplit_func(const string& MSNBuf="", const string& OutMSBuf="", const bool
  * @param restart A boolean value indicating whether the application is being restarted.
  * @param argc An integer value indicating the number of command line arguments.
  * @param argv A pointer to a character array containing the command line arguments.
+ * @param interactive A boolean parameter indicating whether to run in the interactive mode
  * @param MSNBuf A reference to a string variable to store the input table name.
  * @param OutMSBuf A reference to a string variable to store the output table name.
  * @param deepCopy A boolean reference to indicate whether to perform a deep copy.
@@ -108,7 +109,8 @@ void MSSplit_func(const string& MSNBuf="", const string& OutMSBuf="", const bool
  * 
  * @throws AipsError if the input table name is not set.
  */
-void UI(Bool restart, int argc, char **argv, string& MSNBuf, string& OutMSBuf, bool& deepCopy,
+void UI(Bool restart, int argc, char **argv, bool interactive, 
+	string& MSNBuf, string& OutMSBuf, bool& deepCopy,
 	string& fieldStr, string& timeStr, string& spwStr, string& baselineStr,
 	string& scanStr, string& arrayStr, string& uvdistStr,string& taqlStr, string& polnStr,
 	string& stateObsModeStr, string& observationStr);

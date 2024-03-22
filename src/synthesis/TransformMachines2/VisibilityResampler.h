@@ -218,6 +218,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual void releaseBuffers()
     {};
+
+    double getVisGridded()
+    {return nVisGridded_p;}
+
+    unsigned long getDataVolume()
+    {return nDataBytes_p;}
     //
     //------------------------------------------------------------------------------
     //----------------------------Private parts-------------------------------------

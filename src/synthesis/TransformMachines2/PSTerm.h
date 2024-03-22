@@ -125,9 +125,13 @@ namespace casa{
 			 ) 
     {return 0;};
 
-    casacore::Int getConvSize() {return 0;};
-    casacore::Int getOversampling() {return 20;};
+    int getConvSize()  {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedConvSize_p;};
+    int getOversampling() {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedOverSampling_p;}
+    // casacore::Int getConvSize() {return 0;};
+    // casacore::Int getOversampling() {return 20;};
+
     void setConvSize(const casacore::Int) {};
+    void setConvOversampling(const casacore::Int) {};
     casacore::Float getConvWeightSizeFactor() {return 1.0;};
 
     casacore::Bool rotationallySymmetric() {return true;};

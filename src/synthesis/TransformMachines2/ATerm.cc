@@ -38,25 +38,10 @@ using namespace casacore;
 namespace casa{
   using namespace refim;
   ATerm::ATerm(): CFTerms()
-  {
-    Int userValue;
-
-    cachedOverSampling_p=OVERSAMPLING;
-    userValue = SynthesisUtils::getenv("ATerm.OVERSAMPLING",OVERSAMPLING);
-    if (userValue != cachedOverSampling_p)
-      {
-	cachedOverSampling_p = userValue;
-	//	cerr << "Oversampling set to " << cachedOverSampling_p << endl;
-      }
-
-
-    cachedConvSize_p=CONVSIZE;
-    userValue = SynthesisUtils::getenv("ATerm.CONVSIZE",CONVSIZE);
-    if (userValue != cachedConvSize_p)
-      {
-	cachedConvSize_p = userValue;
-	//cerr << "ConvFuncSize set to " << cachedConvSize_p << endl;
-      }
+  { 
+    cachedOverSampling_p=-1;
+    cachedConvSize_p=-1;
+    //    setConvSize_Oversampling();
   };
 
   Int ATerm::makePBPolnCoords(//const VisBuffer&vb,
