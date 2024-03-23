@@ -176,6 +176,10 @@ void casacore_asp(std::string& imageName, std::string& modelImageName,
       }
       //std::cout << "nsigmathreshold " << nsigmathreshold << std::endl;
 
+    if(itsImages->residual()->shape()[3]> 1)
+    {
+    }
+
       // converting Matrix to STL 
       casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
       casacore::Array<casacore::Float> itsMatMask;
@@ -230,6 +234,24 @@ void casacore_asp(std::string& imageName, std::string& modelImageName,
                cycleniter, cyclefactor,
                specmode
                );
+
+  //////////Write back to files ////////////
+
+    for (int j = 0; j < ny; j++)
+    {
+      for (int i = 0; i < nx; i++)
+      {
+        matModel(i,j) = model[i][j];
+        matMask(i,j) = mask[i][j];
+        matPsf(i,j) = psf[i][j];
+        matResidual(i,j) = residual[i][j];     
+      }
+    }
+    
+    (itsImages->residual())->put( matResidual );
+    (itsImages->model())->put( matModel );
+
+    itsImages->releaseLocks();
 
 
 }
