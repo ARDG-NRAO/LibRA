@@ -11,8 +11,8 @@ project("LibRA Apps"
   LANGUAGES CXX Fortran C)
 
 set(LIBRA_ID "LibRA INFO: ")
-set (CMAKE_CXX_STANDARD 11)
-
+set(CMAKE_CXX_STANDARD 11)
+set(BUILD_TYPE "RelWithDebInfo")
 
 # Include the ExternalProject module
 include(ExternalProject)
@@ -35,6 +35,8 @@ cmake_host_system_information(RESULT OS_PLATFORM QUERY OS_PLATFORM)
 cmake_host_system_information(RESULT AVAILABLE_PHYSICAL_MEMORY QUERY AVAILABLE_PHYSICAL_MEMORY)
 cmake_host_system_information(RESULT TOTAL_PHYSICAL_MEMORY QUERY TOTAL_PHYSICAL_MEMORY)
 cmake_host_system_information(RESULT TOTAL_VIRTUAL_MEMORY QUERY TOTAL_VIRTUAL_MEMORY)
+
+
 message("${LIBRA_ID} OS Name: ${OS_NAME}")
 message("${LIBRA_ID} OS Release: ${OS_RELEASE}")
 message("${LIBRA_ID} OS Version: ${OS_VERSION}")
@@ -54,25 +56,25 @@ set(CMAKE_INSTALL_INCLUDEDIR include)
 set(CMAKE_INSTALL_BINDIR bin)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
-           ${DEFS64}                                        \
-           -DHAVE_QT4                                       \
-           -DAIPS_NEEDS_RETHROW                             \
-           -DAIPS_LINUX                                     \
-           -DAIPS_LITTLE_ENDIAN                             \
-           -DAIPS_STDLIB                                    \
-           -DAIPS_NO_LEA_MALLOC                             \
-           -D_GLIBCPP_DEPRECATED                            \
-           -DAIPS_AUTO_STL                                  \
-           -DAIPS_ARRAY_INDEX_CHECK                         \
-           -DSIGNBIT                                        \
-           -DAIPS_NO_TEMPLATE_SRC                           \
-           -Wall -pipe -Wno-non-template-friend             \
-           -Woverloaded-virtual -Wcast-align                \
-           -Wno-comment -D_FILE_OFFSET_BITS=64              \
-           -D_LARGEFILE_SOURCE                              \
-           -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
-)  
+# set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
+#            ${DEFS64}                                        \
+#            -DHAVE_QT4                                       \
+#            -DAIPS_NEEDS_RETHROW                             \
+#            -DAIPS_LINUX                                     \
+#            -DAIPS_LITTLE_ENDIAN                             \
+#            -DAIPS_STDLIB                                    \
+#            -DAIPS_NO_LEA_MALLOC                             \
+#            -D_GLIBCPP_DEPRECATED                            \
+#            -DAIPS_AUTO_STL                                  \
+#            -DAIPS_ARRAY_INDEX_CHECK                         \
+#            -DSIGNBIT                                        \
+#            -DAIPS_NO_TEMPLATE_SRC                           \
+#            -Wall -pipe -Wno-non-template-friend             \
+#            -Woverloaded-virtual -Wcast-align                \
+#            -Wno-comment -D_FILE_OFFSET_BITS=64              \
+#            -D_LARGEFILE_SOURCE                              \
+#            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
+# )  
 
 message("${LIBRA_ID} BUILD_DIR: ${BUILD_DIR}")
 message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
@@ -175,7 +177,7 @@ ExternalProject_Add(
   BINARY_DIR     ${BUILD_DIR}/parafeed
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} 
                  -DCMAKE_INSTALL_LIBDIR=lib
-                 -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+                 -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                  -DBUILD_SHARED_LIBS=ON
   BUILD_COMMAND make -j ${NCORES}
   INSTALL_COMMAND make install
@@ -278,7 +280,7 @@ ExternalProject_Add(
                   -DCMAKE_INSTALL_BINDIR=bin
                   -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
                   -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/
-		              -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
+		  -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
                   -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
@@ -302,6 +304,7 @@ ExternalProject_Add(
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
                     -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
+		    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
@@ -310,18 +313,52 @@ ExternalProject_Add(
 )
 
 
-include_directories(${INSTALL_DIR}/include ${INSTALL_DIR}/include/casacore ${INSTALL_DIR}/include/casacpp /usr/include/cfitsio ${CMAKE_SOURCE_DIR}/apps/src ${CMAKE_SOURCE_DIR}/src ${INSTALL_DIR}/include/pybind11)
-set(APP_LINK_LIBRARIES casacpp_synthesis casacpp_msvis hpg::hpg Kokkos::kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed::parafeed readline history termcap m c)
+include_directories(
+  ${INSTALL_DIR}/include
+  ${INSTALL_DIR}/include/casacore
+  ${INSTALL_DIR}/include/casacpp
+  /usr/include/cfitsio
+  ${CMAKE_SOURCE_DIR}/apps/src
+  ${CMAKE_SOURCE_DIR}/src
+  ${INSTALL_DIR}/include/pybind11)
+
+# set(APP_LINK_LIBRARIES
+#   casacpp_synthesis
+#   casacpp_msvis
+#   hpg::hpg
+#   Kokkos::kokkoscore
+#   casa_msfits
+#   casa_ms
+#   casa_images
+#   casa_coordinates
+#   casa_lattices
+#   casa_fits
+#   casa_measures
+#   casa_tables
+#   casa_scimath
+#   casa_scimath_f
+#   casa_casa
+#   pthread
+#   parafeed::parafeed
+#   readline
+#   history
+#   termcap
+#   m
+#   c)
 # include_directories(${DEPINC} ${DEPINC}/casacore ${DEPINC}/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
-link_directories(/usr/local/lib /usr/lib64 /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib64 /usr/lib /usr/lib/x86_64-linux-gnu ${INSTALL_DIR}/lib)
+link_directories(/usr/local/lib
+  /usr/lib64
+  /usr/lib
+  /usr/lib/x86_64-linux-gnu
+  ${INSTALL_DIR}/lib)
 # 
-set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo)
-set(APP_DIR ${CMAKE_SOURCE_DIR}/apps/src/)
-foreach(APP IN LISTS APP_LIST)
-    string(TOLOWER ${APP} APP_NAME)
-    list(APPEND APP_SOURCES "${APP_DIR}/${APP}/${APP_NAME}.cc")
-endforeach()
-message("${LIBRA_ID} APP_LIST: ${APP_LIST}")
-message("${LIBRA_ID} APP_SOURCES: ${APP_SOURCES}")
-message("${LIBRA_ID} {APP_DIR}: ${APP_DIR}")
-message("${LIBRA_ID} APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
+# set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo CACHE INTERNAL "")
+# set(APP_DIR ${CMAKE_SOURCE_DIR}/apps/src/)
+# foreach(APP IN LISTS APP_LIST)
+#     string(TOLOWER ${APP} APP_NAME)
+#     list(APPEND APP_SOURCES "${APP_DIR}/${APP}/${APP_NAME}.cc")
+# endforeach()
+# message("${LIBRA_ID} APP_LIST: ${APP_LIST}")
+# message("${LIBRA_ID} APP_SOURCES: ${APP_SOURCES}")
+# message("${LIBRA_ID} {APP_DIR}: ${APP_DIR}")
+# message("${LIBRA_ID} APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
