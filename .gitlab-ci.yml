@@ -1,26 +1,39 @@
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - build
   - test
+  - production
 
 variables:
-  #CCACHE_BASEDIR: $CI_PROJECT_DIR
-  #CCACHE_DIR: $CI_PROJECT_DIR/ccache
-  GIT_CLEAN_FLAGS: none  # do not remove the build directories afterwards, so "test-job" can use it.
+  CCACHE_BASEDIR: $CI_PROJECT_DIR
+  CCACHE_DIR: $CI_PROJECT_DIR/ccache
+  GIT_CLEAN_FLAGS: none
 
-#cache:
-#    key: ccache_main # this is the global location.
-#    paths:
-#      - $CCACHE_DIR
-build-job:       # This job runs in the build stage, which runs first.
+cache:
+  key: ccache_main
+  paths:
+    - $CCACHE_DIR
+
+
+build-job:
   stage: build
-
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+    - changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
     - ccache --zero-stats || true
     - ccache --show-stats || true
-    - git clean -ffdx #clean build
+    - git clean -ffdx
 
   script:
     - echo "Compiling the code..."
@@ -29,13 +42,27 @@ build-job:       # This job runs in the build stage, which runs first.
     - which nvcc
     - mkdir build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 .. #- make -f makefile.libra allclone 
-    - make #- make Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70 Apps_BUILD_TESTS=ON -f makefile.libra allbuild
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+    - make
     - echo "Compile complete."
+    
+  after_script:
+    - export CCACHE_DIR="$PWD/ccache"
+    - ccache --show-stats || true
 
 test-job:
   stage: test
-
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+    - changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
   script:
     - echo $PWD
     - base_path=$PWD
@@ -46,5 +73,12 @@ test-job:
   artifacts:
     when: always
     reports:
-      junit: ${base_path}/build/Libra/apps/src/tests/report.xml 
+      junit: ${base_path}/build/Libra/apps/src/tests/report.xml
 
+production-job:
+  stage: production
+  only:
+    - manual
+  script:
+    - echo "Deploying to production..."
+    # Add your deployment commands here
