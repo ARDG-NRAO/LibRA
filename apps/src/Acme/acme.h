@@ -55,7 +55,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 		float& pblimit, int& nterms, int& facets,
 		float& psfcutoff,
 		vector<float>& restoringbeam,
-		Bool computePB);
+		Bool& computePB);
 
 
 /**

@@ -50,7 +50,7 @@ void UI(Bool restart, int argc, char **argv,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
-	bool computePB)
+	bool& computePB)
 {
   if (!restart)
     {
