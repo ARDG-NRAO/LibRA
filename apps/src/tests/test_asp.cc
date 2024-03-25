@@ -161,7 +161,7 @@ TEST(AspTest, casacore_asp_cube) {
   copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
   copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
   copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.mask", current_path()/"unittest_hummbee.sumwt", copy_options::recursive);
+  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.mask", current_path()/"unittest_hummbee.mask", copy_options::recursive);
 
   casacore_asp_cube(imageName, modelImageName,
                  largestscale, fusedthreshold,

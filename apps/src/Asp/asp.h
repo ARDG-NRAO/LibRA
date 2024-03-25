@@ -128,8 +128,9 @@ void Asp(std::vector<std::vector<T>>& model,
       maskMat(i,j) = mask[i][j];
     }
   }
-
+  std::cout << "calling setInitScaleMasks " << size_x << " " << size_y << std::endl;
   itsCleaner.setInitScaleMasks(maskMat);  //Array<Float> itsMatMask; 
+  std::cout << "end calling setInitScaleMasks" << std::endl;
   itsCleaner.setaspcontrol(0, 0, 0, Quantity(0.0, "%"));// Needs to come before the rest
 
 

@@ -9,7 +9,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 link_directories("${INSTALLDIR}/lib")
 
 
-add_library(casacore_asp SHARED casacore_asp.cc)
+add_library(casacore_asp SHARED casacore_asp.cc casacore_asp_cube.cc)
 
 
 # Link with Google Test
