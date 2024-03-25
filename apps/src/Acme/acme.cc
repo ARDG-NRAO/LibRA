@@ -100,10 +100,12 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 	  IPosition loc(4,1000,1000,1,1);
 	  float pix = reImage->getAt(loc);
-	  /*	  if (computePB) {
-		  LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
-		  // add code to create and write the .pb image
-		  }*/
+	  // add code to create and write the .pb image
+	  if (computePB) {
+	    LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
+	    PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
+	    tmp.copyData(pbImage);
+	  }
 	}
       else
 	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
