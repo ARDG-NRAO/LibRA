@@ -96,10 +96,10 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
 	  LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
 	  ratio = ((newIM) * mask / (deno + maskinv));
-	  //	  reImage->copyData(ratio);
+	  reImage->copyData(ratio);
 
-	  // IPosition loc(4,1000,1000,1,1);
-	  // float pix = reImage->getAt(loc);
+	  IPosition loc(4,1000,1000,0,0);
+	  float pix = reImage->getAt(loc);
 	  // add code to create and write the .pb image
 	  if (computePB) {
 	    LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
