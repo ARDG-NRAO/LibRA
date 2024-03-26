@@ -39,7 +39,8 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   //---------------------------------------------------
   //
   String type, residualName, weightName, sumwtName, pbName;
-      
+  String subType;
+  
   ostringstream os;
   LogSink sink(LogMessage::NORMAL,&os);
   LogIO logio(sink);
@@ -66,6 +67,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	Table table(residualName,TableLock(TableLock::AutoNoReadLocking));
 	TableInfo& info = table.tableInfo();
 	type=info.type();
+	subType = info.subType();
       }
 
       if (type=="Image")
@@ -91,9 +93,10 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  float mwt = max(wImage->get());
 	  float mim = max(reImage->get());
 
-	  cout << "Image values before normalization: "
-	       << "sumwt = " << sow << ", max(weight) = "
-	       << mwt << ", max(" << imType << ") = " << mim << endl;
+	  logio << "Image values before normalization: "
+		<< "sumwt = " << sow << ", max(weight) = "
+		<< mwt << ", max(" << imType << ") = " << mim
+		<< LogIO::POST;
 
 	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
 	  
@@ -114,17 +117,19 @@ void acme_func(std::string& imageName, std::string& deconvolver,
           mwt = max(wImage->get());
           mim = max(reImage->get());
 
-          cout << "Image values after normalization:  "
-	       << "sumwt = " << sow << ", max(weight) = "
-	       << mwt << ", max(" << imType << ") = " << mim << endl;
+          logio << "Image values after normalization:  "
+		<< "sumwt = " << sow << ", max(weight) = "
+		<< mwt << ", max(" << imType << ") = " << mim
+		<< LogIO::POST;
 
-	  if (computePB) {
-	    LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
-	    PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
-	    tmp.copyData(pbImage);
-	    float mpb = max(tmp.get());
-	    cout << "Max PB value is " << mpb << endl;
-	  }
+	  if (computePB)
+	    {
+	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) / abs(*swImage));
+	      PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
+	      tmp.copyData(pbImage);
+	      float mpb = max(tmp.get());
+	      logio << "Max PB value is " << mpb << LogIO::POST;
+	    }
 	}
       else
 	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
