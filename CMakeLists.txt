@@ -80,8 +80,7 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
                    -DCMAKE_INSTALL_LIBDIR=lib
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
   	               -DKokkos_ENABLE_CUDA=ON
-                   -DKokkos_ARCH_PASCAL61
-  	              #  -D${Kokkos_CUDA_ARCH_NAME}=ON
+  	               -D${Kokkos_CUDA_ARCH_NAME}=ON
   	               -DKokkos_ENABLE_OPENMP=ON
   	               -DKokkos_ENABLE_SERIAL=ON
   		             -DKokkos_ENABLE_PROFILING=ON
