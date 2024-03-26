@@ -87,6 +87,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 	  float itsPBScaleFactor = 1.0;
 
+	  float sow = max(swImage->get());
+	  float mwt = max(wImage->get());
+	  float mim = max(reImage->get());
+
+	  cout << "Image values before normalization: "
+	       << "sumwt = " << sow << ", max(weight) = "
+	       << mwt << ", max(" << imType << ") = " << mim << endl;
+
 	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
 	  
 	  LatticeExpr<Float> ratio;
@@ -98,13 +106,24 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  ratio = ((newIM) * mask / (deno + maskinv));
 	  reImage->copyData(ratio);
 
-	  IPosition loc(4,1000,1000,0,0);
-	  float pix = reImage->getAt(loc);
-	  // add code to create and write the .pb image
+//	  IPosition loc(4,1000,1000,0,0);
+//	  float pix = reImage->getAt(loc);
+//	  cout << "Pixel value at (1000, 1000) is " << pix << endl;
+
+	  sow = max(swImage->get());
+          mwt = max(wImage->get());
+          mim = max(reImage->get());
+
+          cout << "Image values after normalization:  "
+	       << "sumwt = " << sow << ", max(weight) = "
+	       << mwt << ", max(" << imType << ") = " << mim << endl;
+
 	  if (computePB) {
 	    LatticeExpr<Float> pbImage = sqrt(abs(*wImage) * abs(*swImage));
 	    PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
 	    tmp.copyData(pbImage);
+	    float mpb = max(tmp.get());
+	    cout << "Max PB value is " << mpb << endl;
 	  }
 	}
       else
