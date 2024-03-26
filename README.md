@@ -179,6 +179,7 @@ This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
 - [ ] ~~A simple framework to run `coyote` on multiple cores/nodes for `mode=fillcf` setting.~~ 
 A `slurm` based framework is in place.  [GNU Parallel](https://www.gnu.org/software/parallel) based one may also be useful.
 - [ ] Implement a `mode` in `coyote` app to list the specific CFs from the CFC which would be required for the given MS and settings.   
+- [ ] Implement python wheel based system that utilizes `scikit-build` to create a pip installable package.
 Such a list can be used by other components of the algorithm
       architecture to make a potentially smaller sub-CFC, specially
       when the given MS is a partition of a larger database being
