@@ -19,14 +19,22 @@ set(DEPLIB "${CMAKE_INSTALL_PREFIX}/lib")
 set(DEPINC "${CMAKE_INSTALL_PREFIX}/include")
 set(USRLIB "/usr/lib64")
 
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}:${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg:${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed:${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos:${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore:${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp:${CMAKE_INSTALL_PREFIX}/lib/cmake/sakura:${CMAKE_INSTALL_PREFIX}/lib/cmake/pybind11)
-set(hpg_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg)
-set(parafeed_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed)
-set(Kokkos_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos)
-set(pybind11_DIR ${CMAKE_INSTALL_PREFIX}/share/cmake/pybind11)
-set(casacore_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore)
-set(casacpp_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp)
-set(GTest_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest)
+set(CMAKE_PREFIX_PATH  ${CMAKE_PREFIX_PATH}
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/sakura
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/pybind11)
+
+set(hpg_DIR        ${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg)
+set(parafeed_DIR   ${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed)
+set(Kokkos_DIR     ${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos)
+set(pybind11_DIR   ${CMAKE_INSTALL_PREFIX}/share/cmake/pybind11)
+set(casacore_DIR   ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore)
+set(casacpp_DIR    ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp)
+set(GTest_DIR      ${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest)
 
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message("hpg_DIR: ${hpg_DIR}")
@@ -54,11 +62,36 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
 )                                    
 
+set(APP_LINK_LIBRARIES
+  casacpp_synthesis
+  casacpp_msvis
+  hpg
+  kokkoscore
+  casa_msfits
+  casa_ms
+  casa_images
+  casa_coordinates
+  casa_lattices
+  casa_fits
+  casa_measures
+  casa_tables
+  casa_scimath
+  casa_scimath_f
+  casa_casa
+  pthread
+  parafeed
+  readline
+  history
+  termcap
+  m
+  c)
 
+include_directories(
+  ${CMAKE_INSTALL_PREFIX}/include/casacore
+  ${CMAKE_INSTALL_PREFIX}/include
+  ${CMAKE_INSTALL_PREFIX}/include/casacpp
+  /usr/include/cfitsio )
 
-
-set(APP_LINK_LIBRARIES casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-include_directories(${CMAKE_INSTALL_PREFIX}/include/casacore ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include/casacpp /usr/include/cfitsio )
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 
