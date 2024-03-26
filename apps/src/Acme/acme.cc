@@ -41,23 +41,23 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   String type, residualName, weightName, sumwtName, pbName;
   String subType;
   
-  ostringstream os;
-  LogSink sink(LogMessage::NORMAL,&os);
-  LogIO logio(sink);
+  // stringstream os;
+  // LogSink sink(LogMessage::NORMAL,&os);
+  LogIO logio(LogOrigin("acme","acme_func"));
 
   /********** Block to add simple normalization functionality **********/
   if ((imType == "residual") || (imType == "psf")) {
-    residualName = imageName + String(".") + imType;
+    residualName = imageName + "." + imType;
     cout << "Image name is " << residualName << endl;
   }
   else
     logio << "Unrecognized imtype. Allowed values are psf and residual." << LogIO::EXCEPTION;
 
-  weightName   = imageName + String(".weight");
-  sumwtName    = imageName + String(".sumwt");
+  weightName   = imageName + ".weight";
+  sumwtName    = imageName + ".sumwt";
 
   if (computePB)
-    pbName   = imageName + String(".pb");
+    pbName   = imageName + ".pb";
 
   /*********************************************************************/
 
@@ -93,10 +93,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  float mwt = max(wImage->get());
 	  float mim = max(reImage->get());
 
-	  logio << "Image values before normalization: "
-		<< "sumwt = " << sow << ", max(weight) = "
-		<< mwt << ", max(" << imType << ") = " << mim
-		<< LogIO::POST;
+	  {
+	    stringstream os;
+	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
+	       << "Image values before normalization: "
+	       << "sumwt = " << sow << ", max(weight) = "
+	       << mwt << ", max(" << imType << ") = " << mim;
+	    logio << os.str() << LogIO::POST;
+	  }
 
 	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
 	  
@@ -117,10 +121,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
           mwt = max(wImage->get());
           mim = max(reImage->get());
 
-          logio << "Image values after normalization:  "
-		<< "sumwt = " << sow << ", max(weight) = "
-		<< mwt << ", max(" << imType << ") = " << mim
-		<< LogIO::POST;
+	  {
+	    stringstream os;
+	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
+	       << "Image values after normalization:  "
+	       << "sumwt = " << sow << ", max(weight) = "
+	       << mwt << ", max(" << imType << ") = " << mim;
+	    logio << os.str() << LogIO::POST;
+	  }
 
 	  if (computePB)
 	    {
@@ -128,7 +136,10 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	      PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
 	      tmp.copyData(pbImage);
 	      float mpb = max(tmp.get());
-	      logio << "Max PB value is " << mpb << LogIO::POST;
+	      stringstream os;
+	      os << fixed << setprecision(numeric_limits<float>::max_digits10)
+		 << "Max PB value is " << mpb;
+	      logio << os.str() << LogIO::POST;
 	    }
 	}
       else

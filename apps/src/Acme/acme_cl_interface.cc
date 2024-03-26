@@ -35,6 +35,12 @@
 
 #include <acme.h>
 
+void acme_func(std::string& imageName, std::string& deconvolver,
+		string& normtype, string& workdir, string& imType,
+		float& pblimit, int& nterms, int& facets,
+		float& psfcutoff,
+		vector<float>& restoringbeam,
+		Bool& computePB);
 
 //
 //-------------------------------------------------------------------------
