@@ -172,31 +172,29 @@ TEST(AspTest, casacore_asp_cube) {
                  specmode
                  );
 
-  remove_all(current_path()/"unittest_hummbee.pb");
-  remove_all(current_path()/"unittest_hummbee.psf");
-  remove_all(current_path()/"unittest_hummbee.residual");
-  remove_all(current_path()/"unittest_hummbee.sumwt");
-  remove_all(current_path()/"unittest_hummbee.mask");
-  remove_all(current_path()/"unittest_hummbee.model");
-  EXPECT_TRUE(true);
+
   
-  /*PagedImage<Float> modelimage("unittest_hummbee.model");
+  PagedImage<Float> modelimage("unittest_hummbee.model");
 
   float tol = 0.1;
-  float goldPeakRes = 4.98845;
-  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
-
   float goldValchan0 = 0.0442593;
   float goldValchan2 = 0.0384871;
   EXPECT_NEAR(modelimage(IPosition(4,275,330,0,0)), goldValchan0, tol);
   EXPECT_NEAR(modelimage(IPosition(4,275,330,0,2)), goldValchan2, tol);
 
+  PagedImage<Float> resimage("unittest_hummbee.residual");
+  float resGoldValchan0 = 4.726145;
+  float resGoldValchan2 = 1.797757;
+  EXPECT_NEAR(resimage(IPosition(4,275,330,0,0)), resGoldValchan0, tol);
+  EXPECT_NEAR(resimage(IPosition(4,275,330,0,2)), resGoldValchan2, tol);
+
   remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
-  //remove_all(current_path()/"unittest_hummbee.sumwt");
+  remove_all(current_path()/"unittest_hummbee.sumwt");
   remove_all(current_path()/"unittest_hummbee.model");
-  remove_all(current_path()/"unittest_hummbee.mask");*/
+  remove_all(current_path()/"unittest_hummbee.mask");
+
 }
 
 };

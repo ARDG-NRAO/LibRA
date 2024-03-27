@@ -62,7 +62,8 @@ void Asp(std::vector<std::vector<T>>& model,
   float& threshold, float& nsigmathreshold,
   float& nsigma,
   int& cycleniter, float& cyclefactor,
-  std::string& specmode)
+  std::string& specmode,
+  int nSubChans = 1, int chanid = 0)
 {
   LogIO os( LogOrigin("Asp","Asp", WHERE) );
   AspMatrixCleaner itsCleaner;
@@ -128,9 +129,8 @@ void Asp(std::vector<std::vector<T>>& model,
       maskMat(i,j) = mask[i][j];
     }
   }
-  std::cout << "calling setInitScaleMasks " << size_x << " " << size_y << std::endl;
+
   itsCleaner.setInitScaleMasks(maskMat);  //Array<Float> itsMatMask; 
-  std::cout << "end calling setInitScaleMasks" << std::endl;
   itsCleaner.setaspcontrol(0, 0, 0, Quantity(0.0, "%"));// Needs to come before the rest
 
 
@@ -280,10 +280,10 @@ void Asp(std::vector<std::vector<T>>& model,
     stopCode=5;
   }
 
-  /*os << "[" << imagestore->getName();
-  if(nSubChans>1) os << ":C" << chanid ;
-  if(nSubPols>1) os << ":P" << polid ;
-  Int iterend = loopcontrols.getIterDone();*/
+  os << "[";// << imagestore->getName();
+  if(nSubChans>1) os << "C" << chanid ;
+  //if(nSubPols>1) os << ":P" << polid ;
+  //Int iterend = loopcontrols.getIterDone();
   os << "]"
      <<" iters=0->" << iterdone << " [" << iterdone << "]"
      << ", model=0->" << modelflux

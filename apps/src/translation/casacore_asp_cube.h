@@ -220,9 +220,6 @@ void casacore_asp_cube(std::string& imageName, std::string& modelImageName,
 
       //std::cout << "MaxPsfSidelobe " << MaxPsfSidelobe << " threshold " << threshold << endl;
 
-      AspMatrixCleaner itsCleaner;
-      float psfwidth = itsCleaner.getPsfGaussianWidth(*(itsImages->psf()));
-      //std::cout << "psfwidth " << psfwidth << std::endl;
 
       float nsigmathreshold = 0;
       if (nsigma > 0)
@@ -243,82 +240,91 @@ void casacore_asp_cube(std::string& imageName, std::string& modelImageName,
           nsigmathreshold = nsigma * (float)maxval;
         }
       }
-      std::cout << "nsigmathreshold " << nsigmathreshold << std::endl;
-      std::cout << "residual shape " << itsImages->residual()->shape() << std::endl;
-      // 512,512,1,5
+      //std::cout << "nsigmathreshold " << nsigmathreshold << std::endl;
+      //std::cout << "residual shape " << itsImages->residual()->shape() << std::endl; // 512,512,1,5
 
     int numchan = itsImages->residual()->shape()[3];
-    //if(itsImages->residual()->shape()[3]> 1)
 
     // converting Matrix to STL 
     casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
     casacore::Array<casacore::Float> itsMatMask;
-    itsImages->residual()->get( itsMatResidual, true );
-    itsImages->model()->get( itsMatModel, true );
-    itsImages->psf()->get( itsMatPsf, true );
-    itsImages->mask()->get( itsMatMask, true );
-    std::cout << "its psf shape " << itsMatPsf.shape() << endl;
-    std::cout << "its mask shape " << itsMatMask.shape() << " max " << max(itsMatMask) << endl;
+    itsImages->residual()->get( itsMatResidual, false );
+    itsImages->model()->get( itsMatModel, false );
+    itsImages->psf()->get( itsMatPsf, false );
+    itsImages->mask()->get( itsMatMask, false );
+    //std::cout << "its psf shape " << itsMatPsf.shape() << endl; //[512, 512, 1, 5]
+    //std::cout << "its mask shape " << itsMatMask.shape() << " max " << max(itsMatMask) << endl;
     
     const int nx = itsMatPsf.shape()(0);
     const int ny = itsMatPsf.shape()(1);
     
-    //SubImage<Float> *tmpptr=nullptr;
-    int chanBeg = 0;
-    int chanEnd = 0;
-    //tmpptr=SpectralImageUtil::getChannel(*(itsImages->psf()), chanBeg, chanEnd, false);
-    //std::cout << "tmpptr shape " << tmpptr->shape() << endl; [512,512,1,2]
-    std::shared_ptr<ImageInterface<Float> >subpsf=nullptr;
-    makeTempImage(subpsf, imageName+".psf", chanBeg, chanEnd);
-    std::cout << "subpsf shape " << subpsf->shape() << endl; 
-    //Array<Float> c = subpsf->nonDegenerate(); can't do this
-
-    /*Matrix<Float> matPsf(itsMatPsf);
-    Matrix<Float> matModel(itsMatModel);
-    Matrix<Float> matResidual(itsMatResidual);
-    Matrix<Float> matMask(itsMatMask);
-
-    AlwaysAssert(matPsf.shape()==matModel.shape(), AipsError);
-    AlwaysAssert(matPsf.shape()==matResidual.shape(), AipsError);
-    AlwaysAssert(matPsf.shape()==matMask.shape(), AipsError);
-
-    const size_t nx = (size_t)matPsf.shape()(0);
-    const size_t ny = (size_t)matPsf.shape()(1);
-    //std::cout << "nx = " << nx << " ny " << ny << std::endl;*/
     
-    vector<vector<float>> model(nx, vector<float> (ny, 0));
-    vector<vector<float>> psf(nx, vector<float> (ny, 0));
-    vector<vector<float>> residual(nx, vector<float> (ny, 0));
-    vector<vector<float>> mask(nx, vector<float> (ny, 1));
-    
-    for (int j = 0; j < ny; j++)
+    AspMatrixCleaner itsCleaner;
+
+    for (int chanid = 0; chanid < numchan; chanid++)
     {
-      for (int i = 0; i < nx; i++)
-      {
-        model[i][j] = itsMatModel(IPosition(3, i, j, 0));
-        mask[i][j] = itsMatMask(IPosition(3, i, j, 0));
-        psf[i][j] = itsMatPsf(IPosition(3, i, j, 0));
-        residual[i][j] = itsMatResidual(IPosition(3, i, j, 0));
+        vector<vector<float>> model(nx, vector<float> (ny, 0));
+        vector<vector<float>> psf(nx, vector<float> (ny, 0));
+        vector<vector<float>> residual(nx, vector<float> (ny, 0));
+        vector<vector<float>> mask(nx, vector<float> (ny, 1));
+        float maxPsf = 0;
+
+        for (int j = 0; j < ny; j++)
+        {
+          for (int i = 0; i < nx; i++)
+          {
+            model[i][j] = itsMatModel(IPosition(4, i, j, 0, chanid));
+            mask[i][j] = itsMatMask(IPosition(4, i, j, 0, chanid));
+            psf[i][j] = itsMatPsf(IPosition(4, i, j, 0, chanid));
+            residual[i][j] = itsMatResidual(IPosition(4, i, j, 0, chanid));
+            
+            if (psf[i][j] > maxPsf) // for verifying psf later
+              maxPsf = psf[i][j];
+          }
+        }
         
-      }
-    }
-    
-    std::cout << "mask size " << mask.size() << " " << mask[0].size() << endl;
+        int chanBeg = chanid;
+        int chanEnd = chanid;
+        std::shared_ptr<ImageInterface<Float> >subpsf=nullptr;
+        makeTempImage(subpsf, imageName+".psf", chanBeg, chanEnd);
+        //std::cout << "subpsf shape " << subpsf->shape() << " maxPsf " << maxPsf << endl;
+        float psfwidth = 0;
+        if (maxPsf == 1) //valid psf
+            psfwidth = itsCleaner.getPsfGaussianWidth(*subpsf);
 
-//////////interface to the Raw Asp layer////////
+        //////////interface to the Raw Asp layer////////
 
-    Asp<float>(model, psf, residual,
-               mask,
-               nx, ny,
-               psfwidth,
-               largestscale, fusedthreshold,
-               nterms,
-               gain, 
-               threshold, nsigmathreshold,
-               nsigma,
-               cycleniter, cyclefactor,
-               specmode
-               );
+        Asp<float>(model, psf, residual,
+                   mask,
+                   nx, ny,
+                   psfwidth,
+                   largestscale, fusedthreshold,
+                   nterms,
+                   gain, 
+                   threshold, nsigmathreshold,
+                   nsigma,
+                   cycleniter, cyclefactor,
+                   specmode,
+                   numchan, chanid
+                   );
+
+        //////////Write back to files ////////////
+
+        for (int j = 0; j < ny; j++)
+        {
+          for (int i = 0; i < nx; i++)
+          {
+            itsMatModel(IPosition(4, i, j, 0, chanid)) = model[i][j];
+            itsMatResidual(IPosition(4, i, j, 0, chanid)) = residual[i][j];     
+          }
+        }
+        
+     } // end for all channels
+
+     (itsImages->residual())->put( itsMatResidual );
+     (itsImages->model())->put( itsMatModel );
+
+      itsImages->releaseLocks();
 
 
 }
