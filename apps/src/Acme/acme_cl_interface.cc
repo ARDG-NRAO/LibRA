@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   //---------------------------------------------------
   //
   string imageName, deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
-  float pblimit=0.005, psfcutoff=0.35;
+  float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   Bool computePB=False;

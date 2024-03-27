@@ -28,6 +28,19 @@
 //
 //-------------------------------------------------------------------------
 
+void compute_pb(string pbName, ImageInterface<Float>* weight, ImageInterface<Float>* sumwt, LogIO logio)
+{
+	LatticeExpr<Float> pbImage = sqrt(abs(*weight) / abs(*sumwt));
+        PagedImage<Float> tmp(weight->shape(), weight->coordinates(), pbName);
+        tmp.copyData(pbImage);
+        float mpb = max(tmp.get());
+        stringstream os;
+        os << fixed << setprecision(numeric_limits<float>::max_digits10)
+           << "Max PB value is " << mpb;
+        logio << os.str() << LogIO::POST;
+
+}
+
 void acme_func(std::string& imageName, std::string& deconvolver,
                string& normtype, string& workdir, string& imType,
                float& pblimit, int& nterms, int& facets,
@@ -132,14 +145,15 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 	  if (computePB)
 	    {
-	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) / abs(*swImage));
+		    compute_pb(pbName, wImage, swImage, logio);
+/*	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) / abs(*swImage));
 	      PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
 	      tmp.copyData(pbImage);
 	      float mpb = max(tmp.get());
 	      stringstream os;
 	      os << fixed << setprecision(numeric_limits<float>::max_digits10)
 		 << "Max PB value is " << mpb;
-	      logio << os.str() << LogIO::POST;
+	      logio << os.str() << LogIO::POST;*/
 	    }
 	}
       else
