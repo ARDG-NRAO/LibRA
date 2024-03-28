@@ -28,10 +28,13 @@
 //
 //-------------------------------------------------------------------------
 
-void compute_pb(string pbName, ImageInterface<Float>* weight, ImageInterface<Float>* sumwt, LogIO logio)
+void compute_pb(const string& pbName,
+		const ImageInterface<Float>& weight,
+		const ImageInterface<Float>& sumwt,
+		LogIO& logio)
 {
-	LatticeExpr<Float> pbImage = sqrt(abs(*weight) / abs(*sumwt));
-        PagedImage<Float> tmp(weight->shape(), weight->coordinates(), pbName);
+	LatticeExpr<Float> pbImage = sqrt(abs(weight) / abs(sumwt));
+        PagedImage<Float> tmp(weight.shape(), weight.coordinates(), pbName);
         tmp.copyData(pbImage);
         float mpb = max(tmp.get());
         stringstream os;
@@ -145,7 +148,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 	  if (computePB)
 	    {
-		    compute_pb(pbName, wImage, swImage, logio);
+		    compute_pb(pbName, *wImage, *swImage, logio);
 /*	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) / abs(*swImage));
 	      PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
 	      tmp.copyData(pbImage);
