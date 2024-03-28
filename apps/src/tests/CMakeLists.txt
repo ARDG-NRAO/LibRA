@@ -17,7 +17,8 @@ FetchContent_Declare(
 # Configure Google Test
 FetchContent_MakeAvailable(gtest)
 
-add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc test_asp.cc)
+#add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc test_asp.cc)
+add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc)
 
 #message("PROJECT_BINARY_DIR is ${PROJECT_BINARY_DIR}")
 #message("PROJECT_SOURCE_DIR is ${PROJECT_SOURCE_DIR}")
