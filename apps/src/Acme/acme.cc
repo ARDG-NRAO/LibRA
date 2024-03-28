@@ -41,7 +41,6 @@ void compute_pb(const string& pbName,
         os << fixed << setprecision(numeric_limits<float>::max_digits10)
            << "Max PB value is " << mpb;
         logio << os.str() << LogIO::POST;
-
 }
 
 void acme_func(std::string& imageName, std::string& deconvolver,
@@ -119,6 +118,12 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  }
 
 	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
+
+// Equations as currently implemented:
+// pb = sqrt(weight/sumwt)
+// deno = sqrt(weight/sumwt)
+// newIM = image(psf, residual) / sumwt
+// normalized image(psf, residual) = newIM * mask / (deno + maskinv) |||| mask, maskinv implementation below
 	  
 	  LatticeExpr<Float> ratio;
 	  Float scalepb = 1.0;
@@ -147,17 +152,20 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  }
 
 	  if (computePB)
-	    {
-		    compute_pb(pbName, *wImage, *swImage, logio);
-/*	      LatticeExpr<Float> pbImage = sqrt(abs(*wImage) / abs(*swImage));
-	      PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), pbName);
-	      tmp.copyData(pbImage);
-	      float mpb = max(tmp.get());
-	      stringstream os;
-	      os << fixed << setprecision(numeric_limits<float>::max_digits10)
-		 << "Max PB value is " << mpb;
-	      logio << os.str() << LogIO::POST;*/
-	    }
+            compute_pb(pbName, *wImage, *swImage, logio);
+	    
+	  if (imType == "residual"){
+		  IPosition maxpos(4, 1158, 1384, 0, 0);
+		  //float pbatpos = pbImage->getAt(maxpos);
+		  float pbatpos = deno.getAt(maxpos);  // in current implementation, deno = pb
+		  float reatpos = reImage->getAt(maxpos);
+		  stringstream os;
+		  os << fixed << setprecision(numeric_limits<float>::max_digits10)
+		     << "Values to verifiy residual normalization: pb@(1158,1384) = "
+		     << pbatpos << ", residual@(1158,1384) = " << reatpos;
+		  logio << os.str() << LogIO::POST;
+	  }
+
 	}
       else
 	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
