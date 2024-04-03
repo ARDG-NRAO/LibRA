@@ -8,7 +8,7 @@ project(LibRATests   VERSION 1.0
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
-find_program(GTest REQUIRED)
+find_package(GTest REQUIRED)
 
 add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc)
 
