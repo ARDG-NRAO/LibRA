@@ -28,12 +28,38 @@
 //
 //-------------------------------------------------------------------------
 
+void printImageMax(const string& imType,
+		   const ImageInterface<Float>& target,
+		   const ImageInterface<Float>& weight,
+		   const ImageInterface<Float>& sumwt,
+		   LogIO& logio,
+		   const string& when)
+{
+    float sow = max(sumwt.get());
+    float mwt = max(weight.get());
+    float mim = max(target.get());
+ 
+    {
+        stringstream os;
+        os << fixed << setprecision(numeric_limits<float>::max_digits10)
+           << "Image values " << when << " normalization: "
+           << "sumwt = " << sow << ", max(weight) = "
+           << mwt << ", max(" << imType << ") = " << mim;
+        logio << os.str() << LogIO::POST;
+    }
+}
+
+
+
 void compute_pb(const string& pbName,
 		const ImageInterface<Float>& weight,
 		const ImageInterface<Float>& sumwt,
+		const float& pblimit,
 		LogIO& logio)
 {
-	LatticeExpr<Float> pbImage = sqrt(abs(weight) / abs(sumwt));
+	double itsPBScaleFactor = sqrt(max(weight.get()));
+	LatticeExpr<Float> norm_pbImage = sqrt(abs(weight)) / itsPBScaleFactor;
+	LatticeExpr<Float> pbImage = iif(norm_pbImage > fabs(pblimit), norm_pbImage, 0.0);
         PagedImage<Float> tmp(weight.shape(), weight.coordinates(), pbName);
         tmp.copyData(pbImage);
         float mpb = max(tmp.get());
@@ -53,17 +79,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   //
   //---------------------------------------------------
   //
-  String type, residualName, weightName, sumwtName, pbName;
+  String type, targetName, weightName, sumwtName, pbName;
   String subType;
   
-  // stringstream os;
-  // LogSink sink(LogMessage::NORMAL,&os);
   LogIO logio(LogOrigin("acme","acme_func"));
 
-  /********** Block to add simple normalization functionality **********/
-  if ((imType == "residual") || (imType == "psf")) {
-    residualName = imageName + "." + imType;
-    cout << "Image name is " << residualName << endl;
+  if ((imType == "residual") || (imType == "psf") || (imType == "model")) {
+    targetName = imageName + "." + imType;
+    cout << "Image name is " << targetName << endl;
   }
   else
     logio << "Unrecognized imtype. Allowed values are psf and residual." << LogIO::EXCEPTION;
@@ -74,12 +97,11 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   if (computePB)
     pbName   = imageName + ".pb";
 
-  /*********************************************************************/
 
   try
     {
       {
-	Table table(residualName,TableLock(TableLock::AutoNoReadLocking));
+	Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
 	TableInfo& info = table.tableInfo();
 	type=info.type();
 	subType = info.subType();
@@ -87,12 +109,11 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
       if (type=="Image")
 	{
-	  LatticeBase* lattPtr = ImageOpener::openImage (residualName);
-	  ImageInterface<Float> *reImage;
+	  LatticeBase* lattPtr = ImageOpener::openImage (targetName);
+	  ImageInterface<Float> *targetImage;
 
-	  reImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+	  targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
 
-	  /********** Block to add simple normalization functionality **********/
 
 	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
 	  ImageInterface<Float> *wImage;
@@ -102,69 +123,85 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	  ImageInterface<Float> *swImage;
 	  swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
 
-	  float itsPBScaleFactor = 1.0;
 
-	  float sow = max(swImage->get());
-	  float mwt = max(wImage->get());
-	  float mim = max(reImage->get());
+	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
 
-	  {
-	    stringstream os;
-	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	       << "Image values before normalization: "
-	       << "sumwt = " << sow << ", max(weight) = "
-	       << mwt << ", max(" << imType << ") = " << mim;
-	    logio << os.str() << LogIO::POST;
-	  }
 
-	  LatticeExpr<Float> newIM = LatticeExpr<Float> ((*reImage) / abs(*swImage));
+// Normalization equations implemented in this version:
+// pb = sqrt(weight / max(weight))
+// psf = psf / max(psf)
+// weight = weight / SoW
+// itsPBScaleFactor = max(weight)
+// residual = residual / (sqrt(weight) * itsPBScaleFactor)
+// model = model * (sqrt(weight) / itsPBScaleFactor)
+	      
 
-// Equations as currently implemented:
-// pb = sqrt(weight/sumwt)
-// deno = sqrt(weight/sumwt)
-// newIM = image(psf, residual) / sumwt
-// normalized image(psf, residual) = newIM * mask / (deno + maskinv) |||| mask, maskinv implementation below
+	  IPosition pos(4,0,0,0,0);
+	  float SoW = swImage->getAt(pos);
 	  
-	  LatticeExpr<Float> ratio;
-	  Float scalepb = 1.0;
-	  LatticeExpr<Float> deno = LatticeExpr<Float> (sqrt(abs(*wImage)/abs(*swImage)));
-	  scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
-	  LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
-	  LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
-	  ratio = ((newIM) * mask / (deno + maskinv));
-	  reImage->copyData(ratio);
-
-//	  IPosition loc(4,1000,1000,0,0);
-//	  float pix = reImage->getAt(loc);
-//	  cout << "Pixel value at (1000, 1000) is " << pix << endl;
-
-	  sow = max(swImage->get());
-          mwt = max(wImage->get());
-          mim = max(reImage->get());
-
+          if (imType == "psf")
 	  {
-	    stringstream os;
-	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	       << "Image values after normalization:  "
-	       << "sumwt = " << sow << ", max(weight) = "
-	       << mwt << ", max(" << imType << ") = " << mim;
-	    logio << os.str() << LogIO::POST;
+	      float psfFactor = max(targetImage->get());
+	      LatticeExpr<Float> newPSF = (*targetImage) / psfFactor;
+	      LatticeExpr<Float> newWeight = (*wImage) / SoW;
+	      targetImage->copyData(newPSF);
+	      wImage->copyData(newWeight);
 	  }
+	  else if (imType == "residual")
+	  {
+	      double itsPBScaleFactor = sqrt(max(wImage->get()));
+	      LatticeExpr<Float> newIM = (*targetImage) / SoW;
+
+	      LatticeExpr<Float> ratio;
+	      Float scalepb = 1.0;
+	      LatticeExpr<Float> deno = sqrt(abs(*wImage)) * itsPBScaleFactor;
+
+	      stringstream os;
+              os << "Dividing " << targetName << " by [ sqrt(weightimage) * " 
+		 << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
+	      logio << os.str() << LogIO::POST;
+
+	      scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+	      LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
+	      LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
+	      ratio = ((newIM) * mask / (deno + maskinv));
+	      targetImage->copyData(ratio);
+	  }
+	  else if (imType == "model")
+	  {
+	      double itsPBScaleFactor = sqrt(max(wImage->get()));
+
+              LatticeExpr<Float> deno = sqrt(abs(*wImage)) / itsPBScaleFactor;
+
+	      stringstream os;
+	      os << "Multiplying " << targetName << " by [ sqrt(weight) / "
+		 << itsPBScaleFactor <<  " ] to take model back to flat noise with unit pb peak.";
+	      logio << os.str() << LogIO::POST;
+
+	      LatticeExpr<Float> mask( iif( (deno) > fabs(pblimit) , 1.0, 0.0 ) );
+              LatticeExpr<Float> maskinv( iif( (deno) > fabs(pblimit) , 0.0, 1.0 ) );
+
+	      LatticeExpr<Float> modelIM = (*targetImage) * mask * (deno + maskinv);
+	      targetImage->copyData(modelIM);
+	  }
+ 
+	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 
 	  if (computePB)
-            compute_pb(pbName, *wImage, *swImage, logio);
+            compute_pb(pbName, *wImage, *swImage, pblimit, logio);
 	    
-	  if (imType == "residual"){
+/*	  if (imType == "residual"){
 		  IPosition maxpos(4, 1158, 1384, 0, 0);
 		  //float pbatpos = pbImage->getAt(maxpos);
-		  float pbatpos = deno.getAt(maxpos);  // in current implementation, deno = pb
-		  float reatpos = reImage->getAt(maxpos);
+		  //float pbatpos = deno.getAt(maxpos);  // in current implementation, deno = pb
+		  float pbatpos = 1.0;
+		  float reatpos = targetImage->getAt(maxpos);
 		  stringstream os;
 		  os << fixed << setprecision(numeric_limits<float>::max_digits10)
 		     << "Values to verifiy residual normalization: pb@(1158,1384) = "
 		     << pbatpos << ", residual@(1158,1384) = " << reatpos;
 		  logio << os.str() << LogIO::POST;
-	  }
+	  }*/
 
 	}
       else

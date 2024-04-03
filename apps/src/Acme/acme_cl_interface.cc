@@ -73,7 +73,7 @@ void UI(Bool restart, int argc, char **argv,
       //i=1;clgetSValp("deconvolver", deconvolver,i);  
       i=1;clgetSValp("normtype", normtype,i);
       i=1;clgetSValp("workdir", workdir,i);
-      i=1;clgetSValp("imtype", imType, i); clSetOptions("imtype",{"psf","residual"});
+      i=1;clgetSValp("imtype", imType, i); clSetOptions("imtype",{"psf","residual","model"});
       i=1;clgetFValp("pblimit", pblimit,i);
       //      i=1;clgetIValp("nterms", nterms,i);
       //      i=1;clgetIValp("facets", facets,i);
