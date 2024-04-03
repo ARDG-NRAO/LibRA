@@ -24,6 +24,11 @@
 //#
 //# $Id$
 
+/**
+ * @file DataIterations.h
+ * @brief Contains classes for iterating over visibility data.
+ */
+
 #ifndef ROADRUNNER_DATAITERATOR_H
 #define ROADRUNNER_DATAITERATOR_H
 
@@ -39,15 +44,48 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <casacore/casa/System/ProgressMeter.h>
 #include <msvis/MSVis/VisBuffer2.h>
-#include <hpg/hpg.hpp>
+//#include <hpg/hpg.hpp>
 
 using namespace std;
-
+/**
+ * @brief A class for iterating over visibility data.
+ *
+ * This class provides functions for iterating over visibility data.
+ */
 class DataIterator
 {
 public:
-  DataIterator(const bool isroot):isRoot_p(isroot) {};
+  /**
+   * @brief Constructs a DataIterator object with the specified parameters.
+   *
+   * This constructor constructs a DataIterator object with the specified parameters.
+   *
+   * @param isroot Whether this is the root DataIterator object.
+   * @param dataCol The type of data column to use.
+   */
+  DataIterator(const bool isroot,casa::refim::FTMachine::Type dataCol)
+    :isRoot_p(isroot), dataCol_l(dataCol) {};
+  /**
+   * @brief Destroys the DataIterator object.
+   *
+   * This destructor destroys the DataIterator object.
+   */
   ~DataIterator() {};
+  /**
+   * @brief Iterates over a VisibilityIterator2 object.
+   *
+   * This function iterates over a VisibilityIterator2 object, applying the specified FTMachine to each VisBuffer2 object and writing the results to the specified data column.
+   *
+   * @param vi2 The VisibilityIterator2 object to iterate over.
+   * @param vb The VisBuffer2 object to use for the iteration.
+   * @param ftm The FTMachine object to apply to each VisBuffer2 object.
+   * @param doPSF Whether to calculate the PSF.
+   * @param dataCol The type of data column to use.
+   * @param nVB The number of VisBuffer2 objects processed.
+   * @param imagingMode The imaging mode to use.
+   * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
+   * @return The total number of rows processed.
+   */
   int iterVB(vi::VisibilityIterator2 *vi2,
 	     vi::VisBuffer2 *vb,
 	     const casacore::CountedPtr<casa::refim::FTMachine>& ftm,
@@ -59,38 +97,104 @@ public:
 	     )
   {
     int vol=0;
-
+    // // Get pointers to the reader and writer methods in VB2 and VI2.
+    // auto vi2Writer = [dataCol]()
+    // {
+    //   if (dataCol==casa::refim::FTMachine::MODEL)
+    // 	return &vi::VisibilityIterator2::writeVisModel;
+    //   else if (dataCol==casa::refim::FTMachine::CORRECTED)
+    // 	return &vi::VisibilityIterator2::writeVisCorrected;
+    //   else
+    // 	return &vi::VisibilityIterator2::writeVisObserved;
+    // };
+    
+    // auto vb2Reader = [dataCol]()
+    // {
+    //   if (dataCol==casa::refim::FTMachine::MODEL)
+    // 	return &vi::VisBuffer2::visCubeModel;
+    //   else if (dataCol==casa::refim::FTMachine::CORRECTED)
+    // 	return &vi::VisBuffer2::visCubeCorrected;
+    //   else
+    // 	return &vi::VisBuffer2::visCube;
+    // };
+    
+    // for (vi2->origin(); vi2->more(); vi2->next())
+    //   {
+    // 	//
+    // 	// Non-working code that attempts to use pointers to reader
+    // 	// and writer.  If this can be made to work it eliminates
+    // 	// if-statements below in every iteration.
+    // 	//
+    // 	vb->setVisCube((vb->*(vb2Reader())());
+    // 	if (imagingMode=="predict")
+    // 	  {
+    // 	    ftm->get(*vb,0);
+    
+    // 	    (vi2->*vi2Writer)((vb->*vb2Reader)());
+    // 	  }
+    // 	else
+    // 	  ftm->put(*vb,-1,doPSF);
+    
+    // 	vol+=vb->nRows();
+    
+    // 	cfSentNotifier(nVB);
+    
+    // 	nVB++;
+    //   }
+    
     for (vi2->origin(); vi2->more(); vi2->next())
       {
-	//cerr << "interVB: vol=" << vol << " " << nVB << endl;
-	if (dataCol==casa::refim::FTMachine::CORRECTED)
-	  vb->setVisCube(vb->visCubeCorrected());
-	else
-	  vb->setVisCube(vb->visCube());
-
 	if (imagingMode=="predict")
 	  {
+	    // Predict the data into the VB (presumably the name get()
+	    // means "get the data from the complex grid into the VB")
 	    ftm->get(*vb,0);
-	    vi2->writeVisModel(vb->visCubeModel());
+	    
+	    // Write the VB to the specific data column.  Predicted data
+	    // in the in-memory model is always in the VB::visCubeModel.
+	    // So always make that persistent in the specified column of
+	    // the VI.
+	    if (dataCol==casa::refim::FTMachine::MODEL)          vi2->writeVisModel(vb->visCubeModel());
+	    else if (dataCol==casa::refim::FTMachine::CORRECTED) vi2->writeVisCorrected(vb->visCubeModel());//vb->visCubeCorrected());
+	    else                                                 vi2->writeVisObserved(vb->visCubeModel());//vb->visCube());
 	  }
 	else
-	  ftm->put(*vb,-1,doPSF);
-
+	  {
+	    // Read the data from a specific data column into the
+	    // in-memory buffer
+	    if (dataCol==casa::refim::FTMachine::CORRECTED)   vb->setVisCube(vb->visCubeCorrected());
+	    else if (dataCol==casa::refim::FTMachine::MODEL)  vb->setVisCube(vb->visCubeModel());
+	    else                                              vb->setVisCube(vb->visCube());
+	    
+	    // Grid the data from the VB (presumably the name put()
+	    // means "put the data from the VB into the complex grid")
+	    ftm->put(*vb,-1,doPSF);
+	  }
+	
 	vol+=vb->nRows();
-
+	
 	cfSentNotifier(nVB);
-
+	
 	nVB++;
       }
-
+    
     return vol;
   };
-  //
-  //------------------------------------------------------------------------------------------
-  // By default this method does the normal, single-threaded
-  // iterations. The waitForCFReady function is exectured in the chunk
-  // iterations.  cfSentNotifier is exectued in the VB iterations.
-  //
+  
+  /**
+   * @brief Iterates over a VisibilityIterator2 object with chunking.
+   *
+   * This function iterates over a VisibilityIterator2 object with chunking, applying the specified FTMachine to each VisBuffer2 object and writing the results to the specified data column.
+   *
+   * @param vi2 The VisibilityIterator2 object to iterate over.
+   * @param vb2 The VisBuffer2 object to use for the iteration.
+   * @param ftm The FTMachine object to apply to each VisBuffer2 object.
+   * @param doPSF Whether to calculate the PSF.
+   * @param imagingMode The imaging mode to use.
+   * @param waitForCFReady A function to call when a chunk has been processed.
+   * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
+   * @return A tuple containing the total number of rows processed, the number of VisBuffer2 objects processed, and the time spent in the gridding engine.
+   */
   std::tuple<int, int, double>
   dataIter(vi::VisibilityIterator2 *vi2,
 	   vi::VisBuffer2 *vb2,
@@ -100,22 +204,39 @@ public:
 	   std::function<void(int&, int& )> waitForCFReady=[](int&, int&){},//NoOp
 	   std::function<void(const int&)> cfSentNotifier= [](const int&){} //NoOp
 	   )
-
+    
   {
     int vol=0;
     int nVB=0;
     int spwNdx=0;
     double griddingEngine_time=0;
 
-    casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
-    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
-    else
-      {
-	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
-	log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
-	dataCol_l = casa::refim::FTMachine::OBSERVED;
-      }
-    
+    // if (imagingMode=="predict")
+    //   {
+    // 	if (!vi2->ms().tableDesc().isColumn("MODEL_DATA"))
+    // 	  {
+    // 	    LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+    // 	    log_l << "MODEL_DATA column not found.  Required for \"mode=predict\" setup."
+    // 	      //<< LogIO::EXCEPTION
+    // 		  << LogIO::POST;
+    // 	    exit(0);
+    // 	  }
+    //   }
+    // else
+    // {
+    // 	LogIO log_l(LogOrigin("DataIterator","dataIter",WHERE));
+    // 	if (dataCol_l == casa::refim::FTMachine::MODEL)
+    // 	  log_l << "Using MODEL_DATA column." << LogIO::POST;
+    // 	else
+    // 	  {
+    // 	    if(vi2->ms().tableDesc().isColumn("CORRECTED_DATA") ) dataCol_l = casa::refim::FTMachine::CORRECTED;
+    // 	    else
+    // 	      {
+    // 		log_l << "CORRECTED_DATA column not found.  Using the DATA column instead." << LogIO::WARN << LogIO::POST;
+    // 		dataCol_l = casa::refim::FTMachine::OBSERVED;
+    // 	      }
+    // 	  }
+    // }
     ProgressMeter pm(1.0, vi2->ms().nrow(),
 		     "dataIter", "","","",true);
 
@@ -147,7 +268,7 @@ public:
   	vi2->origin(); // So that the global vb is valid
 
 	waitForCFReady(nVB,spwNdx);
-	
+
   	std::chrono::time_point<std::chrono::steady_clock> griddingEngine_start
   	  = std::chrono::steady_clock::now();
 
@@ -170,5 +291,9 @@ public:
   };
 private:
   bool isRoot_p;
+  /**
+   * @brief The type of data column to use.
+   */
+  casa::refim::FTMachine::Type dataCol_l;
 };
 #endif

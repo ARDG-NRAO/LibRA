@@ -5,7 +5,8 @@
 #
 
 #
-# Kokkos string for the GPU architecture.
+# Example Kokkos string for the GPU architecture.
+# Full list is found at https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 #
 # V100
 #Kokkos_CUDA_ARCH=Kokkos_ARCH_VOLTA70
@@ -23,29 +24,54 @@ CASACORE_BUILD_TYPE = RelWithDebInfo
 # Specific branches used for the various components
 #
 #CASA_BRANCH=ARD-33-DR
-CASA_BRANCH      = rattler_get_6
+CASA_BRANCH      = visdata_bucket
 FFTW_VERSION     = 3.3.10
-KOKKOS_VERSION   = release-candidate-3.7.02
-HPG_VERSION      = v1.2.2
+KOKKOS_VERSION   = 4.1.00
+KOKKOS_TOOLS_VERSION = develop
+HPG_VERSION      = v2.0.1
 PARAFEED_VERSION = activedev
+#CASACORE_VERSION = v3.5.0
+CASACORE_VERSION = fix_regex_v3.5.0
+EIGEN_VERSION	 = 3.4.0
+GTEST_VERSION 	= v1.14.0
 
 KOKKOS_REPOS        = https://github.com/kokkos/kokkos.git
+KOKKOS_TOOLS_REPOS 	= https://github.com/kokkos/kokkos-tools.git
 FFTW_REPOS          = http://www.fftw.org/fftw-${FFTW_VERSION}.tar.gz
-HPG_REPOS           = https://gitlab.nrao.edu/mpokorny/hpg.git
+#HPG_REPOS           = https://gitlab.nrao.edu/mpokorny/hpg.git
+HPG_REPOS           = https://HPG:glpat-BNVcKcoR_Tr9pYCxruRW@gitlab.nrao.edu/pjaganna/hpg.git
 PARAFEED_REPOS      = https://github.com/sanbee/parafeed.git
 SAKURA_REPOS        = https://github.com/tnakazato/sakura/archive/refs/tags/libsakura-5.1.3.tar.gz
 CASA_REPOS          = https://open-bitbucket.nrao.edu:/scm/casa/casa6.git
+PYBIND11_REPOS      = https://github.com/pybind/pybind11.git
 CASACORE_DATA_REPOS = ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar
+#CASACORE_REPOS      = https://github.com/casacore/casacore.git
+CASACORE_REPOS      = https://github.com/preshanth/casacore.git
+EIGEN_REPOS	    = https://gitlab.com/libeigen/eigen.git
+GTEST_REPOS     = https://github.com/google/googletest.git
 
 #
 # Location of the CUDA and OpenMPI installations.  Not sure if OpenMPI is required.
 #
-PATH:=/usr/local/cuda-12.0/bin/:/usr/lib64/openmpi/bin/:${PATH}
+PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 
 # No. of cores to use for compiling
 NCORES=12
 
+# If ON, apps are built as libraries for unit tests. Default is faulse where apps are built as binaries.
+Apps_BUILD_TESTS=OFF
+
 #oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+# Initialize the Kokkos_CUDA_ARCH string to blank.
+# If this is not set on the commandline, the Kokkos
+# build will be for the local CUDA capability
+Kokkos_CUDA_ARCH=""
+ifeq ($(Kokkos_CUDA_ARCH),"")
+Kokkos_CUDA_ARCH_STR=""
+else
+Kokkos_CUDA_ARCH_STR="-D$(Kokkos_CUDA_ARCH)=ON"
+endif
+
 #--------------------------------------------------------------------------------------------------------
 #
 # Package-level dir structure
@@ -56,8 +82,13 @@ TESTDIR        = ${ROOT}/test
 DEPENDDIR      = ${ROOT}/dependencies
 DEPENDSRCDIR   = ${DEPENDDIR}/src
 DEPENDBUILDDIR = ${DEPENDDIR}/build
-INSTALLDIR     = ${DEPENDDIR}/linux_64b
-CASASRC        = ${DEPENDSRCDIR}/casa6
+#INSTALLDIR     = ${DEPENDDIR}/install/linux_64b
+INSTALLDIR     = ${ROOT}/install/linux_64b
+#CASASRC        = ${DEPENDSRCDIR}/casa6
+CASASRC        = ${ROOT}/src
+CASACORESRC    = ${DEPENDSRCDIR}/casacore
+PYBIND11SRC    = ${DEPENDSRCDIR}/pybind11
+
 
 APPSDIR        = ${ROOT}/apps
 APPSSRCDIR     = ${APPSDIR}/src
@@ -75,7 +106,7 @@ INSTALLOPTS = -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
 #--------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------
 init:
-	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR}
+	mkdir -p  ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDBUILDDIR} ${DEPENDSRCDIR} ${APPSBUILDDIR}
 
 
 #####----------------------------------------------------------------------------------------------------
@@ -83,16 +114,24 @@ init:
 kokkos: kokkos-clone kokkos-build
 kokkos-clone:
 	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_VERSION}  ${KOKKOS_REPOS}
+#
+# Do not indent the following three lines!
+#
 kokkos-build:
+# ifndef Kokkos_CUDA_ARCH
+# #$(error Kokkos_CUDA_ARCH is not set, needed for kokkos-build target)
+# Kokkos_CUDA_ARCH_STR=""
+# endif
 	cd ${DEPENDSRCDIR}/kokkos; \
 	sed -i 's/sm_35/sm_70/g' ${DEPENDSRCDIR}/kokkos/bin/nvcc_wrapper;
 	mkdir -p ${DEPENDBUILDDIR}/kokkos; 
 	cd ${DEPENDBUILDDIR}/kokkos; \
 	cmake -DKokkos_ENABLE_CUDA_LAMBDA=ON \
-	      -D$(Kokkos_CUDA_ARCH)=ON \
+	      $(Kokkos_CUDA_ARCH_STR) \
 	      -DKokkos_ENABLE_CUDA=ON \
 	      -DKokkos_ENABLE_OPENMP=ON \
 	      -DKokkos_ENABLE_SERIAL=ON \
+		  -DKokkos_ENABLE_PROFILING=ON \
 	      ${INSTALLOPTS} \
 	      -DBUILD_SHARED_LIBS=ON ${DEPENDSRCDIR}/kokkos; \
 	make -j ${NCORES} install
@@ -100,6 +139,23 @@ kokkos-clean:
 	cd ${DEPENDBUILDDIR}/kokkos; gmake clean
 
 #####----------------------------------------------------------------------------------------------------
+#####  Kokkos Tools build
+kokkos-tools: kokkos-tools-clone kokkos-tools-build
+
+kokkos-tools-clone:
+	cd ${DEPENDSRCDIR}; git clone --branch ${KOKKOS_TOOLS_VERSION} ${KOKKOS_TOOLS_REPOS}
+
+kokkos-tools-build:
+	mkdir -p ${DEPENDBUILDDIR}/kokkos-tools; 
+	cd ${DEPENDBUILDDIR}/kokkos-tools; \
+	cmake -DKokkos_DIR=${INSTALLDIR} \
+			${INSTALLOPTS} \
+			${DEPENDSRCDIR}/kokkos-tools; \
+	make -j ${NCORES} install
+
+kokkos-tools-clean:
+	cd ${DEPENDBUILDDIR}/kokkos-tools; make clean
+
 ###### Install FFTW for HPG ########
 # turns out the --configure install avoids missing cmake errors. Not needed for HPG 1.2.2 so can ignore.
 # On RHEL* machines with fftw-devel install it can't find it for libsynthesis so still useful
@@ -109,7 +165,7 @@ fftw-clone:
 	curl -L ${FFTW_REPOS} | tar xz
 fftw-build:
 	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; \
-	./configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALLDIR}; \
+	./configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALLPREFIX}; \
 	make -j ${NCORES} install
 fftw-clean:
 	cd ${DEPENDSRCDIR}/fftw-${FFTW_VERSION}; gmake clean
@@ -128,6 +184,9 @@ hpg-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/hpg;
 	cd ${DEPENDBUILDDIR}/hpg; \
 	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DHpg_USE_MIXED_PRECISION=OFF \
+	-DHpg_API=11 \
+	-DHpg_BUILD_TESTS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DCMAKE_CXX_COMPILER=${INSTALLSBINDIR}/nvcc_wrapper \
 	-DCMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
@@ -161,6 +220,26 @@ parafeed-build:
 
 parafeed-clean:
 	cd ${DEPENDBUILDDIR}/parafeed; gmake clean
+
+######  Install Eigen #########
+eigen: eigen-clone eigen-build
+
+eigen-clone:
+	cd ${DEPENDSRCDIR}; \
+	git clone --branch ${EIGEN_VERSION} ${EIGEN_REPOS}
+
+eigen-build:
+	mkdir -p ${DEPENDBUILDDIR}/eigen
+	cd ${DEPENDBUILDDIR}/eigen;\
+	cmake  \
+	    ${INSTALLOPTS} \
+	    ${DEPENDSRCDIR}/eigen; \
+	make install -j ${NCORES}
+
+eigen-clean:
+	cd ${DEPENDBUILDDIR}/eigen; gmake clean
+
+
 #####----------------------------------------------------------------------------------------------------
 ####### Install libsakura #######
 sakura: sakura-clone sakura-build
@@ -186,9 +265,12 @@ sakura-clean:
 #####----------------------------------------------------------------------------------------------------
 ####### Install Measures Data & Build CASACORE ######
 
-casacore: casa-clone casacore-clone casacore-build
+#casacore: casa-clone casacore-clone casacore-build
+casacore: casacore-clone casacore-build
 
 casacore-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone --branch ${CASACORE_VERSION} --recursive ${CASACORE_REPOS}
 	mkdir -p ${INSTALLDIR}/data
 	curl ${CASACORE_DATA_REPOS} | tar -C ${INSTALLDIR}/data -xzf -
 
@@ -208,7 +290,8 @@ casacore-cmake:
 	-DBUILD_PYTHON3=OFF \
 	-DBUILD_DYSCO=ON \
 	-DUseCcache=1 \
-	${CASASRC}/casatools/casacore
+	${CASACORESRC}
+#	${CASASRC}/casatools/casacore
 
 casacore-build:casacore-cmake
 	cd ${DEPENDBUILDDIR}/casacore; make install -j ${NCORES}
@@ -220,8 +303,9 @@ casacore-clean:
 
 casa: casa-clone casa-build
 casa-clone:
-	cd ${DEPENDSRCDIR};\
-	git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
+	$(info INFORMATION: casa-clone is a NoOp.  CASA6 code has been in-sourced in LibRA src directory.)
+# cd ${DEPENDSRCDIR};\
+# git clone --branch ${CASA_BRANCH} --recursive ${CASA_REPOS}
 
 casa-cmake:
 	mkdir -p ${DEPENDBUILDDIR}/casacpp
@@ -231,7 +315,8 @@ casa-cmake:
 	-DFFTW_ROOT_DIR=${ROOT}/fftw-${FFTW_VERSION} \
 	-DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} \
 	${INSTALLOPTS} \
-	${CASASRC}/casatools/src/code 
+	${CASASRC}
+#	${CASASRC}/casatools/src/code 
 
 casa-build: casa-cmake
 #	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make install -j ${NCORES}
@@ -241,20 +326,71 @@ casa-clean:
 	cd ${DEPENDBUILDDIR}/casacpp; gmake clean
 
 
+###### --------------------------------
+##### Build pybind11
 
-#####----------------------------------------------------------------------------------------------------
-##### Build roadrunner
+pybind11: pybind11-clone pybind11-build
+pybind11-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone -b stable ${PYBIND11_REPOS}
 
-just-build-rr:
-	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} tRoadRunner
-roadrunner: allclone allbuild just-build-rr
-roadrunner-build:  allbuild just-build-rr
-roadrunner-clean:
-	cd ${DEPENDBUILDDIR}/casacpp/synthesis; make -j ${NCORES} clean
+pybind11-cmake:
+	mkdir -p ${DEPENDBUILDDIR}/pybind11
+	cd ${DEPENDBUILDDIR}/pybind11; \
+	PKG_CONFIG_PATH=${INSTALLDIR}/lib/pkgconfig cmake -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX} \
+ ${DEPENDSRCDIR}/pybind11\
 
-allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
-allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean roadrunner-clean
-allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build
+pybind11-build: pybind11-cmake
+	cd ${DEPENDBUILDDIR}/pybind11; make install -j ${NCORES}
+
+pybind11-clean:
+	cd ${DEPENDBUILDDIR}/pybind11; gmake clean
+
+
+###### --------------------------------
+##### Build google test
+
+gtest: gtest-clone gtest-build
+gtest-clone:
+	cd ${DEPENDSRCDIR};\
+	git clone -b ${GTEST_VERSION} ${GTEST_REPOS}
+
+gtest-cmake:
+	mkdir -p ${DEPENDBUILDDIR}/googletest
+	cd ${DEPENDBUILDDIR}/googletest; \
+	cmake -DCMAKE_INSTALL_PREFIX=${INSTALLPREFIX}  ${DEPENDSRCDIR}/googletest
+
+gtest-build: gtest-cmake
+	cd ${DEPENDBUILDDIR}/googletest; make install -j ${NCORES}
+
+gtest-clean:
+	cd ${DEPENDBUILDDIR}/googletest; gmake clean
+
+
+##### Build the apps
+apps: apps-cmake apps-build
+
+apps-cmake:
+	mkdir -p ${APPSBUILDDIR};
+	cd ${APPSBUILDDIR}/
+	cmake -B ${APPSBUILDDIR} -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}  \
+        -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} \
+	${APPSDIR} 
+
+apps-build: apps-cmake
+	cd ${APPSBUILDDIR}/; make install -j ${NCORES}
+
+apps-clean:
+	cd ${APPSBUILDDIR}/; gmake clean
+
+##################### ---------------------------
+
+
+allclone: init kokkos-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone pybind11-clone gtest-clone
+allclean: kokkos-clean fftw-clean hpg-clean parafeed-clean sakura-clean casacore-clean casa-clean apps-clean pybind11-clean gtest-clean
+allbuild: kokkos-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build pybind11-build gtest-build
+kokkos-profile-clone: init kokkos-clone kokkos-tools-clone fftw-clone hpg-clone parafeed-clone sakura-clone casacore-clone casa-clone
+kokkos-profile-build: kokkos-build kokkos-tools-build fftw-build hpg-build parafeed-build sakura-build casacore-build casa-build apps-build
 
 bak2sq1:
 	\rm -rf ${INSTALLDIR} ${CASASRC} ${TESTDIR} ${DEPENDDIR} 

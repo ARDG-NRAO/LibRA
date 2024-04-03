@@ -38,19 +38,37 @@ using namespace std;
 //
 //-------------------------------------------------------------------
 //
-std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
+/**
+ * @brief Loads a measurement set and applies a selection.
+ *
+ * This function loads a measurement set from the specified file, applies a selection based on the specified spw, field, and uvDist expressions, and returns the selected measurement set along with the spw and field IDs.
+ *
+ * @param msname The name of the measurement set file to load.
+ * @param spwStr The spw expression to use for the selection.
+ * @param fieldStr The field expression to use for the selection.
+ * @param uvDistStr The uvDist expression to use for the selection.
+ * @param thems The measurement set to load.
+ * @param selectedMS The selected measurement set.
+ * @param msSelection The MSSelection object to use for the selection.
+ * @param verifyMS A function to verify the loaded measurement set.
+ * @return A tuple containing the spw and field IDs of the selected measurement set.
+ */
+inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
 					     const String& spwStr,
 					     const String& fieldStr,
 					     const String& uvDistStr,
 					     MeasurementSet& thems,
 					     MeasurementSet& selectedMS,
-					     MSSelection& msSelection)
+					     MSSelection& msSelection,
+					     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
+					     )
 {
   //MeasurementSet thems;
   if (Table::isReadable(msname))
     thems=MeasurementSet(msname, Table::Update);
   else
-    throw(AipsError(msname+" does exist or not readable"));
+    throw(AipsError(msname+" does not exist or is not readable"));
+  verifyMS(thems);
   //
   //-------------------------------------------------------------------
   //
@@ -71,9 +89,15 @@ std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
     }
   return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
 }
-//
-// Remove duplicate entries from a std::vector without sorting.
-//
+
+/**
+ * @brief Removes duplicate entries from a vector without sorting.
+ *
+ * This function removes duplicate entries from a vector without sorting.
+ *
+ * @tparam T The type of the vector elements.
+ * @param vec The vector to remove duplicates from.
+ */
 template <typename ForwardIterator>
 ForwardIterator remove_duplicates( ForwardIterator first,
 				   ForwardIterator last )
@@ -91,16 +115,36 @@ ForwardIterator remove_duplicates( ForwardIterator first,
 
     return new_last;
 }
-
+/**
+ * @brief A class for loading and manipulating measurement sets.
+ *
+ * This class provides functions for loading and manipulating measurement sets.
+ */
 class DataBase
 {
 public:
+  /**
+   * @brief Constructs a Database object with the specified parameters.
+   *
+   * This constructor constructs a Database object with the specified parameters.
+   *
+   * @param MSNBuf The name of the measurement set file to load.
+   * @param fieldStr The field expression to use for the selection.
+   * @param spwStr The spw expression to use for the selection.
+   * @param uvDistStr The uvDist expression to use for the selection.
+   * @param WBAwp Whether to use AW-Projection.
+   * @param nW The number of W-planes to use for AW-Projection.
+   * @param doSPWDataIter Whether to use spectral window data iteration.
+   * @param verifyMS A function to verify the loaded measurement set.
+   */
   DataBase(const string& MSNBuf, const string& fieldStr, const string& spwStr,
 	   const string& uvDistStr, const bool& WBAwp, const int& nW,
-	   bool& doSPWDataIter):
+	   bool& doSPWDataIter,
+	   std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}//NoOp
+	   ):
     msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
   {
-    LogIO log_l(LogOrigin("roadrunner","DataBase"));
+    LogIO log_l(LogOrigin("DataBase","DataBase"));
     log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
 	  << "setting up data iterators...all that boring stuff."
 	  << LogIO::POST;
@@ -110,7 +154,7 @@ public:
 			uvDistStr,
 			theMS,
 			selectedMS,
-			msSelection);
+			msSelection,verifyMS);
     spwidList=std::get<0>(lists);
     fieldidList=std::get<1>(lists);
 
@@ -168,16 +212,18 @@ public:
     {
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
       std::vector<int> vb_SPWIDList;
+      std::unordered_set<double> pa_set;
       vb_l=vi2_l->getVisBuffer();
       vi2_l->originChunks();
       for (vi2_l->originChunks();vi2_l->moreChunks(); vi2_l->nextChunk())
 	{
 	  vi2_l->origin(); // So that the global vb is valid
 	  vb_SPWIDList.push_back(vb_l->spectralWindows()(0));
+
+	  pa_set.insert(getPA(*vb_l));
+	  //vb_PAList.push_back(getPA(*vb_l));
 	}
-
-      log_l << "Done with SPWID list determination" << LogIO::POST;
-
+      std::vector<double> vb_PAList(pa_set.begin(), pa_set.end());
       //
       // Since the SPWIDList is determined by iterating over the
       // database, this list could have duplicate entries (e.g. with
@@ -196,11 +242,20 @@ public:
 			 vb_SPWIDList.end());
 
       spwidList.resize(vb_SPWIDList.size());
+
+      vb_PAList.erase(remove_duplicates(vb_PAList.begin(),
+					vb_PAList.end()),
+		      vb_PAList.end());
+
+      log_l << "...done." << endl
+	    << vb_SPWIDList.size() << " SPWs, " << vb_PAList.size() << " PA values found."
+	    << LogIO::POST;
+
       //for(uint i=0; auto id : vb_SPWIDList) spwidList[i++]=id; // Works only in C++-20
       uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
     }
 
-    cerr << "Selected SPW ID list: " << spwidList << endl;
+    log_l << "Selected SPW ID list: " << spwidList << endl;
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
@@ -209,7 +264,7 @@ public:
   //
   ~DataBase()
   {
-    LogIO log_l(LogOrigin("roadrunner","~DataBase"));
+    LogIO log_l(LogOrigin("DataBase","~DataBase"));
     log_l << "Closing the database.  Detaching the MS for cleanup." << LogIO::POST;
     //detach the ms for cleaning up
     theMS = MeasurementSet();
