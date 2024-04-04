@@ -182,7 +182,10 @@ void acme_func(std::string& imageName, std::string& deconvolver,
               LatticeExpr<Float> maskinv( iif( (deno) > fabs(pblimit) , 0.0, 1.0 ) );
 
 	      LatticeExpr<Float> modelIM = (*targetImage) * mask * (deno + maskinv);
-	      targetImage->copyData(modelIM);
+	      string newModelName = imageName + ".multiplymodel";
+              PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), newModelName);
+              tmp.copyData(modelIM);
+	      printImageMax(imType, tmp, *wImage, *swImage, logio, "after");
 	  }
  
 	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
