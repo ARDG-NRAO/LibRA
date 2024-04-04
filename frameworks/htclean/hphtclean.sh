@@ -14,16 +14,18 @@ OMP_NUM_THREADS=1
 # CASA for gpuhost00x
 #CASABUILD="CASA-HPG-TEST-GPUFFT"	# stable build used with scg-136/145
 #CASABUILD="CAS-13581-Raw"		# oriented to OTF mosaic (VLASS)
-CASABUILD="CASA-HPG-TEST"		# multi-threaded grid/cfc load, branch of 13581
-CASAHOME=/home/yaghan3/sanjay/${CASABUILD}/casa6/casa5
+#CASABUILD="CASA-HPG-TEST"		# multi-threaded grid/cfc load, branch of 13581
+#CASAHOME=/home/yaghan3/sanjay/${CASABUILD}/casa6/casa5
 
-source /home/yaghan3/setup-spack.bash && source /home/yaghan3/sanjay/HPG/libhpg/hpg/setup.hpg
+#source /home/yaghan3/setup-spack.bash && source /home/yaghan3/sanjay/HPG/libhpg/hpg/setup.hpg
 #source ${CASAHOME}/casainit.sh
 
 #CASABIN=${CASAHOME}/linux_64b/bin/casa
-CASABIN=/home/casa/packages/RHEL7/release/casa-release-5.8.0-109.el7/bin/casa
-CUDACAP=8x
-RRBIN=${CASAHOME}/code/build-linux_64b/synthesis/roadrunner${CUDACAP}
+#CASABIN=/home/casa/packages/RHEL7/release/casa-release-5.8.0-109.el7/bin/casa
+#CUDACAP=8x
+#RRBIN=${CASAHOME}/code/build-linux_64b/synthesis/roadrunner${CUDACAP}
+RRBIN=/home/dhruva2/disk3/fmadsen/libra_acme/libra/install/bin/roadrunner
+CASABIN=casa
 
 #############################################################################################
 
@@ -33,7 +35,7 @@ imgname=$2
 ncycle=$3
 
 nparts=1
-BIN=/users/fmadsen/htclean/
+BIN=/users/fmadsen/libra/frameworks/htclean/pylib/
 GO="\n inp \n go \n";
 
 # To use the following options, make a local copy of hphtclean and launch manually
@@ -57,11 +59,13 @@ then
         #echo "Computing initial images...";
         # makeWeights
         #echo "Making weight images using HPG...";
-        echo -e "load weight.def $GO" | ${RRBIN} help=dbg 2>| weight.out
+	change_parameters="\n imagename=${imgname}.weight \n mode=weight"
+        echo -e "load libra_htclean.def ${change_parameters} $GO" | ${RRBIN} help=dbg 2>| weight.out
     
         # makePSF
         #echo "Making PSF using HPG...";
-        echo -e "load psf.def $GO" | ${RRBIN} help=dbg 2>| psf.out
+	change_parameters="\n imagename=${imgname}.psf \n mode=psf"
+        echo -e "load libra_htclean.def ${change_parameters} $GO" | ${RRBIN} help=dbg 2>| psf.out
 
         # normalize the PSF
         ${CASABIN} --nologger --nogui -c ${BIN}htclean.py gatherPSF ${parfile} serial >& gatherPSF.out
@@ -71,7 +75,8 @@ then
     
         #echo "Making Dirty image using HPG...";
         # make dirty image
-        echo -e "load dirty.def $GO" | ${RRBIN} help=dbg 2>| dirty.out
+	change_parameters="\n imagename=${imgname}.residual \n mode=residual"
+        echo -e "load libra_htclean.def ${change_parameters} $GO" | ${RRBIN} help=dbg 2>| dirty.out
 
     else
         # CPU-based PSF 
@@ -81,7 +86,7 @@ then
         ${CASABIN} --nologger --nogui -c ${BIN}htclean.py gatherPSF ${parfile} serial >& gatherPSF.out
 
         # make the Primary beam
-        ${CASABIN} --nologger --nogui -c ${BIN}htclean.py makePrimaryBeam ${parfile} serial >& makePB.out
+        #${CASABIN} --nologger --nogui -c ${BIN}htclean.py makePrimaryBeam ${parfile} serial >& makePB.out
     
         # CPU-based residual computation
         ${CASABIN} --nologger --nogui -c ${BIN}htclean.py runResidualCycle ${parfile} serial >& runResidualCycle_cycle0.out
@@ -100,7 +105,8 @@ do
 
     if [ "$GPUENGINE" -eq "1" ]
     then
-        echo -e "load residual.def $GO" | ${RRBIN} help=dbg 2>| runResidualCycle_cycle${i}.out
+	change_parameters="\n imagename=${imgname}.residual \n modelimagename=${imgname}.model \n mode=residual"
+        echo -e "load libra_htclean.def ${change_parameters} $GO" | ${RRBIN} help=dbg 2>| runResidualCycle_cycle${i}.out
     else
         ${CASABIN} --nologger --nogui -c ${BIN}htclean.py runResidualCycle ${parfile} serial >& runResidualCycle_cycle${i}.out
     fi

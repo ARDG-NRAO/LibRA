@@ -73,10 +73,10 @@ do
 
     # run acme to multiply model by weights
     change_parameters="\n imagename=${imgname} \n imtype=model"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${acmeBIN} help=dbg 2>| multiplyModel_cycle${i}.out
+    echo -e "load ${parfile} ${change_parameters} $GO" | ${acmeBIN} help=dbg 2>| divideModel_cycle${i}.out
     
     # run roadrunner for updateDir
-    change_parameters="\n imagename=${imgname}.residual \n modelimagename=${imgname}.multiplymodel \n mode=residual"
+    change_parameters="\n imagename=${imgname}.residual \n modelimagename=${imgname}.divmodel \n mode=residual"
     echo -e "load ${parfile} ${change_parameters} $GO" | ${roadrunnerBIN} help=dbg 2>| updateDir_cycle${i}.out
 
     # run acme to divide residual by weights
