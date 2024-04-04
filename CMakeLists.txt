@@ -322,43 +322,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
   ${INSTALL_DIR}/include/pybind11)
 
-# set(APP_LINK_LIBRARIES
-#   casacpp_synthesis
-#   casacpp_msvis
-#   hpg::hpg
-#   Kokkos::kokkoscore
-#   casa_msfits
-#   casa_ms
-#   casa_images
-#   casa_coordinates
-#   casa_lattices
-#   casa_fits
-#   casa_measures
-#   casa_tables
-#   casa_scimath
-#   casa_scimath_f
-#   casa_casa
-#   pthread
-#   parafeed::parafeed
-#   readline
-#   history
-#   termcap
-#   m
-#   c)
-# include_directories(${DEPINC} ${DEPINC}/casacore ${DEPINC}/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
 link_directories(/usr/local/lib
   /usr/lib64
   /usr/lib
   /usr/lib/x86_64-linux-gnu
   ${INSTALL_DIR}/lib)
-# 
-# set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo CACHE INTERNAL "")
-# set(APP_DIR ${CMAKE_SOURCE_DIR}/apps/src/)
-# foreach(APP IN LISTS APP_LIST)
-#     string(TOLOWER ${APP} APP_NAME)
-#     list(APPEND APP_SOURCES "${APP_DIR}/${APP}/${APP_NAME}.cc")
-# endforeach()
-# message("${LIBRA_ID} APP_LIST: ${APP_LIST}")
-# message("${LIBRA_ID} APP_SOURCES: ${APP_SOURCES}")
-# message("${LIBRA_ID} {APP_DIR}: ${APP_DIR}")
-# message("${LIBRA_ID} APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
