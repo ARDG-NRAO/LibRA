@@ -147,17 +147,22 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	      targetImage->copyData(newPSF);
 	      wImage->copyData(newWeight);
 	  }
-	  else if (imType == "residual")
+	  else if ((imType == "residual") || (imType == "model"))
 	  {
+              LatticeExpr<Float> newIM;
 	      double itsPBScaleFactor = sqrt(max(wImage->get()));
-	      LatticeExpr<Float> newIM = (*targetImage) / SoW;
+	      if (imType == "residual")
+	          newIM = (*targetImage) / SoW;
+	      else
+		  newIM = LatticeExpr<Float> (*targetImage);
 
 	      LatticeExpr<Float> ratio;
 	      Float scalepb = 1.0;
 	      LatticeExpr<Float> deno = sqrt(abs(*wImage)) * itsPBScaleFactor;
 
 	      stringstream os;
-              os << "Dividing " << targetName << " by [ sqrt(weightimage) * " 
+              os << fixed << setprecision(numeric_limits<float>::max_digits10)
+		 << "Dividing " << targetName << " by [ sqrt(weightimage) * " 
 		 << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
 	      logio << os.str() << LogIO::POST;
 
@@ -165,9 +170,17 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 	      LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
 	      LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
 	      ratio = ((newIM) * mask / (deno + maskinv));
-	      targetImage->copyData(ratio);
+	      if (imType == "residual")
+	          targetImage->copyData(ratio);
+	      else
+	      {
+		  string newModelName = imageName + ".divmodel";
+		  PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), newModelName);
+		  tmp.copyData(ratio);
+		  printImageMax(imType, tmp, *wImage, *swImage, logio, "after");
+	      }
 	  }
-	  else if (imType == "model")
+/*	  else if (imType == "model")
 	  {
 	      double itsPBScaleFactor = sqrt(max(wImage->get()));
 
@@ -186,7 +199,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
               PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), newModelName);
               tmp.copyData(modelIM);
 	      printImageMax(imType, tmp, *wImage, *swImage, logio, "after");
-	  }
+	  }*/
  
 	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 
