@@ -18,15 +18,21 @@ TEST(RoadrunnerTest, InitializeTest) {
 }
 
 TEST(RoadrunnerTest, AppLevelSNRPSF) {
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
   // create dir AppLevelSNRPSF
-  std::filesystem::create_directory("AppLevelSNRPSF");
+  std::filesystem::create_directory(testDir);
 
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
   std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF/CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
   std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF/4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelSNRPSF
-  std::filesystem::current_path("AppLevelSNRPSF");
+  std::filesystem::current_path(testDir);
 
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
@@ -83,25 +89,33 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   EXPECT_NEAR(psfimage(IPosition(4,2000,2000,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(psfimage(IPosition(4,1885,1885,0,0)), goldValLoc1, tol);
 
-  remove_all(current_path()/"CYGTST.corespiral.ms");
+  /*remove_all(current_path()/"CYGTST.corespiral.ms");
   remove_all(current_path()/"4k_nosquint.cfc");
   remove_all(current_path()/"htclean_gpu_newpsf.psf");
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
-  remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+  remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
   //move to parent directory
-  std::filesystem::current_path("..");
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
 }
 
 TEST(RoadrunnerTest, AppLevelWeight) {
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
   // create dir AppLevelWeight
-  std::filesystem::create_directory("AppLevelWeight");
+  std::filesystem::create_directory(testDir);
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelWeight
   std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelWeight/CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelWeight
   std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelWeight/4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelWeight
-  std::filesystem::current_path("AppLevelWeight");
+  std::filesystem::current_path(testDir);
 
    string MSNBuf="CYGTST.corespiral.ms";
    string cfCache="4k_nosquint.cfc";
@@ -155,13 +169,14 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   EXPECT_NEAR(weight(IPosition(4,2000,2053,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(weight(IPosition(4,1379,1969,0,0)), goldValLoc1, tol);
 
-   remove_all(current_path()/"CYGTST.corespiral.ms");
+   /*remove_all(current_path()/"CYGTST.corespiral.ms");
    remove_all(current_path()/"4k_nosquint.cfc");
    remove_all(current_path()/"htclean_gpu_newpsf.weight");
-   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");
+   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
   //move to parent directory
-  std::filesystem::current_path("..");
+  std::filesystem::current_path(testDir.parent_path());
+  remove_all(testDir);
 
 }
 
