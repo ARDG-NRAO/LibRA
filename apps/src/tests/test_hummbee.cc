@@ -98,12 +98,17 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,0)), resGoldValchan0, tol);
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,2)), resGoldValchan2, tol);
 
-  remove_all(current_path()/"unittest_hummbee.pb");
+  /*remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
   //remove_all(current_path()/"unittest_hummbee.sumwt");
   remove_all(current_path()/"unittest_hummbee.model");
-  remove_all(current_path()/"unittest_hummbee.mask");
+  remove_all(current_path()/"unittest_hummbee.mask");*/
+ 
+  // Set the current working directory back to the parent dir
+  current_path(testDir.parent_path());
+
+  remove_directory(testDir);
 }
 
 TEST(HummbeeTest,  AppLevelMfsAsp) {
@@ -112,7 +117,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
   // Create a unique directory for this test case
-  path testDir = current_path().parent_path() / testName;
+  path testDir = current_path() / testName;
   test::create_directory(testDir);
 
   // Set the current working directory to the test directory
@@ -164,14 +169,17 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);
 
-  remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
+  /*remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
-  remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");*/
 
   // Set the current working directory back to the parent dir
   current_path(testDir.parent_path());
+
+  remove_directory(testDir);
+
 }
 
 TEST(HummbeeTest, UIFactory) {
