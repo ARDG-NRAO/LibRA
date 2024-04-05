@@ -39,7 +39,7 @@
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 #include <synthesis/TransformMachines2/ThreadCoordinator.h>
-#include <hpg/hpg.hpp>
+//#include <hpg/hpg.hpp>
 
 
 /**

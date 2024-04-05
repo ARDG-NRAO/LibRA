@@ -5,7 +5,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <Coyote/coyote.h>
+#include <coyote.h>
 
 namespace py = pybind11;
 using namespace py::literals;  // to bring in the "_a" literal
@@ -21,7 +21,6 @@ using namespace py::literals;  // to bring in the "_a" literal
  * @param refFreqStr A string parameter.
  * @param nW An integer parameter.
  * @param cfCacheName A string parameter.
- * @param imageNamePrefix A string parameter.
  * @param WBAwp A boolean parameter.
  * @param psTerm A boolean parameter.
  * @param aTerm A boolean parameter.
@@ -49,7 +48,6 @@ PYBIND11_MODULE(coyote2py, m) {
         "refFreqStr"_a,  // std::string
         "nW"_a,  // int
         "cfCacheName"_a,  // std::string
-        "imageNamePrefix"_a,  // std::string
         "WBAwp"_a,  // bool
         "psTerm"_a,  // bool
         "aTerm"_a,  // bool

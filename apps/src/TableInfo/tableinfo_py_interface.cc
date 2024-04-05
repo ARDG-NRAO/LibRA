@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "tableinfo.h"
+#include <tableinfo.h>
 
 namespace py = pybind11;
 

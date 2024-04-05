@@ -7,7 +7,47 @@ using namespace std::filesystem;
 
 
 namespace test{
+  // Some basic functions to perform operations that we will use over and over
+
+  bool directoryExists(const std::string& path) {
+    std::filesystem::path dir(path);
+    return std::filesystem::is_directory(dir);
+  }
+  bool create_directory(const std::filesystem::path& path) {
+    return std::filesystem::create_directory(path);
+  }
+  bool remove_directory(const std::filesystem::path& path) {
+    return std::filesystem::remove_all(path);
+  }
+
+  TEST(HummbeeTest, CheckGoldStandardDirectory) {
+    std::string goldStandardDir = current_path() / "gold_standard";
+    EXPECT_TRUE(directoryExists(goldStandardDir));
+    create_directory("AppLevelCubeAsp");
+    copy(current_path()/"gold_standard/unittest_hummbee.pb", current_path()/"AppLevelCubeAsp/unittest_hummbee.pb", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee.psf", current_path()/"AppLevelCubeAsp/unittest_hummbee.psf", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee.residual", current_path()/"AppLevelCubeAsp/unittest_hummbee.residual", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee.sumwt", current_path()/"AppLevelCubeAsp/unittest_hummbee.sumwt", copy_options::recursive);
+    create_directory("AppLevelMfsAsp");
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.weight", copy_options::recursive);
+
+    
+  }
+
 TEST(HummbeeTest, AppLevelCubeAsp) {
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+  test::create_directory(testDir);
+
+  // Set the current working directory to the test directory
+  current_path(testDir);
+
   // Check that the return value is true
   string imageName = "unittest_hummbee";
   string modelImageName = "unittest_hummbee.image";
@@ -25,10 +65,10 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   mask.resize(1);
   mask[0] ="circle[[256pix,290pix],140pix]";
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
-  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.sumwt", current_path()/"unittest_hummbee.sumwt", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.sumwt", current_path()/"unittest_hummbee.sumwt", copy_options::recursive);
 
   float PeakRes = Hummbee(imageName, modelImageName,
                  deconvolver,
@@ -67,6 +107,17 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
 }
 
 TEST(HummbeeTest,  AppLevelMfsAsp) {
+
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path().parent_path() / testName;
+  test::create_directory(testDir);
+
+  // Set the current working directory to the test directory
+  current_path(testDir);
+
    // Check that the return value is true
   string imageName = "unittest_hummbee_mfs_revE";
   string modelImageName = "unittest_hummbee_mfs_revE.image";
@@ -86,10 +137,10 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   mask[1] = "box[[1794pix,1828pix],[2225pix,2232pix]]";
   mask[2] = "box[[2077pix,1989pix],[3270pix,2616pix]]";
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
-  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
-  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"unittest_hummbee_mfs_revE.weight", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
+  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"unittest_hummbee_mfs_revE.weight", copy_options::recursive);
 
   float PeakRes = Hummbee(imageName, modelImageName,
                  deconvolver,
@@ -117,8 +168,10 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
-  //remove_all(current_path()/"unittest_hummbee_mfs_revE.sumwt");
-  //remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");
+
+  // Set the current working directory back to the parent dir
+  current_path(testDir.parent_path());
 }
 
 TEST(HummbeeTest, UIFactory) {

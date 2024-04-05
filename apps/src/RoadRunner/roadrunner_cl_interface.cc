@@ -39,7 +39,7 @@
 //================================================================================
 //
 
-#include <RoadRunner/roadrunner.h>
+#include <roadrunner.h>
 //
 //-------------------------------------------------------------------------
 //
@@ -48,7 +48,7 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 void UI(Bool restart, int argc, char **argv, bool interactive, 
-  string& MSNBuf,
+	string& MSNBuf,
 	string& imageName, string& modelImageName,string& dataColumnName,
 	string& sowImageExt,
 	string& cmplxGridName, int& ImSize, int& nW,
@@ -125,8 +125,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       watchPoints["predict"]=exposedKeys;
       
       // Expose the datacolumn parameter only for mode=residual
-      exposedKeys.push_back("datacolumn");
-      watchPoints["residual"]=exposedKeys;
+      // exposedKeys.push_back("datacolumn");
+      // watchPoints["residual"]=exposedKeys;
       i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
 
       i=1;clgetValp("wbawp", WBAwp,i);
@@ -156,6 +156,9 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
      // do some input parameter checking now.
      string mesgs;
+     if (CFCache == "")
+       mesgs += "The cfcache parameter needs to be set.\n";
+
      if (phaseCenter == "")
        mesgs += "The phasecenter parameter needs to be set.\n";
 
@@ -217,7 +220,7 @@ int main(int argc, char **argv)
   //
   // The Factory Settings.
   string MSNBuf,ftmName=defaultFtmName,
-    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
     imagingMode="residual",rmode="none";
@@ -245,22 +248,22 @@ int main(int argc, char **argv)
      doSPWDataIter);
 
   set_terminate(NULL);
-
+  RRReturnType rrr;
   try
     {
-      Roadrunner(//restartUI, argc, argv,
-		 MSNBuf,imageName, modelImageName,dataColumnName,
-		 sowImageExt, cmplxGridName, NX, nW, cellSize,
-		 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-		 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-		 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-		 doSPWDataIter);
+      rrr=Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
+		     sowImageExt, cmplxGridName, NX, nW, cellSize,
+		     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+		     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+		     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+		     doSPWDataIter);
     }
   catch(AipsError& er)
     {
       cerr << er.what() << endl;
     }
 
-
+  // An example code below for extracting the info from RRRetrunType (a std::unordered_map).
+  //  cerr << rrr[MAKEVB_TIME] << " " << rrr[NVIS] << " " << rrr[DATA_VOLUME] << " " << rrr[IMAGING_RATE] << " " << rrr[NVIS]/rrr[CUMULATIVE_GRIDDING_ENGINE_TIME] << " vis/sec" << endl;
   return 0;
 }

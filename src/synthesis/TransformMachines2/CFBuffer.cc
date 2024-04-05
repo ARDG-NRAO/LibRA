@@ -477,6 +477,7 @@ namespace casa{
 	    os << "CFCell["<<i<<","<<j<<","<<k<<"]:" << endl;
 	    cfCells_p(i,j,k)->show(Mesg, os);
 	    os << "Pointing offset: " << pointingOffset_p << endl;
+	    os << ".........................." << endl;
 	  }
     os << "---------------------------------------------------------" << endl;
   }

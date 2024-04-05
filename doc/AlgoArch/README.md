@@ -1,4 +1,4 @@
-# Algorithm Architecture
+# Algorithm Architecture [!UNDER CONSTRUCTION!]
 ## Introduction
 
 A _stable and scalable_ architecture must scale for computing load and
@@ -48,15 +48,15 @@ additive noise with Normal probability distribution.
 
 
 $A_{ij}$ is an operator that transforms $I$ to the data domain
-including the DD effects and is constructed as $A_{ij}=S_{ij} ~ F ~M^{DD}_ {ij} (\vec s)$ where $S_{ij}$ the data domain sampling
+including the DD effects and is constructed as $A_{ij}=S_{ij} ~ F ~M^{DD}_ {ij} (\vec s)$ where $S_{ij}$ is the data domain sampling
 function, $F$ is the Fourier transform operator, and $M^{DD}_ {ij}$ the direction-dependent (DD) Mueller matrix that encodes the DD
 mixing of the elements of the poliarization vector respectively.
 The equation above can be expanded as:
 
 $\vec V_{ij} = M^{DI}_ {ij} S_{ij} F M^{DD}_ {ij} I( \vec s ) + n_{ij}$
 
-The goal of calibration algorithms is to derive models for $M^{DI}_ {ij}$
-and $M^{DD}_ {ij}$, given $V$, a model for $I$ and statistical
+The goal of calibration algorithms is to derive models for $M^{DI}_ {ij}$ and $M^{DD}_ {ij}$,
+given $V$, a model for $I$ and statistical
 characterization of $n$. The goal of image reconstruction algorithms
 is to derive $I$, given $V$ corrected for $M^{DI}_ {ij}$, a model for
 $M^{DD}_ {ij}$ and a statistical description of $n$.  This essentially
@@ -64,9 +64,11 @@ requires computing $A^{-1}$. However it can be shown that $A$ is
 singular.  Image reconstruction is therefore a fundamentally ill-posed
 inverse problem that _requires_ iterative algorithms to find a
 solution (a model for the sky brightness distribution) consistent with
-the chosen metric for convergence.  Unsurprisingly, numerically
+the noise and the metric for convergence.  Unsurprisingly, numerically
 successful and computationally efficient algorithms for both
 calibration and imaging have been fundamentally directed-search
-algorithms requiring calculation of the derivative of the metric, or
-variants involving derivative calculation (or directed-search itself)
-as a critical step.
+algorithms requiring calculation of the derivative of the chosen
+objective function, or variants involving derivative calculation (or
+directed-search itself) as a critical step.
+
+<!-- fidelity terms, constraints terms -->

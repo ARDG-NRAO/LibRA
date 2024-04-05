@@ -47,7 +47,7 @@
 //#include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <RoadRunner/ThreadCoordinator.h>
+#include "ThreadCoordinator.h"
 #ifdef ROADRUNNER_USE_HPG
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
@@ -58,6 +58,17 @@
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
+
+enum {
+      IMAGING_TIME=0,
+      IMAGING_RATE,
+      CUMULATIVE_GRIDDING_ENGINE_TIME,
+      MAKEVB_TIME,
+      SOW,
+      NVIS,
+      DATA_VOLUME
+} RETURN_ITEMS;
+typedef std::unordered_map<int, double> RRReturnType;
 
 //vi::VisBuffer2 *vb_cfsrvr;
 //vi::VisibilityIterator2 *vi2_cfsrvr;
@@ -254,7 +265,6 @@ makeMNdx(const string& fileName,
 	 const Vector<int>& polMap,
 	 const int& nGridPlanes);
 
-
 /**
  * @fn void Roadrunner(string& MSNBuf, string& imageName, string& modelImageName, string& dataColumnName, string& sowImageExt, string& cmplxGridName, int& NX, int& nW, float& cellSize, string& stokes, string& refFreqStr, string& phaseCenter, string& weighting, string& rmode,  float& robust, string& ftmName, string& cfCache, string& imagingMode, bool& WBAwp, string& fieldStr, string& spwStr, string& uvDistStr, bool& doPointing, bool& normalize, bool& doPBCorr, bool& conjBeams, float& pbLimit, vector<float>& posigdev, bool& doSPWDataIter)
  * @brief Main function for the Roadrunner application.
@@ -288,7 +298,7 @@ makeMNdx(const string& fileName,
  * @param posigdev The position sigma deviation.
  * @param doSPWDataIter A boolean indicating whether to do SPW data iteration.
  */
-void Roadrunner(//bool& restartUI, int& argc, char** argv,
+RRReturnType Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
 		string& sowImageExt, string& cmplxGridName,

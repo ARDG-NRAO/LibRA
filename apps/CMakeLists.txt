@@ -7,17 +7,40 @@ cmake_minimum_required(VERSION 3.12.0)
 set (CMAKE_CXX_STANDARD 11)
 
 include(FetchContent)
+include(FindPkgConfig)
+
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
 set(OPT "-g -O2 ")
 
 set(BUILD_TYPE "RelWithDebInfo")
 
-set(ARCH "linux_64b")
-set(INSTALLDIR "${CMAKE_CURRENT_LIST_DIR}/../install/${ARCH}")
-message("APPS INSTALLDIR ${INSTALLDIR}")
-set(DEPINC "${INSTALLDIR}/include")
-set(DEPLIB "${INSTALLDIR}/lib")
+
+set(DEPLIB "${CMAKE_INSTALL_PREFIX}/lib")
+set(DEPINC "${CMAKE_INSTALL_PREFIX}/include")
 set(USRLIB "/usr/lib64")
+
+set(CMAKE_PREFIX_PATH  ${CMAKE_PREFIX_PATH}
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/sakura
+  :${CMAKE_INSTALL_PREFIX}/lib/cmake/pybind11)
+
+set(hpg_DIR        ${CMAKE_INSTALL_PREFIX}/lib/cmake/hpg)
+set(parafeed_DIR   ${CMAKE_INSTALL_PREFIX}/lib/cmake/parafeed)
+set(Kokkos_DIR     ${CMAKE_INSTALL_PREFIX}/lib/cmake/Kokkos)
+set(pybind11_DIR   ${CMAKE_INSTALL_PREFIX}/share/cmake/pybind11)
+set(casacore_DIR   ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacore)
+set(casacpp_DIR    ${CMAKE_INSTALL_PREFIX}/lib/cmake/casacpp)
+set(GTest_DIR      ${CMAKE_INSTALL_PREFIX}/lib/cmake/GTest)
+
+message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message("hpg_DIR: ${hpg_DIR}")
+message("parafeed_DIR: ${parafeed_DIR}")
+message("Kokkos_DIR: ${Kokkos_DIR}")
+message("pybind11_DIR: ${pybind11_DIR}")
 
 set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            ${DEFS64}                                        \
@@ -39,18 +62,43 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
 )                                    
 
+set(APP_LINK_LIBRARIES
+  casacpp_synthesis
+  casacpp_msvis
+  hpg
+  kokkoscore
+  casa_msfits
+  casa_ms
+  casa_images
+  casa_coordinates
+  casa_lattices
+  casa_fits
+  casa_measures
+  casa_tables
+  casa_scimath
+  casa_scimath_f
+  casa_casa
+  pthread
+  parafeed
+  readline
+  history
+  termcap
+  m
+  c)
 
+include_directories(
+  ${CMAKE_INSTALL_PREFIX}/include/casacore
+  ${CMAKE_INSTALL_PREFIX}/include
+  ${CMAKE_INSTALL_PREFIX}/include/casacpp
+  /usr/include/cfitsio )
 
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
-set(APP_LINK_LIBRARIES casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath casa_scimath_f casa_casa pthread parafeed readline history termcap m c)
-include_directories(${DEPINC} ${DEPINC}/casacore ${DEPINC}/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
-link_directories(${DEPLIB} /usr/local/lib  ${USRLIB})
 
 # for runtime linking. Needs to be before add_executable
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#set(CMAKE_INSTALL_RPATH "${DEPLIB};${CMAKE_SOURCE_DIR}/install")
 set(CMAKE_INSTALL_RPATH "${DEPLIB}")
 set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
@@ -61,6 +109,8 @@ foreach(APP IN LISTS APP_LIST)
    set(APP_DIR ${APP})
    string(TOLOWER ${APP_DIR} APP_NAME)
    list(APPEND APP_SOURCES "${APP_DIR}/${APP_NAME}.cc")
+   file(GLOB APP_SOURCE "${APP_DIR}/*.h")
+   list(APPEND APP_SOURCES)
 endforeach()
 
 add_subdirectory(src)

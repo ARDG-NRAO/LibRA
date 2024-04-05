@@ -6,7 +6,7 @@ project(LibRATests   VERSION 1.0
 
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
-link_directories("${INSTALLDIR}/lib")
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 # Find the Google Test library
 FetchContent_Declare(

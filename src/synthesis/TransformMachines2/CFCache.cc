@@ -212,16 +212,19 @@ namespace casa{
 
     if (cfFileNames.nelements() > 0)
       {
-	log_l << "Loading misc info from CFs" << LogIO::POST;
+	log_l << "Loading misc info from CFs.  " << LogIO::POST;
 	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
+	log_l << "CFStore shape: " << memCache2_p[0].getShape() << LogIO::POST;
       }
     if (cfWtFileNames.nelements() > 0)
       {
-	log_l << "Loading misc info from WTCFs" << LogIO::POST;
-	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, false, selectedPA, dPA, verbose);
+	log_l << "Loading misc info from WTCFs. " << LogIO::POST;
+	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, true, selectedPA, dPA, verbose);
+	log_l << "CFStore shape: " << memCacheWt2_p[0].getShape() << LogIO::POST;
       }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();
+
     if (verbose > 0) summarize(memCache2_p,   "CFS",   true);
   }
 
@@ -302,78 +305,13 @@ namespace casa{
     if (tt > 0)
       log_l << "Total CF Cache memory footprint: " << tt << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
   }
-
-
-  // void CFCache::initCache2(Bool verbose, Float selectedPA, Float dPA,casacore::String /*prefix*/)
-  // {
-  //   LogOrigin logOrigin("CFCache2", "initCache2");
-  //   LogIO log_l(logOrigin);
-
-  //   Directory dirObj(Dir);
-
-  //   if (Dir.length() == 0) 
-  //     throw(SynthesisFTMachineError(LogMessage("Got null string for disk cache dir. ",
-  // 					       logOrigin).message()));
-
-  //   Bool ReadOnly = SynthesisUtils::getenv("CFCache.READONLY",0);
-  
-  //   if (!dirObj.exists()) dirObj.create();
-  //   else if ((!dirObj.isReadable()))
-  //     {
-  // 	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
-  // 				      String(" for convolution function cache"
-  // 					     " exists but is unreadable")));
-  //     }
-  //   else if ((!dirObj.isWritable()) && (!ReadOnly))
-  //   {
-  //   	throw(SynthesisFTMachineError(String("Directory \"")+Dir+String("\"")+
-  // 				      String(" for convolution function cache"
-  // 					     " exists but is unwriteable")));
-  //   }
-    
-    
-  //   if(ReadOnly)
-  //   {
-  //       log_l << "CF Cache in read only mode." << LogIO::POST;
-  //   }
-
-  //   fillCFSFromDisk(dirObj,"CFS*", memCache2_p, true, selectedPA, dPA, verbose);
-  //   fillCFSFromDisk(dirObj,"WTCFS*", memCacheWt2_p, false, selectedPA, dPA, verbose);
-  //   // memCache2_p[0].show("Re-load CFS",cerr);
-  //   // memCacheWt2_p[0].show("Re-load WTCFS",cerr);
-  //   memCache2_p[0].primeTheCFB();
-  //   memCacheWt2_p[0].primeTheCFB();
-
-  //   // memCache2_p[0].show("CF Cache: ");
-  //   // memCacheWt2_p[0].show("WTCF Cache: ");
-
-  //   Double memUsed0,memUsed1;
-  //   String memUnit="B";
-  //   memUsed0=memCache2_p[0].memUsage();
-  //   memUsed1=memCacheWt2_p[0].memUsage();
-  //   if (memUsed0 > 1024.0)
-  //     {
-  // 	memUsed0 /= 1024.0;
-  // 	memUsed1 /= 1024.0;
-  // 	memUnit="KB";
-  //     }
-
-  //   if (verbose > 0)
-  //     {
-  // 	summarize(memCache2_p,   "CFS",   True);
-  // 	summarize(memCacheWt2_p, "WTCFS", False);
-  //     }
-
-  //   if (memUsed0+memUsed1 > 0)
-  //     log_l << "Total CF Cache memory footprint: " << (memUsed0+memUsed1) << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
-
-  //   // memCache2_p[0].makePersistent("./junk.cf");
-  //   // memCacheWt2_p[0].makePersistent("./junk.cf","","WT");
-  // }
-
-
   //
   //-----------------------------------------------------------------------
+  // If the value of selectPAVal > 360.0, dPA is ignored and CFS in
+  // the fileNames list are all selected.
+  //
+  // For selectPAVal <= 360.0, all CFS in the fileNames list that
+  // satisfy fabs(selectPAVal - CF_PA) <= dPA are selected.
   //
   void CFCache::fillCFListFromDisk(const Vector<String>& fileNames, 
 				   const String& CFCDir, CFStoreCacheType2& memStore,
@@ -382,6 +320,7 @@ namespace casa{
   {
     (void)showInfo;
     Bool selectPA = (fabs(selectPAVal) <= 360.0);
+    paList_p.resize(0);
     try
       {
 	if (memStore.nelements() == 0) memStore.resize(1,true);

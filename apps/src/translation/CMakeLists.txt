@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
-link_directories("${INSTALLDIR}/lib")
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 
 add_library(casacore_asp SHARED casacore_asp.cc casacore_asp_cube.cc)
@@ -16,4 +16,4 @@ add_library(casacore_asp SHARED casacore_asp.cc casacore_asp_cube.cc)
 #target_link_libraries(casacore_asp stdc++fs ${APP_LINK_LIBRARIES} libra roadrunner_cl_interface coyote_cl_interface hummbee_cl_interface mssplit_cl_interface subms_cl_interface tableinfo_cl_interface)
 target_link_libraries(casacore_asp PRIVATE ${APP_LINK_LIBRARIES} libra "-Wl,--disable-new-dtags")
 install(TARGETS casacore_asp
-        LIBRARY DESTINATION "${INSTALLDIR}/lib")
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")

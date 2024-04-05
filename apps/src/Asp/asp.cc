@@ -26,6 +26,6 @@
 //# $Id$
 
 
-#include <Asp/asp.h>
+#include <asp.h>
 
 

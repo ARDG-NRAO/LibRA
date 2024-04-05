@@ -26,7 +26,7 @@
 #include <cl.h> // C++ized version
 #include <clinteract.h>
 
-#include <SubMS/subms.h>
+#include <subms.h>
 
 
 //
