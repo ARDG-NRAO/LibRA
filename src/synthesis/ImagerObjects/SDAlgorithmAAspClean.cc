@@ -131,7 +131,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
 
     // Parts to be repeated at each minor cycle start....
-    itsCleaner.setInitScaleMasks(itsMatMask);
+    //itsCleaner.setInitScaleMasks(itsMatMask); //casa6
+    Matrix<Float> tempMatMask(itsMatMask);
+    itsCleaner.setInitScaleMasks(tempMatMask); 
     itsCleaner.setaspcontrol(0, 0, 0, Quantity(0.0, "%"));/// Needs to come before the rest
 
     Matrix<Float> tempMat1;

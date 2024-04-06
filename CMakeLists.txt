@@ -294,8 +294,15 @@ ExternalProject_Add(
 # If not defined on the command line, switch off apps testing
 if(NOT DEFINED Apps_BUILD_TESTS)
   set(Apps_BUILD_TESTS OFF)
+else()
+  # Update git submodules
+  execute_process(
+    COMMAND git submodule update --init --recursive
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
 endif()
 message ("${LIBRA_ID} Apps_BUILD_TESTS=${Apps_BUILD_TESTS}")
+message ("Pulling in the tests data from libra-tests as a submodule")
 # Add Libra/apps as an external project
 ExternalProject_Add(
     Apps
@@ -310,7 +317,7 @@ ExternalProject_Add(
 		    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
-		    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
+		    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
     BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
 )
@@ -325,43 +332,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
   ${INSTALL_DIR}/include/pybind11)
 
-# set(APP_LINK_LIBRARIES
-#   casacpp_synthesis
-#   casacpp_msvis
-#   hpg::hpg
-#   Kokkos::kokkoscore
-#   casa_msfits
-#   casa_ms
-#   casa_images
-#   casa_coordinates
-#   casa_lattices
-#   casa_fits
-#   casa_measures
-#   casa_tables
-#   casa_scimath
-#   casa_scimath_f
-#   casa_casa
-#   pthread
-#   parafeed::parafeed
-#   readline
-#   history
-#   termcap
-#   m
-#   c)
-# include_directories(${DEPINC} ${DEPINC}/casacore ${DEPINC}/casacpp /usr/include/cfitsio ${CMAKE_CURRENT_LIST_DIR}/src)
 link_directories(/usr/local/lib
   /usr/lib64
   /usr/lib
   /usr/lib/x86_64-linux-gnu
   ${INSTALL_DIR}/lib)
-# 
-# set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo CACHE INTERNAL "")
-# set(APP_DIR ${CMAKE_SOURCE_DIR}/apps/src/)
-# foreach(APP IN LISTS APP_LIST)
-#     string(TOLOWER ${APP} APP_NAME)
-#     list(APPEND APP_SOURCES "${APP_DIR}/${APP}/${APP_NAME}.cc")
-# endforeach()
-# message("${LIBRA_ID} APP_LIST: ${APP_LIST}")
-# message("${LIBRA_ID} APP_SOURCES: ${APP_SOURCES}")
-# message("${LIBRA_ID} {APP_DIR}: ${APP_DIR}")
-# message("${LIBRA_ID} APP_LINK_LIBRARIES: ${APP_LINK_LIBRARIES}")
