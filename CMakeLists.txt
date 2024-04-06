@@ -18,8 +18,11 @@ set(BUILD_TYPE "RelWithDebInfo")
 include(ExternalProject)
 include(FindPkgConfig)
 
-# Find system information
+set(ENV{PATH} $ENV{PATH}:/usr/local/cuda/bin)
+message("${LIBRA_ID} PATH=$ENV{PATH}")
+LIST(APPEND CMAKE_PROGRAM_PATH  "/usr/local/cuda/bin" ...)
 
+# Find system information
 if (NOT DEFINED NCORES)
 	cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
 	cmake_host_system_information(RESULT NTHREADS QUERY NUMBER_OF_LOGICAL_CORES)
