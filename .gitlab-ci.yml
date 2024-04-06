@@ -17,16 +17,18 @@ cache:
 build-job:
   stage: build
   rules:
+    - changes:
+      - (exclude)README.md
+      - (exclude)scripts/**/*
+      - (exclude)doc/**/*
+      when: never
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
       when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
     - if: '$CI_COMMIT_REF_NAME == "main"'
       when: always
-    - changes:
-        - (exclude)README.md
-        - (exclude)scripts/**/*
-        - (exclude)doc/**/*
+
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
@@ -53,20 +55,22 @@ build-job:
 test-job:
   stage: test
   rules:
+    - changes:
+      - (exclude)README.md
+      - (exclude)scripts/**/*
+      - (exclude)doc/**/*
+      when: never
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
       when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
     - if: '$CI_COMMIT_REF_NAME == "main"'
       when: always
-    - changes:
-        - (exclude)README.md
-        - (exclude)scripts/**/*
-        - (exclude)doc/**/*
+
   script:
     - echo $PWD
     - base_path=$PWD
-    - echo "Entering $PWD/build/Libra/apps/src/tests to run apps unit tests"
+    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
     - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
 

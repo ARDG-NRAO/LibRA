@@ -1152,13 +1152,14 @@ void AspMatrixCleaner::setInitScalePsfs()
 }
 
 // Set up the masks for the initial scales (i.e. 0, 1.5width, 5width and 10width)
-Bool AspMatrixCleaner::setInitScaleMasks(const Array<Float> arrmask, const Float& maskThreshold)
+//Bool AspMatrixCleaner::setInitScaleMasks(const Array<Float> arrmask, const Float& maskThreshold) // casa6 version
+Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float> & mask, const Float& maskThreshold)
 {
   LogIO os(LogOrigin("AspMatrixCleaner", "setInitScaleMasks()", WHERE));
 
   destroyMasks();
 
-  Matrix<Float> mask(arrmask);
+  //Matrix<Float> mask(arrmask); // casa6 version
   itsMask = new Matrix<Float>(mask.shape());
   itsMask->assign(mask);
   itsMaskThreshold = maskThreshold;
@@ -1196,6 +1197,8 @@ Bool AspMatrixCleaner::setInitScaleMasks(const Array<Float> arrmask, const Float
       {
         if(itsMaskThreshold > 0)
           (itsInitScaleMasks[scale])(k,j) =  (itsInitScaleMasks[scale])(k,j) > itsMaskThreshold ? 1.0 : 0.0;
+
+        //cout << "itsInitScaleMasks[" << scale << "](" << k << "," << j << ") = " << (itsInitScaleMasks[scale])(k,j) << endl;
       }
     }
     Float mysum = sum(itsInitScaleMasks[scale]);
@@ -1235,6 +1238,14 @@ Bool AspMatrixCleaner::setInitScaleMasks(const Array<Float> arrmask, const Float
     trc1[0] = nx; trc1[1] = ny-border-1;
     LCBox::verify(blc1, trc1, inc1, itsInitScaleMasks[scale].shape());
     (itsInitScaleMasks[scale])(blc1,trc1) = 0.0;
+
+    /*for (Int j=0 ; j < (itsMask->shape())(1); ++j)
+    {
+      for (Int k =0 ; k < (itsMask->shape())(0); ++k)
+      {
+        cout << "After blc: itsInitScaleMasks[" << scale << "](" << k << "," << j << ") = " << (itsInitScaleMasks[scale])(k,j) << endl;
+      }
+    }*/
   }
 
   return true;

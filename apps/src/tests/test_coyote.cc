@@ -154,8 +154,10 @@ namespace test{
       }
     }
 
-    //cleanUp(test::testDir);
-    //    fs::remove_all(test::testDir);
+    // Set the current working directory back to the parent dir
+    //current_path("..");
+    
+    //fs::remove_all(test::testDir);
 
   }
 
@@ -259,7 +261,11 @@ namespace test{
 	//        conjBeams, cfBufferSize, cfOversampling, cfList, mode_l);
 
 	// Add assertions here to verify the behavior of the Coyote function in fillcf mode
-	//    fs::remove_all(test::testDir);
+	
+	// Set the current working directory back to the parent dir
+        current_path("..");
+
+	fs::remove_all(test::testDir);
       }
   }
 
