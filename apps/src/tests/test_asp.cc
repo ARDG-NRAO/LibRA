@@ -24,34 +24,6 @@ TEST(AspTest, FuncLevel) {
 
   size_t nx = 2;
   size_t ny = 5;
-  /*float psfa[nx][ny] =
-    {
-        {1,8,12,20,25},
-        {5,9,13,24,26}
-    };
-
-  float modela[nx][ny] = {0};
-  float residuala[nx][ny] = {
-        {1,8,12,-20,-25},
-        {5,9,-13,24,26}
-    };
-  float maska[nx][ny] = {
-        {1,8,0,20,25},
-        {5,9,13,24,0}
-    };
-
-  float *psfb[nx];
-  float *modelb[nx];
-  float *residualb[nx];
-  float *maskb[nx];
-
-  for (size_t i = 0; i < nx; ++i)
-  {
-        psfb[i] = psfa[i];
-        modelb[i] = modela[i];
-        residualb[i] = residuala[i];
-        maskb[i] = maska[i];
-  }*/
 
   vector<vector<float>> psfb =
     {
@@ -109,10 +81,24 @@ TEST(AspTest, casacore_asp_mfs) {
   //mask[1] = "box[[1794pix,1828pix],[2225pix,2232pix]]";
   //mask[2] = "box[[2077pix,1989pix],[3270pix,2616pix]]";
   
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.mask", current_path()/"unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
+  // create dir 
+  std::filesystem::create_directory(testDir);
+  
+  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.psf", "casacore_asp_mfs/unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.mask", "casacore_asp_mfs/unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.residual", "casacore_asp_mfs/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  //Step into dir
+  std::filesystem::current_path(testDir);
+
+  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  //copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee_mfs_revE.mask", current_path()/"unittest_hummbee_mfs_revE.mask", copy_options::recursive);
 
   casacore_asp(imageName, modelImageName,
                  largestscale, fusedthreshold,
@@ -136,10 +122,15 @@ TEST(AspTest, casacore_asp_mfs) {
   float resGoldValLoc = 9.44497;
   EXPECT_NEAR(resimage(IPosition(4,1072,1639,0,0)), resGoldValLoc, tol);
 
-  remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
+  /*remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
-  remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
+  remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");*/
+
+  //move to parent directory
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
 }
 
 TEST(AspTest, casacore_asp_cube) {
@@ -158,10 +149,26 @@ TEST(AspTest, casacore_asp_cube) {
   //mask.resize(1);
   //mask[0] ="circle[[256pix,290pix],140pix]";
 
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
+  /*copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
   copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
   copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.residual", current_path()/"unittest_hummbee.residual", copy_options::recursive);
-  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.mask", current_path()/"unittest_hummbee.mask", copy_options::recursive);
+  copy(current_path()/"../../../src/tests/gold_standard/unittest_hummbee.mask", current_path()/"unittest_hummbee.mask", copy_options::recursive);*/
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
+  // create dir 
+  std::filesystem::create_directory(testDir);
+ 
+  std::filesystem::copy("gold_standard/unittest_hummbee.pb", "casacore_asp_cube/unittest_hummbee.pb", copy_options::recursive); 
+  std::filesystem::copy("gold_standard/unittest_hummbee.psf", "casacore_asp_cube/unittest_hummbee.psf", copy_options::recursive);
+  std::filesystem::copy("gold_standard/unittest_hummbee.mask", "casacore_asp_cube/unittest_hummbee.mask", copy_options::recursive);
+  std::filesystem::copy("gold_standard/unittest_hummbee.residual", "casacore_asp_cube/unittest_hummbee.residual", copy_options::recursive);
+  //Step into dir
+  std::filesystem::current_path(testDir);
+
 
   casacore_asp_cube(imageName, modelImageName,
                  largestscale, fusedthreshold,
@@ -188,12 +195,17 @@ TEST(AspTest, casacore_asp_cube) {
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,0)), resGoldValchan0, tol);
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,2)), resGoldValchan2, tol);
 
-  remove_all(current_path()/"unittest_hummbee.pb");
+  /*remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
   remove_all(current_path()/"unittest_hummbee.sumwt");
   remove_all(current_path()/"unittest_hummbee.model");
-  remove_all(current_path()/"unittest_hummbee.mask");
+  remove_all(current_path()/"unittest_hummbee.mask");*/
+
+  //move to parent directory
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
 
 }
 
