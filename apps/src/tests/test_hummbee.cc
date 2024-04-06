@@ -92,10 +92,16 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   EXPECT_NEAR(modelimage(IPosition(4,275,330,0,0)), goldValchan0, tol);
   EXPECT_NEAR(modelimage(IPosition(4,275,330,0,2)), goldValchan2, tol);
 
+  PagedImage<Float> resimage("unittest_hummbee.residual");
+  float resGoldValchan0 = 4.726145;
+  float resGoldValchan2 = 1.797757;
+  EXPECT_NEAR(resimage(IPosition(4,275,330,0,0)), resGoldValchan0, tol);
+  EXPECT_NEAR(resimage(IPosition(4,275,330,0,2)), resGoldValchan2, tol);
+
   /*remove_all(current_path()/"unittest_hummbee.pb");
   remove_all(current_path()/"unittest_hummbee.psf");
   remove_all(current_path()/"unittest_hummbee.residual");
-  remove_all(current_path()/"unittest_hummbee.sumwt");
+  //remove_all(current_path()/"unittest_hummbee.sumwt");
   remove_all(current_path()/"unittest_hummbee.model");
   remove_all(current_path()/"unittest_hummbee.mask");*/
  
@@ -165,7 +171,6 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
 
   /*remove_all(current_path()/"unittest_hummbee_mfs_revE.psf");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.residual");
-  remove_all(current_path()/"unittest_hummbee_mfs_revE.sumwt");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.model");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.mask");
   remove_all(current_path()/"unittest_hummbee_mfs_revE.weight");*/

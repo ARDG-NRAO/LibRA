@@ -10,7 +10,7 @@ link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 find_package(GTest REQUIRED)
 
-add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc)
+add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc test_asp.cc)
 
 #message("PROJECT_BINARY_DIR is ${PROJECT_BINARY_DIR}")
 #message("PROJECT_SOURCE_DIR is ${PROJECT_SOURCE_DIR}")
