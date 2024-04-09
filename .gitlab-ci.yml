@@ -70,7 +70,7 @@ test-job:
   script:
     - echo $PWD
     - base_path=$PWD
-    - echo "Entering $PWD/build/Libra/apps/src/tests to run apps unit tests"
+    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
     - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
 
