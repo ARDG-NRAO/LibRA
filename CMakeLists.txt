@@ -291,8 +291,15 @@ ExternalProject_Add(
 # If not defined on the command line, switch off apps testing
 if(NOT DEFINED Apps_BUILD_TESTS)
   set(Apps_BUILD_TESTS OFF)
+else()
+  # Update git submodules
+  execute_process(
+    COMMAND git submodule update --init --recursive
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
 endif()
 message ("${LIBRA_ID} Apps_BUILD_TESTS=${Apps_BUILD_TESTS}")
+message ("Pulling in the tests data from libra-tests as a submodule")
 # Add Libra/apps as an external project
 ExternalProject_Add(
     Apps
