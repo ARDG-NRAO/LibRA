@@ -88,6 +88,7 @@ Standalone applications (apps) give access to algorithms via commandline options
 
 #### Currently available Apps
 - [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
+- [ ] `acme` : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
 - [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] `coyote` : An application to build the CF Cache used as input to the `roadrunner` application.
 - [ ] `htclean` : A framework that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#available-standalone-applications-apps) as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  So far, this has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA [apps](#available-standalone-applications-apps) as components has also been used for a prototype deployment on AWS.
@@ -122,13 +123,14 @@ A clone of this repository will get the ```src``` directory with the scientific 
 
 ```
 git clone https://github.com/ARDG-NRAO/LibRA.git
-cd libra
+cd LibRA
 mkdir build 
 cd build
 # A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 # Default behaviour is to determined CUDA ARCH automatically.  
 # Default behaviour is Apps_BUILD_TESTS=OFF
 cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
+# It is set to run "make -j NCORES" internally, so it is important to just run "make" below to prevent parallelizing make twice. 
 make
 ```
 
@@ -144,7 +146,7 @@ A clone of this repository will get the ```src``` directory with the scientific 
 
 ```
 git clone https://github.com/ARDG-NRAO/LibRA.git
-cd libra
+cd LibRA
 make -f makefile.libra init
 make -f makefile.libra allclone
 make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch> -f makefile.libra allbuild
@@ -166,7 +168,12 @@ in ```libra/install/linux_64b/bin``` directory.
 - [ ] `{CASA,CASACORE_DATA,FFTW,KOKKOS,HPG,PARAFEED,SAKURA}_REPOS`: URL for the repository of the various packages.
 - [ ] `PATH`: Set this to include the location of the local CUDA installation.  To build the `LibRA` system a GPU is not necessary, but a CUDA install is necessary.
 - [ ] `NCORES`: The number of CPU cores used for compiling.  It is used as `make -j ${NCORES}` in the various `build` targets.
-- [ ] `Apps_BUILD_TESTS`: Whether to build apps unit tests. Default is OFF.
+- [ ] `Apps_BUILD_TESTS`: Whether to build apps unit tests. Default is `OFF`. If it is set to `ON`, run the following to run unit tests locally.
+
+```
+cd LibRA/apps/src/tests
+./../../../build/Libra/apps/src/tests/LibRATests
+```
 
 ## Resources
 - [ ] The [LibRA Singularity Container](https://gitlab.nrao.edu/ardg/libra-containers).

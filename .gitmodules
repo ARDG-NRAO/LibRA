@@ -1,0 +1,3 @@
+[submodule "apps/src/tests/gold_standard"]
+	path = apps/src/tests/gold_standard
+	url = https://glpat-pqrqr4V7hL7Yibjyhfy-:glpat-pqrqr4V7hL7Yibjyhfy-@gitlab.nrao.edu/ardg/libra-data.git

@@ -301,12 +301,7 @@ float Hummbee(//string& MSNBuf,
       SynthesisDeconvolver itsDeconvolver;
       itsDeconvolver.setupDeconvolution(decPars_p);
       
-      // iteration parameters
-      Record iterBotRec_p;
 
-      float minpsffraction = 0.05;
-      float maxpsffraction = 0.8;
-      float CycleFactor = 1.0;
       std::shared_ptr<SIImageStore> itsImages;
       if( deconvolver == "mtmfs" )
         {  itsImages.reset( new SIImageStoreMultiTerm( imageName, nterms, true, true ) ); }
@@ -326,11 +321,20 @@ float Hummbee(//string& MSNBuf,
       Bool validMask = ( masksum > 0 );
       PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
+      std::cout << "masksum " << masksum << std::endl;
+      
+      float minpsffraction = 0.05;
+      float maxpsffraction = 0.8;
+      float CycleFactor = 1.0;
+      
       Float psffraction = MaxPsfSidelobe * CycleFactor;
       psffraction = casacore::max(psffraction, minpsffraction);
       psffraction = casacore::min(psffraction, maxpsffraction);
       Float cyclethreshold = PeakResidual * psffraction;
       threshold = casacore::max(threshold, cyclethreshold);   
+
+      // iteration parameters
+      Record iterBotRec_p;
 
       iterBotRec_p.define("cycleniter", Int(cycleniter));
       iterBotRec_p.define("loopgain", Float(gain));
@@ -341,7 +345,7 @@ float Hummbee(//string& MSNBuf,
 
    
       //SynthesisDeconvolver itsDeconvolver;
-      Record iterBotRec;
+      //Record iterBotRec;
       //itsDeconvolver.setupDeconvolution(decPars_p);
       itsDeconvolver.initMinorCycle(); // makeImageStore and StartModel, originally part of hasConverged
       //itsDeconvolver.setIterDone(); // don't need this. Controlled by cycleniter

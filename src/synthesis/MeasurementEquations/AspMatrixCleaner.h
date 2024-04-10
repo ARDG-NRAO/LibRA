@@ -75,7 +75,8 @@ public:
   // calculate the convolutions of the psf with the initial scales
   void setInitScalePsfs();
 
-  casacore::Bool setInitScaleMasks(const casacore::Array<casacore::Float> arrmask, const casacore::Float& maskThreshold = 0.99);
+  //casacore::Bool setInitScaleMasks(const casacore::Array<casacore::Float> arrmask, const casacore::Float& maskThreshold = 0.99);
+  casacore::Bool setInitScaleMasks(const casacore::Matrix<casacore::Float> & mask, const casacore::Float& maskThreshold = 0.99); //diverge from casa6
 
   void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
@@ -91,6 +92,7 @@ public:
   void setUserLargestScale(const casacore::Int largestScale = -1) { itsUserLargestScale = float(largestScale); }
 
   // setter/getter
+  void setPsfWidth(float width) { itsPsfWidth = width; }
   float getterPsfWidth() { return itsPsfWidth; }
   bool getterSwitchedHogbom() { return itsSwitchedToHogbom; }
   casacore::Matrix<casacore::Float>  getterResidual() { return (*itsDirty); }

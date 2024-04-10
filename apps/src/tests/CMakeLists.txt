@@ -8,16 +8,9 @@ project(LibRATests   VERSION 1.0
 include_directories(${CMAKE_CURRENT_LIST_DIR}/..)
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
-# Find the Google Test library
-FetchContent_Declare(
-  gtest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
-)
+find_package(GTest REQUIRED)
 
-# Configure Google Test
-FetchContent_MakeAvailable(gtest)
-
-add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc)
+add_executable(LibRATests test_hummbee.cc test_roadrunner.cc test_coyote.cc test_tableinfo.cc test_subms.cc test_mssplit.cc test_asp.cc)
 
 #message("PROJECT_BINARY_DIR is ${PROJECT_BINARY_DIR}")
 #message("PROJECT_SOURCE_DIR is ${PROJECT_SOURCE_DIR}")
