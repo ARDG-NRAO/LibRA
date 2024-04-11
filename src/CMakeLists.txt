@@ -101,7 +101,7 @@ pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
 find_package(OpenMP REQUIRED)
 
 # SAKURA dependency
-# pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
+pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
 
 # HPG dependency
 find_package(hpg CONFIG)
