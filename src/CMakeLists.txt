@@ -101,7 +101,7 @@ pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
 find_package(OpenMP REQUIRED)
 
 # SAKURA dependency
-pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
+#pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
 
 # HPG dependency
 find_package(hpg CONFIG)
@@ -125,7 +125,7 @@ if (CMAKE_LIBIMAGING_ONLY)
     asdmstman
     atmosphere
     casatools
-    casa_sakura
+#    casa_sakura
     components
     imageanalysis
     mstransform
@@ -143,7 +143,7 @@ else()
     calanalysis
     casadbus
     casatools
-    casa_sakura
+#    casa_sakura
     components
     imageanalysis
     flagging

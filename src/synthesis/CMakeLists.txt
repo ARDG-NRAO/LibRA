@@ -47,7 +47,7 @@ target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::CASACORE)
 # OpenMP dependency
 #target_link_libraries(${LIB_NAME} PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency
-target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
+#target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 # Libhpg dependency
 target_link_libraries(${LIB_NAME} PUBLIC hpg::hpg)
 # Libparafeed dependency
