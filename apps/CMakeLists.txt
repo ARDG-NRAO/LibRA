@@ -10,6 +10,7 @@ include(FetchContent)
 include(FindPkgConfig)
 
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
+
 if (ARM_CPU)
   set(OPT "-g -O2 -march=armv8-a ")
 else()
