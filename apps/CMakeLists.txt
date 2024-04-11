@@ -10,7 +10,12 @@ include(FetchContent)
 include(FindPkgConfig)
 
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
-set(OPT "-g -O2 ")
+
+if(ARM_CPU)
+  set(OPT "${OPT} -march=armv8-a")
+else()
+  set(OPT "-g -O2 ")
+endif()
 
 set(BUILD_TYPE "RelWithDebInfo")
 
