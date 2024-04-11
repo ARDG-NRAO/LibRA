@@ -220,22 +220,22 @@ ExternalProject_Add(
 )
 
 # Add Sakura as an external project
-# ExternalProject_Add(
-#   Sakura
-#   GIT_REPOSITORY https://github.com/tnakazato/sakura.git
-#   GIT_TAG        libsakura-5.1.3
-#   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
-#   BINARY_DIR     ${BUILD_DIR}/sakura
-#   SOURCE_SUBDIR  libsakura
-#   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-#                  -DCMAKE_INSTALL_LIBDIR=lib
-#                  -DBUILD_DOC:BOOL=OFF
-#                  -DPYTHON_BINDING:BOOL=OFF
-#                  -DSIMD_ARCH=GENERIC
-#                  -DENABLE_TEST:BOOL=OFF
-#   BUILD_COMMAND   make -j ${NCORES};
-#   INSTALL_COMMAND make install
-# )
+ExternalProject_Add(
+  Sakura
+  GIT_REPOSITORY https://github.com/tnakazato/sakura.git
+  GIT_TAG        libsakura-5.1.3
+  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
+  BINARY_DIR     ${BUILD_DIR}/sakura
+  SOURCE_SUBDIR  libsakura
+  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                 -DCMAKE_INSTALL_LIBDIR=lib
+                 -DBUILD_DOC:BOOL=OFF
+                 -DPYTHON_BINDING:BOOL=OFF
+                 -DSIMD_ARCH=GENERIC
+                 -DENABLE_TEST:BOOL=OFF
+  BUILD_COMMAND   make -j ${NCORES};
+  INSTALL_COMMAND make install
+)
 
 # Add pybind11 as an external project
 ExternalProject_Add(
@@ -274,7 +274,7 @@ ExternalProject_Add(
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/src/
   DOWNLOAD_COMMAND ""
   BINARY_DIR      ${BUILD_DIR}/Libra/src
-  DEPENDS         Casacore Hpg Parafeed Pybind11
+  DEPENDS         Casacore Sakura Hpg Parafeed Pybind11
   CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                   -DCMAKE_INSTALL_LIBDIR=lib
                   -DCMAKE_INSTALL_BINDIR=bin
