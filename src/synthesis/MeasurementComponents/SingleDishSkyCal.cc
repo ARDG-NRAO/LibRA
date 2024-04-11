@@ -52,7 +52,11 @@
 #include <synthesis/Utilities/PointingDirectionCalculator.h>
 #include <synthesis/Utilities/PointingDirectionProjector.h>
 #include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+
+#ifdef HAVE_LIBSAKURA
 #include <libsakura/sakura.h>
+#endif
+
 #include <cassert>
 
 // Debug Message Handling
@@ -1656,24 +1660,30 @@ MeasurementSet SingleDishOtfCal::selectReferenceData(MeasurementSet const &ms)
             os << LogIO::WARN << "pixel_size is set to " << pixel_size << LogIO::POST;
            }
         }
-        // libsakura 2.0: setting pixel_size=0.0 means that CreateMaskNearEdgeDouble will
-        //   . compute the median separation of consecutive pointing coordinates
-        //   . use an "edge detection pixel size" = 0.5*coordinates_median (pixel scale hard-coded to 0.5)
-        debuglog << "sakura library function call: parameters info:" << debugpost;
-        debuglog << "in: fraction: " << fraction_ << debugpost;
-        debuglog << "in: pixel size: " << pixel_size << debugpost;
-        debuglog << "in: pixels count: (nx = " << p.p_size()[0] << " , ny = " << p.p_size()[1] << debugpost;
-        debuglog << "in: pointings_coords.ncolumn(): " << pointings_coords.ncolumn() << debugpost;
-        LIBSAKURA_SYMBOL(Status) status = LIBSAKURA_SYMBOL(CreateMaskNearEdgeDouble)(
-          fraction_, pixel_size,
-        pointings_coords.ncolumn(), pointings_x.data(), pointings_y.data(),
-          nullptr /* blc_x */, nullptr /* blc_y */,
-          nullptr /* trc_x */, nullptr /* trc_y */,
-        is_edge.data());
-        bool edges_detection_ok = ( status == LIBSAKURA_SYMBOL(Status_kOK) );
-        if ( ! edges_detection_ok ) {
-          debuglog << "sakura error: status=" << status << debugpost;
-        }
+        #ifdef HAVE_LIBSAKURA
+          // libsakura 2.0: setting pixel_size=0.0 means that CreateMaskNearEdgeDouble will
+          //   . compute the median separation of consecutive pointing coordinates
+          //   . use an "edge detection pixel size" = 0.5*coordinates_median (pixel scale hard-coded to 0.5)
+          debuglog << "sakura library function call: parameters info:" << debugpost;
+          debuglog << "in: fraction: " << fraction_ << debugpost;
+          debuglog << "in: pixel size: " << pixel_size << debugpost;
+          debuglog << "in: pixels count: (nx = " << p.p_size()[0] << " , ny = " << p.p_size()[1] << debugpost;
+          debuglog << "in: pointings_coords.ncolumn(): " << pointings_coords.ncolumn() << debugpost;
+          LIBSAKURA_SYMBOL(Status) status = LIBSAKURA_SYMBOL(CreateMaskNearEdgeDouble)(
+            fraction_, pixel_size,
+            pointings_coords.ncolumn(), pointings_x.data(), pointings_y.data(),
+            nullptr /* blc_x */, nullptr /* blc_y */,
+            nullptr /* trc_x */, nullptr /* trc_y */,
+            is_edge.data());
+          bool edges_detection_ok = (status == LIBSAKURA_SYMBOL(Status_kOK));
+          if (!edges_detection_ok) {
+            debuglog << "sakura error: status=" << status << debugpost;
+          }
+        #else
+          // Placeholder code if HAVE_LIBSAKURA is not defined
+          bool edges_detection_ok = false;
+          debuglog << "libsakura not available" << debugpost;
+        #endif
         AlwaysAssert(edges_detection_ok,AipsError);
         // Compute ROW ids of detected edges. ROW "ids" are ROW ids in the MS filtered by user selection.
         auto index_2_rowid = calc.getRowIdForOriginalMS();
