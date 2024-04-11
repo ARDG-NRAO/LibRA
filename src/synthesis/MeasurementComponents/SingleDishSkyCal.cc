@@ -25,7 +25,7 @@
 //#
 //# $Id$
 
-#define USE_SAKURA 0
+#define LIBRA_USE_LIBSAKURA 0
 //# Includes
 #include <iostream>
 #include <sstream>
@@ -53,7 +53,7 @@
 #include <synthesis/Utilities/PointingDirectionCalculator.h>
 #include <synthesis/Utilities/PointingDirectionProjector.h>
 #include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
-#if USE_SAKURA
+#if LIBRA_USE_LIBSAKURA
 #include <libsakura/sakura.h>
 #endif
 #include <cassert>
@@ -1659,7 +1659,7 @@ MeasurementSet SingleDishOtfCal::selectReferenceData(MeasurementSet const &ms)
             os << LogIO::WARN << "pixel_size is set to " << pixel_size << LogIO::POST;
            }
         }
-#if USE_SAKURA	
+#if LIBRA_USE_LIBSAKURA	
         // libsakura 2.0: setting pixel_size=0.0 means that CreateMaskNearEdgeDouble will
         //   . compute the median separation of consecutive pointing coordinates
         //   . use an "edge detection pixel size" = 0.5*coordinates_median (pixel scale hard-coded to 0.5)

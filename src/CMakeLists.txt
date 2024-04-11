@@ -101,8 +101,9 @@ pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
 find_package(OpenMP REQUIRED)
 
 # SAKURA dependency
-#pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
-
+if (LIBRA_USE_LIBSAKURA)
+  pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
+endif()
 # HPG dependency
 find_package(hpg CONFIG)
 if(DEFINED hpg_FOUND AND ${hpg_FOUND})
@@ -119,13 +120,18 @@ find_package(parafeed REQUIRED)
 pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
 
+if (LIBRA_USE_LIBSAKURA)
+  set(CASA_SAKURA "casa_sakura")
+else()
+  set(CASA_SAKURA "")
+endif()
 # Create a list with all the components
 if (CMAKE_LIBIMAGING_ONLY)
   set(casacpp_all_components
     asdmstman
     atmosphere
     casatools
-#    casa_sakura
+    ${CASA_SAKURA}
     components
     imageanalysis
     mstransform
@@ -143,7 +149,7 @@ else()
     calanalysis
     casadbus
     casatools
-#    casa_sakura
+    ${CASA_SAKURA}
     components
     imageanalysis
     flagging
