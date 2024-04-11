@@ -223,9 +223,26 @@ ExternalProject_Add(
 )
 
 # Add Sakura as an external project
+if(ARM_CPU)
+  ExternalProject_Add(
+    Sakura
+    GIT_REPOSITORY https://github.com/preshanth/sakura.git
+    GIT_TAG        main
+    SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
+    BINARY_DIR     ${BUILD_DIR}/sakura
+    SOURCE_SUBDIR  libsakura
+    CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                   -DCMAKE_INSTALL_LIBDIR=lib
+                   -DBUILD_DOC:BOOL=OFF
+                   -DPYTHON_BINDING:BOOL=OFF
+                   -DENABLE_TEST:BOOL=OFF
+    BUILD_COMMAND   make -j ${NCORES};
+    INSTALL_COMMAND make install
+  )
+else()
 ExternalProject_Add(
   Sakura
-  GIT_REPOSITORY https://github.com/tnakazato/sakura.git
+  GIT_REPOSITORY https://github.com/tnakazato/sakura.git 
   GIT_TAG        libsakura-5.1.3
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
   BINARY_DIR     ${BUILD_DIR}/sakura
@@ -234,11 +251,11 @@ ExternalProject_Add(
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DBUILD_DOC:BOOL=OFF
                  -DPYTHON_BINDING:BOOL=OFF
-                 -DSIMD_ARCH=GENERIC
                  -DENABLE_TEST:BOOL=OFF
   BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
+endif()
 
 # Add pybind11 as an external project
 ExternalProject_Add(
