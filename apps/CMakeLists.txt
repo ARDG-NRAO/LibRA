@@ -10,7 +10,12 @@ include(FetchContent)
 include(FindPkgConfig)
 
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
-set(OPT "-g -O2 ")
+
+if (ARM_CPU)
+  set(OPT "-g -O2 -mcpu=neoverse-v2 ")
+else()
+  set(OPT "-g -O2 -march=native ")
+endif()
 
 set(BUILD_TYPE "RelWithDebInfo")
 
@@ -104,7 +109,7 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner MSSplit SubMS TableInfo Asp)
+set(APP_LIST Coyote Hummbee RoadRunner Acme MSSplit SubMS TableInfo Asp)
 foreach(APP IN LISTS APP_LIST)
    set(APP_DIR ${APP})
    string(TOLOWER ${APP_DIR} APP_NAME)
