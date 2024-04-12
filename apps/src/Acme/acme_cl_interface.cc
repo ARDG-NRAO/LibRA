@@ -50,7 +50,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 //
 
 
-void UI(Bool restart, int argc, char **argv,
+void UI(Bool restart, int argc, char **argv, bool interactive,
 	std::string& imageName, std::string& deconvolver,
         string& normtype, string& workdir, string& imType,
         float& pblimit, int& nterms, int& facets,
@@ -58,6 +58,8 @@ void UI(Bool restart, int argc, char **argv,
         vector<float>& restoringbeam,
 	bool& computePB)
 {
+  clSetPrompt(interactive);
+
   if (!restart)
     {
       BeginCL(argc,argv);
@@ -106,13 +108,19 @@ int main(int argc, char **argv)
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   Bool computePB=False;
-  Bool restartUI=False;;
+  Bool restartUI=False;
+  bool interactive = true;
 
  RENTER:// UI re-entry point.
   try
     {
       imageName="";
-      UI(restartUI,argc, argv, imageName, deconvolver, normtype, workdir, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
+      UI(restartUI,argc, argv, interactive, 
+        imageName, deconvolver, normtype, 
+        workdir, imType, pblimit, nterms, 
+        facets, psfcutoff, restoringbeam, 
+        computePB);
+      
       restartUI = False;
       //
       //---------------------------------------------------

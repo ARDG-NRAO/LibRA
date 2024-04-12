@@ -70,11 +70,13 @@ void acme_func(std::string& imageName, std::string& deconvolver,
  * 
  * @throws AipsError if the input table name is not set.
  */
-void UI(Bool restart, int argc, char **argv, 
-	string& imageName, string& deconvolver,
-        string& normtype, string& workdir,
+void UI(Bool restart, int argc, char **argv, bool interactive,
+        std::string& imageName, std::string& deconvolver,
+        string& normtype, string& workdir, string& imType,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
-        vector<float>& restoringbeam);
+        vector<float>& restoringbeam,
+        bool& computePB);
+
 
 #endif
