@@ -25,6 +25,7 @@
 //#
 //# $Id$
 
+#define LIBRA_USE_LIBSAKURA 0
 //# Includes
 #include <iostream>
 #include <sstream>
@@ -52,7 +53,9 @@
 #include <synthesis/Utilities/PointingDirectionCalculator.h>
 #include <synthesis/Utilities/PointingDirectionProjector.h>
 #include <casacore/coordinates/Coordinates/DirectionCoordinate.h>
+#if LIBRA_USE_LIBSAKURA
 #include <libsakura/sakura.h>
+#endif
 #include <cassert>
 
 // Debug Message Handling
@@ -1656,6 +1659,7 @@ MeasurementSet SingleDishOtfCal::selectReferenceData(MeasurementSet const &ms)
             os << LogIO::WARN << "pixel_size is set to " << pixel_size << LogIO::POST;
            }
         }
+#if LIBRA_USE_LIBSAKURA	
         // libsakura 2.0: setting pixel_size=0.0 means that CreateMaskNearEdgeDouble will
         //   . compute the median separation of consecutive pointing coordinates
         //   . use an "edge detection pixel size" = 0.5*coordinates_median (pixel scale hard-coded to 0.5)
@@ -1674,6 +1678,9 @@ MeasurementSet SingleDishOtfCal::selectReferenceData(MeasurementSet const &ms)
         if ( ! edges_detection_ok ) {
           debuglog << "sakura error: status=" << status << debugpost;
         }
+#else
+	bool edges_detection_ok=true;
+#endif
         AlwaysAssert(edges_detection_ok,AipsError);
         // Compute ROW ids of detected edges. ROW "ids" are ROW ids in the MS filtered by user selection.
         auto index_2_rowid = calc.getRowIdForOriginalMS();
