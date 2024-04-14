@@ -10,7 +10,12 @@ include(FetchContent)
 include(FindPkgConfig)
 
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
-set(OPT "-g -O2 ")
+
+if (ARM_CPU)
+  set(OPT "-g -O2 -mcpu=neoverse-v2 ")
+else()
+  set(OPT "-g -O2 -march=native ")
+endif()
 
 set(BUILD_TYPE "RelWithDebInfo")
 

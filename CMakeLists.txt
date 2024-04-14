@@ -22,6 +22,10 @@ set(ENV{PATH} $ENV{PATH}:/usr/local/cuda/bin)
 message("${LIBRA_ID} PATH=$ENV{PATH}")
 LIST(APPEND CMAKE_PROGRAM_PATH  "/usr/local/cuda/bin" ...)
 
+if(NOT DEFINED LIBRA_USE_LIBSAKURA)
+  set(LIBRA_USE_LIBSAKURA OFF)
+endif()
+
 # Find system information
 if (NOT DEFINED NCORES)
 	cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
@@ -222,24 +226,28 @@ ExternalProject_Add(
   DEPENDS DataDownload
 )
 
-# Add Sakura as an external project
-ExternalProject_Add(
-  Sakura
-  GIT_REPOSITORY https://github.com/tnakazato/sakura.git
-  GIT_TAG        libsakura-5.1.3
-  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
-  BINARY_DIR     ${BUILD_DIR}/sakura
-  SOURCE_SUBDIR  libsakura
-  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                 -DCMAKE_INSTALL_LIBDIR=lib
-                 -DBUILD_DOC:BOOL=OFF
-                 -DPYTHON_BINDING:BOOL=OFF
-                 -DSIMD_ARCH=GENERIC
-                 -DENABLE_TEST:BOOL=OFF
-  BUILD_COMMAND   make -j ${NCORES};
-  INSTALL_COMMAND make install
-)
 
+if (LIBRA_USE_LIBSAKURA)
+  #Add Sakura as an external project
+  ExternalProject_Add(
+    Sakura
+    GIT_REPOSITORY https://github.com/tnakazato/sakura.git
+    GIT_TAG        libsakura-5.1.3
+    SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
+    BINARY_DIR     ${BUILD_DIR}/sakura
+    SOURCE_SUBDIR  libsakura
+    CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+    -DCMAKE_INSTALL_LIBDIR=lib
+    -DBUILD_DOC:BOOL=OFF
+    -DPYTHON_BINDING:BOOL=OFF
+    -DSIMD_ARCH=GENERIC
+    -DENABLE_TEST:BOOL=OFF
+    BUILD_COMMAND   make -j ${NCORES};
+    INSTALL_COMMAND make install
+    )
+else()
+  message("${LIBRA_ID} LIBRA_USE_LIBSAKURA is ${LIBRA_USE_LIBSAKURA}.")
+endif()
 # Add pybind11 as an external project
 ExternalProject_Add(
   Pybind11
@@ -272,12 +280,18 @@ ExternalProject_Add(
 )
 #endif()
 # Add Libra/src as an external project
+if (LIBRA_USE_LIBSAKURA)
+  set(SAKURA_DEPENDENCE "Sakura")
+else()
+  set(SAKURA_DEPENDENCE "")
+endif()
 ExternalProject_Add(
   Casacpp
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/src/
   DOWNLOAD_COMMAND ""
   BINARY_DIR      ${BUILD_DIR}/Libra/src
-  DEPENDS         Casacore Sakura Hpg Parafeed Pybind11
+  DEPENDS         Casacore ${SAKURA_DEPENDENCE} Hpg Parafeed Pybind11
+  DEPENDS         Casacore Hpg Parafeed Pybind11
   CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                   -DCMAKE_INSTALL_LIBDIR=lib
                   -DCMAKE_INSTALL_BINDIR=bin
