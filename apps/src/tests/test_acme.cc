@@ -13,14 +13,15 @@ TEST(AcmeTest, AppLevelPSF) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
+  string testdir = testDir.string();
 
   // create test dir 
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad.psf", testName + "/refim_point_wterm_vlad.psf", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad.weight", testName + "/refim_point_wterm_vlad.weight", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad.sumwt", testName + "/refim_point_wterm_vlad.sumwt", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.psf", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.weight", testdir + "/refim_point_wterm_vlad.weight", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.sumwt", testdir + "/refim_point_wterm_vlad.sumwt", copy_options::recursive);
 
   //Step into test dir 
   std::filesystem::current_path(testDir);
@@ -69,20 +70,21 @@ TEST(AcmeTest, AppLevelResidual) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-
+  string testdir = testDir.string();
+  
   // create test dir 
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad_step2.psf", testName + "/refim_point_wterm_vlad_step2.psf", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad_step2.weight", testName + "/refim_point_wterm_vlad_step2.weight", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad_step2.sumwt", testName + "/refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad_step2.pb", testName + "/refim_point_wterm_vlad_step2.pb", copy_options::recursive);
-  std::filesystem::copy("gold_standard/refim_point_wterm_vlad_step2.residual", testName + "/refim_point_wterm_vlad_step2.residual", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.psf", testdir + "/refim_point_wterm_vlad_step2.psf", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.weight", testdir + "/refim_point_wterm_vlad_step2.weight", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.sumwt", testdir + "/refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.pb", testdir + "/refim_point_wterm_vlad_step2.pb", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.residual", testdir + "/refim_point_wterm_vlad_step2.residual", copy_options::recursive);
   
   //Step into test dir 
   std::filesystem::current_path(testDir);
-// note, workdir, psfcutoff and facets are actually not used un acme
+  // note, workdir, psfcutoff and facets are actually not used un acme
   string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", workdir, imType="residual";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
