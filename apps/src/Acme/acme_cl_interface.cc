@@ -103,7 +103,7 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  string imageName, deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
+  string imageName="", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
@@ -114,7 +114,6 @@ int main(int argc, char **argv)
  RENTER:// UI re-entry point.
   try
     {
-      imageName="";
       UI(restartUI,argc, argv, interactive, 
         imageName, deconvolver, normtype, 
         workdir, imType, pblimit, nterms, 
