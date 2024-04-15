@@ -771,17 +771,28 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	      // Not sure what this info. is about, and if it is
 	      // necessary.  It is present in the SoW image written to
 	      // the disk from CASA framework.
-	      Record miscinfo;
-	      miscinfo.define("INSTRUME", "EVLA");
-	      miscinfo.define("distance", 0.0);
-	      miscinfo.define("useweightimage", true);
-	      sowImage.setMiscInfo(miscinfo);
-	      sowImage.put(sow);
+	      {
+		Record miscinfo;
+		miscinfo.define("INSTRUME", "EVLA");
+		miscinfo.define("distance", 0.0);
+		miscinfo.define("useweightimage", true);
+		miscinfo.define("imagingmode", imagingMode);
+		sowImage.setMiscInfo(miscinfo);
+		sowImage.put(sow);
+		sowImage.table().tableInfo().setSubType(casacore::String("SOW"));
+	      }
 	      //storeArrayAsImage(name+".sumwt", cgrid.coordinates(), sow);
 	    }
 	  // Convert the skyImage (retrieved in ftm->finalizeToSky()) and
 	  // convert it from Feed basis to Stokes basis.
 	  StokesImageUtil::To(skyImage, cgrid);
+	  {
+	    Record miscinfo;
+	    miscinfo.define("imagingmode", imagingMode);
+	    miscinfo.define("normalization", "NONE");
+	    skyImage.table().tableInfo().setSubType(imagingMode);
+	    skyImage.setMiscInfo(miscinfo);
+	  }
 	}
       //MSes are detach for cleaning up when the DataBase object goes
       //out of scope here.
