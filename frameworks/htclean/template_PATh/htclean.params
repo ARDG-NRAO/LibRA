@@ -1,0 +1,115 @@
+# Copyright (C) 2021
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+vis                  = ''
+selectdata           = False
+field                = ''
+spw                  = ''
+timerange            = ''
+uvrange              = ''
+antenna              = ''
+scan                 = ''
+observation          = ''
+intent               = ''
+datacolumn           = ''
+imagename            = 'HUDF_partitions_12k'
+imsize               = 12288
+cell                 = '0.15arcsec'
+phasecenter          = 'J2000 03:32:38.601000 -27.46.59.83001'
+stokes               = 'I'
+projection           = 'SIN'
+startmodel           = ''
+specmode             = 'mfs'
+reffreq              = '6.0'
+nchan                = 1
+start                = ''
+width                = ''
+outframe             = 'LSRK'
+veltype              = 'radio'
+restfreq             = []
+interpolation        = 'nearest'
+perchanweightdensity = True
+gridder              = ''
+facets               = 1
+psfphasecenter       = ''
+wprojplanes          = 192
+vptable              = ''
+mosweight            = False
+aterm                = True
+psterm               = True
+wbawp                = True
+conjbeams            = True
+cfcache              = ''
+usepointing          = False
+computepastep        = 360.0
+rotatepastep         = 5.0
+pointingoffsetsigdev = []
+pblimit              = 0.05
+normtype             = 'flatnoise'
+deconvolver          = 'hogbom'
+scales               = []
+nterms               = 1
+smallscalebias       = 0.6
+#fusedthreshold       = 0.0
+#largestscale         = -1
+restoration          = True
+restoringbeam        = []
+pbcor                = False
+outlierfile          = ''
+weighting            = 'natural'
+robust               = 0.5
+noise                = '1.0Jy'
+npixels              = 0
+uvtaper              = []
+niter                = 10000
+gain                 = 0.1
+threshold            = '0.005mJy'
+nsigma               = 0.0
+cycleniter           = 500
+cyclefactor          = 1.0
+minpsffraction       = 0.05
+maxpsffraction       = 0.8
+interactive          = False
+usemask              = 'user'
+mask                 = ''
+pbmask               = 0.05
+sidelobethreshold    = 3.0
+noisethreshold       = 5.0
+lownoisethreshold    = 1.5
+negativethreshold    = 0.0
+smoothfactor         = 1.0
+minbeamfrac          = 0.3
+cutthreshold         = 0.01
+growiterations       = 75
+dogrowprune          = True
+minpercentchange     = -1.0
+verbose              = False
+fastnoise            = True
+restart              = True
+savemodel            = 'none'
+calcres              = True
+calcpsf              = True
+psfcutoff            = 0.35
+parallel             = False

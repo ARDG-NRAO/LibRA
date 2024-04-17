@@ -1,0 +1,48 @@
+# Copyright (C) 2021
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+
+include: htclean.htc
+include: imcycle.htc
+
+request_gpus = 1
+request_memory = $(memResidual)
+request_disk = $(diskResidual)
+
++UNDESIRED_Sites = "FIU-PATH"
+
+arguments = "'$(python_state)' '$(input_file)' '$(partId)$(part)' '$(msname)' '$(imagename)' '$(cfcache)' '$(initialdir)'"
+
+
+output = makeDirtyImage_$(partId).stdout
+error  = makeDirtyImage_$(partId).stderr
+log    = makeDirtyImage_$(partId).condor.log
+
+should_transfer_files = YES
+transfer_input_files = bin, $(softwaredir)/rr_80.sh, $(softwaredir)/casa-data.tgz, $(cfcachedir)/$(cfcache).tar, $(msdir)/$(msname)_$(partId).ms.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).weight.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).sumwt.tar, $(imagesdir)/$(imagename).workdirectory.imcycle0/$(imagename).$(partId).psf.tar
+
+transfer_output_remaps = "casalogs.$(partId).$(python_state).tgz = $(initialdir)/casalogs.$(partId).$(python_state).imcycle$(imcycle).tgz; $(imagename).$(partId).residual.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).residual.tar; $(imagename).$(partId).weight.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).weight.tar; $(imagename).$(partId).sumwt.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).sumwt.tar; $(imagename).$(partId).psf.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).psf.tar"
+
+queue

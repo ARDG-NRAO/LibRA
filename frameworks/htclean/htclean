@@ -1,0 +1,164 @@
+# Copyright (C) 2021
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+#!/bin/bash
+
+Usage()
+{
+    echo ""
+    echo "$0 script to setup and run htclean."
+    echo ""
+    echo "USAGE: $0 -m <mode> [-w <initial directory>] [-p <CASA parameter file>] [-n <number of distributed processes>] [-N <number of imaging cycles>] [-c <cfcache location>] [-d <ms location>] [-r <CASA version>]"
+    echo ""
+    echo "    -m sets the execution mode. Available modes: htcondor, hpg and serial. For 'htcondor' mode, run $0 on a submit host (nmpost-master); for 'hpg', run on gpuhost00X."
+    echo "    -w (optional) initial directory for htclean support files and products. Non-existing paths will be created. The default is the current directory."
+    echo "    -p (optional) location of the file containing CASA tclean parameters (compatible with tclean.last). Default is ./htclean.parms."
+    echo "    -n (optional) number of distributed processes, only used with '-m htcondor'. Default is 16."
+    echo "    -N (optional) number of imaging cycles. An imaging cycle consists of one model(minor) cycle and one residual(major) cycle. Default is 20."
+    echo "    -c (optional) path (parent directory) to copy the cfcache from. If not set, $0 expects a pre-existing copy of the cfcache in the initial directory."
+    echo "    -d (optional) path (parent directory) to copy the measurement set (MS) from. If not set, $0 expects a pre-existing copy of the MS in the initial directory."
+    echo "    -r (optional) path of CASA version to use. Default is current release."
+    echo "    -h prints Usage and exits"
+    echo ""
+}
+
+htcondor()
+{
+    # check host - htcondor mode is designed to run on nmpost-master (submit host) 
+    # an exception is generated if not on nmpost-master
+
+    HOST=`hostname | grep nmpost-master`
+    if [ $? -ne 0 ]
+    then
+        echo "Error: please execute on nmpost-master in order to run mode ${MODE}."
+        exit 1
+    fi
+
+    # change into working dir and create directory structure
+
+    cd ${initialdir}
+    mkdir bin data working
+
+    # copy htclean files into bin directory
+
+    for ext in htc dag py
+    do
+        cp ${bin}htclean/*.${ext} bin
+    done
+
+    cp ${bin}htclean/htclean_condor.sh bin
+
+
+    # write dags consistent with nprocs (if different from 16)
+
+    cd bin
+
+    if [ ${nprocs} -ne ${default_nprocs} ]
+    then
+        writeGriddingDAGs ${nprocs}
+    fi
+
+    # submit htcondor job
+    condor_submit_dag htclean.dag
+}
+
+hpg()
+{
+    # check host - HPG mode is designed to run on gpuhost00X and call 'roadrunner' directly
+    # an exception is generated if not on gpuhost00X
+
+    HOST=`hostname | grep 'gpuhost\|herapost\|nmpost064'`
+    if [ $? -ne 0 ]
+    then
+        echo "Error: please execute on gpuhost00X in order to run mode ${MODE}."
+        exit 1
+    fi
+
+    # check parameter files in working dir
+    for FILE in weight.def psf.def dirty.def residual.def
+    do
+        if [ ! -f $FILE ]
+        then
+            echo "Error: $FILE does not exist in working directory."
+            exit 1
+        fi
+    done
+
+    # run hphtclean
+    ${BIN}hphtclean.sh ${parfile} ${imagename} ${ncycles} &> hphtclean.out
+}
+
+serial()
+{
+    echo "serial code goes here"
+}
+
+
+# Begin execution block
+
+default_nprocs=16
+
+initialdir=$PWD
+parfile=htclean.params
+nprocs=${default_nprocs}
+ncycles=20
+
+BIN=/users/fmadsen/htclean/
+
+while getopts "m:w:p:n:N:c:d:h" option
+do
+    case "$option" in
+        m) MODE=$OPTARG                       ;;
+        w) initialdir=$OPTARG                 ;;
+        p) parfile=$OPTARG                    ;;
+        n) nprocs=$OPTARG                     ;;
+        N) ncycles=$OPTARG                    ;;
+        c) cfcache=$OPTARG                    ;;
+        d) mspath=$OPTARG                     ;;
+        r) CASAPATH=$OPTARG                   ;;
+        h) Usage; exit 1                      ;;
+        *) echo "wrong args"; Usage; exit 1   ;;
+    esac
+done
+
+if [ "$initialdir" != "$PWD" ]
+then
+    mkdir -p ${initialdir}
+fi
+
+echo "Using imaging parameters from ${parfile}"
+
+imagename=$(grep ^imagename ${parfile} | awk '{print($3)}') && echo "imagename is ${imagename}"
+msname=$(grep ^vis ${parfile} | awk '{print($3)}') && echo "msname is ${msname}"
+cfcname=$(grep ^cfcache ${parfile} | awk '{print($3)}') && echo "cfcname is ${cfcname}"
+
+case "$MODE" in
+    htcondor)    htcondor                                               ;;
+    hpg)         hpg                                                    ;;
+    serial)      serial                                                 ;;
+    *)           echo "Error: ${MODE} unknown mode."                    ;
+                 echo "Run $0 -h for usage and available modes."        ;
+                 echo "";  exit 1                                       ;;
+esac
