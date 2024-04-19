@@ -69,39 +69,40 @@ void compute_pb(const string& pbName,
         logio << os.str() << LogIO::POST;
 }
 
-void addImages(ImageInterface<Float>& target,
+template <class T>
+void addImages(ImageInterface<T>& target,
 	       const vector<string>& partImageNames,
 	       const string& imExt,
 	       const bool& reset_target)
 {
-	PagedImage<Float> tmp(partImageNames[0] + imExt);
-	for (uint part = 1; part < partImageNames.size(); part++)
-	{
-		PagedImage<Float> addImage(partImageNames[part] + imExt);
-		tmp += addImage;
-	}
-	if (! reset_target)
-	       tmp += target;	
-	target.copyData(tmp);
-}
+  //	PagedImage<T> tmp(partImageNames[0] + imExt);
+  //for (uint part = 1; part < partImageNames.size(); part++)
 
-void gather(ImageInterface<Float>& target,
-	    ImageInterface<Float>& weight,
-	    ImageInterface<Float>& sumwt,
+  //if (reset_target) FIGURE HOW TO ZERO THE TARGET IMAGE
+  for (auto partName : partImageNames)
+    target += PagedImage<T>(partName + imExt);
+  // if (! reset_target)
+  //   tmp += target;	
+  // target.copyData(tmp);
+}
+template <class T>
+void gather(ImageInterface<T>& target,
+	    ImageInterface<T>& weight,
+	    ImageInterface<T>& sumwt,
 	    const vector<string>& partImageNames,
 	    const std::string& imType,
 	    const bool& reset_target)
 {
-	if (imType == "psf")
-	{
-		addImages(sumwt, partImageNames, ".sumwt", reset_target);
-		addImages(weight, partImageNames, ".weight", reset_target);
-		addImages(target, partImageNames, ".psf", reset_target);
-	}
-	else if (imType == "residual")
-	{
-		addImages(target, partImageNames, ".residual", reset_target);
-	}
+  if (imType == "psf")
+    {
+      addImages<T>(sumwt, partImageNames, ".sumwt", reset_target);
+      addImages<T>(weight, partImageNames, ".weight", reset_target);
+      addImages<T>(target, partImageNames, ".psf", reset_target);
+    }
+  else if (imType == "residual")
+    {
+      addImages<T>(target, partImageNames, ".residual", reset_target);
+    }
 }
 
 
@@ -164,7 +165,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before gather");
 
-	  gather(*targetImage, *wImage, *swImage, {"refim_n1", "refim_n2"}, "residual", true);
+	  gather<float>(*targetImage, *wImage, *swImage, {"refim_n1", "refim_n2"}, "residual", true);
 
 	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after gather");
 	} // refactor to avoid repeating commands to open images on both modes
