@@ -51,7 +51,7 @@ using namespace casacore;
  * @param tableName The name of the table to print information about.
  */
 void acme_func(std::string& imageName, std::string& deconvolver,
-		string& normtype, string& workdir, string& imType,
+		string& normtype, string& workdir, string& mode, string& imType,
 		float& pblimit, int& nterms, int& facets,
 		float& psfcutoff,
 		vector<float>& restoringbeam,
@@ -72,7 +72,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
  */
 void UI(Bool restart, int argc, char **argv, bool interactive,
         std::string& imageName, std::string& deconvolver,
-        string& normtype, string& workdir, string& imType,
+        string& normtype, string& workdir, string& mode, string& imType,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,

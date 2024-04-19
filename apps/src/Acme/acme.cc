@@ -69,8 +69,44 @@ void compute_pb(const string& pbName,
         logio << os.str() << LogIO::POST;
 }
 
+void addImages(ImageInterface<Float>& target,
+	       const vector<string>& partImageNames,
+	       const string& imExt,
+	       const bool& reset_target)
+{
+	PagedImage<Float> tmp(partImageNames[0] + imExt);
+	for (uint part = 1; part < partImageNames.size(); part++)
+	{
+		PagedImage<Float> addImage(partImageNames[part] + imExt);
+		tmp += addImage;
+	}
+	if (! reset_target)
+	       tmp += target;	
+	target.copyData(tmp);
+}
+
+void gather(ImageInterface<Float>& target,
+	    ImageInterface<Float>& weight,
+	    ImageInterface<Float>& sumwt,
+	    const vector<string>& partImageNames,
+	    const std::string& imType,
+	    const bool& reset_target)
+{
+	if (imType == "psf")
+	{
+		addImages(sumwt, partImageNames, ".sumwt", reset_target);
+		addImages(weight, partImageNames, ".weight", reset_target);
+		addImages(target, partImageNames, ".psf", reset_target);
+	}
+	else if (imType == "residual")
+	{
+		addImages(target, partImageNames, ".residual", reset_target);
+	}
+}
+
+
 void acme_func(std::string& imageName, std::string& deconvolver,
-               string& normtype, string& workdir, string& imType,
+               string& normtype, string& workdir, string& mode, string& imType,
                float& pblimit, int& nterms, int& facets,
                float& psfcutoff,
                vector<float>& restoringbeam,
@@ -83,6 +119,9 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   String subType;
   
   LogIO logio(LogOrigin("acme","acme_func"));
+
+  if (! ((mode == "gather") || (mode == "normalize")))
+    logio << "Unrecognized mode. Allowed values are gather and normalize." << LogIO::EXCEPTION;
 
   if ((imType == "residual") || (imType == "psf") || (imType == "model")) {
     targetName = imageName + "." + imType;
@@ -109,11 +148,31 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
       if (type=="Image")
 	{
+
+	if (mode == "gather") {
+          LatticeBase* lattPtr = ImageOpener::openImage (targetName);
+          ImageInterface<Float> *targetImage;
+          targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+
+	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
+          ImageInterface<Float> *wImage;
+          wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+
+          LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
+          ImageInterface<Float> *swImage;
+          swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+
+	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before gather");
+
+	  gather(*targetImage, *wImage, *swImage, {"refim_n1", "refim_n2"}, "residual", true);
+
+	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after gather");
+	} // refactor to avoid repeating commands to open images on both modes
+
+	else if (mode == "normalize") { // just to test mode=gather; move normalize code to function later
 	  LatticeBase* lattPtr = ImageOpener::openImage (targetName);
 	  ImageInterface<Float> *targetImage;
-
 	  targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
-
 
 	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
 	  ImageInterface<Float> *wImage;
@@ -132,8 +191,8 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 // psf = psf / max(psf)
 // weight = weight / SoW
 // itsPBScaleFactor = max(weight)
-// residual = residual / (sqrt(weight) * itsPBScaleFactor)
-// model = model * (sqrt(weight) / itsPBScaleFactor)
+// residual = residual / (Sow * (sqrt(weight) * itsPBScaleFactor))
+// model = model / (sqrt(weight) * itsPBScaleFactor)
 	      
 
 	  IPosition pos(4,0,0,0,0);
@@ -219,6 +278,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 		  logio << os.str() << LogIO::POST;
 	  }*/
 
+	} // end mode=normalize
 	}
       else
 	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
