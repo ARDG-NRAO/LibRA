@@ -21,6 +21,37 @@ include(FindPkgConfig)
 set(ENV{PATH} $ENV{PATH}:/usr/local/cuda/bin)
 message("${LIBRA_ID} PATH=$ENV{PATH}")
 LIST(APPEND CMAKE_PROGRAM_PATH  "/usr/local/cuda/bin" ...)
+#
+#------------------------------------------------------------------------------
+# Various repositories and the tags we dependend on
+#
+set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
+set(LIBRA_KOKKOS_GIT_TAG          "4.3.00")
+
+set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
+set(LIBRA_HPG_GIT_TAG             "main")
+
+set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/preshanth/casacore.git")#"https://github.com/casacore/casacore.git")#
+set(LIBRA_CASACORE_GIT_TAG        "fix_regex_v3.5.0")#"2e121e67bf881ac7f309604447a4b0d481913902")#
+
+set(LIBRA_PARAFEED_GIT_REPOSITORY "https://github.com/sanbee/parafeed.git")
+set(LIBRA_PARAFEED_GIT_TAG        "master")
+
+set(LIBRA_SAKURA_GIT_REPOSITORY   "https://github.com/tnakazato/sakura.git")
+set(LIBRA_SAKURA_GIT_TAG          "libsakura-5.1.3")
+
+set(LIBRA_PYBIND11_GIT_REPOSITORY "https://github.com/pybind/pybind11.git")
+set(LIBRA_PYBIND11_GIT_TAG        "v2.10.2")
+
+set(LIBRA_FFTW_URL                "http://www.fftw.org/fftw-3.3.10.tar.gz")
+
+set(LIBRA_GIT_REPOSITORY          "https://github.com/google/googletest.git")
+set(LIBRA_GIT_TAG                 "v1.14.0")
+
+set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
+#------------------------------------------------------------------------------
+#
+
 
 if(NOT DEFINED LIBRA_USE_LIBSAKURA)
   set(LIBRA_USE_LIBSAKURA OFF)
@@ -97,8 +128,8 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
   message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME: ${Kokkos_CUDA_ARCH_NAME}")
   ExternalProject_Add(
     Kokkos
-    GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-    GIT_TAG        4.1.00
+    GIT_REPOSITORY ${LIBRA_KOKKOS_GIT_REPOSITORY}
+    GIT_TAG        ${LIBRA_KOKKOS_GIT_TAG}
     SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/Kokkos
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
@@ -108,7 +139,6 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
   	               -D${Kokkos_CUDA_ARCH_NAME}=ON
   	               -DKokkos_ENABLE_OPENMP=ON
   	               -DKokkos_ENABLE_SERIAL=ON
-  		             -DKokkos_ENABLE_PROFILING=ON
   	               -DBUILD_SHARED_LIBS=ON
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
@@ -117,8 +147,8 @@ else()
   message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME is empty. Will automatically detect the CUDA architecture")
   ExternalProject_Add(
     Kokkos
-    GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-    GIT_TAG        4.1.00
+    GIT_REPOSITORY ${LIBRA_KOKKOS_GIT_REPOSITORY}
+    GIT_TAG        ${LIBRA_KOKKOS_GIT_TAG}
     SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/Kokkos
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
@@ -136,7 +166,7 @@ endif()
 # Add FFTW as an external project
 ExternalProject_Add(
   FFTW
-  URL             http://www.fftw.org/fftw-3.3.10.tar.gz
+  URL             ${LIBRA_FFTW_URL}
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR}
@@ -153,8 +183,8 @@ ExternalProject_Get_Property(Kokkos install_dir)
 # Add HPG as an external project
 ExternalProject_Add(
   Hpg
-  GIT_REPOSITORY https://HPG:glpat-BNVcKcoR_Tr9pYCxruRW@gitlab.nrao.edu/pjaganna/hpg.git
-  GIT_TAG        v2.0.1
+  GIT_REPOSITORY ${LIBRA_HPG_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_HPG_GIT_TAG}
   DEPENDS        Kokkos FFTW
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/HPG
   BINARY_DIR     ${BUILD_DIR}/HPG
@@ -178,8 +208,8 @@ ExternalProject_Add(
 # Add parafeed as an external project
 ExternalProject_Add(
   Parafeed
-  GIT_REPOSITORY https://github.com/sanbee/parafeed.git
-  GIT_TAG        master
+  GIT_REPOSITORY ${LIBRA_PARAFEED_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_PARAFEED_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/parafeed
   BINARY_DIR     ${BUILD_DIR}/parafeed
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} 
@@ -195,7 +225,7 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/install/data)
 # Create an external project for the data download
 ExternalProject_Add(
   DataDownload
-  DOWNLOAD_COMMAND curl ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -
+  DOWNLOAD_COMMAND curl ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -204,8 +234,8 @@ ExternalProject_Add(
 # Create the Casacore external project
 ExternalProject_Add(
   Casacore
-  GIT_REPOSITORY https://github.com/preshanth/casacore.git
-  GIT_TAG        fix_regex_v3.5.0
+  GIT_REPOSITORY ${LIBRA_CASACORE_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_CASACORE_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/casacore
   BINARY_DIR     ${BUILD_DIR}/casacore
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
@@ -231,8 +261,8 @@ if (LIBRA_USE_LIBSAKURA)
   #Add Sakura as an external project
   ExternalProject_Add(
     Sakura
-    GIT_REPOSITORY https://github.com/tnakazato/sakura.git
-    GIT_TAG        libsakura-5.1.3
+    GIT_REPOSITORY ${LIBRA_SAKURA_GIT_REPOSITORY}
+    GIT_TAG        4{LIBRA_SAKURA_GIT_TAG}
     SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
     BINARY_DIR     ${BUILD_DIR}/sakura
     SOURCE_SUBDIR  libsakura
@@ -251,8 +281,8 @@ endif()
 # Add pybind11 as an external project
 ExternalProject_Add(
   Pybind11
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG        v2.10.2
+  GIT_REPOSITORY ${LIBRA_PYBIND11_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_PYBIND11_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/pybind11
   BINARY_DIR     ${BUILD_DIR}/pybind11
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
@@ -266,8 +296,8 @@ ExternalProject_Add(
 # Add GTest as an external project
 ExternalProject_Add(
   GTest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        v1.14.0
+  GIT_REPOSITORY ${LIBRA_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/gtest
   BINARY_DIR     ${BUILD_DIR}/gtest
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
