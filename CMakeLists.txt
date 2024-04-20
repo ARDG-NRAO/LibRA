@@ -45,8 +45,8 @@ set(LIBRA_PYBIND11_GIT_TAG        "v2.10.2")
 
 set(LIBRA_FFTW_URL                "http://www.fftw.org/fftw-3.3.10.tar.gz")
 
-set(LIBRA_GIT_REPOSITORY          "https://github.com/google/googletest.git")
-set(LIBRA_GIT_TAG                 "v1.14.0")
+set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
+set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
 #------------------------------------------------------------------------------
@@ -296,8 +296,8 @@ ExternalProject_Add(
 # Add GTest as an external project
 ExternalProject_Add(
   GTest
-  GIT_REPOSITORY ${LIBRA_GIT_REPOSITORY}
-  GIT_TAG        ${LIBRA_GIT_TAG}
+  GIT_REPOSITORY ${LIBRA_GTEST_GIT_REPOSITORY}
+  GIT_TAG        ${LIBRA_GTEST_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/gtest
   BINARY_DIR     ${BUILD_DIR}/gtest
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
