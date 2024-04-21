@@ -1,6 +1,6 @@
 ## Description
 
-Framework code for iterative image reconstruction using LibRA [apps](/README.md#available-standalone-applications-apps).
+Framework code for iterative image reconstruction using LibRA [apps](/README.md#currently-available-apps).
 
 # To Do List
 
