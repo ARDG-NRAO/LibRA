@@ -18,7 +18,7 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-end-user via [standalone applications](#available-standalone-applications-apps) to conveniently
+end-user via [standalone applications](#currently-available-pps) to conveniently
 configure and execute the algorithms from a Linux shell.  The
 low-level algorithms exposed by these interfaces are factorized to be
 used as components in a higher-level _generalized_ [Algorithm
@@ -38,8 +38,8 @@ does not required RA-specific software stack and dependencies.
 ### The repository contains
 
 - [ ] scientific code of algorithms for data calibration and image reconstruction
-- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps), and all the dependencies other than the [System Requirements](#system-requirements).
+- [ ] a suite of [standalone applications (apps)](#currently-available-apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the [apps](#currently-available-apps), and all the dependencies other than the [System Requirements](#system-requirements).
 
 
 A containerized means of building the LibRA project is available
@@ -58,7 +58,7 @@ compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph (compared to the [CASA software stack and
 depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
-[standalone applications](#available-standalone-applications-apps) are
+[standalone applications](#currently-available-apps) are
 also available which can be built as relocatable Linux executable
 (this may also be possible for MacOS, but we haven't test it).
 
@@ -91,7 +91,7 @@ Standalone applications (apps) give access to algorithms via commandline options
 - [ ] `acme` : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
 - [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] `coyote` : An application to build the CF Cache used as input to the `roadrunner` application.
-- [ ] `htclean` : A framework that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#available-standalone-applications-apps) as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  So far, this has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA [apps](#available-standalone-applications-apps) as components has also been used for a prototype deployment on AWS.
+- [ ] `htclean` : A framework that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#currently-available-apps) as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  So far, this has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA [apps](#currently-available-apps) as components has also been used for a prototype deployment on AWS.
 - [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
 - [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
 - [ ] `subms` : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
@@ -135,7 +135,7 @@ make
 ```
 
 The binary [standalone
-applications](#available-standalone-applications-apps) will be installed
+applications](#currently-available-apps) will be installed
 in ```libra/install/bin``` directory.
 
 ### Makefile Based Building
@@ -155,7 +155,7 @@ make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/k
 ```
 
 The binary [standalone
-applications](#available-standalone-applications-apps) will be install
+applications](#currently-available-apps) will be install
 in ```libra/install/linux_64b/bin``` directory.
 
 ##### Setting up the various variables in `makefile.libra`
