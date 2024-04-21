@@ -1,8 +1,8 @@
-## Description
+# Description
 
 Framework code for iterative image reconstruction using LibRA [apps](/README.md#currently-available-apps).
 
-# To Do List
+## To Do List
 
 - [ ] Make a Python version of libra_htclean.sh.  This will allow some error handling as well.
 - [ ] Script to deploy libra_htclean in parallel via Slurm.  Similar to the one that deploys it on the PATh network using HTCondor scheduler.
