@@ -121,6 +121,8 @@ The following list of packages need to be installed. Following is a typical comm
 
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
 
+See [CUDA GPUs -- Compute Capability](https://developer.nvidia.com/cuda-gpus) page for details of NVIDIA GPUs to determine the value for the `Kokkos_CUDA_ARCH_NAME`.
+
 ```
 git clone https://github.com/ARDG-NRAO/LibRA.git
 cd LibRA
