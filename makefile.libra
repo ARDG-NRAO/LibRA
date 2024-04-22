@@ -58,6 +58,9 @@ PATH:=/usr/local/cuda-12.2/bin/:/usr/lib64/openmpi/bin/:${PATH}
 # No. of cores to use for compiling
 NCORES=12
 
+# If ON, casa build target will depend on libsakur and eigen3 libraries
+LIBRA_USE_LIBSAKURA=OFF
+
 # If ON, apps are built as libraries for unit tests. Default is faulse where apps are built as binaries.
 Apps_BUILD_TESTS=OFF
 
@@ -314,6 +317,7 @@ casa-cmake:
 	-DPKG_CONFIG_USE_CMAKE_PREFIX_PATH=${DEPENDBUILDDIR} \
 	-DFFTW_ROOT_DIR=${ROOT}/fftw-${FFTW_VERSION} \
 	-DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} \
+	-DLIBRA_USE_LIBSAKURA=${LIBRA_USE_LIBSAKURA} \
 	${INSTALLOPTS} \
 	${CASASRC}
 #	${CASASRC}/casatools/src/code 
