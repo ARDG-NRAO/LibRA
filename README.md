@@ -18,7 +18,7 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-end-user via [standalone applications](#available-standalone-applications-apps) to conveniently
+end-user via [standalone applications](#currently-available-apps) to conveniently
 configure and execute the algorithms from a Linux shell.  The
 low-level algorithms exposed by these interfaces are factorized to be
 used as components in a higher-level _generalized_ [Algorithm
@@ -38,8 +38,8 @@ does not required RA-specific software stack and dependencies.
 ### The repository contains
 
 - [ ] scientific code of algorithms for data calibration and image reconstruction
-- [ ] a suite of [standalone applications (apps)](#available-standalone-applications-apps) to configure and trigger the algorithms from commandline, and
-- [ ] a build system to build the library of algorithms, the [apps](#available-standalone-applications-apps), and all the dependencies other than the [System Requirements](#system-requirements).
+- [ ] a suite of [standalone applications (apps)](#currently-available-apps) to configure and trigger the algorithms from commandline, and
+- [ ] a build system to build the library of algorithms, the [apps](#currently-available-apps), and all the dependencies other than the [System Requirements](#system-requirements).
 
 
 A containerized means of building the LibRA project is available
@@ -57,8 +57,8 @@ part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph (compared to the [CASA software stack and
-depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
-[standalone applications](#available-standalone-applications-apps) are
+dependencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
+[standalone applications](#currently-available-apps) are
 also available which can be built as relocatable Linux executable
 (this may also be possible for MacOS, but we haven't test it).
 
@@ -77,7 +77,7 @@ Algorithms in other domains.
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
-[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
+[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the re-sampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implementation.
 
 ### Standalone Applications (apps)
 Standalone applications (apps) give access to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.  More detailed documentation for the user interfaces can be found via the following links:
@@ -87,14 +87,16 @@ Standalone applications (apps) give access to algorithms via commandline options
 - [ ] [Customization](https://github.com/sanbee/parafeed/blob/wiki/UserDoc.md#customization)
 
 #### Currently available Apps
-- [ ] `roadrunner` : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
-- [ ] `acme` : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
-- [ ] `hummbee` : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
-- [ ] `coyote` : An application to build the CF Cache used as input to the `roadrunner` application.
-- [ ] `htclean` : A framework that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#available-standalone-applications-apps) as algorithmic components.  This, for example, implements the iterative image reconstruction technique widely used in RA that alternates between the `major cycle` and the `minor cycle`.  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs.  So far, this has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA [apps](#available-standalone-applications-apps) as components has also been used for a prototype deployment on AWS.
-- [ ] `tableinfo` : An application to print summary of the data (MS) and images (information from image headers).
-- [ ] `mssplit` : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
-- [ ] `subms` : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
+- [ ] [`roadrunner`](apps/src) : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
+- [ ] [`acme`](apps/src) : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
+- [ ] [`hummbee`](apps/src) : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
+- [ ] [`coyote`](apps/src) : An application to build the CF Cache used as input to the `roadrunner` application.
+
+- [ ] [`libra_htclean.sh`](frameworks/htclean) : A script that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#currently-available-apps) as algorithmic components for imaging.  This implements the iterative image reconstruction technique widely used in RA for derivative and model update calculations (the `major cycle` and `minor cycle` respectively).  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs using the framework in `template_PATh`.  This has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A variant that uses LibRA [apps](#currently-available-apps) as components has also been used for a prototype deployment on AWS.
+
+- [ ] [`tableinfo`](apps/src) : An application to print summary of the data (MS) and images (information from image headers).
+- [ ] [`mssplit`](apps/src) : An application to split a data (in the MS format) along various axis of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
+- [ ] [`subms`](apps/src) : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
 
 ## System requirements
 The following come default with RHEL8 or similar systems:
@@ -107,9 +109,12 @@ The `ccache` dependency can be dropped by setting `-DUseCcache=0` in the `casaco
 
 The following list of packages need to be installed. Following is a typical command to install:
 
-- [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
+- [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl}-devel ```
 
-- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.  _Note that for only building the software, an actual GPU on the build-host is not necessary._
+If `LIBRA_USE_LIBSAKURA=ON` also install Eigen3 library:
+- [ ] ```dnf -y install eigen3-devel ```
+
+- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your mileage may vary.  _Note that for only building the software, an actual GPU on the build-host is not necessary._
       
       export distro=rhel8
       export arch=x86_64
@@ -121,13 +126,17 @@ The following list of packages need to be installed. Following is a typical comm
 
 A clone of this repository will get the ```src``` directory with the scientific code (implementation of the RA algorithms), ```apps/src``` directory with the source code for the standalone application and the top level ```CMakeLists.txt``` file to compile the code including build time dependencies.
 
+See [CUDA GPUs -- Compute Capability](https://developer.nvidia.com/cuda-gpus) page for details of NVIDIA GPUs to determine the value for the `Kokkos_CUDA_ARCH_NAME`.
+
 ```
 git clone https://github.com/ARDG-NRAO/LibRA.git
 cd LibRA
 mkdir build 
 cd build
 # A list of Kokkos CUDA ARCH_NAME can be found at Kokkos web page https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
+# See also CUDA GPUs -- Compute Capability at https://developer.nvidia.com/cuda-gpus.
 # Default behaviour is to determined CUDA ARCH automatically.  
+#
 # Default behaviour is Apps_BUILD_TESTS=OFF
 cmake -DKokkos_CUDA_ARCH_NAME=<ARCH_NAME> -DApps_BUILD_TESTS=OFF .. # The tests are built when the flag is turned on
 # It is set to run "make -j NCORES" internally, so it is important to just run "make" below to prevent parallelizing make twice. 
@@ -135,7 +144,7 @@ make
 ```
 
 The binary [standalone
-applications](#available-standalone-applications-apps) will be installed
+applications](#currently-available-apps) will be installed
 in ```libra/install/bin``` directory.
 
 ### Makefile Based Building
@@ -155,7 +164,7 @@ make Kokkos_CUDA_ARCH=<ARCH_NAME from Kokkos web page https://kokkos.github.io/k
 ```
 
 The binary [standalone
-applications](#available-standalone-applications-apps) will be install
+applications](#currently-available-apps) will be install
 in ```libra/install/linux_64b/bin``` directory.
 
 ##### Setting up the various variables in `makefile.libra`
