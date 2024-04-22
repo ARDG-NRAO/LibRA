@@ -18,7 +18,7 @@ algorithmically-necessary code, and a build system to compile it into
 a library of algorithms.  Such a library can be directly used as a
 third-party library by others in the RA community.  Interfaces are
 provided to access the algorithms from C++ and Python, or as an
-end-user via [standalone applications](#currently-available-pps) to conveniently
+end-user via [standalone applications](#currently-available-apps) to conveniently
 configure and execute the algorithms from a Linux shell.  The
 low-level algorithms exposed by these interfaces are factorized to be
 used as components in a higher-level _generalized_ [Algorithm
@@ -57,7 +57,7 @@ part of the _much_ larger CASA code base.  The code here can be
 compiled into a standalone reusable software library.  This
 significantly simplifies the software stack and the resulting software
 dependency graph (compared to the [CASA software stack and
-depdencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
+dependencies](doc/figures/RRStack-CASA-Corrected-Modified.png)). A suite of
 [standalone applications](#currently-available-apps) are
 also available which can be built as relocatable Linux executable
 (this may also be possible for MacOS, but we haven't test it).
@@ -77,7 +77,7 @@ Algorithms in other domains.
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
-[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the resampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implemention.
+[`libhpg`](https://gitlab.nrao.edu/mpokorny/hpg.git) is a standalone library that deploys the compute-intensive calculations for imaging on a GPU or a CPU core (like the re-sampling of irregular data to and from a regular grid -- a.k.a. "gridding" and "degridding" in RA jargon).  This library is built on the [`Kokkos`](https://github.com/kokkos/kokkos.git) framework for performance portable implementation.
 
 ### Standalone Applications (apps)
 Standalone applications (apps) give access to algorithms via commandline options in the `NAME=Val0[,Val1,...]` format, or via an embedded interactive user interface.  More detailed documentation for the user interfaces can be found via the following links:
@@ -92,10 +92,10 @@ Standalone applications (apps) give access to algorithms via commandline options
 - [ ] [`hummbee`](apps/src) : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] [`coyote`](apps/src) : An application to build the CF Cache used as input to the `roadrunner` application.
 
-- [ ] [`libra_htclean.sh`](frameworks/htclean) : A script that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#currently-available-apps) as algorithmic components for imaging.  This implements the iterative image reconstruction technique widely used in RA for derivative and model update calculations (the `major cycle` and `minor cycle` repsectively).  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs using the framework in `template_PATh`.  This has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A varient that uses LibRA [apps](#currently-available-apps) as components has also been used for a prototype deployment on AWS.
+- [ ] [`libra_htclean.sh`](frameworks/htclean) : A script that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#currently-available-apps) as algorithmic components for imaging.  This implements the iterative image reconstruction technique widely used in RA for derivative and model update calculations (the `major cycle` and `minor cycle` respectively).  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs using the framework in `template_PATh`.  This has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A variant that uses LibRA [apps](#currently-available-apps) as components has also been used for a prototype deployment on AWS.
 
 - [ ] [`tableinfo`](apps/src) : An application to print summary of the data (MS) and images (information from image headers).
-- [ ] [`mssplit`](apps/src) : An application to split a data (in the MS format) along various axies of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
+- [ ] [`mssplit`](apps/src) : An application to split a data (in the MS format) along various axis of the data domain.  The resulting data can be written as a deep-copy, or as a reference to the input data base.
 - [ ] [`subms`](apps/src) : Functionally the same as `mssplit` but additionally re-normalizes the sub-tables in the resulting data base.
 
 ## System requirements
@@ -111,7 +111,10 @@ The following list of packages need to be installed. Following is a typical comm
 
 - [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
 
-- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your milage may vary.  _Note that for only building the software, an actual GPU on the build-host is not necessary._
+If `LIBRA_USE_LIBSAKURA=ON` also install Eigen3 library:
+- [ ] ```dnf -y install eigen3-devel ```
+
+- [ ] An installation of the appropriate version of CUDA is also required for GPU support in the ```roadrunner``` app.  This dependence is limited to the ```Kokkos``` and ```HPG``` libraries below. We used the following commands to install CUDA libraries for cross compilation. Your mileage may vary.  _Note that for only building the software, an actual GPU on the build-host is not necessary._
       
       export distro=rhel8
       export arch=x86_64
