@@ -109,7 +109,7 @@ The `ccache` dependency can be dropped by setting `-DUseCcache=0` in the `casaco
 
 The following list of packages need to be installed. Following is a typical command to install:
 
-- [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3}-devel ```
+- [ ] ```dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl}-devel ```
 
 If `LIBRA_USE_LIBSAKURA=ON` also install Eigen3 library:
 - [ ] ```dnf -y install eigen3-devel ```
