@@ -40,6 +40,8 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 		float& pblimit, int& nterms, int& facets,
 		float& psfcutoff,
 		vector<float>& restoringbeam,
+		vector<string>& partImageNames,
+                bool& resetImages,
 		Bool& computePB);
 
 //
@@ -56,6 +58,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
+	vector<string>& partImageNames,
+        bool& resetImages,
 	bool& computePB)
 {
   clSetPrompt(interactive);
@@ -81,10 +85,12 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       //      i=1;clgetIValp("nterms", nterms,i);
       //      i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
+      i=1;clgetBValp("resetimages", resetImages, i);
       i=1;clgetBValp("computepb", computePB, i);
 
       int N;
       //      N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
+        N=0; N=clgetNSValp("partimagenames", partImageNames, N);
       
       EndCL();
     }
@@ -108,8 +114,10 @@ int main(int argc, char **argv)
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  Bool computePB=False;
-  Bool restartUI=False;
+  vector<string> partImageNames;
+  Bool resetImages=false;
+  Bool computePB=false;
+  Bool restartUI=false;
   bool interactive = true;
 
  RENTER:// UI re-entry point.
@@ -118,14 +126,14 @@ int main(int argc, char **argv)
       UI(restartUI,argc, argv, interactive, 
         imageName, deconvolver, normtype, 
         workdir, mode, imType, pblimit, nterms, 
-        facets, psfcutoff, restoringbeam, 
-        computePB);
+        facets, psfcutoff, restoringbeam, partImageNames,
+        resetImages, computePB);
       
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      acme_func(imageName, deconvolver, normtype, workdir, mode, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
+      acme_func(imageName, deconvolver, normtype, workdir, mode, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, partImageNames, resetImages, computePB);
     }
   catch (clError& x)
     {

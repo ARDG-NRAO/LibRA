@@ -55,6 +55,8 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 		float& pblimit, int& nterms, int& facets,
 		float& psfcutoff,
 		vector<float>& restoringbeam,
+		vector<string>& partImageNames,
+		bool& resetImages,
 		Bool& computePB);
 
 
@@ -76,6 +78,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
+	vector<string>& partImageNames,
+	bool& resetImages,
         bool& computePB);
 
 
