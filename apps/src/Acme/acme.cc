@@ -211,51 +211,51 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   if (computePB)
     pbName   = imageName + ".pb";
 
-
   try
-    {
-      {
-	Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
-	TableInfo& info = table.tableInfo();
-	type=info.type();
-	subType = info.subType();
-      }
-
-      if (type=="Image")
-	{
-          LatticeBase* lattPtr = ImageOpener::openImage (targetName);
-          ImageInterface<Float> *targetImage;
-          targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
-
-	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
-          ImageInterface<Float> *wImage;
-          wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
-
-          LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
-          ImageInterface<Float> *swImage;
-          swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
-
-	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-
-	  if (mode == "gather") {
-	    gather<float>(*targetImage, *wImage, *swImage, partImageNames, imType, resetImages);
-	  }
-
-  	  if (mode == "normalize") {
-            normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
-	  
-	    if (computePB)
-              compute_pb(pbName, *wImage, *swImage, pblimit, logio);
-	  }
-
-  	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
-
-	}
-      else
-	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
-    }
+  {
+    // TO DO: target image does not exist when gathering for the first time - must create before this step
+    // or check partImageName[0] when targetName does not exist
+    Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
+    TableInfo& info = table.tableInfo();
+    type=info.type();
+    subType = info.subType();
+  }
   catch(AipsError& e)
-    {
-      logio << e.what() << LogIO::POST;
+  {
+    logio << e.what() << LogIO::EXCEPTION;
+  }
+
+  if (type=="Image")
+  {
+    // checking if all necessary images exist before opening will avoid segfaults
+    LatticeBase* lattPtr = ImageOpener::openImage (targetName);
+    ImageInterface<Float> *targetImage;
+    targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+
+    LatticeBase* wPtr = ImageOpener::openImage(weightName);
+    ImageInterface<Float> *wImage;
+    wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+
+    LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
+    ImageInterface<Float> *swImage;
+    swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+
+    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
+
+    if (mode == "gather") {
+      gather<float>(*targetImage, *wImage, *swImage, partImageNames, imType, resetImages);
     }
+
+    if (mode == "normalize") {
+      normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
+    
+      if (computePB)
+        compute_pb(pbName, *wImage, *swImage, pblimit, logio);
+    }
+
+    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
+
+  }
+  else
+    logio << "imagename does not point to an image." << LogIO::EXCEPTION;
 }
