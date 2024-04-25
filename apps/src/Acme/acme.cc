@@ -25,8 +25,18 @@
 
 #include <acme.h>
 
+#include <iostream>
+#include <sstream>
+#include <sys/types.h>
+#include <unistd.h>
+#include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Path.h>
+
+
 //
 //-------------------------------------------------------------------------
+
 
 void printImageMax(const string& imType,
 		   const ImageInterface<Float>& target,
@@ -49,6 +59,11 @@ void printImageMax(const string& imType,
     }
 }
 
+bool imageExists(const string& imagename)
+{
+  Directory image(imagename);
+  return image.exists();
+}
 
 template <class T>
 void compute_pb(const string& pbName,
@@ -213,9 +228,12 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
   try
   {
-    // TO DO: target image does not exist when gathering for the first time - must create before this step
-    // or check partImageName[0] when targetName does not exist
-    Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
+    string tableName = targetName;
+    if ((! imageExists(targetName)) &&
+	(mode == "gather") &&
+	(partImageNames.size() > 0))
+      tableName = partImageNames[0] + "." + imType;
+    Table table(tableName,TableLock(TableLock::AutoNoReadLocking));
     TableInfo& info = table.tableInfo();
     type=info.type();
     subType = info.subType();
@@ -227,18 +245,34 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
   if (type=="Image")
   {
-    // checking if all necessary images exist before opening will avoid segfaults
-    LatticeBase* lattPtr = ImageOpener::openImage (targetName);
+    // checking if all necessary images exist before opening to avoid segfaults
+    // consider to move code to open images to a function
+    LatticeBase* targetPtr;
     ImageInterface<Float> *targetImage;
-    targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
+    if (imageExists(targetName)) {
+      targetPtr = ImageOpener::openImage (targetName);
+      targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
+    }
+    else
+      logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
 
-    LatticeBase* wPtr = ImageOpener::openImage(weightName);
+    LatticeBase* wPtr;
     ImageInterface<Float> *wImage;
-    wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+    if (imageExists(weightName)) {
+      wPtr = ImageOpener::openImage(weightName);
+      wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+    }
+    else
+      logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
 
-    LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
+    LatticeBase* swPtr;
     ImageInterface<Float> *swImage;
-    swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+    if (imageExists(sumwtName)) {
+      swPtr = ImageOpener::openImage(sumwtName);
+      swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+    }
+    else
+      logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
 
     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
 
