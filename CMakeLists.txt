@@ -98,7 +98,7 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
   ExternalProject_Add(
     Kokkos
     GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-    GIT_TAG        4.1.00
+    GIT_TAG        4.3.00
     SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/Kokkos
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
@@ -118,7 +118,7 @@ else()
   ExternalProject_Add(
     Kokkos
     GIT_REPOSITORY https://github.com/kokkos/kokkos.git
-    GIT_TAG        4.1.00
+    GIT_TAG        4.3.00
     SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/Kokkos
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}

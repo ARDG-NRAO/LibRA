@@ -1,4 +1,4 @@
-//# asp.cc: Implementation of the STL raw Asp
+//# casacore_asp_mdspan.cc: thin layer for casacore to interface with the raw Asp function in the STL/Kokkos mdspan format
 //# Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003
 //# Associated Universities, Inc. Washington DC, USA.
 //#
@@ -26,6 +26,6 @@
 //# $Id$
 
 
-#include <asp.h>
+#include <translation/casacore_asp_mdspan.h>
 
 
