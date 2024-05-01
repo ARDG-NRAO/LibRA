@@ -1,4 +1,4 @@
-//# asp.cc: Implementation of the STL raw Asp
+//# imageInterface.cc: Implementation of mdspan <-> casaimage conversion
 //# Copyright (C) 1996,1997,1998,1999,2000,2001,2002,2003
 //# Associated Universities, Inc. Washington DC, USA.
 //#
@@ -25,7 +25,11 @@
 //#
 //# $Id$
 
+#include <imageInterface.h>
+#include <iostream>
 
-#include <asp.h>
 
-
+void libracore::testing()
+{
+  std::cout << "it prints!" << std::endl;
+}
