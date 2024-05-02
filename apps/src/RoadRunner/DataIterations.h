@@ -86,7 +86,8 @@ public:
    * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
    * @return The total number of rows processed.
    */
-  int iterVB(vi::VisibilityIterator2 *vi2,
+  std::tuple<int, double>
+  iterVB(vi::VisibilityIterator2 *vi2,
 	     vi::VisBuffer2 *vb,
 	     const casacore::CountedPtr<casa::refim::FTMachine>& ftm,
 	     const bool doPSF,
@@ -97,6 +98,7 @@ public:
 	     )
   {
     int vol=0;
+    double dataIO_time=0.0;
     // // Get pointers to the reader and writer methods in VB2 and VI2.
     // auto vi2Writer = [dataCol]()
     // {
@@ -142,8 +144,11 @@ public:
     // 	nVB++;
     //   }
     
+    std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
+
     for (vi2->origin(); vi2->more(); vi2->next())
       {
+
 	if (imagingMode=="predict")
 	  {
 	    // Predict the data into the VB (presumably the name get()
@@ -154,31 +159,40 @@ public:
 	    // in the in-memory model is always in the VB::visCubeModel.
 	    // So always make that persistent in the specified column of
 	    // the VI.
+	    dataIO_start = std::chrono::steady_clock::now();
+
 	    if (dataCol==casa::refim::FTMachine::MODEL)          vi2->writeVisModel(vb->visCubeModel());
 	    else if (dataCol==casa::refim::FTMachine::CORRECTED) vi2->writeVisCorrected(vb->visCubeModel());//vb->visCubeCorrected());
 	    else                                                 vi2->writeVisObserved(vb->visCubeModel());//vb->visCube());
+
+	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+	    dataIO_time += tt.count();
 	  }
 	else
 	  {
 	    // Read the data from a specific data column into the
 	    // in-memory buffer
+	    dataIO_start = std::chrono::steady_clock::now();
+
 	    if (dataCol==casa::refim::FTMachine::CORRECTED)   vb->setVisCube(vb->visCubeCorrected());
 	    else if (dataCol==casa::refim::FTMachine::MODEL)  vb->setVisCube(vb->visCubeModel());
 	    else                                              vb->setVisCube(vb->visCube());
-	    
+
+	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+	    dataIO_time += tt.count();
+
 	    // Grid the data from the VB (presumably the name put()
 	    // means "put the data from the VB into the complex grid")
 	    ftm->put(*vb,-1,doPSF);
 	  }
 	
 	vol+=vb->nRows();
-	
+
 	cfSentNotifier(nVB);
 	
 	nVB++;
       }
-    
-    return vol;
+    return std::make_tuple(vol,dataIO_time);
   };
   
   /**
@@ -195,7 +209,7 @@ public:
    * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
    * @return A tuple containing the total number of rows processed, the number of VisBuffer2 objects processed, and the time spent in the gridding engine.
    */
-  std::tuple<int, int, double>
+  std::tuple<int, int, double,double>
   dataIter(vi::VisibilityIterator2 *vi2,
 	   vi::VisBuffer2 *vb2,
 	   const casacore::CountedPtr<casa::refim::FTMachine>& ftm,
@@ -209,7 +223,7 @@ public:
     int vol=0;
     int nVB=0;
     int spwNdx=0;
-    double griddingEngine_time=0;
+    double griddingEngine_time=0,totalDataIO_time=0.0;
 
     // if (imagingMode=="predict")
     //   {
@@ -272,22 +286,24 @@ public:
   	std::chrono::time_point<std::chrono::steady_clock> griddingEngine_start
   	  = std::chrono::steady_clock::now();
 
-  	vol+=iterVB(vi2, vb2,
-		    ftm,
-		    doPSF,
-		    dataCol_l,
-		    nVB,
-		    imagingMode,
-		    cfSentNotifier);
+  	auto ret = iterVB(vi2, vb2,
+			  ftm,
+			  doPSF,
+			  dataCol_l,
+			  nVB,
+			  imagingMode,
+			  cfSentNotifier);
 
   	std::chrono::duration<double> tt = std::chrono::steady_clock::now() - griddingEngine_start;
   	griddingEngine_time += tt.count();
 
+	vol+=std::get<0>(ret);
+	totalDataIO_time+=std::get<1>(ret);
 	if (isRoot_p)
   	  pm.update(Double(vol));
       }
 
-    return std::make_tuple(nVB, vol,griddingEngine_time);
+    return std::make_tuple(nVB, vol,griddingEngine_time,totalDataIO_time);
   };
 private:
   bool isRoot_p;
