@@ -2,6 +2,9 @@
 #include "Asp/asp.h"
 #include "translation/casacore_asp.h"
 #include "translation/casacore_asp_cube.h"
+#include "translation/casacore_asp_mdspan.h"
+#include "Asp_mdspan/asp_mdspan.h"
+
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -9,7 +12,7 @@ using namespace std::filesystem;
 
 
 namespace test{
-TEST(AspTest, FuncLevel) {
+TEST(AspTest, AspFuncLevel) {
   string specmode="cube";
   float largestscale = -1;
   float fusedthreshold = 0;
@@ -55,9 +58,33 @@ TEST(AspTest, FuncLevel) {
        );
 
   EXPECT_EQ(psfb[1][0],5.0);
-  EXPECT_EQ(residualb[0][3],-20.0);
-  
+  EXPECT_EQ(residualb[0][3],-20.0);  
+}
 
+TEST(AspTest, AspMDSpanFuncLevel)
+{
+  constexpr int n_rows = 2;
+  constexpr int n_cols = 5;
+  int data_row_major[] = {
+       1,   2,   3,  /*|*/  4,   5,  /* X | */
+       6,   7,   8,  /*|*/  9,  10   /* X | */
+  };
+
+  auto m = col_major_mdspan<int>(data_row_major, n_rows, n_cols);
+  Matrix<int> matrix(n_rows, n_cols, 0);
+
+  mdspan2casamatrix<int>(m, matrix);
+  EXPECT_EQ(matrix(1,0), 2);
+  EXPECT_EQ(matrix(0,4), 9);
+
+  int data_b[n_cols * n_rows];
+  auto md2 = col_major_mdspan<int>(data_b, n_rows, n_cols);
+  casamatrix2mdspan<int>(matrix, md2);
+  #if MDSPAN_USE_BRACKET_OPERATOR
+    EXPECT_EQ(md2[1, 0], 2);
+  #else
+    EXPECT_EQ(md2(1, 0), 2);
+  #endif
 }
 
 
@@ -132,6 +159,69 @@ TEST(AspTest, casacore_asp_mfs) {
 
   remove_all(testDir);
 }
+
+
+TEST(AspTest, casacore_asp_mdspan_mfs) {
+
+  // Check that the return value is true
+  string imageName = "unittest_hummbee_mfs_revE";
+  string modelImageName = "unittest_hummbee_mfs_revE.image";
+  string specmode="mfs";
+  float largestscale = -1;
+  float fusedthreshold = 0.007;
+  int nterms=2;
+  float gain=0.2;
+  float threshold=2.6e-07;
+  float nsigma=0.0;
+  int cycleniter=3;
+  float cyclefactor=1.0;
+
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+// Create a unique directory for this test case
+  path testDir = current_path() / testName;
+  string testdir = testDir.string();
+
+  // create dir 
+  std::filesystem::create_directory(testDir);
+
+  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.psf",  testdir +"/unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.mask",  testdir +"/unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.residual",  testdir +"/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  //Step into dir
+  std::filesystem::current_path(testDir);
+
+  casacore_asp_mdspan(imageName, modelImageName,
+                 largestscale, fusedthreshold,
+                 nterms,
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor,
+                 specmode
+                 );
+
+  std::cout << "mdspan unit test fine" << std::endl;
+  PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
+
+  float tol = 0.1;
+  float goldValLoc0 = 0.000332008;
+  float goldValLoc1 = 0.000176319;
+  EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);
+  PagedImage<Float> resimage("unittest_hummbee_mfs_revE.residual");
+  float resGoldValLoc = 9.44497;
+  EXPECT_NEAR(resimage(IPosition(4,1072,1639,0,0)), resGoldValLoc, tol);
+
+  //move to parent directory
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
+}
+
+
+
+
+
 
 TEST(AspTest, casacore_asp_cube) {
   string imageName = "unittest_hummbee";

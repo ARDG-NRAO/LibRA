@@ -23,33 +23,25 @@
 //#
 //# $Id$
 
-#ifndef ASP_FUNC_H
-#define ASP_FUNC_H
+#ifndef ASPMDSPAN_FUNC_H
+#define ASPMDSPAN_FUNC_H
 
-#include <casacore/casa/namespace.h>
-#include <casacore/casa/Logging/LogIO.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/images/Images/ImageInterface.h>
-#include <casacore/casa/Logging/LogMessage.h>
-#include <casacore/casa/Logging/LogSink.h>
 
 #include <synthesis/ImagerObjects/SDAlgorithmBase.h>
-
 #include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
+
+#include <libracore/imageInterface.h>
 
 using namespace casa;
 using namespace casacore;
+using namespace libracore;
 
-//template <typename T>
-//void Asp(T **model, T **psf, T **residual,
-//  T **mask,
-//  size_t size_x, size_t size_y, 
+
 template <typename T>
-void Asp(std::vector<std::vector<T>>& model, 
-  std::vector<std::vector<T>>& psf, 
-  std::vector<std::vector<T>>& residual,
-  std::vector<std::vector<T>>& mask,
+void Asp_mdspan(col_major_mdspan<T> model, 
+  col_major_mdspan<T> psf, 
+  col_major_mdspan<T> residual,
+  col_major_mdspan<T> mask,
   size_t size_x, size_t size_y, 
   float& psfwidth,
   float& largestscale, float& fusedthreshold,
@@ -61,37 +53,19 @@ void Asp(std::vector<std::vector<T>>& model,
   std::string& specmode,
   int nSubChans = 1, int chanid = 0)
 {
-  LogIO os( LogOrigin("Asp","Asp", WHERE) );
+  LogIO os( LogOrigin("Asp_mdspan","Asp_mdspan", WHERE) );
   AspMatrixCleaner itsCleaner;
 
-
-  //IPosition shape(2, size_y, size_x);
-  //Matrix<T> psfMatT(shape, *psf); //itsMatPsf is arrar<float>
-  /*for (int j = 0; j < size_x; j++)
-  {
-    for (int i = 0; i < size_y; i++)
-    {
-      psfMatT(i,j) = psfMatT(i,j)-1;
-      cout << "psfMatT[" << i << "," << j << "] = " << psfMatT(i,j) << endl;
-    }
-  }*/
-  //Matrix<T> psfMat(transpose(psfMatT));
-
-  /*for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      cout << "psfMat[" << i << "," << j << "] = " << psfMat(i,j) << endl;
-    }
-  }*/
+  
   Matrix<T> psfMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       psfMat(i,j) = psf[i][j];
     }
-  }
+  }*/
+  mdspan2casamatrix<T>(psf, psfMat);
   itsCleaner.setPsf(psfMat);
   
 
@@ -115,31 +89,29 @@ void Asp(std::vector<std::vector<T>>& model,
   itsCleaner.setFusedThreshold(fusedthreshold);
   
    
-  ////Matrix<T> maskMatT(shape, *mask); 
-  ////Matrix<T> maskMat(transpose(maskMatT));
   Matrix<T> maskMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       maskMat(i,j) = mask[i][j];
     }
-  }
+  }*/
+  mdspan2casamatrix<T>(mask, maskMat);
 
   itsCleaner.setInitScaleMasks(maskMat);  //Array<Float> itsMatMask; 
   itsCleaner.setaspcontrol(0, 0, 0, Quantity(0.0, "%"));// Needs to come before the rest
 
 
-  //Matrix<T> dirtyMatT(shape, *residual); 
-  //Matrix<T> dirtyMat(transpose(dirtyMatT));
   Matrix<T> dirtyMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       dirtyMat(i,j) = residual[i][j];
     }
-  }
+  }*/
+  mdspan2casamatrix<T>(residual, dirtyMat);
   itsCleaner.setDirty(dirtyMat);
 
   // InitScaleXfrs and InitScaleMasks should already be set
@@ -149,25 +121,21 @@ void Asp(std::vector<std::vector<T>>& model,
   itsScaleSizes.push_back(0.0); // put 0 scale
   itsCleaner.defineAspScales(itsScaleSizes);
 
-  //for (int i = 0; i < itsScaleSizes.size(); i++)
-  //  cout << "itsScale[" << i << "] = " << itsScaleSizes[i] << endl;
-
-
 
   // takeOneStep
   Quantity thresh(threshold, "Jy");
   itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
    
-  //Matrix<T> modelMatT(shape, *model); 
-  //Matrix<T> modelMat(transpose(modelMatT));
+  
   Matrix<T> modelMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       modelMat(i,j) = model[i][j];
     }
-  }
+  }*/
+  mdspan2casamatrix<T>(model, modelMat);
   
 
   // get initial peak residual
@@ -214,26 +182,29 @@ void Asp(std::vector<std::vector<T>>& model,
   if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
 
   // update residual - this is critical
+  float peakresidual = itsCleaner.getterPeakResidual();
+  float modelflux = sum( modelMat );
+
+  // send back mdspan residual
   dirtyMat = itsCleaner.getterResidual();
-  for (int j = 0; j < size_y; j++)
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       residual[i][j] = dirtyMat(i,j);
     }
-  }
-
-  float peakresidual = itsCleaner.getterPeakResidual(); 
-  float modelflux = sum( modelMat );
+  }*/
+  casamatrix2mdspan<T>(dirtyMat, residual);
 
   // send back STL model
-  for (int j = 0; j < size_y; j++)
+  casamatrix2mdspan<T>(modelMat, model);
+  /*for (int j = 0; j < size_y; j++)
   {
     for (int i = 0; i < size_x; i++)
     {
       model[i][j] = modelMat(i,j);
     }
-  }
+  }*/
 
   os << LogIO::NORMAL1  << "Asp: After one step, residual=" << peakresidual << " model=" << modelflux << " iters=" << iterdone << LogIO::POST;
 

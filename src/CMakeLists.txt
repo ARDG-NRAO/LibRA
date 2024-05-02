@@ -134,6 +134,7 @@ if (CMAKE_LIBIMAGING_ONLY)
     ${CASA_SAKURA}
     components
     imageanalysis
+    libracore
     mstransform
     msvis
     nrao
@@ -154,6 +155,7 @@ else()
     imageanalysis
     flagging
     graphics
+    libracore
     miriad
     mstransform
     msvis

@@ -1,4 +1,4 @@
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 set(OPT "-g -O2 ")
 
 
@@ -8,10 +8,13 @@ find_package(parafeed REQUIRED)
 find_package(pybind11 REQUIRED)
 #find_package(GTest REQUIRED)
 
+#include_directories(
+#   ${CMAKE_SOURCE_DIR}
+#	${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/)
 
 #add_dependencies(libra ${APP_DEPENDENCIES})
 add_library(libra SHARED ${APP_SOURCES})
-target_include_directories(libra PUBLIC ${APP_INCLUDE_DIRS})
+#target_include_directories(libra PUBLIC ${APP_INCLUDE_DIRS})
 target_link_libraries(libra PRIVATE ${APP_LINK_LIBRARIES} "-Wl,--disable-new-dtags")
 install(TARGETS libra LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 
@@ -32,7 +35,6 @@ foreach(APP_DIR IN LISTS APP_LIST)
    # build individual app CL interface lib for unit tests
    if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
     add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
-    #target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra GTest::GTest GTest::Main "-Wl,--disable-new-dtags")
     target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra "-Wl,--disable-new-dtags")
     install(TARGETS ${APP_NAME}_cl_interface
     	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
