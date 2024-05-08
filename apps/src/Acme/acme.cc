@@ -208,12 +208,10 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   //
   //---------------------------------------------------
   //
-  String type, targetName, weightName, sumwtName, pbName;
+  String type, tableName, targetName, weightName, sumwtName, pbName;
   String subType;
   bool isValidGather, isGatherPSF, isGatherResidual;
 
-  string tableName = targetName;
-  
   LogIO logio(LogOrigin("acme","acme_func"));
 
   if (! ((mode == "gather") || (mode == "normalize")))
@@ -246,6 +244,7 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
   try
   {
+    tableName = targetName;
     if ((! imageExists(targetName)) && (isValidGather))
       tableName = partImageNames[0] + "." + imType;
     Table table(tableName,TableLock(TableLock::AutoNoReadLocking));
@@ -265,12 +264,14 @@ void acme_func(std::string& imageName, std::string& deconvolver,
     LatticeBase *targetPtr, *wPtr, *swPtr;
     ImageInterface<Float> *targetImage, *wImage, *swImage;
     
-    if ((! imageExists(targetName)) && (isValidGather)) {
-      PagedImage<float> altTarget(tableName);
-      PagedImage<float> targetImage(altTarget.shape(), altTarget.coordinates(), targetName);
+    if (! imageExists(targetName)) {
+      if (isValidGather) {
+        PagedImage<float> altTarget(tableName);
+        PagedImage<float> targetImage(altTarget.shape(), altTarget.coordinates(), targetName);
+      }
+      else
+        logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
     }
-    else
-      logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
 
     targetPtr = ImageOpener::openImage (targetName);
     targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
