@@ -589,7 +589,8 @@ namespace casa{
   }
   //
   //-----------------------------------------------------------------------------------
-  // Method to send the data to HPG
+  // Method to send the data to HPG and trigger degridding/gridding
+  // computations.
   //
   double AWVisResamplerHPG::sendData(HPGVisBufferBucket<HPGNPOL>& VBBucket,
 				     double& nVisGridded, long unsigned int& nDataBytes,
@@ -599,6 +600,14 @@ namespace casa{
   {
     //if (VBBucket.isFull() && (hpgVBNRows>0))
     //if (VBBucket.isFull() && (VBBucket.counter()>0))
+
+    //
+    // If the VBBucket is full, shrink() it remove any unfilled space
+    // in the bucket, send the rest of the buffer to the gridder, and
+    // reset the bucket (reset()).  std::move() empties the storage of
+    // its argument.  The emptying of the buffer may (?)  happen with
+    // the std::move(VBBucket.hpgVB_p) anyway.
+    //
     if (VBBucket.counter()>0)
       {
 	// Shrink the internal storage of the bucket to be length
@@ -642,7 +651,11 @@ namespace casa{
   }
   //
   //-----------------------------------------------------------------------------------
-  // Template implementation for DataToGrid
+  // Template implementation for DataToGrid.  Each call of this
+  // transfers the VB in the VBS to the VBBucket.  Once full, the
+  // bucket is sent to the HPG via sendData() which empties the
+  // bucket, triggers the degridding/gridding computations and blocks
+  // till HPG call for it returns.
   //
   template <class T>
   void AWVisResamplerHPG::DataToGridImpl_p(Array<T>& grid,  VBStore& vbs, 
@@ -707,74 +720,24 @@ namespace casa{
       }
     else
       {
-	// Add to the list only if the hpgVB holds any data. This guard
-	// is required since in the loop below we also count the number
-	// visibilities gridded (the nVisGridded_p).
-
-	// This makes a list of hpgVB by making a copy!  Ultimately,
-	// make a the hpgVBList a list of pointers to hpgVBBucket_p
-	// (of course, this needs some careful design thinking --
-	// perhaps meant for production rather than this "prototype").
-	// if (hpgVBBucket_p.size() > 0)
-	//   hpgVBList_p.push_back(hpgVBBucket_p.hpgVB_p);
-
-	// hpgVBBucket_p.reset();
-
 	std::chrono::duration<double> thisVB_duration = std::chrono::steady_clock::now() - mkHPGVB_startTime;
     
 	mkHPGVB_duration += thisVB_duration;
 
 	//
-	// If the vbsList_p is full, send the VBs loaded in vbsList_p for gridding, and empty vbsList_p.
-	// std::move() empties the storage of its argument.
+	// Send the data to the gridder and trigger gridding
+	// calculations.  This call blocks till HPG library is ready
+	// to receive more data.
 	//
 	//    if (hpgVBList_p.size() >= maxVBList_p)
 	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
-				 //hpgVBNRows,
 				 sizeofVisData_p, do_degrid);
       }    
-    // if (hpgVBBucket_p.isFull() && (hpgVBNRows>0))
-    //   {
-    // 	timer_p.mark();
-    // 	// for(unsigned i=0;i<hpgVBList_p.size();i++)
-    // 	  {
-    // 	    //	    unsigned nHPGVBRows = hpgVBList_p[i].size()
-    // 	    unsigned nHPGVBRows = hpgVBBucket_p.size();
-
-    // 	    nVisGridded_p += nHPGVBRows*HPGNPOL;
-    // 	    nDataBytes_p += sizeofVisData_p*nHPGVBRows;
-
-    // 	    hpg::opt_t<hpg::Error> err;
-    // 	    //cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
-    // 	    if (do_degrid)
-    // 	      err = hpgGridder_p->degrid_grid_visibilities(
-    // 							   hpg::Device::OpenMP,
-    // 							   //std::move(hpgVBList_p[i])
-    // 							   std::move(hpgVBBucket_p.hpgVB_p)
-    // 							   );
-    // 	    else
-    // 	      err = hpgGridder_p->grid_visibilities(
-    // 						    hpg::Device::OpenMP,
-    // 						    //std::move(hpgVBList_p[i])
-    // 						    std::move(hpgVBBucket_p.hpgVB_p)
-    // 						    );
-    // 	    hpgVBBucket_p.reset();
-	    
-    // 	    if (err)
-    // 	      {
-    // 		LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","DataToGrid_impl"));
-    // 		log_l << "Failed hpg::" << ((do_degrid)?"degrid_grid_visibilities()":"grid_visibilities()")
-    // 		      << " Error type: " << static_cast<int>(err->type()) << LogIO::SEVERE;
-    // 	      }
-    // 	    griddingTime += timer_p.real();
-    // 	  }
-    // 	  //	hpgVBList_p.resize(0);
-    //   }
     return;
   }
   //
   //-----------------------------------------------------------------------------------
-  // Implementation for GridToData
+  // Implementation for GridToData.
   //
   void
   AWVisResamplerHPG::GridToData(VBStore& vbs, const Array<Complex>& grid)

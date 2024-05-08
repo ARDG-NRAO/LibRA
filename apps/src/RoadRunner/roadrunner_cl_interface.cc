@@ -114,7 +114,11 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetValp("robust", robust,i);
 
       i=1;clgetValp("wprojplanes", nW,i);
+#ifdef ROADRUNNER_USE_HPG
       i=1;clgetSValp("gridder", FTMName,i); clSetOptions("gridder",{"awphpg","awproject"});
+#else // !ROADRUNNER_USE_HPG
+      i=1;clgetSValp("gridder", FTMName,i); clSetOptions("gridder",{"awproject"});
+#endif // ROADRUNNER_USE_HPG
       i=1;clgetSValp("cfcache", CFCache,i);
 
       // Expose the modelimagename parameter only for mode=residual or
