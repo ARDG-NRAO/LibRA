@@ -232,14 +232,17 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   if (computePB)
     pbName   = imageName + ".pb";
 
-  if ((mode == "gather") && (partImageNames.size() > 0) && (imType != "model"))
+  if (mode == "gather")
   {
-    isValidGather = true;
-    isGatherPSF = (imType == "psf");
-    isGatherResidual = (imType == "residual");
+    if ((partImageNames.size() > 0) && (imType != "model"))
+    {
+      isValidGather = true;
+      isGatherPSF = (imType == "psf");
+      isGatherResidual = (imType == "residual");
+    }
+    else
+      logio << "Invalid parameters for mode = gather." << LogIO::EXCEPTION;
   }
-  else
-    logio << "Invalid parameters for mode = gather." << LogIO::EXCEPTION;
 
   try
   {
