@@ -33,7 +33,12 @@ namespace test{
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.sumwt", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.sumwt", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.weight", current_path()/"AppLevelMfsAsp/unittest_hummbee_mfs_revE.weight", copy_options::recursive);
-
+    create_directory("AppLevelMfsRestore");
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.psf", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.residual", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
     
   }
 
@@ -43,7 +48,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  test::create_directory(testDir);
+  //test::create_directory(testDir);
 
   // Set the current working directory to the test directory
   current_path(testDir);
@@ -64,6 +69,8 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   vector<string> mask;
   mask.resize(1);
   mask[0] ="circle[[256pix,290pix],140pix]";
+  bool doPBCorr = false;
+  string imagingMode="deconvolve";
 
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.pb", current_path()/"unittest_hummbee.pb", copy_options::recursive);
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee.psf", current_path()/"unittest_hummbee.psf", copy_options::recursive);
@@ -78,7 +85,9 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  gain, threshold,
                  nsigma,
                  cycleniter, cyclefactor,
-                 mask, specmode
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
                  );
 	
   PagedImage<Float> modelimage("unittest_hummbee.model");
@@ -118,7 +127,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  test::create_directory(testDir);
+  //test::create_directory(testDir);
 
   // Set the current working directory to the test directory
   current_path(testDir);
@@ -141,6 +150,8 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   mask[0] = "box[[890pix,1478pix],[1908pix,2131pix]]";
   mask[1] = "box[[1794pix,1828pix],[2225pix,2232pix]]";
   mask[2] = "box[[2077pix,1989pix],[3270pix,2616pix]]";
+  bool doPBCorr = false;
+  string imagingMode="deconvolve";
 
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.psf", current_path()/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/unittest_hummbee_mfs_revE.residual", current_path()/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
@@ -155,7 +166,9 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
                  gain, threshold,
                  nsigma,
                  cycleniter, cyclefactor,
-                 mask, specmode
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
                  );
 
   PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
@@ -182,6 +195,78 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
 
 }
 
+
+TEST(HummbeeTest,  AppLevelMfsRestore) {
+
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+  //test::create_directory(testDir);
+
+  // Set the current working directory to the test directory
+  current_path(testDir);
+
+   // Check that the return value is true
+  string imageName = "unittest_hummbee_mfs_revE_restore";
+  string modelImageName = "unittest_hummbee_mfs_revE_restore.image";
+  string deconvolver="asp", specmode="mfs";
+  vector<float> scales;
+  float largestscale = -1;
+  float fusedthreshold = 0.007;
+  int nterms=2;
+  float gain=0.2;
+  float threshold=2.6e-07;
+  float nsigma=0.0;
+  int cycleniter=3;
+  float cyclefactor=1.0;
+  vector<string> mask;
+  mask.resize(3);
+  mask[0] = "box[[890pix,1478pix],[1908pix,2131pix]]";
+  mask[1] = "box[[1794pix,1828pix],[2225pix,2232pix]]";
+  mask[2] = "box[[2077pix,1989pix],[3270pix,2616pix]]";
+  bool doPBCorr = false;
+  string imagingMode="restore";
+
+
+  float PeakRes = Hummbee(imageName, modelImageName,
+                 deconvolver,
+                 scales,
+                 largestscale, fusedthreshold,
+                 nterms,
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor,
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
+                 );
+
+  // Check that the .image is generated
+  path p1("unittest_hummbee_mfs_revE_restore.image");
+  EXPECT_TRUE(exists(p1));
+
+  /*PagedImage<Float> modelimage("unittest_hummbee_mfs_revE_restore.model");
+
+  float tol = 0.1;
+  float goldPeakRes = 26.0554;
+  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+
+  float goldValLoc0 = 0.000332008;
+  float goldValLoc1 = 0.000176319;
+  EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);*/
+
+
+  // Set the current working directory back to the parent dir
+  current_path(testDir.parent_path());
+
+  //remove_directory(testDir);
+
+}
+
+
 TEST(HummbeeTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
@@ -202,6 +287,8 @@ TEST(HummbeeTest, UIFactory) {
   float cyclefactor=1.0;
   vector<string> mask; 
   bool interactive = false;
+  bool doPBCorr = false;
+  string imagingMode;
 
   UI(restartUI, argc, argv, interactive,
     imageName, modelImageName, 
@@ -212,7 +299,9 @@ TEST(HummbeeTest, UIFactory) {
     gain, threshold,
     nsigma,
     cycleniter, cyclefactor,
-    mask, specmode);
+    mask, specmode,
+    doPBCorr,
+    imagingMode);
 }
 
 };

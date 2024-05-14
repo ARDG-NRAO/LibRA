@@ -60,7 +60,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 	float& robust,
 	string& CFCache,
 	string& fieldStr, string& spwStr,
-	Bool& doPBCorr,
 	Bool& conjBeams,
 	Float& pbLimit,*/
   string& deconvolver,
@@ -70,7 +69,9 @@ void UI(bool restart, int argc, char **argv, bool interactive,
   float& gain, float& threshold,
   float& nsigma,
   int& cycleniter, float& cyclefactor,
-  vector<string>& mask, string& specmode
+  vector<string>& mask, string& specmode,
+  bool& doPBCorr,
+  string& imagingMode
 // how about min/maxpsffraction, smallscalbias?
   )
 {
@@ -120,7 +121,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
     
       // i=1;clgetSValp("field", fieldStr,i);
       // i=1;clgetSValp("spw", spwStr,i);
-      // i=1;clgetBValp("pbcor", doPBCorr,i);
       // i=1;clgetBValp("conjbeams", conjBeams,i);
       // i=1;clgetFValp("pblimit", pbLimit,i);
 
@@ -151,7 +151,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       //i=1;clgetSValp("mask", mask,i);
       N=0; N=clgetNSValp("mask", mask, N);
       i=1;clgetSValp("specmode", specmode,i);  clSetOptions("specmode",{"mfs","cube","cubedata","cubesource"});
-    
+      i=1;clgetBValp("pbcor", doPBCorr,i);
+      i=1;clgetSValp("mode", imagingMode,i); clSetOptions("mode",{"deconvolve","restore"});
      EndCL();
 
      // do some input parameter checking now.
@@ -201,8 +202,7 @@ int main(int argc, char **argv)
 
   bool restartUI=false;
 
-  /*bool doPBCorr= true;
-  bool conjBeams= true;
+  /*bool conjBeams= true;
   float pbLimit=1e-3;*/
   vector<float> scales;
   float largestscale = -1;
@@ -215,13 +215,15 @@ int main(int argc, char **argv)
   float cyclefactor=1.0;
   vector<string> mask; 
   bool interactive = true;
+  bool doPBCorr = false;
+  string imagingMode="deconvolve";
 
   UI(restartUI, argc, argv, interactive,
     imageName, modelImageName, 
     /*NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, robust,
      cfCache, fieldStr,spwStr
-     ,doPBCorr, conjBeams, pbLimit,*/ 
+     , conjBeams, pbLimit,*/ 
     deconvolver,
     scales,
     largestscale, fusedthreshold,
@@ -229,7 +231,9 @@ int main(int argc, char **argv)
     gain, threshold,
     nsigma,
     cycleniter, cyclefactor,
-    mask, specmode);
+    mask, specmode,
+    doPBCorr,
+    imagingMode);
 
   set_terminate(NULL);
 
@@ -239,7 +243,7 @@ int main(int argc, char **argv)
                  /*NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, robust,
                  cfCache, fieldStr,spwStr,
-                 doPBCorr, conjBeams, pbLimit,*/
+                 conjBeams, pbLimit,*/
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
@@ -247,7 +251,9 @@ int main(int argc, char **argv)
                  gain, threshold,
                  nsigma,
                  cycleniter, cyclefactor,
-                 mask, specmode
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
                  ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     
     }
