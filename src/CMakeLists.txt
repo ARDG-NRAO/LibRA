@@ -41,7 +41,8 @@ include(FindPkgConfig)
 include(CTest)
 
 # Set a default build type if none was specified
-set(default_build_type RelWithDebInfo)
+# This should have be set at the top-level already
+# set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 # Variables to control dependency graph
 set(CMAKE_USE_GRPC OFF)         # Remove GRPC and protobuf dependency
