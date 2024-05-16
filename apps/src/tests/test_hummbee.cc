@@ -1,7 +1,7 @@
-#include <filesystem>
+// #include <filesystem>
 #include "Hummbee/hummbee.h"
 #include "gtest/gtest.h"
-
+#include "test_utils.h"
 using namespace std;
 using namespace std::filesystem;
 
@@ -9,16 +9,16 @@ using namespace std::filesystem;
 namespace test{
   // Some basic functions to perform operations that we will use over and over
 
-  bool directoryExists(const std::string& path) {
-    std::filesystem::path dir(path);
-    return std::filesystem::is_directory(dir);
-  }
-  bool create_directory(const std::filesystem::path& path) {
-    return std::filesystem::create_directory(path);
-  }
-  bool remove_directory(const std::filesystem::path& path) {
-    return std::filesystem::remove_all(path);
-  }
+  // bool directoryExists(const std::string& path) {
+    // std::filesystem::path dir(path);
+    // return std::filesystem::is_directory(dir);
+  // }
+  // bool create_directory(const std::filesystem::path& path) {
+    // return std::filesystem::create_directory(path);
+  // }
+  // bool remove_directory(const std::filesystem::path& path) {
+    // return std::filesystem::remove_all(path);
+  // }
 
   TEST(HummbeeTest, CheckGoldStandardDirectory) {
     std::string goldStandardDir = current_path() / "gold_standard";

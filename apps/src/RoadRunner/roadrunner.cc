@@ -306,6 +306,13 @@ double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBas
   return 0.0;
 }
 
+// ReturnType.get<CUMULATIVE_GRIDDING_ENGINE_TIME> --> Total time taken by the Gridding/deGridding kernel (griddingEngine_time).
+// ReturnType.get<IMAGING_TIME> --> Total time taken to make the image (griddingTime).  This includes the overheads FFT + move to host memory.
+// ReturnType.get<IMAGING_RATE> --> The rage of gridding in units of Vis/sec (allVol/griddingTime).
+// ReturnType.get<SOW> --> Sum of weights (sow(IPosition(4,0,0,0,0))).
+// ReturnType.get<NVIS> --> Number of visibilities processed (visResampler->getVisGridded()).
+// ReturnType.gt<DATA_VOLUME> --> Number of bytes of data used (visResampler->getDataVolume()).
+// ReturnType.get<MAKEVB_TIME> --> Cumulative time spend in packing the in-memory data for HPG (getMakeHPGVBTime(visResampler)).
 auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
