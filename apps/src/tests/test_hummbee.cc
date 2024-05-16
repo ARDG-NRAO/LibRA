@@ -39,7 +39,7 @@ namespace test{
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
-    
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", current_path()/"AppLevelMfsRestore/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
   }
 
 TEST(HummbeeTest, AppLevelCubeAsp) {
@@ -247,22 +247,18 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   path p1("unittest_hummbee_mfs_revE_restore.image");
   EXPECT_TRUE(exists(p1));
 
-  /*PagedImage<Float> modelimage("unittest_hummbee_mfs_revE_restore.model");
-
+  PagedImage<Float> image("unittest_hummbee_mfs_revE_restore.image");
+  PagedImage<Float> goldimage("unittest_hummbee_mfs_revE_restore_gold.image");
+  // check the restored image is the same as the output of HTCSynthesisImager.makeFinalImages()
   float tol = 0.1;
-  float goldPeakRes = 26.0554;
-  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
-
-  float goldValLoc0 = 0.000332008;
-  float goldValLoc1 = 0.000176319;
-  EXPECT_NEAR(modelimage(IPosition(4,1072,1639,0,0)), goldValLoc0, tol);
-  EXPECT_NEAR(modelimage(IPosition(4,3072,2406,0,0)), goldValLoc1, tol);*/
+  EXPECT_NEAR(image(IPosition(4,1072,1639,0,0)), goldimage(IPosition(4,1072,1639,0,0)), tol);
+  EXPECT_NEAR(image(IPosition(4,3072,2406,0,0)), goldimage(IPosition(4,3072,2406,0,0)), tol);
 
 
   // Set the current working directory back to the parent dir
   current_path(testDir.parent_path());
 
-  //remove_directory(testDir);
+  remove_directory(testDir);
 
 }
 
