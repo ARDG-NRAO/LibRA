@@ -95,7 +95,7 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
-  auto gold_runtime = 6.0; // based on nemo
+  auto gold_runtime = 15.0; //gpuhost003; 6.0 on nemo
   try {
     auto runtime = record.at(CUMULATIVE_GRIDDING_ENGINE_TIME);
     // to catch if synthesis is NOT compiled with `-O2` which can cause 2.5x slowness
