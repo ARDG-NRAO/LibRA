@@ -17,7 +17,7 @@ TEST(RoadrunnerTest, InitializeTest) {
   EXPECT_TRUE(ret);
 }
 
-TEST(RoadrunnerTest, AppLevelSNRPSF) {
+TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -28,9 +28,9 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   std::filesystem::create_directory(testDir);
 
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF/CYGTST.corespiral.ms", copy_options::recursive);
+  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF_timed/CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF/4k_nosquint.cfc", copy_options::recursive);
+  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF_timed/4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelSNRPSF
   std::filesystem::current_path(testDir);
 
@@ -66,7 +66,7 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
   // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
-  Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
+  RRReturnType record = Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
                  stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
                  ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
@@ -94,6 +94,16 @@ TEST(RoadrunnerTest, AppLevelSNRPSF) {
   remove_all(current_path()/"htclean_gpu_newpsf.psf");
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
+
+  auto gold_runtime = 15.0; //gpuhost003; 6.0 on nemo
+  try {
+    auto runtime = record.at(CUMULATIVE_GRIDDING_ENGINE_TIME);
+    // to catch if synthesis is NOT compiled with `-O2` which can cause 2.5x slowness
+    EXPECT_LT(runtime, 2.5 * gold_runtime) << "Runtime is too long. Check if casacpp is compiled with -O2"; 
+  }
+  catch (const std::out_of_range&) {
+        std::cout << "Key CUMULATIVE_GRIDDING_ENGINE_TIME not found" << std::endl;
+  }
 
   //move to parent directory
   std::filesystem::current_path(testDir.parent_path());
