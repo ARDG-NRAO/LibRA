@@ -20,7 +20,7 @@ namespace test{
     // return std::filesystem::remove_all(path);
   // }
 
-  TEST(HummbeeTest, CheckGoldStandardDirectory) {
+TEST(HummbeeTest, CheckGoldStandardDirectory) {
     std::string goldStandardDir = current_path() / "gold_standard";
     EXPECT_TRUE(directoryExists(goldStandardDir));
   }
@@ -205,6 +205,8 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
     copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.pb", testdir+"/unittest_hummbee_mfs_revE_restore.pb", copy_options::recursive);
+    copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", copy_options::recursive);
 
   // Set the current working directory to the test directory
   current_path(testDir);
@@ -255,6 +257,34 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   EXPECT_NEAR(image(IPosition(4,1072,1639,0,0)), goldimage(IPosition(4,1072,1639,0,0)), tol);
   EXPECT_NEAR(image(IPosition(4,3072,2406,0,0)), goldimage(IPosition(4,3072,2406,0,0)), tol);
 
+  ////// test for restore with pbcor //////
+  remove_all(current_path()/"unittest_hummbee_mfs_revE_restore.image");
+  doPBCorr = true;
+
+  PeakRes = Hummbee(imageName, modelImageName,
+                 deconvolver,
+                 scales,
+                 largestscale, fusedthreshold,
+                 nterms,
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor,
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
+                 );
+
+  // Check that the .image .image.pbcor are generated
+  path p2("unittest_hummbee_mfs_revE_restore.image");
+  path p3("unittest_hummbee_mfs_revE_restore.image.pbcor");
+  EXPECT_TRUE(exists(p2) && exists(p3));
+
+  PagedImage<Float> pbcor("unittest_hummbee_mfs_revE_restore.image.pbcor");
+  PagedImage<Float> goldpbcor("unittest_hummbee_mfs_revE_restore_gold.image.pbcor");
+  // check the restored image.pbcor is the same as the output of HTCSynthesisImager.makeFinalImages()
+  //std::cout << "pbcor " << pbcor(IPosition(4,1072,1639,0,0)) << " , gold pbcor " << goldpbcor(IPosition(4,1072,1639,0,0)) << std::endl;
+  EXPECT_NEAR(pbcor(IPosition(4,1072,1639,0,0)), goldpbcor(IPosition(4,1072,1639,0,0)), tol);
+  EXPECT_NEAR(pbcor(IPosition(4,3072,2406,0,0)), goldpbcor(IPosition(4,3072,2406,0,0)), tol);
 
   // Set the current working directory back to the parent dir
   current_path(testDir.parent_path());
