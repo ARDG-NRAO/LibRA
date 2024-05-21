@@ -35,6 +35,11 @@ application in such fields and enable cross-discipline R&D, the API to
 the library is based on C++ STL for portability and wider use that
 does not required RA-specific software stack and dependencies.
 
+### Recent results
+
+*[Deep Imaging at a National Scale](https://science.nrao.edu/enews/17.3/index.shtml#deepimaging)* : Using the set of [LibRA apps](#currently-available-apps) as path-finder for ngVLA-scale processing, we deployed the computational intensive components of the [Algorithm Architecture](doc/AlgoArch/README.md) (paper in preparation) on a scale about 10x larger (O(100) GPUs) than what has been attempted so far at NRAO (O(10) GPUs) to investigate the operational and computational challenges of distributed computing at this scale. For this, in collaboration with the Center for High Throughput Computing (CHTC, Univ. of Wisconsin-Madison, WI), we used a nation-wide network of computers in the [Open Science Pool (OSPool)](https://osg-htc.org/services/open_science_pool.html), [U.S. National Science Foundation's Pathways for Advancing Throughput computing (PATh)](https://path-cc.io/), [San Diego Supercomputer Center (SDSC)](https://www.sdsc.edu/) at the Univ. of California San Diego and the [National Research Platform (NRP)](https://nationalresearchplatform.org/).  *This produced the [deepest image ever made with the VLA](https://science.nrao.edu/enews/17.3/images/HUDF_SBand_3.png), and in the RA community world-wide of the Hubble Ultra-Deep Field (HUDF) achieving a noise floor of 1 microJy/beam.*
+
+
 ### The repository contains
 
 - [ ] scientific code of algorithms for data calibration and image reconstruction
