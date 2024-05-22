@@ -95,11 +95,11 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
-  auto gold_runtime = 15.0; //gpuhost003; 6.0 on nemo
+  auto gold_runtime = 4.3; //gpuhost003
   try {
     auto runtime = record.at(CUMULATIVE_GRIDDING_ENGINE_TIME);
-    // to catch if synthesis is NOT compiled with `-O2` which can cause 2.5x slowness
-    EXPECT_LT(runtime, 2.5 * gold_runtime) << "Runtime is too long. Check if casacpp is compiled with -O2"; 
+    // to catch if synthesis is NOT compiled with `-O2` which can cause 2x slowness
+    EXPECT_LT(runtime, 2.0 * gold_runtime) << "Runtime is too long. Check if casacpp is compiled with -O2"; 
   }
   catch (const std::out_of_range&) {
         std::cout << "Key CUMULATIVE_GRIDDING_ENGINE_TIME not found" << std::endl;
