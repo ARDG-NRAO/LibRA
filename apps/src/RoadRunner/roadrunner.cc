@@ -576,7 +576,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // Uses ftm_g, doPSF, dataCol_l
       //-----------------------------------------------------------------------------------
       std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
-      auto dataConsumer = [/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start](vi::VisBuffer2 *vb_l,
+      auto dataConsumerFTM = [/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start](vi::VisBuffer2 *vb_l,
 			      vi::VisibilityIterator2 *vi2_l)
       {
 	if (imagingMode=="predict")
@@ -627,7 +627,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
 	  auto ret = di.dataIter(db.vi2_l, db.vb_l,
-				 dataConsumer);
+				 dataConsumerFTM);
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);
 	}
@@ -737,7 +737,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  try
 	    {
 	      auto ret = di.dataIter(db.vi2_l, db.vb_l, 
-				     dataConsumer,
+				     dataConsumerFTM,
 				     waitForCFReady,
 				     notifyCFSent);
 	      griddingEngine_time += std::get<2>(ret);
