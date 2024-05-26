@@ -72,37 +72,6 @@ public:
    */
   ~DataIterator() {};
 
-  //
-  //-------------------------------------------------------------------------------------------------
-  //
-  std::tuple<int, double>
-  iterVB(vi::VisibilityIterator2 *vi2,
-	 vi::VisBuffer2 *vb,
-	 int& nVB,
-	 std::function<double(vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
-	 std::function<void(const int&)> cfSentNotifier
-	 )
-  {
-    int vol=0;
-    double dataIO_time=0.0;
-    
-    std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
-
-    for (vi2->origin(); vi2->more(); vi2->next())
-      {
-
-	dataIO_time += dataConsumer(vb,vi2);
-	vol+=vb->nRows();
-
-	cfSentNotifier(nVB);
-	
-	nVB++;
-      }
-    return std::make_tuple(vol,dataIO_time);
-  };
-
-
-
   /**
    * @brief Iterates over a VisibilityIterator2 object.
    *
@@ -276,6 +245,34 @@ public:
     return std::make_tuple(nVB, vol,griddingEngine_time,totalDataIO_time);
   };
 
+  //
+  //-------------------------------------------------------------------------------------------------
+  //
+  std::tuple<int, double>
+  iterVB(vi::VisibilityIterator2 *vi2,
+	 vi::VisBuffer2 *vb,
+	 int& nVB,
+	 std::function<double(vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
+	 std::function<void(const int&)> cfSentNotifier
+	 )
+  {
+    int vol=0;
+    double dataIO_time=0.0;
+    
+    std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
+
+    for (vi2->origin(); vi2->more(); vi2->next())
+      {
+
+	dataIO_time += dataConsumer(vb,vi2);
+	vol+=vb->nRows();
+
+	cfSentNotifier(nVB);
+	
+	nVB++;
+      }
+    return std::make_tuple(vol,dataIO_time);
+  };
 
   std::tuple<int, int, double,double>
   dataIter(vi::VisibilityIterator2 *vi2,
