@@ -569,10 +569,65 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		       "Gridding", "","","",true);
       DataIterator di(isRoot,dataCol_l);
 
+      //-----------------------------------------------------------------------------------
+      // Lambda function called in the DataIterator::dataIter().  This
+      // consumes the VB inside iterator loops
+      //
+      // Uses ftm_g, doPSF, dataCol_l
+      //-----------------------------------------------------------------------------------
+      std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
+      auto dataConsumer = [/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start](vi::VisBuffer2 *vb_l,
+			      vi::VisibilityIterator2 *vi2_l)
+      {
+	if (imagingMode=="predict")
+	  {
+	    // Predict the data into the VB (presumably the name get()
+	    // means "get the data from the complex grid into the VB")
+	    ftm_g->get(*vb_l,0);
+	    
+	    // Write the VB to the specific data column.  Predicted data
+	    // in the in-memory model is always in the VB::visCubeModel.
+	    // So always make that persistent in the specified column of
+	    // the VI.
+	    dataIO_start = std::chrono::steady_clock::now();
+
+	    if (dataCol_l==casa::refim::FTMachine::MODEL)          vi2_l->writeVisModel(vb_l->visCubeModel());
+	    else if (dataCol_l==casa::refim::FTMachine::CORRECTED) vi2_l->writeVisCorrected(vb_l->visCubeModel());//vb->visCubeCorrected());
+	    else                                                   vi2_l->writeVisObserved(vb_l->visCubeModel());//vb->visCube());
+
+	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+	    return tt.count();
+	  }
+	else
+	  {
+	    // Read the data from a specific data column into the
+	    // in-memory buffer
+	    dataIO_start = std::chrono::steady_clock::now();
+
+	    if (dataCol_l==casa::refim::FTMachine::CORRECTED)   vb_l->setVisCube(vb_l->visCubeCorrected());
+	    else if (dataCol_l==casa::refim::FTMachine::MODEL)  vb_l->setVisCube(vb_l->visCubeModel());
+	    else                                                vb_l->setVisCube(vb_l->visCube());
+
+	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+
+	    // Grid the data from the VB (presumably the name put()
+	    // means "put the data from the VB into the complex grid")
+	    ftm_g->put(*vb_l,-1,doPSF);
+	    
+	    return tt.count();
+	  }
+      
+      };
+      //
+      //-----------------------------------------------------------------------------------
+      //
+      //-----------------------------------------------------------------------------------
+      // Start the data iterations.
+      //
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
-				 doPSF,imagingMode);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l,
+				 dataConsumer);
 	  griddingEngine_time += std::get<2>(ret);
 	  vol+= std::get<1>(ret);
 	}
@@ -681,9 +736,10 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	  try
 	    {
-	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
-				     doPSF,imagingMode,
-				     waitForCFReady, notifyCFSent);
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, 
+				     dataConsumer,
+				     waitForCFReady,
+				     notifyCFSent);
 	      griddingEngine_time += std::get<2>(ret);
 	      vol+= std::get<1>(ret);
 	    }
