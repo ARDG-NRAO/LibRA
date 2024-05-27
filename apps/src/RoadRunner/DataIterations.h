@@ -47,6 +47,21 @@
 //#include <hpg/hpg.hpp>
 
 using namespace std;
+
+// Possible example for making a generic functor in C++11.  C++14
+// allows generic lambdas (where the complier produces similar code in
+// the background).  We may benefit from using similar code for
+// modifier lamdba functions as arguments.
+//
+// struct CompareFirst {
+//     template <class Fst, class Snd>
+//     bool operator()(const pair<Fst,Snd>& l, const pair<Fst,Snd>& r) const {
+//         return l.first < r.first;
+//     }
+// };
+// CompareFirst(1,2) and CompareFirst(1.2,3.1) will both work?
+
+
 /**
  * @brief A class for iterating over visibility data.
  *
