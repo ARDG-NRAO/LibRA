@@ -75,6 +75,8 @@ using namespace casacore;
  * @param cycleniter The number of iterations to use for the deconvolution algorithm.
  * @param cyclefactor The cycle factor to use for the deconvolution algorithm.
  * @param mask A vector of masks to use for the deconvolution algorithm.
+ * @param doPBCorr A boolean indicating whether to do PB correction.
+ * @param imagingMode The imaging mode.
  */
 float Hummbee(std::string& imageName, std::string& modelImageName,
         std::string& deconvolver,
@@ -84,7 +86,9 @@ float Hummbee(std::string& imageName, std::string& modelImageName,
         float& gain, float& threshold,
         float& nsigma,
         int& cycleniter, float& cyclefactor,
-        std::vector<std::string>& mask, std::string& specmode);
+        std::vector<std::string>& mask, std::string& specmode,
+        bool& doPBCorr,
+        string& imagingMode);
 
 
 void UI(bool restart, int argc, char **argv, bool interactive, 
@@ -96,6 +100,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
   float& gain, float& threshold,
   float& nsigma,
   int& cycleniter, float& cyclefactor,
-  vector<string>& mask, string& specmode);
+  vector<string>& mask, string& specmode,
+  bool& doPBCorr,
+  string& imagingMode);
 
 #endif

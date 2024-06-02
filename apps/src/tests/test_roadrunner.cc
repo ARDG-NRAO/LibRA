@@ -23,14 +23,15 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
+  string testdir = testDir.string();
 
   // create dir AppLevelSNRPSF
   std::filesystem::create_directory(testDir);
 
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelSNRPSF_timed/CYGTST.corespiral.ms", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/CYGTST.corespiral.ms", testdir +"/CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelSNRPSF_timed/4k_nosquint.cfc", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/4k_nosquint.cfc", testdir +"/4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelSNRPSF
   std::filesystem::current_path(testDir);
 
@@ -63,8 +64,6 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   RRReturnType record = Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -89,11 +88,6 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   EXPECT_NEAR(psfimage(IPosition(4,2000,2000,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(psfimage(IPosition(4,1885,1885,0,0)), goldValLoc1, tol);
 
-  /*remove_all(current_path()/"CYGTST.corespiral.ms");
-  remove_all(current_path()/"4k_nosquint.cfc");
-  remove_all(current_path()/"htclean_gpu_newpsf.psf");
-  remove_all(current_path()/"htclean_gpu_newpsf_gridv.vis/");
-  remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
   auto gold_runtime = 4.3; //gpuhost003
   try {
@@ -117,13 +111,14 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
+  string testdir = testDir.string();
 
   // create dir AppLevelWeight
   std::filesystem::create_directory(testDir);
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelWeight
-  std::filesystem::copy("gold_standard/CYGTST.corespiral.ms", "AppLevelWeight/CYGTST.corespiral.ms", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/CYGTST.corespiral.ms", testdir +"/CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelWeight
-  std::filesystem::copy("gold_standard/4k_nosquint.cfc", "AppLevelWeight/4k_nosquint.cfc", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/4k_nosquint.cfc", testdir + "/4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelWeight
   std::filesystem::current_path(testDir);
 
@@ -156,8 +151,6 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   bool normalize=false;
   bool doPBCorr= true;
 
-  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/CYGTST.corespiral.ms", current_path()/"CYGTST.corespiral.ms", copy_options::recursive);
-  // copy(current_path()/"../../../../../apps/src/tests/gold_standard/4k_nosquint.cfc", current_path()/"4k_nosquint.cfc", copy_options::recursive);
 
   Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
                  sowImageExt, cmplxGridName, NX, nW, cellSize,
@@ -179,10 +172,6 @@ TEST(RoadrunnerTest, AppLevelWeight) {
   EXPECT_NEAR(weight(IPosition(4,2000,2053,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(weight(IPosition(4,1379,1969,0,0)), goldValLoc1, tol);
 
-   /*remove_all(current_path()/"CYGTST.corespiral.ms");
-   remove_all(current_path()/"4k_nosquint.cfc");
-   remove_all(current_path()/"htclean_gpu_newpsf.weight");
-   remove_all(current_path()/"htclean_gpu_newpsf.sumwt");*/
 
   //move to parent directory
   std::filesystem::current_path(testDir.parent_path());
