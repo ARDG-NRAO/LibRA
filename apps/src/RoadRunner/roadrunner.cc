@@ -564,7 +564,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // Finally, the data iteration loops.
       //-----------------------------------------------------------------------------------
       double griddingEngine_time=0.0, dataIO_time=0.0;
-      unsigned long vol=0;
+      unsigned long vol=0,nRows=0;
       ProgressMeter pm(1.0, db.vi2_l->ms().nrow(),
 		       "Gridding", "","","",true);
       DataIterator di(isRoot,dataCol_l);
@@ -606,9 +606,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
 
-	    return std::make_tuple(vis.shape().product()*sizeof(Complex),//int
-				   tt.count() //double
-				   );
+	    std::vector<double> ret={(double)vis.shape().product()*sizeof(Complex), tt.count()};
+	    return ret;
 	  }
 	else
 	  {
@@ -626,9 +625,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    // means "put the data from the VB into the complex grid")
 	    ftm_g->put(*vb_l,-1,doPSF);
 	    
-	    return std::make_tuple(vis.shape().product()*sizeof(Complex),// int
-				   tt.count() // double
-				   );
+	    std::vector<double> ret={(double)vis.shape().product()*sizeof(Complex), tt.count()};
+	    return ret;
 	  }
       
       };
@@ -640,11 +638,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  auto ret = di.dataIter<std::tuple<unsigned long,double>>(db.vi2_l, db.vb_l,
-								   dataConsumerFTM);
-	  griddingEngine_time += std::get<2>(ret);
-	  dataIO_time += std::get<3>(ret);
-	  vol += std::get<1>(ret);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l,dataConsumerFTM);
+	  griddingEngine_time += ret[2];
+	  dataIO_time += ret[3];
+	  vol += ret[1];
+	  nRows += ret[4];
 	}
       else // if (ftm_g->name()=="AWProjectWBFTHPG")
 	{
@@ -751,13 +749,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	  try
 	    {
-	      auto ret = di.dataIter<std::tuple<unsigned long, double>>(db.vi2_l, db.vb_l, 
-									dataConsumerFTM,
-									waitForCFReady,
-									notifyCFSent);
-	      griddingEngine_time += std::get<2>(ret);
-	      dataIO_time += std::get<3>(ret);
-	      vol += std::get<1>(ret);
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, 
+				     dataConsumerFTM,
+				     waitForCFReady,
+				     notifyCFSent);
+	      griddingEngine_time += ret[2];
+	      dataIO_time += ret[3];
+	      vol += ret[1];
+	      nRows += ret[4];
 	    }
 	  catch (AipsError &er)
 	    {
@@ -801,6 +800,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		<< "Data processing rate: " << allVol/griddingTime << " bytes/sec" << endl
 		<< "Visibility I/O rate: " << allVol/dataIO_time << " bytes/sec" << endl
 		<< "Vis processing rate: " << visResampler->getVisGridded()/griddingTime << " vis/sec" << endl
+		<< "Row processing rate: " << nRows/griddingTime << " rows/sec" << endl
 		<< "Data volume from VR: " << visResampler->getDataVolume() << " bytes" << endl
 		<< LogIO::POST;
 

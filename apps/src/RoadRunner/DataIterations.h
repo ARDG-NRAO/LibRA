@@ -263,16 +263,15 @@ public:
   //
   //-------------------------------------------------------------------------------------------------
   //
-  template<typename DCReturnType>
-  std::tuple<int, double>
+  std::vector<double>
   iterVB(vi::VisibilityIterator2 *vi2,
 	 vi::VisBuffer2 *vb,
 	 int& nVB,
-	 std::function<DCReturnType (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
+	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
 	 std::function<void(const int&)> cfSentNotifier
 	 )
   {
-    int vol=0;
+    int vol=0,nRows=0;
     double dataIO_time=0.0;
     
     std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
@@ -280,28 +279,28 @@ public:
     for (vi2->origin(); vi2->more(); vi2->next())
       {
 	auto ret=dataConsumer(vb,vi2);
-	vol += std::get<0>(ret); // Vis volume in bytes
-	dataIO_time += std::get<1>(ret);
-	//vol+=vb->nRows();
+	vol += ret[0]; // Vis volume in bytes
+	dataIO_time += ret[1];
+	nRows+=vb->nRows();
 
 	cfSentNotifier(nVB);
 	
 	nVB++;
       }
-    return std::make_tuple(vol,dataIO_time);
+    std::vector<double> ret={(double)vol,(double)dataIO_time,(double)nRows};
+    return ret;
   };
 
-  template <typename DCReturnType>
-  std::tuple<int, unsigned long, double,double>
+  std::vector<double>
   dataIter(vi::VisibilityIterator2 *vi2,
 	   vi::VisBuffer2 *vb2,
-	   std::function<DCReturnType (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
+	   std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
 	   std::function<void(int&, int& )> waitForCFReady=[](int&, int&){},//NoOp
 	   std::function<void(const int&)> cfSentNotifier= [](const int&){} //NoOp
 	   )
     
   {
-    unsigned long vol=0;
+    unsigned long vol=0,nRows=0;
     int nVB=0;
     int spwNdx=0;
     double griddingEngine_time=0,totalDataIO_time=0.0;
@@ -318,7 +317,7 @@ public:
   	std::chrono::time_point<std::chrono::steady_clock> griddingEngine_start
   	  = std::chrono::steady_clock::now();
 
-  	auto ret = iterVB<DCReturnType>(vi2, vb2,
+  	auto ret = iterVB(vi2, vb2,
 			  nVB,
 			  dataConsumer,
 			  cfSentNotifier);
@@ -326,13 +325,15 @@ public:
   	std::chrono::duration<double> tt = std::chrono::steady_clock::now() - griddingEngine_start;
   	griddingEngine_time += tt.count();
 
-	vol+=std::get<0>(ret);
-	totalDataIO_time+=std::get<1>(ret);
+	vol+=ret[0];
+	totalDataIO_time+=ret[1];
+	nRows+=ret[2];
 	if (isRoot_p)
   	  pm.update(Double(vol));
       }
 
-    return std::make_tuple(nVB, vol,griddingEngine_time,totalDataIO_time);
+    std::vector<double> ret={(double)nVB, (double)vol,(double)griddingEngine_time,(double)totalDataIO_time,(double)nRows};
+    return ret;
   };
 
 
