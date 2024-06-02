@@ -224,17 +224,8 @@ int cleanComplete()
 
 
 
-float Hummbee(//string& MSNBuf,
+float Hummbee(
         string& imageName, string& modelImageName,
-        /*int& ImSize, int& nW,
-        float& cellSize, string& stokes, string& refFreqStr,
-        string& phaseCenter, string& weighting,
-        float& robust,
-        string& CFCache,
-        string& fieldStr, string& spwStr,
-        Bool& doPBCorr,
-        Bool& conjBeams,
-        Float& pbLimit,*/
         string& deconvolver,
         vector<float>& scales,
         float& largestscale, float& fusedthreshold,
@@ -242,9 +233,11 @@ float Hummbee(//string& MSNBuf,
         float& gain, float& threshold,
         float& nsigma,
         int& cycleniter, float& cyclefactor,
-        vector<string>& mask, string& specmode)
+        vector<string>& mask, string& specmode,
+        bool& doPBCorr,
+        string& imagingMode)
 {
-  LogIO os(LogOrigin("contact","hummbee_func"));
+  LogIO os(LogOrigin("Hummbee","hummbee_func"));
 
   Float PeakResidual = 0.0;
 
@@ -358,10 +351,19 @@ float Hummbee(//string& MSNBuf,
       // this is equivelant to runminorcycle()
       // don't need state sharing for interactive GUI and science code
   
-      //itsIterBot.resetMinorCycleInfo(); // prob don't need this - reset interactive state (peak res etc) to 0 
-      iterBotRec_p = itsDeconvolver.executeMinorCycle(iterBotRec_p);
-      //itsIterBot.endMinorCycle(iterbotrec); // prob don't need this - mergeCycleExecutionRecord (peakres, etc)
-                                                // & getDetailsRecord from "state"
+      if (imagingMode == "deconvolve")
+      {
+        //itsIterBot.resetMinorCycleInfo(); // prob don't need this - reset interactive state (peak res etc) to 0 
+        iterBotRec_p = itsDeconvolver.executeMinorCycle(iterBotRec_p);
+        //itsIterBot.endMinorCycle(iterbotrec); // prob don't need this - mergeCycleExecutionRecord (peakres, etc)
+                                                  // & getDetailsRecord from "state"
+      }
+      else if (imagingMode == "restore")
+      {
+         itsDeconvolver.restore();
+         if (doPBCorr)
+           itsDeconvolver.pbcor(); 
+      }
 
       // return the peak residual for unit test
       PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
@@ -392,6 +394,8 @@ float Hummbee(//string& MSNBuf,
 
         if self.hasConverged():
             os.system('touch stopIMCycles')
+      
+      // end of def
       */
 
 
@@ -400,8 +404,19 @@ float Hummbee(//string& MSNBuf,
             retrec=decon.getSummary();
 
         #################################################
-        #### Teardown -- don't need this. In makeFinalImage
+        #### Teardown -- don't need this for mode=deconvovle. 
+        #### In makeFinalImage
         #################################################
+        def makeFinalImages(self, imtype = 'residual', partname = 'SPW', gather = True, scatter = False):
+          self.initializeDeconvolvers()
+          self.initializeIterationControl()
+
+          if gather:
+              self._gather(imtype, partname, scatter = False)
+
+          self.restoreImages()
+          self.pbcorImages()
+
 
         ## Get records from iterbot, to be used in the next call to deconvolve
         iterrec = decon.getIterRecords()

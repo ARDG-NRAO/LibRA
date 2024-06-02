@@ -1,0 +1,76 @@
+name: Libra CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up CCache
+        run: |
+          export CCACHE_BASEDIR="$PWD"
+          export CCACHE_DIR="$PWD/ccache"
+          export CCACHE_COMPILERCHECK=content
+          ccache --zero-stats || true
+          ccache --show-stats || true
+          git clean -ffdx
+
+      - name: Compile the code
+        run: |
+          echo "Compiling the code..."
+          echo $PATH
+          nvidia-smi
+          which nvcc
+          mkdir build
+          cd build
+          cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+          make
+          echo "Compilation complete."
+
+      - name: Show CCache stats
+        run: |
+          export CCACHE_DIR="$PWD/ccache"
+          ccache --show-stats || true
+
+  test:
+    needs: [build]
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run unit tests
+        run: |
+          echo $PWD
+          base_path=$PWD
+          echo "Entering $PWD/apps/src/tests to run apps unit tests"
+          cd ${base_path}/apps/src/tests
+          ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test Report
+          path: ${{ github.workspace }}/build/Libra/apps/src/tests/report.xml
+
+  # production:
+  #   needs: [test]
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'workflow_dispatch'
+
+  #   steps:
+  #     - name: Deploy to production
+  #       run: |
+  #         echo "Deploying to production..."
+  #         # Add your deployment commands here
