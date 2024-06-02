@@ -53,7 +53,7 @@ namespace test{
   //-----------------------------------------------------------------------------------------
   //
     string msName = "refim_point_wterm_vlad.ms";
-    string sourceTestMS="gold_standard/"+msName;
+    string sourceTestMS=string(fs::current_path())+"/gold_standard/"+msName;
     string telescopeName = "EVLA";
     int NX = 2048;
     float cellSize = 10.0;
