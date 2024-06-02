@@ -43,7 +43,8 @@ jobs:
           ccache --show-stats || true
 
   test:
-    runs-on: ubuntu-latest
+    needs: [build]
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
