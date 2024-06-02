@@ -38,7 +38,9 @@ PYBIND11_MODULE(hummbee2py, m)
     "cycleniter"_a=-1,
     "cyclefactor"_a=1.0,
     "mask"_a="",
-    "specmode"_a="mfs"
+    "specmode"_a="mfs",
+    "pbcor"_a=false,
+    "mode"_a="deconvolve"
     );
 }
 
