@@ -776,7 +776,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
       unsigned long allVol=vol;
       //log_l << "Total rows processed: " << allVol << LogIO::POST;
-      log_l << "Total bytes processed: " << allVol << LogIO::POST;
 
       if (imagingMode!="predict")
 	{
