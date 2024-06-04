@@ -218,44 +218,47 @@ int main(int argc, char **argv)
   bool doPBCorr = false;
   string imagingMode="deconvolve";
 
-  UI(restartUI, argc, argv, interactive,
-    imageName, modelImageName, 
-    /*NX, nW, cellSize,
-     stokes, refFreqStr, phaseCenter, weighting, robust,
-     cfCache, fieldStr,spwStr
-     , conjBeams, pbLimit,*/ 
-    deconvolver,
-    scales,
-    largestscale, fusedthreshold,
-    nterms,
-    gain, threshold,
-    nsigma,
-    cycleniter, cyclefactor,
-    mask, specmode,
-    doPBCorr,
-    imagingMode);
-
-  set_terminate(NULL);
 
   try
     {
+      UI(restartUI, argc, argv, interactive,
+	 imageName, modelImageName, 
+	 /*NX, nW, cellSize,
+	   stokes, refFreqStr, phaseCenter, weighting, robust,
+	   cfCache, fieldStr,spwStr
+	   ,doPBCorr, conjBeams, pbLimit,*/ 
+	 deconvolver,
+	 scales,
+	 largestscale, fusedthreshold,
+	 nterms,
+	 gain, threshold,
+	 nsigma,
+	 cycleniter, cyclefactor,
+	 mask, specmode,
+	 doPBCorr, imagingMode);
+
+      set_terminate(NULL);
       float PeakRes = Hummbee(/*MSNBuf,*/imageName, modelImageName,
-                 /*NX, nW, cellSize,
-                 stokes, refFreqStr, phaseCenter, weighting, robust,
-                 cfCache, fieldStr,spwStr,
-                 conjBeams, pbLimit,*/
-                 deconvolver,
-                 scales,
-                 largestscale, fusedthreshold,
-                 nterms,
-                 gain, threshold,
-                 nsigma,
-                 cycleniter, cyclefactor,
-                 mask, specmode,
-                 doPBCorr,
-                 imagingMode
-                 ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
+			      /*NX, nW, cellSize,
+				stokes, refFreqStr, phaseCenter, weighting, robust,
+				cfCache, fieldStr,spwStr,
+				doPBCorr, conjBeams, pbLimit,*/
+			      deconvolver,
+			      scales,
+			      largestscale, fusedthreshold,
+			      nterms,
+			      gain, threshold,
+			      nsigma,
+			      cycleniter, cyclefactor,
+			      mask, specmode,
+			      doPBCorr,
+			      imagingMode
+			      ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     
+    }
+  catch(clError& er)
+    {
+      cerr << er.what() << endl;
     }
   catch(AipsError& er)
     {
