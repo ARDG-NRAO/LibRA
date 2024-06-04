@@ -7,6 +7,7 @@ BEGIN{i=2;}
     postscript=")";
     if (NR==1) printf("%s",preamble);
 
+    print $1;
     if ($1=="%%P")
     {
 	name=$2
