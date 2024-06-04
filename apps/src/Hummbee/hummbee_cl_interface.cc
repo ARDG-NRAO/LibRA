@@ -234,7 +234,8 @@ int main(int argc, char **argv)
 	 gain, threshold,
 	 nsigma,
 	 cycleniter, cyclefactor,
-	 mask, specmode);
+	 mask, specmode,
+	 doPBCorr, imagingMode);
 
       set_terminate(NULL);
       float PeakRes = Hummbee(/*MSNBuf,*/imageName, modelImageName,
@@ -249,7 +250,9 @@ int main(int argc, char **argv)
 			      gain, threshold,
 			      nsigma,
 			      cycleniter, cyclefactor,
-			      mask, specmode
+			      mask, specmode,
+			      doPBCorr,
+			      imagingMode
 			      ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     
     }
