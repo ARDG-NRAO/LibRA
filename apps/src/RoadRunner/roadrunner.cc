@@ -587,7 +587,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	[/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start]
 	(vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
       {
-	Cube<Complex> vis;
+	Cube<Complex> dataCube;
+	std::chrono::duration<double> thisIOTime;
 	if (imagingMode=="predict")
 	  {
 	    // Predict the data into the VB (presumably the name get()
@@ -600,14 +601,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    // the VI.
 	    dataIO_start = std::chrono::steady_clock::now();
 
-	    if (dataCol_l==casa::refim::FTMachine::MODEL)          {vis=vb_l->visCubeModel();vi2_l->writeVisModel(vis);}
-	    else if (dataCol_l==casa::refim::FTMachine::CORRECTED) {vis=vb_l->visCubeModel();vi2_l->writeVisCorrected(vis);}
-	    else                                                   {vis=vb_l->visCubeModel();vi2_l->writeVisObserved(vis);}
+	    // Extract the predicted data in the dataCube for writting it back to the data base.
+	    dataCube=vb_l->visCubeModel();
 
-	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+	    if (dataCol_l==casa::refim::FTMachine::MODEL)          {vi2_l->writeVisModel(dataCube);}
+	    else if (dataCol_l==casa::refim::FTMachine::CORRECTED) {vi2_l->writeVisCorrected(dataCube);}
+	    else                                                   {vi2_l->writeVisObserved(dataCube);}
 
-	    std::vector<double> ret={(double)vis.shape().product()*sizeof(Complex), tt.count()};
-	    return ret;
+	    thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
 	  }
 	else
 	  {
@@ -615,20 +616,22 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    // in-memory buffer
 	    dataIO_start = std::chrono::steady_clock::now();
 
-	    if (dataCol_l==casa::refim::FTMachine::CORRECTED)   {vis=vb_l->visCubeCorrected();vb_l->setVisCube(vis);}
-	    else if (dataCol_l==casa::refim::FTMachine::MODEL)  {vis=vb_l->visCubeModel();vb_l->setVisCube(vis);}
-	    else                                                {vis=vb_l->visCube();vb_l->setVisCube(vis);}
+	    if (dataCol_l==casa::refim::FTMachine::CORRECTED)   {dataCube=vb_l->visCubeCorrected();}
+	    else if (dataCol_l==casa::refim::FTMachine::MODEL)  {dataCube=vb_l->visCubeModel();}
+	    else                                                {dataCube=vb_l->visCube();}
 
-	    std::chrono::duration<double> tt = std::chrono::steady_clock::now() - dataIO_start;
+	    // Set the dataCube for consumstion in ftm_g->put()
+	    vb_l->setVisCube(dataCube);
+
+	    thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
 
 	    // Grid the data from the VB (presumably the name put()
 	    // means "put the data from the VB into the complex grid")
 	    ftm_g->put(*vb_l,-1,doPSF);
-	    
-	    std::vector<double> ret={(double)vis.shape().product()*sizeof(Complex), tt.count()};
-	    return ret;
 	  }
       
+	std::vector<double> ret={(double)dataCube.shape().product()*sizeof(Complex), thisIOTime.count()};
+	return ret;
       };
       //
       //-----------------------------------------------------------------------------------
