@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build_and_test:
     runs-on: self-hosted
 
     steps:
@@ -42,14 +42,6 @@ jobs:
           export CCACHE_DIR="$PWD/ccache"
           ccache --show-stats || true
 
-  test:
-    needs: [build]
-    runs-on: self-hosted
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Run unit tests
         run: |
           echo $PWD
@@ -63,14 +55,3 @@ jobs:
         with:
           name: Test Report
           path: ${{ github.workspace }}/build/Libra/apps/src/tests/report.xml
-
-  # production:
-  #   needs: [test]
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'workflow_dispatch'
-
-  #   steps:
-  #     - name: Deploy to production
-  #       run: |
-  #         echo "Deploying to production..."
-  #         # Add your deployment commands here
