@@ -178,23 +178,23 @@ int main(int argc, char **argv)
     dpa=360.0; // Don't rotate CFs for PA
   bool interactive = true;
 
-  UI(restartUI, argc, argv, interactive, 
-     MSNBuf,
-     telescopeName, NX, cellSize,
-     stokes, refFreqStr, nW,
-     cfCache, 
-     WBAwp,
-     aTerm, psTerm, mType, pa, dpa,
-     fieldStr,spwStr, phaseCenter,
-     conjBeams,
-     cfBufferSize, cfOversampling,
-     cfList,
-     mode);
-  
-  set_terminate(NULL);
   
   try
     {
+      UI(restartUI, argc, argv, interactive, 
+	 MSNBuf,
+	 telescopeName, NX, cellSize,
+	 stokes, refFreqStr, nW,
+	 cfCache, 
+	 WBAwp,
+	 aTerm, psTerm, mType, pa, dpa,
+	 fieldStr,spwStr, phaseCenter,
+	 conjBeams,
+	 cfBufferSize, cfOversampling,
+	 cfList,
+	 mode);
+  
+      set_terminate(NULL);
       Coyote(MSNBuf,
 	     telescopeName, NX, cellSize,
 	     stokes, refFreqStr, nW,
@@ -207,6 +207,10 @@ int main(int argc, char **argv)
 	     cfList,
 	     mode);
       
+    }
+  catch(clError& er)
+    {
+      cerr << er.what() << endl;
     }
   catch(AipsError& er)
     {
