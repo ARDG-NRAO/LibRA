@@ -1,5 +1,7 @@
 # LibRA
 
+![Build & Test](https://github.com/ardg-nrao/libra/actions/workflows/libra.yml/badge.svg)
+
 ## Description
 
 The primary goal of the LibRA project is to directly expose algorithms
