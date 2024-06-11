@@ -577,9 +577,13 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //-----------------------------------------------------------------------------------
 
       //
-      // Returns a std::tuple<int, double>.  First item is the number
-      // of bytes of visibilities read/written.  Second item is the
-      // time taken to read/write the visibilities.
+      // Returns a std::vector<double> of length >=2.
+      // The first item contains the number of bytes of visibilities read/written.
+      // The second item contains the time taken to read/write the visibilities.
+      //
+      // The returned vector can be longer than 2 elements, with
+      // an application-specific interpretation of the rest of the
+      // elements of the vector.
       //
       std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 

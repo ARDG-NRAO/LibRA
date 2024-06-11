@@ -102,7 +102,10 @@ public:
    * @param nVB The number of VisBuffer2 objects processed.
    * @param dataConsumer The lambda function that consumes the VisBuffer2 produced in the iterations
    * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
-   * @return The total number of rows processed.
+   * @return A std::vector<double> of length >=3 elements.
+   *         First element of the vector has the total data volume in bytes.
+   *         Second elements has time for the data I/O in seconds.
+   *         Third elements has the total number of MS rows consumed.
    */
   std::vector<double>
   iterVB(vi::VisibilityIterator2 *vi2,
@@ -147,7 +150,12 @@ public:
    * @param dataConsumer The lambda function that consumes the VisBuffer2 produced in the iterations
    * @param waitForCFReady A function to call when a chunk has been processed.
    * @param cfSentNotifier A function to call when a VisBuffer2 object has been processed.
-   * @return A tuple containing the total number of rows processed, the number of VisBuffer2 objects processed, and the time spent in the gridding engine.
+   * @return A std::vector<double> of length >=5.
+   *         First element contains the cumulative number of VisBuffer2 processed.
+   *         Second element contains the cumulative data processed in bytes. 
+   *         Third element contains the cumulative time spend in gridding/degridding in seconds.
+   *         Fourth element contains the cumulative time in data I/O in seconds. 
+   *         Fifth element contains the cumulative number of MS rows processed.
    */
   std::vector<double>
   dataIter(vi::VisibilityIterator2 *vi2,
