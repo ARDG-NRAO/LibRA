@@ -1,0 +1,69 @@
+Bootstrap: docker
+
+From: nvcr.io/nvidia/cuda:12.2.0-devel-rockylinux8
+
+
+%files
+   readline.pc /
+
+%labels
+
+   Author pjaganna@nrao.edu
+   Version v0.0.1 
+
+%post
+
+
+   dnf -y install epel-release
+   dnf install -y dnf-plugins-core
+   dnf config-manager --set-enabled powertools
+
+   # Packages needed for casacore development
+   dnf -y install git cmake gcc-c++ gcc-gfortran ccache flex bison tar curl bzip2
+   dnf -y install {gtest,readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3,openmpi,python38}-devel
+   
+
+   mv /readline.pc /usr/lib64/pkgconfig/
+   git clone https://github.com/ARDG-NRAO/LibRA.git libra
+   cd libra
+   mkdir build
+   cd build
+   cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+   make
+
+
+
+%test
+   nvcc --version > /tmp/nvcc_version.txt
+   echo "nvcc version is $(cat /tmp/nvcc_version.txt)"
+   nvidia-smi > /tmp/nvidia-smi.txt
+   echo "nvidia-smi is $(cat /tmp/nvidia-smi.txt)"
+   exit 0
+
+%environment
+   export PIP_ROOT_USER_ACTION=ignore
+   export PATH=/libra/apps/src/:/libra/dependencies/linux_64b/bin/:/libra/dependencies/linux_64b/sbin/:$PATH
+   export LD_LIBRARY_PATH=/libra/apps/src/RoadRunner/:/libra/dependencies/linux_64b/lib/:$LD_LIBRARY_PATH
+
+%runscript
+   exec /libra/apps/src/roadrunner
+
+%help
+   The container holds the roadrunner app which can be run via the singularity app command once the
+   container has been built. The contains also contains the dependencies needed to run the roadrunner
+   application. 
+   The container can be built using the following command:
+     singularity build --fakeroot roadrunner.sif roadrunner.def
+   The container can be run using the following command:     
+     singularity run --nv roadrunner.sif
+   The roadrunner app can be run using the following command:
+     singularity run --nv --app roadrunner roadrunner.sif 
+   For mounting paths from outside the container use the following command:
+     singularity run --nv --bind /path/to/mount:/container/mount/point roadrunner.sif
+%apprun roadrunner
+     exec /libra/apps/src/roadrunner
+
+%applabels roadrunner
+     The roadrunner is a standalone gridding application that can run on CPU or GPU as desired.
+
+
