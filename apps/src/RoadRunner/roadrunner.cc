@@ -306,13 +306,15 @@ double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBas
   return 0.0;
 }
 
-// ReturnType.get<CUMULATIVE_GRIDDING_ENGINE_TIME> --> Total time taken by the Gridding/deGridding kernel (griddingEngine_time).
-// ReturnType.get<IMAGING_TIME> --> Total time taken to make the image (griddingTime).  This includes the overheads FFT + move to host memory.
-// ReturnType.get<IMAGING_RATE> --> The rage of gridding in units of Vis/sec (allVol/griddingTime).
-// ReturnType.get<SOW> --> Sum of weights (sow(IPosition(4,0,0,0,0))).
-// ReturnType.get<NVIS> --> Number of visibilities processed (visResampler->getVisGridded()).
-// ReturnType.gt<DATA_VOLUME> --> Number of bytes of data used (visResampler->getDataVolume()).
-// ReturnType.get<MAKEVB_TIME> --> Cumulative time spend in packing the in-memory data for HPG (getMakeHPGVBTime(visResampler)).
+// The return value is of type ReturnType, which is a std::map<int, double>.  The structure of the map is as follows.
+// Enums for the key (the first tempalate-type) is
+// ReturnType(CUMULATIVE_GRIDDING_ENGINE_TIME) --> Total time taken by the Gridding/deGridding kernel (griddingEngine_time).
+// ReturnType(IMAGING_TIME) --> Total time taken to make the image (griddingTime).  This includes the overheads FFT + move to host memory.
+// ReturnType(IMAGING_RATE) --> The rage of gridding in units of Vis/sec (allVol/griddingTime).
+// ReturnType(SOW) --> Sum of weights (sow(IPosition(4,0,0,0,0))).
+// ReturnType(NVIS) --> Number of visibilities processed (visResampler->getVisGridded()).
+// ReturnType.(DATA_VOLUME) --> Number of bytes of data used (visResampler->getDataVolume()).
+// ReturnType(MAKEVB_TIME) --> Cumulative time spend in packing the in-memory data for HPG (getMakeHPGVBTime(visResampler)).
 auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		string& MSNBuf, string& imageName, string& modelImageName,
 		string& dataColumnName,
@@ -561,18 +563,93 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //
       // Finally, the data iteration loops.
       //-----------------------------------------------------------------------------------
-      double griddingEngine_time=0;
-      unsigned long vol=0;
+      double griddingEngine_time=0.0, dataIO_time=0.0;
+      unsigned long vol=0,nRows=0;
       ProgressMeter pm(1.0, db.vi2_l->ms().nrow(),
 		       "Gridding", "","","",true);
       DataIterator di(isRoot,dataCol_l);
 
+      //-----------------------------------------------------------------------------------
+      // Lambda function called in the DataIterator::dataIter().  This
+      // consumes the VB inside iterator loops
+      //
+      // Uses ftm_g, doPSF, dataCol_l
+      //-----------------------------------------------------------------------------------
+
+      //
+      // Returns a std::vector<double> of length >=2.
+      // The first item contains the number of bytes of visibilities read/written.
+      // The second item contains the time taken to read/write the visibilities.
+      //
+      // The returned vector can be longer than 2 elements, with
+      // an application-specific interpretation of the rest of the
+      // elements of the vector.
+      //
+      std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
+
+      auto dataConsumerFTM =
+	[/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start]
+	(vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
+      {
+	Cube<Complex> dataCube;
+	std::chrono::duration<double> thisIOTime;
+	if (imagingMode=="predict")
+	  {
+	    // Predict the data into the VB (presumably the name get()
+	    // means "get the data from the complex grid into the VB")
+	    ftm_g->get(*vb_l,0);
+	    
+	    // Write the VB to the specific data column.  Predicted data
+	    // in the in-memory model is always in the VB::visCubeModel.
+	    // So always make that persistent in the specified column of
+	    // the VI.
+	    dataIO_start = std::chrono::steady_clock::now();
+
+	    // Extract the predicted data in the dataCube for writting it back to the data base.
+	    dataCube=vb_l->visCubeModel();
+
+	    if (dataCol_l==casa::refim::FTMachine::MODEL)          {vi2_l->writeVisModel(dataCube);}
+	    else if (dataCol_l==casa::refim::FTMachine::CORRECTED) {vi2_l->writeVisCorrected(dataCube);}
+	    else                                                   {vi2_l->writeVisObserved(dataCube);}
+
+	    thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
+	  }
+	else
+	  {
+	    // Read the data from a specific data column into the
+	    // in-memory buffer
+	    dataIO_start = std::chrono::steady_clock::now();
+
+	    if (dataCol_l==casa::refim::FTMachine::CORRECTED)   {dataCube=vb_l->visCubeCorrected();}
+	    else if (dataCol_l==casa::refim::FTMachine::MODEL)  {dataCube=vb_l->visCubeModel();}
+	    else                                                {dataCube=vb_l->visCube();}
+
+	    // Set the dataCube for consumstion in ftm_g->put()
+	    vb_l->setVisCube(dataCube);
+
+	    thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
+
+	    // Grid the data from the VB (presumably the name put()
+	    // means "put the data from the VB into the complex grid")
+	    ftm_g->put(*vb_l,-1,doPSF);
+	  }
+      
+	std::vector<double> ret={(double)dataCube.shape().product()*sizeof(Complex), thisIOTime.count()};
+	return ret;
+      };
+      //
+      //-----------------------------------------------------------------------------------
+      //
+      //-----------------------------------------------------------------------------------
+      // Start the data iterations.
+      //
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
-				 doPSF,imagingMode);
-	  griddingEngine_time += std::get<2>(ret);
-	  vol+= std::get<1>(ret);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l,dataConsumerFTM);
+	  griddingEngine_time += ret[2];
+	  dataIO_time += ret[3];
+	  vol += ret[1];
+	  nRows += ret[4];
 	}
       else // if (ftm_g->name()=="AWProjectWBFTHPG")
 	{
@@ -679,11 +756,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	  try
 	    {
-	      auto ret = di.dataIter(db.vi2_l, db.vb_l, ftm_g, //CASACore dependent objects
-				     doPSF,imagingMode,
-				     waitForCFReady, notifyCFSent);
-	      griddingEngine_time += std::get<2>(ret);
-	      vol+= std::get<1>(ret);
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l, 
+				     dataConsumerFTM,
+				     waitForCFReady,
+				     notifyCFSent);
+	      griddingEngine_time += ret[2];
+	      dataIO_time += ret[3];
+	      vol += ret[1];
+	      nRows += ret[4];
 	    }
 	  catch (AipsError &er)
 	    {
@@ -702,7 +782,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       rrr[CUMULATIVE_GRIDDING_ENGINE_TIME]=griddingEngine_time;
       cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
       unsigned long allVol=vol;
-      log_l << "Total rows processed: " << allVol << LogIO::POST;
+      //log_l << "Total rows processed: " << allVol << LogIO::POST;
 
       if (imagingMode!="predict")
 	{
@@ -721,7 +801,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  rrr[IMAGING_TIME]=griddingTime;
 	  rrr[IMAGING_RATE]=allVol/griddingTime;
 
-	  log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
+	  //log_l << "Gridding time: " << griddingTime << ". No. of rows processed: " << allVol << ".  Data rate: " << allVol/griddingTime << " rows/s" << LogIO::POST;
+	  log_l << "Gridding time: " << griddingTime << ". Data I/O time: " << dataIO_time <<".  No. of bytes processed: " << allVol << endl
+		<< "Data processing rate: " << allVol/griddingTime << " bytes/sec" << endl
+		<< "Visibility I/O rate: " << allVol/dataIO_time << " bytes/sec" << endl
+		<< "Vis processing rate: " << visResampler->getVisGridded()/griddingTime << " vis/sec" << endl
+		<< "Row processing rate: " << nRows/griddingTime << " rows/sec" << endl
+		<< "Data volume from VR: " << visResampler->getDataVolume() << " bytes" << endl
+		<< LogIO::POST;
 
 	  if (cmplxGridName!="")
 	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
@@ -762,8 +849,12 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	      sow(IPosition(4,i,j,0,0))=sow_dp(i,j);
 
 	  rrr[SOW]=sow(IPosition(4,0,0,0,0));
-	  log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
-	  cerr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
+	  {
+	    std::stringstream sowStr;
+	    sowStr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
+	    //log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
+	    log_l << sowStr.str() << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
+	  }
 
 	  // Save the SoW as an image.
 	  if (doSow)

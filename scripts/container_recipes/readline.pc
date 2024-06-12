@@ -1,0 +1,7 @@
+Name: Readline
+Description: Gnu Readline library for command line editing
+URL: http://tiswww.cwru.edu/php/chet/readline/rltop.html
+Version: 7.0
+Requires.private: tinfo
+Libs: -lreadline -ltinfo
+Cflags: -I/usr/include/readline
