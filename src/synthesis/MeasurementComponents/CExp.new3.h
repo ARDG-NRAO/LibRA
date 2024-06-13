@@ -59,7 +59,8 @@ public:
       RTable[i] = cos(i*Step);
     }
   }
-  inline int f(register T arg)
+  //  inline int f(register T arg)
+    inline int f(T arg)
   {
     return (int)((arg<0)?((arg+1-(int)arg)*Size):((arg-(int)arg)*Size));
     //    if (arg < 0) return (int)((arg+1-(int)arg)*Size); return (int)((arg-(int)arg)*Size);

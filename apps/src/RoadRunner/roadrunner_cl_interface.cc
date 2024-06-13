@@ -243,24 +243,28 @@ int main(int argc, char **argv)
   vector<float> posigdev = {300.0,300.0};
   bool interactive = true;
 
-  UI(restartUI, argc, argv, interactive,
-     MSNBuf,imageName, modelImageName, dataColumnName,
-     sowImageExt, cmplxGridName, NX, nW, cellSize,
-     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-     doSPWDataIter);
-
-  set_terminate(NULL);
-  RRReturnType rrr;
   try
     {
+      UI(restartUI, argc, argv, interactive,
+	 MSNBuf,imageName, modelImageName, dataColumnName,
+	 sowImageExt, cmplxGridName, NX, nW, cellSize,
+	 stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+	 ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+	 doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+	 doSPWDataIter);
+
+      set_terminate(NULL);
+      RRReturnType rrr;
       rrr=Roadrunner(MSNBuf,imageName, modelImageName,dataColumnName,
 		     sowImageExt, cmplxGridName, NX, nW, cellSize,
 		     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
 		     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
 		     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
 		     doSPWDataIter);
+    }
+  catch(clError& er)
+    {
+      cerr << er.what() << endl;
     }
   catch(AipsError& er)
     {
