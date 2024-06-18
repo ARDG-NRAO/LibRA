@@ -79,10 +79,10 @@ void Restore(col_major_mdspan<T> model,
   col_major_mdspan<T> mask,
   col_major_mdspan<T> image,
   size_t size_x, size_t size_y, 
-  float& psfwidth,
   double refi, double refj, double inci, double incj,
+  double majaxis, double minaxis, double pa,
   int nSubChans = 1, int chanid = 0,
-  std::string majaxis="", std::string minaxis="", std::string pa="",
+  /*std::string majaxis="", std::string minaxis="", std::string pa="",*/
   bool pbcor = false, col_major_mdspan<T> pb = NULL, col_major_mdspan<T> image_pbcor=NULL)
 {
   LogIO os( LogOrigin("Restore","Restore", WHERE) );
@@ -113,8 +113,10 @@ void Restore(col_major_mdspan<T> model,
     // need to write own FitGaussianPSF that takes Matrix and coordinates.increment (i.e. delta)
     SubImage<Float> subPsf( *psf() , psfslice, True );
     StokesImageUtil::FitGaussianPSF( subPsf, restoringbeam, psfcutoff ); // use STL fitting?
-  }
-  else*/ if (majaxis!="" && minaxis=="" && pa=="")
+  }*/
+  // do not need the below in V1 since the function is mostly used when the 
+  // gaussian we are using to restore is the same as the one fitted to the PSF mainline.
+  /*else if (majaxis!="" && minaxis=="" && pa=="")
   {
     stringToQuantity(majaxis, majaxis_q);
     restoringbeam.setMajorMinor(majaxis_q, majaxis_q);
@@ -132,7 +134,7 @@ void Restore(col_major_mdspan<T> model,
     stringToQuantity(pa, pa_q);
     restoringbeam.setMajorMinor(majaxis_q, minaxis_q);
     restoringbeam.setPA(pa_q);
-  }
+  }*/
 
 
   // Before restoring, check for an empty model image and don't convolve (but still smooth residuals)
@@ -178,10 +180,14 @@ void Restore(col_major_mdspan<T> model,
 
   // Make an gaussian PSF matrix
   // no need to normalize
-  std::vector<float> beam(3);
+  /*std::vector<float> beam(3);
   beam[0] = majaxis_q.get("arcsec").getValue();
   beam[1] = minaxis_q.get("arcsec").getValue();
-  beam[2] = pa_q.get("deg").getValue();
+  beam[2] = pa_q.get("deg").getValue();*/
+  std::vector<double> beam(3);
+  beam[0] = majaxis;
+  beam[1] = minaxis;
+  beam[2] = pa;
 
   double cospa = cos(beam[2]);
   double sinpa = sin(beam[2]);
@@ -259,7 +265,7 @@ void Restore(col_major_mdspan<T> model,
       //if( (image(term)->getDefaultMask()).matches("mask0") ) removeMask( image(term) );
       //copyMask(residual(term),image(term));
 
-      if(pb == NULL)
+      if(pb.extent(0) == 0 && pb.extent(1) == 0)
       {
         // Cannot pbcor without pb
         os << LogIO::WARN << "Cannot pbcor without pb" << LogIO::POST;
