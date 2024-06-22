@@ -98,12 +98,14 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
 
       std::shared_ptr<SIImageStore> itsImages;
       itsImages.reset( new SIImageStore( imageName, true, true) ); 
-
-      float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel();
+      cout << "set up image store" << endl;
+      
+      // this does fitting gaussian to psf and set up the correct restoring beam 
+      float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel(); 
 
     
 
-      Float masksum;
+      /*Float masksum;
       if( ! itsImages->hasMask() ) // i.e. if there is no existing mask to re-use...
       { masksum = -1.0; }
       else
@@ -113,6 +115,7 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
       }
       Bool validMask = ( masksum > 0 );
       Float PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
+      */
 
       // converting Matrix to STL
       casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
@@ -121,7 +124,7 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     itsImages->model()->get( itsMatModel, true );
     itsImages->psf()->get( itsMatPsf, true );
     itsImages->mask()->get( itsMatMask, true );
-    //std::cout << "its shape " << itsMatPsf.shape() << endl;
+    std::cout << "its shape " << itsMatPsf.shape() << endl;
     
     Matrix<Float> matPsf(itsMatPsf);
     Matrix<Float> matModel(itsMatModel);
@@ -163,11 +166,11 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     Vector<double> d = itsImages->psf()->coordinates().increment();
     double refi = rp(0);
     double refj = rp(1);
-    Vector<double>fd(fabs(d));
+    Vector<double> fd(fabs(d));
     double inci = fd(0);
     double incj = fd(1);
 
-    // genie to do: add code for fitting gaussian to psf here and define the three gaussian parameters. 
+    // fitting gaussian to psf here and define the three gaussian parameters. 
     GaussianBeam beam;
     try
     {
@@ -178,9 +181,26 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
       //os << "Error in fitting a Gaussian to the PSF : " << x.getMesg() << LogIO::POST;
       throw( AipsError("Error in fitting a Gaussian to the PSF" + x.getMesg()) );
     }
-    double majaxis = beam.getMajor("arcsec");
+    // another way to get PSF beam
+    // Get PSF Beams....
+    /*ImageInfo ii = itsImages->psf()->imageInfo();
+    ImageBeamSet itsPSFBeams = ii.getBeamSet();
+    GaussianBeam beam = itsPSFBeams.getBeam();*/
+ 
+    // the following conversion is critical
+    double majaxis = beam.getMajor().get("arcsec").getValue() * C::arcsec;
+    double minaxis = beam.getMinor().get("arcsec").getValue() * C::arcsec;
+    double pa = (beam.getPA().get("deg").getValue() + 90.0)* C::degree;
+
+    /*double majaxis = beam.getMajor("arcsec");
     double minaxis = beam.getMinor("arcsec");
-    double pa = beam.getPA("deg", True);
+    double pa = beam.getPA("deg", True);*/
+    
+
+    /* correct fitting values
+    double majaxis = 4.90554e-06;
+    double minaxis = 4.67228e-06;
+    double pa = 2.76764;*/
 
     //////////interface to the raw restore function////////
     int nSubChans = 1; 
@@ -191,6 +211,9 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     auto emptydata7 = std::make_unique<float[]>(nx * ny);
     auto image_pbcor = col_major_mdspan<float>(emptydata7.get(), nx, ny);
     
+    cout << "Calling Restore: refi " << refi << ", refj " << refj << ", inci " << inci << ", incj " << incj << endl;
+    cout << "majaxis " << majaxis << ", minaxis" << minaxis << ", pa " << pa << endl;
+    cout << "nx " << nx << " ny " << ny << endl;
     Restore<float>(model, psf, residual, mask,
       image,
       nx, ny, 
