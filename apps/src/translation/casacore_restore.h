@@ -37,23 +37,6 @@
 #include <casacore/casa/Quanta/Quantum.h>
 #include <casacore/measures/Measures/MDirection.h>
 
-/*#include <synthesis/ImagerObjects/SDAlgorithmBase.h>
-#include <synthesis/ImagerObjects/SDAlgorithmHogbomClean.h>
-#include <synthesis/ImagerObjects/SDAlgorithmClarkClean.h>
-#include <synthesis/ImagerObjects/SDAlgorithmClarkClean2.h>
-#include <synthesis/ImagerObjects/SDAlgorithmMSMFS.h>
-#include <synthesis/ImagerObjects/SDAlgorithmMSClean.h>
-#include <synthesis/ImagerObjects/SDAlgorithmMEM.h>
-#include <synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
-
-#include <synthesis/ImagerObjects/SDMaskHandler.h>
-#include <synthesis/ImagerObjects/SIMinorCycleController.h>
-
-#include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
-
-#include <synthesis/ImagerObjects/SynthesisDeconvolver.h>
-#include <synthesis/ImagerObjects/grpcInteractiveClean.h>*/
-
 #include <Restore/restore.h>
 
 
@@ -61,79 +44,31 @@ using namespace casa;
 using namespace casacore;
 using namespace libracore;
 
-// the API assumes mask is provided as a disk image
 // it also assumes the input model and residual images are of the same name,
 void casacore_restore(std::string& imageName, bool& doPBCorr)
 {
-
-      /*SynthesisParamsDeconv decPars_p;
-      decPars_p.setDefaults();
-
-      //deconvolution params
-      decPars_p.imageName=imageName;
-      decPars_p.algorithm="asp";
-      decPars_p.startModel=modelImageName;
-      decPars_p.deconvolverId=0;
-      decPars_p.scales = Vector<Float>(0);
-      decPars_p.maskType="user"; //genie
-      
-      
-
-      decPars_p.pbMask=0.0; //genie
-      decPars_p.autoMaskAlgorithm="thresh";
-      decPars_p.maskThreshold=""; //genie
-      decPars_p.maskResolution=""; //genie
-      decPars_p.fracOfPeak=0.0; //genie
-      decPars_p.nMask=0; //genie
-      decPars_p.interactive=false;
-      decPars_p.autoAdjust=False; //genie
-      decPars_p.fusedThreshold = fusedthreshold;
-      decPars_p.specmode=specmode; //deconvolve task does not have this
-      decPars_p.largestscale = largestscale;
-      decPars_p.scalebias = 0.0;
-      decPars_p.nTaylorTerms = nterms;
-      decPars_p.nsigma = nsigma;*/ // default is 0 which indicates no PB is required
-
     
 
       std::shared_ptr<SIImageStore> itsImages;
       itsImages.reset( new SIImageStore( imageName, true, true) ); 
-      cout << "set up image store" << endl;
       
       // this does fitting gaussian to psf and set up the correct restoring beam 
-      float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel(); 
+      //float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel(); 
 
     
 
-      /*Float masksum;
-      if( ! itsImages->hasMask() ) // i.e. if there is no existing mask to re-use...
-      { masksum = -1.0; }
-      else
-      { 
-        masksum = itsImages->getMaskSum();
-        itsImages->mask()->unlock();
-      }
-      Bool validMask = ( masksum > 0 );
-      Float PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
-      */
-
       // converting Matrix to STL
       casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
-      casacore::Array<casacore::Float> itsMatMask;
     itsImages->residual()->get( itsMatResidual, true );
     itsImages->model()->get( itsMatModel, true );
     itsImages->psf()->get( itsMatPsf, true );
-    itsImages->mask()->get( itsMatMask, true );
-    std::cout << "its shape " << itsMatPsf.shape() << endl;
     
     Matrix<Float> matPsf(itsMatPsf);
     Matrix<Float> matModel(itsMatModel);
     Matrix<Float> matResidual(itsMatResidual);
-    Matrix<Float> matMask(itsMatMask);
 
     AlwaysAssert(matPsf.shape()==matModel.shape(), AipsError);
     AlwaysAssert(matPsf.shape()==matResidual.shape(), AipsError);
-    AlwaysAssert(matPsf.shape()==matMask.shape(), AipsError);
 
     const size_t nx = (size_t)matPsf.shape()(0);
     const size_t ny = (size_t)matPsf.shape()(1);
@@ -148,15 +83,26 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     auto model = col_major_mdspan<float>(emptydata2.get(), nx, ny);
     auto emptydata3 = std::make_unique<float[]>(nx * ny);
     auto residual = col_major_mdspan<float>(emptydata3.get(), nx, ny);
-    auto emptydata4 = std::make_unique<float[]>(nx * ny);
-    auto mask = col_major_mdspan<float>(emptydata4.get(), nx, ny);
     auto emptydata5 = std::make_unique<float[]>(nx * ny);
     auto image = col_major_mdspan<float>(emptydata5.get(), nx, ny);
     
     casamatrix2mdspan<float>(matModel, model);
-    casamatrix2mdspan<float>(matMask, mask);
     casamatrix2mdspan<float>(matPsf, psf);
     casamatrix2mdspan<float>(matResidual, residual);
+
+    bool pbcor = doPBCorr;
+    auto emptydata6 = std::make_unique<float[]>(nx * ny);
+    auto pb = col_major_mdspan<float>(emptydata6.get(), nx, ny);
+    auto emptydata7 = std::make_unique<float[]>(nx * ny);
+    auto image_pbcor = col_major_mdspan<float>(emptydata7.get(), nx, ny);
+
+    if (doPBCorr)
+    {
+      casacore::Array<casacore::Float> itsMatPB;
+      itsImages->pb()->get( itsMatPB, true );
+      Matrix<Float> matPB(itsMatPB);
+      casamatrix2mdspan<float>(matPB, pb);
+    }
 
     //std::cout << "matPsf(2000,2000) " << matPsf(2000,2000) << std::endl;
     //std::cout << "psf(2000,2000) " << psf(2000,2000) << std::endl;
@@ -192,29 +138,21 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     double minaxis = beam.getMinor().get("arcsec").getValue() * C::arcsec;
     double pa = (beam.getPA().get("deg").getValue() + 90.0)* C::degree;
 
-    /*double majaxis = beam.getMajor("arcsec");
+    /* this is wrong
+    double majaxis = beam.getMajor("arcsec");
     double minaxis = beam.getMinor("arcsec");
     double pa = beam.getPA("deg", True);*/
     
-
-    /* correct fitting values
-    double majaxis = 4.90554e-06;
-    double minaxis = 4.67228e-06;
-    double pa = 2.76764;*/
+    /* correct fitting values for the unit test
+    majaxis = 4.90554e-06;
+    minaxis = 4.67228e-06;
+    pa = 2.76764;*/
 
     //////////interface to the raw restore function////////
     int nSubChans = 1; 
     int chanid = 0;
-    bool pbcor = false;
-    auto emptydata6 = std::make_unique<float[]>(nx * ny);
-    auto pb = col_major_mdspan<float>(emptydata6.get(), nx, ny);
-    auto emptydata7 = std::make_unique<float[]>(nx * ny);
-    auto image_pbcor = col_major_mdspan<float>(emptydata7.get(), nx, ny);
     
-    cout << "Calling Restore: refi " << refi << ", refj " << refj << ", inci " << inci << ", incj " << incj << endl;
-    cout << "majaxis " << majaxis << ", minaxis" << minaxis << ", pa " << pa << endl;
-    cout << "nx " << nx << " ny " << ny << endl;
-    Restore<float>(model, psf, residual, mask,
+    Restore<float>(model, psf, residual,
       image,
       nx, ny, 
       refi, refj, inci, incj,
@@ -226,9 +164,15 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
   //////////Write back to files ////////////
     // convert mdspan back to casa matrix
     Matrix<Float> matImage(nx, ny, 0);
-    mdspan2casamatrix<float>(image, matImage);
-   
+    mdspan2casamatrix<float>(image, matImage);   
     (itsImages->image())->put(matImage);
+
+    if (doPBCorr)
+    {
+      Matrix<Float> matImagePBCor(nx, ny, 0);
+      mdspan2casamatrix<float>(image_pbcor, matImagePBCor);   
+      (itsImages->imagepbcor())->put(matImagePBCor);
+    }
 
     itsImages->releaseLocks();
 

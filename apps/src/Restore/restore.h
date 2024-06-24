@@ -76,7 +76,7 @@ template <typename T>
 void Restore(col_major_mdspan<T> model, 
   col_major_mdspan<T> psf, 
   col_major_mdspan<T> residual,
-  col_major_mdspan<T> mask,
+  /*col_major_mdspan<T> mask,*/
   col_major_mdspan<T> image,
   size_t size_x, size_t size_y, 
   double refi, double refj, double inci, double incj,
@@ -90,11 +90,6 @@ void Restore(col_major_mdspan<T> model,
   Matrix<T> psfMat(size_x, size_y, 0);  
   mdspan2casamatrix<T>(psf, psfMat);
 
-   
-  Matrix<T> maskMat(size_x, size_y, 0); 
-  mdspan2casamatrix<T>(mask, maskMat);
-
-
   Matrix<T> dirtyMat(size_x, size_y, 0);
   mdspan2casamatrix<T>(residual, dirtyMat);
   
@@ -107,6 +102,7 @@ void Restore(col_major_mdspan<T> model,
   Quantity majaxis_q, minaxis_q, pa_q;
   GaussianBeam restoringbeam;
 
+  // do below if inputs are string
   /*if (majaxis=="" && minaxis=="" && pa=="")
   {
     // genie work on this in version 2.
@@ -163,20 +159,6 @@ void Restore(col_major_mdspan<T> model,
   //itsRestoredBeams=ImageBeamSet(rbeam);
   //GaussianBeam beam = itsRestoredBeams.getBeam();
 
-  // create the gaussian beam Matrix
-  /*const Double refi = size_x/2;
-  const Double refj = size_y/2;
-  Matrix<T> beamMat(size_x, size_y, 0);
-
-  for (int j = 0; j < size_y; j++)
-  {
-      for (int i = 0; i < size_x; i++)
-      {
-        const int px = i - refi;
-        const int py = j - refj;
-        beamMat(i,j) = restoringbeam(px, py); 
-      }
-  }*/
 
   // Make an gaussian PSF matrix
   // no need to normalize
@@ -261,7 +243,7 @@ void Restore(col_major_mdspan<T> model,
 
     if (pbcor)
     {
-      // what does this do?
+      // don't need
       //if( (image(term)->getDefaultMask()).matches("mask0") ) removeMask( image(term) );
       //copyMask(residual(term),image(term));
 

@@ -26,10 +26,6 @@ TEST(RestoreTest, RestoreFuncLevel)
        -1,   1,   -1,  /*|*/  1,  -1   /* X | */
   };
   auto residual = col_major_mdspan<float>(data_row_major_res, n_rows, n_cols);
-
-
-  auto emptydata = std::make_unique<float[]>(n_rows * n_cols);
-  auto mask = col_major_mdspan<float>(emptydata.get(), n_rows, n_cols);
   
   auto emptydata1 = std::make_unique<float[]>(n_rows * n_cols);
   auto image = col_major_mdspan<float>(emptydata1.get(), n_rows, n_cols);
@@ -54,7 +50,7 @@ TEST(RestoreTest, RestoreFuncLevel)
   int chanid = 0;
   bool pbcor = false;
 
-  Restore<float>(model, psf, residual, mask,
+  Restore<float>(model, psf, residual, 
       image,
       n_rows, n_cols, 
       refi, refj, inci, incj,
@@ -94,9 +90,7 @@ TEST(RestoreTest, casacore_restore) {
   copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
   copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
   copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.pb", testdir+"/unittest_hummbee_mfs_revE_restore.pb", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", copy_options::recursive);
-
+  
   // Set the current working directory to the test directory
   current_path(testDir);
 
@@ -111,7 +105,7 @@ TEST(RestoreTest, casacore_restore) {
   PagedImage<Float> image("unittest_hummbee_mfs_revE_restore.image");
   PagedImage<Float> goldimage("unittest_hummbee_mfs_revE_restore_gold.image");
   // check the restored image is the same as the output of HTCSynthesisImager.makeFinalImages()
-  float tol = 0.1;
+  float tol = 0.05;
   EXPECT_NEAR(image(IPosition(4,1072,1639,0,0)), goldimage(IPosition(4,1072,1639,0,0)), tol);
   EXPECT_NEAR(image(IPosition(4,3072,2406,0,0)), goldimage(IPosition(4,3072,2406,0,0)), tol);
 
@@ -123,7 +117,48 @@ TEST(RestoreTest, casacore_restore) {
 
 
 TEST(RestoreTest, casacore_restore_pbcor) {
-  EXPECT_TRUE(true);
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+// Create a unique directory for this test case
+  path testDir = current_path() / testName;
+  string testdir = testDir.string();
+
+  // create dir 
+  std::filesystem::create_directory(testDir);
+
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.psf", testdir+"/unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.residual", testdir+"/unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", testdir+"/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.pb", testdir+"/unittest_hummbee_mfs_revE_restore.pb", copy_options::recursive);
+  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", copy_options::recursive);
+
+  // Set the current working directory to the test directory
+  current_path(testDir);
+
+  string imageName = "unittest_hummbee_mfs_revE_restore";
+  bool doPBCorr = true;
+  casacore_restore(imageName, doPBCorr);
+
+  // Check that the .image .image.pbcor are generated
+  path p2("unittest_hummbee_mfs_revE_restore.image");
+  path p3("unittest_hummbee_mfs_revE_restore.image.pbcor");
+  EXPECT_TRUE(exists(p2) && exists(p3));
+
+  PagedImage<Float> pbcor("unittest_hummbee_mfs_revE_restore.image.pbcor");
+  PagedImage<Float> goldpbcor("unittest_hummbee_mfs_revE_restore_gold.image.pbcor");
+  // check the restored image.pbcor is the same as the output of HTCSynthesisImager.makeFinalImages()
+  //std::cout << "pbcor " << pbcor(IPosition(4,1072,1639,0,0)) << " , gold pbcor " << goldpbcor(IPosition(4,1072,1639,0,0)) << std::endl;
+  float tol = 0.05;
+  EXPECT_NEAR(pbcor(IPosition(4,1072,1639,0,0)), goldpbcor(IPosition(4,1072,1639,0,0)), tol);
+  EXPECT_NEAR(pbcor(IPosition(4,3072,2406,0,0)), goldpbcor(IPosition(4,3072,2406,0,0)), tol);
+
+  // Set the current working directory back to the parent dir
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
 }
 
 
