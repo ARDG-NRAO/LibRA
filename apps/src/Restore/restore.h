@@ -74,22 +74,19 @@ this is the final image (unit: Jy/beam, where beam refers to the clean beam)
 
 template <typename T>
 void Restore(col_major_mdspan<T> model, 
-  col_major_mdspan<T> psf, 
+  /*col_major_mdspan<T> psf,*/ 
   col_major_mdspan<T> residual,
   /*col_major_mdspan<T> mask,*/
   col_major_mdspan<T> image,
   size_t size_x, size_t size_y, 
   double refi, double refj, double inci, double incj,
   double majaxis, double minaxis, double pa,
-  int nSubChans = 1, int chanid = 0,
+  /*int nSubChans = 1, int chanid = 0,*/
   /*std::string majaxis="", std::string minaxis="", std::string pa="",*/
   bool pbcor = false, col_major_mdspan<T> pb = NULL, col_major_mdspan<T> image_pbcor=NULL)
 {
   LogIO os( LogOrigin("Restore","Restore", WHERE) );
   
-  Matrix<T> psfMat(size_x, size_y, 0);  
-  mdspan2casamatrix<T>(psf, psfMat);
-
   Matrix<T> dirtyMat(size_x, size_y, 0);
   mdspan2casamatrix<T>(residual, dirtyMat);
   
@@ -99,8 +96,7 @@ void Restore(col_major_mdspan<T> model,
   
 
   // perform "restore"
-  Quantity majaxis_q, minaxis_q, pa_q;
-  GaussianBeam restoringbeam;
+  
 
   // do below if inputs are string
   /*if (majaxis=="" && minaxis=="" && pa=="")
@@ -287,6 +283,84 @@ void Restore(col_major_mdspan<T> model,
   // send back STL retored image
   casamatrix2mdspan<T>(imageMat, image);
  
+}
+
+
+
+
+template <typename T>
+void Restore_psf(col_major_mdspan<T> model, 
+  col_major_mdspan<T> psf, 
+  col_major_mdspan<T> residual,
+  col_major_mdspan<T> image,
+  size_t size_x, size_t size_y, 
+  double refi, double refj, double inci, double incj,
+  /*int nSubChans = 1, int chanid = 0,*/
+  bool pbcor = false, col_major_mdspan<T> pb = NULL, col_major_mdspan<T> image_pbcor=NULL,
+  double psfcutoff = 0.35)
+{
+  LogIO os( LogOrigin("Restore","Restore", WHERE) );
+  
+  Matrix<T> psfMat(size_x, size_y, 0);  
+  mdspan2casamatrix<T>(psf, psfMat);
+
+  Matrix<T> dirtyMat(size_x, size_y, 0);
+  mdspan2casamatrix<T>(residual, dirtyMat);
+    
+  Matrix<T> modelMat(size_x, size_y, 0);  
+  mdspan2casamatrix<T>(model, modelMat);
+  
+
+
+  // Before restoring, check for an empty model image and don't convolve (but still smooth residuals)
+  bool emptyModel = false;
+  
+  if(fabs(sum(modelMat)) < 1e-08)
+  { 
+    os << LogIO::WARN << "Restoring with an empty model image. Only residuals will be processed to form the output restored image." << LogIO::POST;
+    emptyModel = true;
+  }
+
+  if(max(dirtyMat) == 0.0)  
+  {
+    os << LogIO::WARN << "Cannot restore without a residual image" << LogIO::POST;
+    return;
+  }
+
+  // Set restoring beam options
+  //imagestore->restore( itsRestoringBeam /* from casa tclean inputs*/), itsUseBeam );
+  //restore(GaussianBeam& rbeam /*(i.e. itsRestoringBeam)*/, String& usebeam, uInt term=0, Float psfcutoff=0.35)
+  /*GaussianBeam beam;
+  SubImage<Float> subPsf( *psf() , psfslice, True );
+  StokesImageUtil::FitGaussianPSF( subPsf, beam,psfcutoff );*/
+
+  // no need since we don't have to keep a set.
+  //itsRestoredBeams=ImageBeamSet(rbeam);
+  //GaussianBeam beam = itsRestoredBeams.getBeam();
+
+  vector<double> deltas(2);
+  deltas[0] = inci;
+  deltas[1] = incj;
+
+  vector<float> beam(3);
+  FitGaussianPSFMatrix(psfMat, deltas, beam, psfcutoff); 
+
+
+  // the following conversion is critical
+  double majaxis = (double)beam[0] * C::arcsec;
+  double minaxis = (double)beam[1] * C::arcsec;
+  double pa = ((double)beam[2] + 90.0) * C::degree;
+  /*cout << "majaxis " << majaxis << endl;
+  cout << "arcsec " << C::arcsec << endl;
+  cout << "degree " << C::degree << endl;*/
+
+
+  Restore(model, residual, image,
+  size_x, size_y, 
+  refi, refj, inci, incj,
+  majaxis, minaxis, pa,
+  pbcor, pb, image_pbcor);
+
 }
 
 
