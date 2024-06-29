@@ -121,10 +121,10 @@ int main(int argc, char** argv)
   // Open the MS and apply the MSelection object.  After this call,
   // the raw (un-selected) and the selected MSes are available as
   // db.theMS and db.theSelectedMS.  These are lightweight objects and
-  // copies of the MS (a popular superstition in the RA religion).
+  // NOT copies of the MS (a popular superstition in the RA religion).
   db.openMS(msName);
   // Examples of getting meta-information of the selection.  The
-  // msSelection object is lightweight object that holds the
+  // msSelection object is a lightweight object that holds the
   // meta-information necessary to construct a reference to the
   // selected MS.  Hence, both the selection object and the selected
   // database object are lightweight representation of the persistent
