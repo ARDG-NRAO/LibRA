@@ -123,6 +123,9 @@ ForwardIterator remove_duplicates( ForwardIterator first,
 class DataBase
 {
 public:
+  DataBase():
+      msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
+  {};
   /**
    * @brief Constructs a Database object with the specified parameters.
    *
@@ -259,6 +262,29 @@ public:
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
+
+  //
+  //-------------------------------------------------------------------
+  // Open the MS, apply the user-supplied verifyMS functor to it,
+  // and use the internal msSelection object to setup the selected MS.
+  // Any setup of the msSelection object before calling this method will
+  // be applied to make the selected MS.
+  //
+  inline void openDB(const String& msname,
+		     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
+		     )
+  {
+    //MeasurementSet thems;
+    if (Table::isReadable(msname))
+      theMS=MeasurementSet(msname, Table::Update);
+    else
+      throw(AipsError(msname+" does not exist or is not readable"));
+    verifyMS(theMS);
+
+    TableExprNode exprNode=msSelection.toTableExprNode(&theMS);
+    if (!exprNode.isNull())
+      selectedMS = MS(theMS(exprNode));
+  }
   //
   //-------------------------------------------------------------------
   //

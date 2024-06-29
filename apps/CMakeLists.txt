@@ -124,6 +124,7 @@ foreach(APP IN LISTS APP_LIST)
 endforeach()
 
 add_subdirectory(src)
+add_subdirectory(examples)
 
 
 # add and build googletest
