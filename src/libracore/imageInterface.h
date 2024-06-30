@@ -28,7 +28,7 @@
 
 #include <casacore/scimath/Fitting/NonLinearFitLM.h>
 #include <casacore/scimath/Functionals/Gaussian2D.h>
-#include <synthesis/TransformMachines/StokesImageUtil.h>
+#include "../synthesis/TransformMachines/StokesImageUtil.h"
 
 
 namespace libracore {
