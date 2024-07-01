@@ -111,24 +111,33 @@ int main(int argc, char** argv)
   //
   DataBase db;
 
+  //
   // Setup the MSSelection object.  This setup is reflected in the
   // db.theSelectedMS object.
+  //
   db.msSelection.setSpwExpr(spwStr);
   db.msSelection.setAntennaExpr(antStr);
   db.msSelection.setFieldExpr(fieldStr);
   db.msSelection.setUvDistExpr(uvDistStr);
 
+  //
   // Open the MS and apply the MSelection object.  After this call,
   // the raw (un-selected) and the selected MSes are available as
   // db.theMS and db.theSelectedMS.  These are lightweight objects and
-  // NOT copies of the MS (a popular superstition in the RA religion).
+  // NOT copies of the MS (as is a popular superstition in the RA
+  // religion).
+  //
   db.openMS(msName);
+
+  //
   // Examples of getting meta-information of the selection.  The
   // msSelection object is a lightweight object that holds the
   // meta-information necessary to construct a reference to the
   // selected MS.  Hence, both the selection object and the selected
   // database object are lightweight representation of the persistent
-  // DB.
-  auto  spwid=msSelection.getSpwList();
+  // DB.  See the full MSSelection interface at
+  // http://casacore.github.io/casacore/classcasacore_1_1MSSelection.html
+  //
+  auto spwid=msSelection.getSpwList();
   auto fieldid=msSelection.getFieldList();
 }
