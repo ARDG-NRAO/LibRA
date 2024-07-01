@@ -49,3 +49,5 @@ foreach(APP_DIR IN LISTS APP_LIST)
      	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
    endif()
 endforeach()
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/examples)
