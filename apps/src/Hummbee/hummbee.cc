@@ -282,6 +282,7 @@ float Hummbee(
       decPars_p.maskResolution=""; //genie
       decPars_p.fracOfPeak=0.0; //genie
       decPars_p.nMask=0; //genie
+      decPars_p.fastnoise = true; //genie
       decPars_p.interactive=false;
       decPars_p.autoAdjust=False; //genie
       decPars_p.fusedThreshold = fusedthreshold;
