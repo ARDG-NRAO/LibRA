@@ -22,9 +22,9 @@ find_package(Kokkos REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}  
+  ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${CMAKE_INSTALL_PREFIX}/include/casacpp
 )
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -34,9 +34,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${CMAKE_INSTALL_PREFIX}/include/casacpp)
+  )
 install(TARGETS ${PROJECT_NAME} 
 	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 	#PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/libracore")
