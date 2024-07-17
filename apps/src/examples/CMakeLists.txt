@@ -9,6 +9,7 @@ find_library(LIBRA_LIBRARY NAMES libra PATHS ${CMAKE_INSTALL_PREFIX}/lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/include)
 
 set(EXAMPLE_LIST dataiter)
+#set(HEADER_LIST dataiter.h)
 set(BUILD_EXAMPLE ON)
 
 message("${CMAKE_INSTALL_PREFIX}/bin")
@@ -20,3 +21,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
      install(TARGETS ${EXAMPLE} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
    endif()
 endforeach()
+
+# foreach(HEADER IN LISTS HEADER_LIST)
+#    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}")
+#      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${HEADER} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
+#    endif()
