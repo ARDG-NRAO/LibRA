@@ -99,7 +99,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
 int main(int argc, char** argv)
 {
-  bool interactive=true, restartUI=false;
+  bool interactive=true, restartUI=false,
+    restart=false;
 
   string msName="", antStr="", fieldStr="",
     spwStr="", uvDistStr="";
@@ -127,7 +128,8 @@ int main(int argc, char** argv)
   // NOT copies of the MS (as is a popular superstition in the RA
   // religion).
   //
-  db.openMS(msName);
+  bool spwSort=false;
+  db.openDB(msName,spwSort);
 
   //
   // Examples of getting meta-information of the selection.  The
@@ -138,6 +140,6 @@ int main(int argc, char** argv)
   // DB.  See the full MSSelection interface at
   // http://casacore.github.io/casacore/classcasacore_1_1MSSelection.html
   //
-  auto spwid=msSelection.getSpwList();
-  auto fieldid=msSelection.getFieldList();
+  auto spwid=db.msSelection.getSpwList();
+  auto fieldid=db.msSelection.getFieldList();
 }

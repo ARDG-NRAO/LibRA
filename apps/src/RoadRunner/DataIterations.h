@@ -47,7 +47,9 @@
 //#include <hpg/hpg.hpp>
 
 using namespace std;
-
+using namespace casa;
+using namespace casa::refim;
+using namespace casacore;
 // Possible example for making a generic functor in C++11.  C++14
 // allows generic lambdas (where the complier produces similar code in
 // the background).  We may benefit from using similar code for
