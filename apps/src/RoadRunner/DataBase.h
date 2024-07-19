@@ -309,6 +309,7 @@ public:
     // THIS SHOULD ALSO BE DONE VIA A FUNCTOR.  BUT FIRST TEST
     // MSSelection::operator=()
     //
+    selectedMS = MeasurementSet(theMS);
     TableExprNode exprNode=msSelection.toTableExprNode(&theMS);
     if (!exprNode.isNull())
       selectedMS = MS(theMS(exprNode));
