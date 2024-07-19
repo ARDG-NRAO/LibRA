@@ -23,6 +23,7 @@
 //#                        Charlottesville, VA 22903-2475 USA
 //#
 //# $Id$
+
 //
 // Following are from the parafeed project (the UI library)
 //
@@ -84,8 +85,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
   catch (clError& err)
     {
       // Report the error.  The clError object implements the
-      // operator<<(), to keep control of how and what is written to
-      // it to report error.  By default, the output stream is cerr
+      // operator<<(), to keep control of how and what is reported as
+      // error.  By default, the output stream is cerr
       //
       // Re-implemetion of just this (not implemented yet) can be
       // used, e.g., to handle runtime errors in a distributed
@@ -140,6 +141,15 @@ int main(int argc, char** argv)
   // DB.  See the full MSSelection interface at
   // http://casacore.github.io/casacore/classcasacore_1_1MSSelection.html
   //
-  auto spwid=db.msSelection.getSpwList();
-  auto fieldid=db.msSelection.getFieldList();
+  auto spwid=db.msSelection.getSpwList().tovector();
+  auto fieldid=db.msSelection.getFieldList().tovector();
+  cerr << "No. of rows selected: " << db.selectedMS.nrow() << endl;
+  if (spwid.size() > 0)  cerr << "Selected SPW: " << spwid << endl;
+  if (fieldid.size() > 0) cerr << "Selected FIELD IDs: " << fieldid << endl;
+
+  // Data column to use for the data fidelity term in a solver.
+  casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
+  bool isRoot=true; // A left-over from days when code was being MPI'ed in place (crazy days!)
+
+  DataIterator di(isRoot,dataCol_l);
 }
