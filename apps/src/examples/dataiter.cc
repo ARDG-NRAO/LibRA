@@ -27,25 +27,14 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-#include <clgetBaseCode.h>
-//
-//================================================================================
-//
-//
-//-------------------------------------------------------------------------
-//
-#define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
-
-#include <DataIterations.h>
-#include <DataBase.h>
+#include "dataiter.h"
 
 // The interface function that to setup the parameters of the
 // application.  Can be replaced with whatever may be the appropriate,
 // or preferred way of getting these parameters.
 void UI(Bool restart, int argc, char **argv, bool interactive, 
-	string& msName, string& antStr,string& fieldStr,
+	string& msName, string& dataColumnName,
+	string& antStr,string& fieldStr,
 	string& spwStr, string& uvDistStr)
 {
   clSetPrompt(interactive);
@@ -79,6 +68,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 	i=1;clgetFullValp("field", fieldStr);
 	i=1;clgetFullValp("spw", spwStr);
 	i=1;clgetFullValp("uvrange", uvDistStr);
+	i=1;clgetSValp("datacolumn",dataColumnName,i);
       }
       EndCL();
     }
@@ -103,53 +93,85 @@ int main(int argc, char** argv)
   bool interactive=true, restartUI=false,
     restart=false;
 
-  string msName="", antStr="", fieldStr="",
+  string msName="", dataColumnName="data",antStr="", fieldStr="",
     spwStr="", uvDistStr="";
 
   UI(restart, argc, argv, interactive, 
-     msName, antStr,fieldStr, spwStr,uvDistStr); 
+     msName, dataColumnName,
+     antStr,fieldStr, spwStr,uvDistStr); 
   //
   //-------------------------------------------------------------------------
   //
-  DataBase db;
+  try
+    {
+      DataBase db;
 
-  //
-  // Setup the MSSelection object.  This setup is reflected in the
-  // db.theSelectedMS object.
-  //
-  db.msSelection.setSpwExpr(spwStr);
-  db.msSelection.setAntennaExpr(antStr);
-  db.msSelection.setFieldExpr(fieldStr);
-  db.msSelection.setUvDistExpr(uvDistStr);
+      //
+      // Setup the MSSelection object.  This setup is reflected in the
+      // db.theSelectedMS object.
+      //
+      db.msSelection.setSpwExpr(spwStr);
+      db.msSelection.setAntennaExpr(antStr);
+      db.msSelection.setFieldExpr(fieldStr);
+      db.msSelection.setUvDistExpr(uvDistStr);
 
-  //
-  // Open the MS and apply the MSelection object.  After this call,
-  // the raw (un-selected) and the selected MSes are available as
-  // db.theMS and db.theSelectedMS.  These are lightweight objects and
-  // NOT copies of the MS (as is a popular superstition in the RA
-  // religion).
-  //
-  bool spwSort=false;
-  db.openDB(msName,spwSort);
+      // // Data column to use for the data fidelity term in a solver.
+      // casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::OBSERVED;
 
-  //
-  // Examples of getting meta-information of the selection.  The
-  // msSelection object is a lightweight object that holds the
-  // meta-information necessary to construct a reference to the
-  // selected MS.  Hence, both the selection object and the selected
-  // database object are lightweight representation of the persistent
-  // DB.  See the full MSSelection interface at
-  // http://casacore.github.io/casacore/classcasacore_1_1MSSelection.html
-  //
-  auto spwid=db.msSelection.getSpwList().tovector();
-  auto fieldid=db.msSelection.getFieldList().tovector();
-  cerr << "No. of rows selected: " << db.selectedMS.nrow() << endl;
-  if (spwid.size() > 0)  cerr << "Selected SPW: " << spwid << endl;
-  if (fieldid.size() > 0) cerr << "Selected FIELD IDs: " << fieldid << endl;
+      // ...override with user-settings (since they insist).
+      if      (dataColumnName=="data")      dataCol_l=casa::refim::FTMachine::OBSERVED;
+      else if (dataColumnName=="model")     dataCol_l=casa::refim::FTMachine::MODEL;
+      else if (dataColumnName=="corrected") dataCol_l=casa::refim::FTMachine::CORRECTED;
 
-  // Data column to use for the data fidelity term in a solver.
-  casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
-  bool isRoot=true; // A left-over from days when code was being MPI'ed in place (crazy days!)
+      //
+      // Open the MS and apply the internal MSelection object which was
+      // setup earlier.  After this call, the raw (un-selected) and
+      // the selected MSes are available as db.theMS and
+      // db.theSelectedMS.  These are lightweight objects and NOT
+      // copies of the MS (as is a popular superstition in the RA
+      // religion).
+      //
+      bool spwSort=false;
+      db.openDB(msName,spwSort,verifyMS);
 
-  DataIterator di(isRoot,dataCol_l);
+      //
+      // Examples of getting meta-information of the selection.  The
+      // msSelection object is a lightweight object that holds the
+      // meta-information necessary to construct a reference to the
+      // selected MS.  Hence, both the selection object and the selected
+      // database object are lightweight representation of the persistent
+      // DB.  See the full MSSelection interface at
+      // http://casacore.github.io/casacore/classcasacore_1_1MSSelection.html
+      //
+      auto spwid=db.msSelection.getSpwList().tovector();
+      auto fieldid=db.msSelection.getFieldList().tovector();
+      cerr << "No. of rows selected: " << db.selectedMS.nrow() << endl;
+      if (spwid.size() > 0)  cerr << "Selected SPW: " << spwid << endl;
+      if (fieldid.size() > 0) cerr << "Selected FIELD IDs: " << fieldid << endl;
+
+      bool isRoot=true; // A left-over from days when code was being MPI'ed in place (crazy days!)
+
+      //
+      //======================================================================
+      //
+      // The data iterator setup section
+
+      DataIterator di(isRoot,dataCol_l);
+
+      // Trigger the data iterations...dv.vb_l has the data from each
+      // iteration, which is passed to the dataConsumer().
+      double runtime=0.0, dataIO_time=0.0, vol=0, nRows=0;
+      auto ret = di.dataIter(db.vi2_l, db.vb_l,dataConsumer);
+
+
+      runtime += ret[2];
+      dataIO_time += ret[3];
+      vol += ret[1];
+      nRows += ret[4];
+      cerr << "Runtime: " << runtime << " Data I/O time: " << dataIO_time << " Data volume: " << vol << " No. of rows: " << nRows << endl;
+    }
+  catch(AipsError& er)
+    {
+      cerr << er.what() << endl;
+    }
 }

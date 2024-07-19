@@ -119,8 +119,6 @@ public:
   {
     int vol=0,nRows=0;
     double dataIO_time=0.0;
-    
-    std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 
     for (vi2->origin(); vi2->more(); vi2->next())
       {
@@ -133,6 +131,7 @@ public:
 	
 	nVB++;
       }
+
     std::vector<double> ret={(double)vol,(double)dataIO_time,(double)nRows};
     return ret;
   };

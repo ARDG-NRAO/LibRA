@@ -291,8 +291,8 @@ public:
   // be applied to make the selected MS.
   //
   inline void openDB(const String& msname, const bool& spwSort,
-		     std::function<float(Block<int>& sortColumns)> setupIterAxis=[](Block<int>&){return -1.0;}, // default is to call internal iterationAxis_SPW()
-		     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){} // default is to a NoOp
+		     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}, // default is to a NoOp
+		     std::function<float(Block<int>& sortColumns)> setupIterAxis=[](Block<int>&){return -1.0;} // default is to call internal iterationAxis_SPW()
 		     )
   {
     //MeasurementSet thems;
