@@ -132,6 +132,7 @@ int main(int argc, char** argv)
       // copies of the MS (as is a popular superstition in the RA
       // religion).
       //
+      // The plugin functor verfiyMS() is defined in dataiter.h
       bool spwSort=false;
       db.openDB(msName,spwSort,verifyMS);
 
@@ -155,7 +156,8 @@ int main(int argc, char** argv)
       //
       //======================================================================
       //
-      // The data iterator setup section
+      // The data iterator setup section.
+      // dataCol_l, and the plugin functor dataConsumer() are in dataiter.h
 
       DataIterator di(isRoot,dataCol_l);
 
