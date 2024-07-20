@@ -59,7 +59,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       {
 	//SMap watchPoints; VString exposedKeys;
 	int i;
-	i=1;clgetSValp("msname", msName,i);
+	i=1;clgetSValp("vis", msName,i);
 	// A commas in the value of the following fields is interpreted
 	// in the application code (MSSelection module of CASACore).  So
 	// use a call from parafeed to get the value without it being
@@ -69,6 +69,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 	i=1;clgetFullValp("spw", spwStr);
 	i=1;clgetFullValp("uvrange", uvDistStr);
 	i=1;clgetSValp("datacolumn",dataColumnName,i);
+	clSetOptions("datacolumn",{"data","corrected","model"});
       }
       EndCL();
     }
@@ -164,10 +165,10 @@ int main(int argc, char** argv)
       auto ret = di.dataIter(db.vi2_l, db.vb_l,dataConsumer);
 
 
-      runtime += ret[2];
+      vol         += ret[1];
+      runtime     += ret[2];
       dataIO_time += ret[3];
-      vol += ret[1];
-      nRows += ret[4];
+      nRows       += ret[4];
       cerr << "Runtime: " << runtime << " Data I/O time: " << dataIO_time << " Data volume: " << vol << " No. of rows: " << nRows << endl;
     }
   catch(AipsError& er)

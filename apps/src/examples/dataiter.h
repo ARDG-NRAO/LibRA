@@ -78,17 +78,17 @@ auto dataConsumer = [](vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
  {
    Cube<Complex> dataCube;
    std::chrono::duration<double> thisIOTime;
+   dataIO_start = std::chrono::steady_clock::now();
+
    {
      // Read the data from a specific data column into the
      // in-memory buffer
-     dataIO_start = std::chrono::steady_clock::now();
-
      if (dataCol_l==casa::refim::FTMachine::CORRECTED)   {dataCube=vb_l->visCubeCorrected();}
      else if (dataCol_l==casa::refim::FTMachine::MODEL)  {dataCube=vb_l->visCubeModel();}
      else                                                {dataCube=vb_l->visCube();}
-
-     thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
    }
+
+   thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
       
    std::vector<double> ret={(double)dataCube.shape().product()*sizeof(Complex), thisIOTime.count()};
    return ret;
