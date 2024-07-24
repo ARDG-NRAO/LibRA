@@ -123,9 +123,6 @@ foreach(APP IN LISTS APP_LIST)
    list(APPEND APP_SOURCES)
 endforeach()
 
-add_subdirectory(src)
-
-
 # add and build googletest
 if(Apps_BUILD_TESTS)
   add_subdirectory(src/tests)
@@ -133,4 +130,6 @@ endif()
 
 # add and build translation layer
 add_subdirectory(src/translation)
+
+add_subdirectory(src)
 
