@@ -113,8 +113,8 @@ public:
   iterVB(vi::VisibilityIterator2 *vi2,
 	 vi::VisBuffer2 *vb,
 	 int& nVB,
-	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
-	 std::function<void(const int&)> cfSentNotifier
+	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)>& dataConsumer,
+	 std::function<void(const int&)>& cfSentNotifier
 	 )
   {
     int vol=0,nRows=0;
