@@ -23,6 +23,9 @@ foreach(APP_DIR IN LISTS APP_LIST)
    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/)
    string(TOLOWER ${APP_DIR} APP_NAME)
 
+   file(GLOB APP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/*.h")
+   install(FILES ${APP_HEADERS} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
+
 
    # build app CL interface binary
    set(BUILD_CLWRAPPER ON)
@@ -49,3 +52,5 @@ foreach(APP_DIR IN LISTS APP_LIST)
      	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
    endif()
 endforeach()
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/examples)

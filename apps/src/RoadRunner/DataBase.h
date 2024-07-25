@@ -123,6 +123,9 @@ ForwardIterator remove_duplicates( ForwardIterator first,
 class DataBase
 {
 public:
+  DataBase():
+    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),sortCols()
+  {};
   /**
    * @brief Constructs a Database object with the specified parameters.
    *
@@ -142,7 +145,7 @@ public:
 	   bool& doSPWDataIter,
 	   std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}//NoOp
 	   ):
-    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList()
+    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),sortCols()
   {
     LogIO log_l(LogOrigin("DataBase","DataBase"));
     log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
@@ -166,16 +169,15 @@ public:
     // Set up the data iterator
     //
     float timeSpan=10.0;
-    Block<Int> sortCols;
-    if (doSPWDataIter)
-      {
-	sortCols.resize(4);
-	sortCols[0]=MS::ARRAY_ID;
-	sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
-	sortCols[2]=MS::FIELD_ID;
-	sortCols[3]=MS::TIME;
-	timeSpan=100000.0;
-      }
+    timeSpan=iterationAxis(doSPWDataIter,sortCols);
+      // {
+      // 	sortCols.resize(4);
+      // 	sortCols[0]=MS::ARRAY_ID;
+      // 	sortCols[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
+      // 	sortCols[2]=MS::FIELD_ID;
+      // 	sortCols[3]=MS::TIME;
+      // 	timeSpan=100000.0;
+      // }
     //
     // Construct the vis iterator Vi2.  Set up the frequency selection
     // in it.  Freq. selection is a two-part process.  The SPW level
@@ -259,6 +261,97 @@ public:
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
+
+  //
+  //-------------------------------------------------------------------
+  //
+  inline float iterationAxis(const bool& spwSort, Block<int>& sortCols_l)
+  {
+    //-------------------------------------------------------------------
+    // Set up the data iterator
+    //
+
+    float timeSpan=10.0;
+    if (spwSort)
+    {
+      sortCols_l.resize(4);
+      sortCols_l[0]=MS::ARRAY_ID;
+      sortCols_l[1]=MS::DATA_DESC_ID; // Proxy for SPW (in most MEse anyway!)
+      sortCols_l[2]=MS::FIELD_ID;
+      sortCols_l[3]=MS::TIME;
+      timeSpan=100000.0;
+    }
+    return timeSpan;
+  }
+  //
+  //-------------------------------------------------------------------
+  // Open the MS, apply the user-supplied verifyMS functor to it,
+  // and use the internal msSelection object to setup the selected MS.
+  // Any setup of the msSelection object before calling this method will
+  // be applied to make the selected MS.
+  //
+  inline void openDB(const String& msname, const bool& spwSort,
+		     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}, // default is to a NoOp
+		     std::function<float(Block<int>& sortColumns)> setupIterAxis=[](Block<int>&){return -1.0;} // default is to call internal iterationAxis_SPW()
+		     )
+  {
+    //MeasurementSet thems;
+    if (Table::isReadable(msname))
+      theMS=MeasurementSet(msname, Table::Update);
+    else
+      throw(AipsError(msname+" does not exist or is not readable"));
+    verifyMS(theMS);
+
+    // Use the internal msSelection object to make a selected MS.  The
+    // msSelection object can be setup by the client before calling
+    // the OpenDB() method.
+    //
+    // THIS SHOULD ALSO BE DONE VIA A FUNCTOR.  BUT FIRST TEST
+    // MSSelection::operator=()
+    //
+    selectedMS = MeasurementSet(theMS);
+    TableExprNode exprNode=msSelection.toTableExprNode(&theMS);
+    if (!exprNode.isNull())
+      selectedMS = MS(theMS(exprNode));
+
+    // Use the supplied functor to setup the sort columns.  The
+    // default is to call the internal
+    float timeSpan=setupIterAxis(sortCols);
+    if (timeSpan < 0.0) // User did not supply a functor
+      timeSpan=iterationAxis(spwSort,sortCols);
+
+    initVisIterator(timeSpan);
+  }
+  //
+  //-------------------------------------------------------------------
+  //
+  inline void initVisIterator(const float& timeSpan_l)
+  {
+    //
+    // Construct the vis iterator Vi2.  Set up the frequency selection
+    // in it.  Freq. selection is a two-part process.  The SPW level
+    // selection is done at the MS level (i.e., the subMS has only the
+    // selected SPWs in it).  The selection of frequency channels
+    // *within* each selected SPW is done in the Vi2 below.
+    //
+    // The weight scheme is also set up in the Vi2 via the weightor()
+    // call after making the empty sky images below.
+    //
+    vi2_l = new vi::VisibilityIterator2(selectedMS,vi::SortColumns(sortCols),true,0,timeSpan_l);
+
+    {
+      Matrix<Double> freqSelection= msSelection.getChanFreqList(NULL,true);
+      //      vi2_l.setInterval(50.0);
+
+      FrequencySelectionUsingFrame fsel(MFrequency::Types::LSRK);
+      for(unsigned i=0;i<freqSelection.shape()(0); i++)
+	fsel.add(freqSelection(i,0), freqSelection(i,1), freqSelection(i,2));
+      vi2_l->setFrequencySelection (fsel);
+    }
+
+    vb_l=vi2_l->getVisBuffer();
+    vi2_l->originChunks();
+  }
   //
   //-------------------------------------------------------------------
   //
@@ -280,6 +373,7 @@ public:
   vi::VisibilityIterator2 *vi2_l;
   MSSelection msSelection;
   MS theMS, selectedMS;
+  Block<Int> sortCols;
 
   Vector<int> spwidList, fieldidList;
   Vector<double> spwRefFreqList;
