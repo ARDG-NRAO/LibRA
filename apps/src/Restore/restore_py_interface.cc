@@ -40,7 +40,6 @@ PYBIND11_MODULE(restore2py, m)
     "pbcor"_a=false,
     "mode"_a="deconvolve"
     );
-
-    m.def("add", &add, "A function which adds two numbers");   
+  
 }
 
