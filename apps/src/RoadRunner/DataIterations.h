@@ -221,7 +221,7 @@ public:
 	totalDataIO_time+=ret[1];
 	nRows+=ret[2];
 	if (isRoot_p)
-  	  pm.update(Double(vol));
+  	  pm.update(Double(nRows));
       }
 
     std::vector<double> ret={(double)nVB, (double)vol,(double)griddingEngine_time,(double)totalDataIO_time,(double)nRows};
