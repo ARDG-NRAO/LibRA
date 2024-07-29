@@ -309,10 +309,11 @@ public:
     // THIS SHOULD ALSO BE DONE VIA A FUNCTOR.  BUT FIRST TEST
     // MSSelection::operator=()
     //
-    selectedMS = MeasurementSet(theMS);
     TableExprNode exprNode=msSelection.toTableExprNode(&theMS);
     if (!exprNode.isNull())
       selectedMS = MS(theMS(exprNode));
+    else
+      selectedMS = MeasurementSet(theMS);
 
     // Use the supplied functor to setup the sort columns.  The
     // default is to call the internal
