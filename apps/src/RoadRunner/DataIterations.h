@@ -113,8 +113,8 @@ public:
   iterVB(vi::VisibilityIterator2 *vi2,
 	 vi::VisBuffer2 *vb,
 	 int& nVB,
-	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
-	 std::function<void(const int&)> cfSentNotifier
+	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)>& dataConsumer,
+	 std::function<void(const int&)>& cfSentNotifier
 	 )
   {
     int vol=0,nRows=0;
@@ -221,7 +221,7 @@ public:
 	totalDataIO_time+=ret[1];
 	nRows+=ret[2];
 	if (isRoot_p)
-  	  pm.update(Double(vol));
+  	  pm.update(Double(nRows));
       }
 
     std::vector<double> ret={(double)nVB, (double)vol,(double)griddingEngine_time,(double)totalDataIO_time,(double)nRows};
