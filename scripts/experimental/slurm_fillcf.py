@@ -17,7 +17,9 @@ def worker(cfs, start, end, cfcache_dir, coyote_app):
         for cf in cfs:
             f.write(cf + '\n')
     f.close()
-    subprocess.run([f'{coyote_app}', 'help=noprompt', 'mode=fillcf', f'cfcache={cfcache_dir}',f'cflist={", ".join(cfs[start:end])}'])
+    command = [f'{coyote_app}', 'help=noprompt', 'mode=fillcf', f'cfcache={cfcache_dir}', f'cflist={", ".join(cfs)}']
+    print("Running command:", " ".join(command))
+    subprocess.run(command)
 
 def distribute_tasks(n_processes, task_id, cfs, cfcache_dir, coyote_app):
     # Distribute tasks among processes
@@ -46,12 +48,14 @@ if __name__ == "__main__":
 
     # Check if the coyote_app exists
     check_path(args.coyote_app, 'coyote_app')
-
+    
     # Get all cfs in the cfcache_dir
-    cfs = sorted([f for f in glob.glob(os.path.join(args.cfcache_dir, 'CFS*')) if os.path.isdir(f)])
+    cfs = sorted([os.path.basename(f) for f in glob.glob(os.path.join(args.cfcache_dir, 'CFS*')) if os.path.isdir(f)])
 
     # Get the task_id
     task_id = int(os.getenv('SLURM_ARRAY_TASK_ID', 'default'))
 
+
     # Distribute tasks among processes
     distribute_tasks(args.nprocs, task_id, cfs, cfcache_dir=args.cfcache_dir, coyote_app=args.coyote_app)
+

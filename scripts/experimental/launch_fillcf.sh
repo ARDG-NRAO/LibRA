@@ -83,4 +83,5 @@ python3 slurm_fillcf.py --cfcache_dir ${cfcache_dir} --nprocs ${nprocs} --coyote
 EOF
 
 # Submit the job
+
 sbatch submit_sbatch.sh
