@@ -169,8 +169,9 @@ int main(int argc, char** argv)
       // dataCol_l, and the plugin functor dataConsumer() are in dataiter.h
 
       std::chrono::time_point<std::chrono::steady_clock> di_start;
+      di_start = std::chrono::steady_clock::now();
       DataIterator di(isRoot,dataCol_l);
-      this_duration = std::chrono::steady_clock::now() - db_start;
+      this_duration = std::chrono::steady_clock::now() - di_start;
 
       cerr << "Time for DataIterator() (sec): " << this_duration.count() << endl;
 
