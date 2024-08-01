@@ -27,16 +27,18 @@ TEST(AcmeTest, AppLevelPSF) {
   std::filesystem::current_path(testDir);
   
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
+  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf", mode="normalize";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
+  vector<string> partImageNames;
+  bool resetImages=false;
   bool computePB = true;
 
   acme_func(imageName, deconvolver, 
-    normtype, workdir, imType, pblimit, 
+    normtype, workdir, mode, imType, pblimit, 
     nterms, facets, psfcutoff, restoringbeam, 
-    computePB);
+    partImageNames, resetImages, computePB);
   
 
   // Check that the .psf is generated
@@ -85,16 +87,18 @@ TEST(AcmeTest, AppLevelResidual) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", workdir, imType="residual";
+  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", workdir, imType="residual", mode="normalize";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
+  vector<string> partImageNames;
+  bool resetImages=false;
   bool computePB = false;
 
   acme_func(imageName, deconvolver,
-    normtype, workdir, imType, pblimit,
+    normtype, workdir, mode, imType, pblimit,
     nterms, facets, psfcutoff, restoringbeam,
-    computePB);
+    partImageNames, resetImages, computePB);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
