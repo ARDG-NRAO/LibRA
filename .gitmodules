@@ -1,4 +1,4 @@
 [submodule "apps/src/tests/gold_standard"]
 	path = apps/src/tests/gold_standard
-	url = https://glpat-Yk3yMgHkCVH1zvsGMyZD:glpat-Yk3yMgHkCVH1zvsGMyZD@gitlab.nrao.edu/ardg/libra-data.git
+	url = https://glpat-pkvLqALCryeSG9EZ5NP3:glpat-pkvLqALCryeSG9EZ5NP3@gitlab.nrao.edu/ardg/libra-data.git
 	update = merge

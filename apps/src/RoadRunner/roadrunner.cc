@@ -585,14 +585,15 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // an application-specific interpretation of the rest of the
       // elements of the vector.
       //
-      std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 
       auto dataConsumerFTM =
-	[/*&ftm_g,*/ &imagingMode, &doPSF, &dataCol_l, &dataIO_start]
+	[&imagingMode, &doPSF, &dataCol_l]
 	(vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
       {
-	Cube<Complex> dataCube;
+	std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 	std::chrono::duration<double> thisIOTime;
+
+	Cube<Complex> dataCube;
 	if (imagingMode=="predict")
 	  {
 	    // Predict the data into the VB (presumably the name get()

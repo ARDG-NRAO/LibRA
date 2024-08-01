@@ -47,7 +47,9 @@
 //#include <hpg/hpg.hpp>
 
 using namespace std;
-
+using namespace casa;
+using namespace casa::refim;
+using namespace casacore;
 // Possible example for making a generic functor in C++11.  C++14
 // allows generic lambdas (where the complier produces similar code in
 // the background).  We may benefit from using similar code for
@@ -111,14 +113,12 @@ public:
   iterVB(vi::VisibilityIterator2 *vi2,
 	 vi::VisBuffer2 *vb,
 	 int& nVB,
-	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)> dataConsumer,
-	 std::function<void(const int&)> cfSentNotifier
+	 std::function<std::vector<double> (vi::VisBuffer2* vb,vi::VisibilityIterator2 *vi2_l)>& dataConsumer,
+	 std::function<void(const int&)>& cfSentNotifier
 	 )
   {
     int vol=0,nRows=0;
     double dataIO_time=0.0;
-    
-    std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 
     for (vi2->origin(); vi2->more(); vi2->next())
       {
@@ -131,6 +131,7 @@ public:
 	
 	nVB++;
       }
+
     std::vector<double> ret={(double)vol,(double)dataIO_time,(double)nRows};
     return ret;
   };
@@ -220,7 +221,7 @@ public:
 	totalDataIO_time+=ret[1];
 	nRows+=ret[2];
 	if (isRoot_p)
-  	  pm.update(Double(vol));
+  	  pm.update(Double(nRows));
       }
 
     std::vector<double> ret={(double)nVB, (double)vol,(double)griddingEngine_time,(double)totalDataIO_time,(double)nRows};
