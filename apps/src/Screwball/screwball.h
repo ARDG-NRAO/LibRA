@@ -53,7 +53,10 @@ using namespace casacore;
 namespace Screwball
 {
 void screwball(std::vector<std::string>& imageNames, 
-	       std::string& outputImage);
+	       std::string& outputImage,
+	       const bool overWrite=false,
+	       const bool restOutputImage=true,
+	       const bool verbose=false);
 
 /**
  * @brief This function retrieves command-line arguments using the cl library and sets the input and output file names.
@@ -68,7 +71,8 @@ void screwball(std::vector<std::string>& imageNames,
  * @throws AipsError if the input table name is not set.
  */
 void UI(Bool restart, int argc, char **argv, bool interactive,
-        std::vector<std::string>& imageName, std::string& outputImage);
+        std::vector<std::string>& imageName, std::string& outputImage,
+	bool& overWrite, bool& restOutputImage, bool& verbose);
 
 };
 #endif

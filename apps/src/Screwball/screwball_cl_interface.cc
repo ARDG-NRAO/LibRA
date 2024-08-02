@@ -43,7 +43,10 @@
 
 
 void UI(Bool restart, int argc, char **argv, bool interactive,
-	std::vector<std::string>& imageName, std::string& outputImage)
+	std::vector<std::string>& imageName, std::string& outputImage,
+	bool& overWrite,
+	bool& resetOutputImage,
+	bool& verbose)
 {
   clSetPrompt(interactive);
 
@@ -60,6 +63,9 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
       i=0;i=clgetNSValp("imagename", imageName,i);  
       i=1;clgetSValp("outputimage", outputImage,i);
+      i=1;clgetBValp("overwrite", overWrite,i);
+      i=1;clgetBValp("resetoutput", resetOutputImage,i);
+      i=1;clgetBValp("verbose", verbose,i);
       EndCL();
     }
   catch (clError x)
@@ -83,20 +89,25 @@ int main(int argc, char **argv)
   //
   std::vector<std::string> imageName;
   string outputImage="";
-  Bool resetImages=false;
-  Bool restartUI=false;
+  bool resetImages=false;
+  bool restartUI=false;
   bool interactive = true;
+  bool overWrite=false;
+  bool resetOutputImage=true;
+  bool verbose=false;
 
  RENTER:// UI re-entry point.
   try
     {
       UI(restartUI,argc, argv, interactive, 
-	 imageName, outputImage);
+	 imageName, outputImage,
+	 overWrite, resetOutputImage, verbose);
       //      restartUI = False;
       //
       //---------------------------------------------------
       //
-      Screwball::screwball(imageName, outputImage);
+      Screwball::screwball(imageName, outputImage,
+			   overWrite,resetOutputImage,verbose);
     }
   catch (clError& x)
     {
