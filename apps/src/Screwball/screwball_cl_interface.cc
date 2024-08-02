@@ -115,5 +115,5 @@ int main(int argc, char **argv)
       restartUI=True;
       //      exit(0);
     }
-  if (restartUI) RestartUI(RENTER);
+  //  if (restartUI) RestartUI(RENTER);
 }

@@ -92,7 +92,8 @@ void resetImage(ImageInterface<T>& target)
 }
 
 template <class T>
-void addImages(ImageInterface<T>& target,
+//void addImages(ImageInterface<T>& target,
+void addImages(PagedImage<T>& target,
 	       const vector<string>& partImageNames,
 	       const string& imExt,
 	       const bool& reset_target,
@@ -145,123 +146,128 @@ void screwball(std::vector<std::string>& imageName, std::string& outputImage)
   LogIO logio(LogOrigin("Screwball","screwball"));
 
   logio << "Gathering " << imageName.size() << LogIO::POST;
-  for(auto name : imageName) logio << name << " "; cerr << LogIO::POST;
+  for(auto name : imageName) logio << name << " "; logio << LogIO::POST;
+  //
+  // Some obvious error checks to save users from themselves
+  //
+  try
+    {
+      if (imageExists(outputImage))
+	throw(AipsError("screwball: Output image exists.  Won't overwrite it."));
 
-  // if (! ((mode == "gather") || (mode == "normalize")))
-  //   logio << "Unrecognized mode. Allowed values are gather and normalize." << LogIO::EXCEPTION;
+      for(auto name: imageName)
+	{
+	  Table table(name,TableLock(TableLock::AutoNoReadLocking));
+	  TableInfo& info = table.tableInfo();
+	  string type=info.type();
+	  string subType = info.subType();
+	  if (type != "Image")
+	    throw(AipsError(name+string(" is not an image!")));
+	}
+      //
+      // By this place in the program, all user error should be taken
+      // care of, hopefully.
+      //
 
-  // if ((imType == "residual") || (imType == "psf") || (imType == "model")) {
-  //   targetName = imageName + "." + imType;
-  //   logio << "Running gather/normalization for " << targetName << LogIO::POST;
-  // }
-  // else
-  //   logio << "Unrecognized imtype. Allowed values are psf and residual." << LogIO::EXCEPTION;
+      // Construct the target image based on the first image in the
+      // imageName list.  Reset it and add this first image.
+      CoordinateSystem imCSys;
+      IPosition imShape;
+      {
+	PagedImage<float> partImage(imageName[0]);
+	imCSys = partImage.coordinates();
+	imShape = partImage.shape();
+      }
+      PagedImage<float> targetImage(imShape, imCSys, outputImage);
 
-  // weightName   = imageName + ".weight";
-  // sumwtName    = imageName + ".sumwt";
+      string imageExt("");
+      bool reset_target=True;
+      vector<string> subVec={imageName[0]};
+      Screwball::addImages(targetImage,
+			   subVec,
+			   imageExt,
+			   reset_target,
+			   logio);
 
-  // if (computePB)
-  //   pbName   = imageName + ".pb";
+      // Add the rest of the images without resitting the tareget
+      // image.
+      reset_target=False;
+      for(auto i=1;i<imageName.size();i++)
+	{
+	  subVec[0]=imageName[i];
+	  Screwball::addImages(targetImage,
+			       subVec,
+			       imageExt,
+			       reset_target,
+			       logio);
+	}
 
-  // if (mode == "gather")
-  // {
-  //   if ((partImageNames.size() > 0) && (imType != "model"))
-  //   {
-  //     isValidGather = true;
-  //     isGatherPSF = (imType == "psf");
-  //     isGatherResidual = (imType == "residual");
-  //   }
-  //   else
-  //     logio << "Invalid parameters for mode = gather." << LogIO::EXCEPTION;
-  // }
+      //     }
+      //     else
+      //       logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
+      //   }
 
-  // try
-  // {
-  //   tableName = targetName;
-  //   if ((! imageExists(targetName)) && (isValidGather))
-  //     tableName = partImageNames[0] + "." + imType;
-  //   Table table(tableName,TableLock(TableLock::AutoNoReadLocking));
-  //   TableInfo& info = table.tableInfo();
-  //   type=info.type();
-  //   subType = info.subType();
-  // }
-  // catch(AipsError& e)
-  // {
-  //   logio << e.what() << LogIO::EXCEPTION;
-  // }
+      //   targetPtr = ImageOpener::openImage (targetName);
+      //   targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
 
-  // if (type=="Image")
-  // {
-  //   // checking if all necessary images exist before opening to avoid segfaults
-  //   // consider to move code to open images to a function
-  //   LatticeBase *targetPtr, *wPtr, *swPtr;
-  //   ImageInterface<Float> *targetImage, *wImage, *swImage;
-    
-  //   if (! imageExists(targetName)) {
-  //     if (isValidGather) {
-  //       PagedImage<float> altTarget(tableName);
-  //       PagedImage<float> targetImage(altTarget.shape(), altTarget.coordinates(), targetName);
-  //     }
-  //     else
-  //       logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
-  //   }
+      //   if ((mode == "normalize") || (isGatherPSF))
+      //   {
+      //     string altWeightName, altSumwtName;
 
-  //   targetPtr = ImageOpener::openImage (targetName);
-  //   targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
-
-  //   if ((mode == "normalize") || (isGatherPSF))
-  //   {
-  //     string altWeightName, altSumwtName;
-
-  //     if (! imageExists(weightName))
-  //     {
-  //       altWeightName = partImageNames[0] + ".weight";
-  // 	if (imageExists(altWeightName))
-  // 	{
-  //         PagedImage<float> altWeight(altWeightName);
-  //         PagedImage<float> wImage(altWeight.shape(), altWeight.coordinates(), weightName);
-  // 	}
-  // 	else
-  //         logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
-  //     }
-  //     wPtr = ImageOpener::openImage(weightName);
-  //     wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+      //     if (! imageExists(weightName))
+      //     {
+      //       altWeightName = partImageNames[0] + ".weight";
+      // 	if (imageExists(altWeightName))
+      // 	{
+      //         PagedImage<float> altWeight(altWeightName);
+      //         PagedImage<float> wImage(altWeight.shape(), altWeight.coordinates(), weightName);
+      // 	}
+      // 	else
+      //         logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
+      //     }
+      //     wPtr = ImageOpener::openImage(weightName);
+      //     wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
   
-  //     if (! imageExists(sumwtName))
-  //     {
-  //       altSumwtName = partImageNames[0] + ".sumwt";
-  //       if (imageExists(altSumwtName))
-  // 	{
-  // 	  PagedImage<float> altSumwt(altSumwtName);
-  //         PagedImage<float> swImage(altSumwt.shape(), altSumwt.coordinates(), sumwtName);
-  // 	}
-  // 	else
-  //         logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
-  //     }
-  //     swPtr = ImageOpener::openImage(sumwtName);
-  //     swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
-  //   }
+      //     if (! imageExists(sumwtName))
+      //     {
+      //       altSumwtName = partImageNames[0] + ".sumwt";
+      //       if (imageExists(altSumwtName))
+      // 	{
+      // 	  PagedImage<float> altSumwt(altSumwtName);
+      //         PagedImage<float> swImage(altSumwt.shape(), altSumwt.coordinates(), sumwtName);
+      // 	}
+      // 	else
+      //         logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
+      //     }
+      //     swPtr = ImageOpener::openImage(sumwtName);
+      //     swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+      //   }
 
 
-  //   if (mode == "gather")
-  //   {
-  //     if (isGatherPSF)
-  //       gatherPSF<float>(*targetImage, *wImage, *swImage, partImageNames, resetImages, logio);
-  //     else if (isGatherResidual)
-  //       gatherResidual<float>(*targetImage, partImageNames, resetImages, logio);
-  //   }
+      //   if (mode == "gather")
+      //   {
+      //     if (isGatherPSF)
+      //       gatherPSF<float>(*targetImage, *wImage, *swImage, partImageNames, resetImages, logio);
+      //     else if (isGatherResidual)
+      //       gatherResidual<float>(*targetImage, partImageNames, resetImages, logio);
+      //   }
 
-  //   if (mode == "normalize")
-  //   {
-  //     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-  //     normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
-  //     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
+      //   if (mode == "normalize")
+      //   {
+      //     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
+      //     normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
+      //     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
     
-  //     if (computePB)
-  //       compute_pb(pbName, *wImage, *swImage, pblimit, logio);
-  //   }
-  // }
-  // else
-  //   logio << "imagename does not point to an image." << LogIO::EXCEPTION;
+      //     if (computePB)
+      //       compute_pb(pbName, *wImage, *swImage, pblimit, logio);
+      //   }
+      // }
+      // else
+      //   logio << "imagename does not point to an image." << LogIO::EXCEPTION;
+    }
+  catch(AipsError& e)
+    {
+      logio << e.what() << LogIO::EXCEPTION;
+    }
 }
 };
