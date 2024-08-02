@@ -8,7 +8,7 @@
 %%A imagename (default=)
 
 	A comma-separated list of input image names.  A check is done
-	for the existance of these images and the equivalence of their
+	for the existence of these images and the equivalence of their
 	coordinate systems.
 
 
@@ -32,12 +32,12 @@
 %%A resetoutput (default=1)
 
 	If true, the output image will be first reset.  If false,
-	accmulation will be done one the loaded output image.
+	accumulation will be done one the loaded output image.
 
 
 %%A verbose (default=0)
 
-	If true, statistics of the accumlated image will be printed.
+	If true, statistics of the accumulated image will be printed.
 	Currently, only the maximum pixel value is printed.
 
 
