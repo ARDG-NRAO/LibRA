@@ -156,14 +156,14 @@ void screwball(std::vector<std::string>& imageName, std::string& outputImage)
 	throw(AipsError("screwball: Output image exists.  Won't overwrite it."));
 
       for(auto name: imageName)
-	{
-	  Table table(name,TableLock(TableLock::AutoNoReadLocking));
-	  TableInfo& info = table.tableInfo();
-	  string type=info.type();
-	  string subType = info.subType();
-	  if (type != "Image")
-	    throw(AipsError(name+string(" is not an image!")));
-	}
+      	{
+      	  Table table(name,TableLock(TableLock::AutoNoReadLocking));
+      	  TableInfo& info = table.tableInfo();
+      	  string type=info.type();
+      	  string subType = info.subType();
+      	  if (type != "Image")
+      	    throw(AipsError(name+string(" is not an image!")));
+      	}
       //
       // By this place in the program, all user error should be taken
       // care of, hopefully.
@@ -174,6 +174,8 @@ void screwball(std::vector<std::string>& imageName, std::string& outputImage)
       CoordinateSystem imCSys;
       IPosition imShape;
       {
+	// In a sperate scope so that the image does not hang around
+	// in the RAM
 	PagedImage<float> partImage(imageName[0]);
 	imCSys = partImage.coordinates();
 	imShape = partImage.shape();
@@ -181,7 +183,7 @@ void screwball(std::vector<std::string>& imageName, std::string& outputImage)
       PagedImage<float> targetImage(imShape, imCSys, outputImage);
 
       string imageExt("");
-      bool reset_target=True;
+      bool reset_target=true;
       vector<string> subVec={imageName[0]};
       Screwball::addImages(targetImage,
 			   subVec,
@@ -189,19 +191,15 @@ void screwball(std::vector<std::string>& imageName, std::string& outputImage)
 			   reset_target,
 			   logio);
 
-      // Add the rest of the images without resitting the tareget
+      // Add the rest of the images without resetting the target
       // image.
-      reset_target=False;
-      for(auto i=1;i<imageName.size();i++)
-	{
-	  subVec[0]=imageName[i];
-	  Screwball::addImages(targetImage,
-			       subVec,
-			       imageExt,
-			       reset_target,
-			       logio);
-	}
-
+      reset_target=false;
+      imageName.erase(imageName.begin());
+      Screwball::addImages(targetImage,
+			   imageName,
+			   imageExt,
+			   reset_target,
+			   logio);
       //     }
       //     else
       //       logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
