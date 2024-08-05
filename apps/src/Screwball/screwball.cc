@@ -171,69 +171,6 @@ namespace Screwball
 	  printImageMax(outputImage,
 			*targetImage,
 			logio);
-	  
-	//     }
-	//     else
-	//       logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
-	//   }
-
-	//   targetPtr = ImageOpener::openImage (targetName);
-	//   targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
-
-	//   if ((mode == "normalize") || (isGatherPSF))
-	//   {
-	//     string altWeightName, altSumwtName;
-
-	//     if (! imageExists(weightName))
-	//     {
-	//       altWeightName = partImageNames[0] + ".weight";
-	// 	if (imageExists(altWeightName))
-	// 	{
-	//         PagedImage<float> altWeight(altWeightName);
-	//         PagedImage<float> wImage(altWeight.shape(), altWeight.coordinates(), weightName);
-	// 	}
-	// 	else
-	//         logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
-	//     }
-	//     wPtr = ImageOpener::openImage(weightName);
-	//     wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
-  
-	//     if (! imageExists(sumwtName))
-	//     {
-	//       altSumwtName = partImageNames[0] + ".sumwt";
-	//       if (imageExists(altSumwtName))
-	// 	{
-	// 	  PagedImage<float> altSumwt(altSumwtName);
-	//         PagedImage<float> swImage(altSumwt.shape(), altSumwt.coordinates(), sumwtName);
-	// 	}
-	// 	else
-	//         logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
-	//     }
-	//     swPtr = ImageOpener::openImage(sumwtName);
-	//     swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
-	//   }
-
-
-	//   if (mode == "gather")
-	//   {
-	//     if (isGatherPSF)
-	//       gatherPSF<float>(*targetImage, *wImage, *swImage, partImageNames, resetImages, logio);
-	//     else if (isGatherResidual)
-	//       gatherResidual<float>(*targetImage, partImageNames, resetImages, logio);
-	//   }
-
-	//   if (mode == "normalize")
-	//   {
-	//     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	//     normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
-	//     printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
-    
-	//     if (computePB)
-	//       compute_pb(pbName, *wImage, *swImage, pblimit, logio);
-	//   }
-	// }
-	// else
-	//   logio << "imagename does not point to an image." << LogIO::EXCEPTION;
       }
     catch(AipsError& e)
       {
