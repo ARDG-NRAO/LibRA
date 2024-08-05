@@ -53,6 +53,9 @@ set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Me
 
 set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/sanbee/exodus_sbfork.git")
 set(LIBRA_EXODUS_GIT_TAG          "master")
+
+set(LIBRA_EXODUS_BUNDLE_NAME      "libra_apps.sh")
+set(LIBRA_EXODUS_BUNDLE_PATH       "")
 #------------------------------------------------------------------------------
 #
 
@@ -412,30 +415,39 @@ if (LIBRA_USE_EXODUS)
   # setup a python vitual environment inside the install directory
   # after checking if python3 is installed
   find_package(Python3 COMPONENTS Interpreter Development)
-  if (NOT Python3_FOUND)
-    message(FATAL_ERROR "Python3 not found. Please install python3 to use exodus")
-  else()
-    message("${LIBRA_ID} Python3 found at ${Python3_EXECUTABLE}")
-    message("${LIBRA_ID} Python3 version: ${Python3_VERSION}")
+  #if (NOT Python3_FOUND)
+  #  message(FATAL_ERROR "Python3 not found. Please install python3 to use exodus")
+  # else()
+  #  message("${LIBRA_ID} Python3 found at ${Python3_EXECUTABLE}")
+  #  message("${LIBRA_ID} Python3 version: ${Python3_VERSION}")
+  message("Setting up librapython venv")
     execute_process(
       COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython
       COMMAND source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/install
+     
     ) 
-  # Add exodus as an external project
+  # Add exodus as an external project install the python environment
+  if (LIBRA_EXODUS_BUNDLE_PATH = "")
+    set(LIBRA_EXODUS_BUNDLE_PATH ${CMAKE_SOURCE_DIR}/install/bin)
+  endif()
+  set(EXODUS_APPS "roadrunner,hummbee,coyote,acme,dataiter,mssplit,subms,tableinfo")
     ExternalProject_Add(
       Exodus
       GIT_REPOSITORY ${LIBRA_EXODUS_GIT_REPOSITORY}
       GIT_TAG        ${LIBRA_EXODUS_GIT_TAG}
       SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/exodus
+      CONFIGURE_COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython && source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
+      BUILD_COMMAND PYTHONUSERBASE=${CMAKE_SOURCE_DIR}/install ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependencies/exodus
+      INSTALL_COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus ${CMAKE_SOURCE_DIR}/install/bin/{${EXODUS_APPS}} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
     )
   # pip install exodus into the virtual environment
     #set a list of exodus apps in a bash variable to install
-    set(EXODUS_APPS "roadrunner hummbee coyote acme restore dataiter mssplit subms tableinfo")
     execute_process(
-      COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependecies/exodus_sbfork
       COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus 
     )
+#  endif()
+endif()
 
 include_directories(
   ${INSTALL_DIR}/include
