@@ -7,6 +7,8 @@ project(LibRATests   VERSION 1.0
 
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
+enable_testing()
+
 find_package(GTest REQUIRED)
 
 add_executable(LibRATests test_hummbee.cc test_roadrunner.cc 
@@ -19,3 +21,12 @@ target_link_libraries(LibRATests GTest::gtest_main stdc++fs ${APP_LINK_LIBRARIES
 
 # Add the test executable as a test target
 add_test(NAME LibRATests COMMAND LibRATests)
+
+
+#find_program(PYTHON_EXECUTABLE python)
+
+# Add a test to run your Python unittest script
+#add_test(
+#    NAME LibRAPythonTests
+#    COMMAND ${PYTHON_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}
+#)
