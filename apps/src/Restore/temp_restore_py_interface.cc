@@ -2,30 +2,27 @@
 #include <pybind11/stl.h>
 #include <string>
 #include <iostream>
-#include <hummbee.h>
+#include <restore.h>
 
 using namespace pybind11;
 using namespace std;
 /**
- * @file hummbee2py.cc
- * @brief pybind11-based hummbee python plugin
+ * @file restore2py.cc
+ * @brief pybind11-based restore python plugin
  */
 /**
- * @brief This module provides a pybind11-based hummbee python plugin.
- * 
- * The module provides a task-level interface for the model update component.
- * It registers an exception handler for AipsError exceptions (from C++) to PyAipsError (in Python).
- * 
+ * @brief This module provides a pybind11-based restore python plugin.
+ *  
  * @param m The pybind11 module object.
  */
-PYBIND11_MODULE(hummbee2py, m)
+PYBIND11_MODULE(restore2py, m)
 {
     // Using the simplest helper function to translate AipsError exceptions (from C++) to
     // PyAipsError (in Python).
     pybind11::register_exception<AipsError>(m, "PyAipsError");
 
-    m.doc() = "pybind11-based hummbee python plugin"; // optional module docstring
-    m.def("Hummbee", &Hummbee, "A task-level interface for the model update component",
+    m.doc() = "pybind11-based restore python plugin"; // optional module docstring
+    m.def("Restore", &Restore, "A python interface for the restore component",
     "imagename"_a,
     "modelimagename"_a="",
     "deconvolver"_a="hogbom",
@@ -43,6 +40,6 @@ PYBIND11_MODULE(hummbee2py, m)
     "pbcor"_a=false,
     "mode"_a="deconvolve"
     );
-   
+  
 }
 
