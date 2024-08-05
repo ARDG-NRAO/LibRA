@@ -22,6 +22,8 @@ build-job:
       - (exclude)scripts/**/*
       - (exclude)doc/**/*
       when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
+      when: never
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
       when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -59,6 +61,8 @@ test-job:
       - (exclude)README.md
       - (exclude)scripts/**/*
       - (exclude)doc/**/*
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
       when: never
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
       when: always
