@@ -428,7 +428,7 @@ if (LIBRA_USE_EXODUS)
      
     ) 
   # Add exodus as an external project install the python environment
-  if (LIBRA_EXODUS_BUNDLE_PATH = "")
+  if (LIBRA_EXODUS_BUNDLE_PATH STREQUAL "")
     set(LIBRA_EXODUS_BUNDLE_PATH ${CMAKE_SOURCE_DIR}/install/bin)
   endif()
   set(EXODUS_APPS "roadrunner,hummbee,coyote,acme,dataiter,mssplit,subms,tableinfo")
