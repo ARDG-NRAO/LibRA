@@ -438,7 +438,7 @@ if (LIBRA_USE_EXODUS)
       GIT_TAG        ${LIBRA_EXODUS_GIT_TAG}
       SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/exodus
       CONFIGURE_COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython && source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
-      BUILD_COMMAND PYTHONUSERBASE=${CMAKE_SOURCE_DIR}/install ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependencies/exodus
+      BUILD_COMMAND PYTHONUSERBASE=${CMAKE_SOURCE_DIR}/install/librapython ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependencies/exodus/
       INSTALL_COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus ${CMAKE_SOURCE_DIR}/install/bin/{${EXODUS_APPS}} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
     )
   # pip install exodus into the virtual environment
