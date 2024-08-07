@@ -22,11 +22,13 @@ build-job:
       - (exclude)scripts/**/*
       - (exclude)doc/**/*
       when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/' 
       when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
-    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
       when: always
 
   before_script:
@@ -60,11 +62,15 @@ test-job:
       - (exclude)scripts/**/*
       - (exclude)doc/**/*
       when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/'
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
+      when: never
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/'
+      when: always
+    - if: '$CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/'
       when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always
-    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/) && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
       when: always
 
   script:

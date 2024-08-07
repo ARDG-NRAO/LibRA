@@ -50,12 +50,22 @@ set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
 set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
+
+set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/sanbee/exodus_sbfork.git")
+set(LIBRA_EXODUS_GIT_TAG          "master")
+
+set(LIBRA_EXODUS_BUNDLE_NAME      "libra_apps.sh")
+set(LIBRA_EXODUS_BUNDLE_PATH       "")
 #------------------------------------------------------------------------------
 #
 
 
 if(NOT DEFINED LIBRA_USE_LIBSAKURA)
   set(LIBRA_USE_LIBSAKURA OFF)
+endif()
+
+if(NOT DEFINED LIBRA_USE_EXODUS)
+  set(LIBRA_USE_EXODUS OFF)
 endif()
 
 # Find system information
@@ -120,6 +130,8 @@ message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
 message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
 message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
 message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
+
+message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")  
 
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
@@ -390,7 +402,7 @@ ExternalProject_Add(
                     -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
                     -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-		    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                       ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
@@ -399,6 +411,43 @@ ExternalProject_Add(
     INSTALL_COMMAND make install
 )
 
+if (LIBRA_USE_EXODUS)
+  # setup a python vitual environment inside the install directory
+  # after checking if python3 is installed
+  find_package(Python3 COMPONENTS Interpreter Development)
+  #if (NOT Python3_FOUND)
+  #  message(FATAL_ERROR "Python3 not found. Please install python3 to use exodus")
+  # else()
+  #  message("${LIBRA_ID} Python3 found at ${Python3_EXECUTABLE}")
+  #  message("${LIBRA_ID} Python3 version: ${Python3_VERSION}")
+  message("Setting up librapython venv")
+    execute_process(
+      COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython
+      COMMAND source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/install
+     
+    ) 
+  # Add exodus as an external project install the python environment
+  if (LIBRA_EXODUS_BUNDLE_PATH STREQUAL "")
+    set(LIBRA_EXODUS_BUNDLE_PATH ${CMAKE_SOURCE_DIR}/install/bin)
+  endif()
+  set(EXODUS_APPS "roadrunner,hummbee,coyote,acme,dataiter,mssplit,subms,tableinfo")
+    ExternalProject_Add(
+      Exodus
+      GIT_REPOSITORY ${LIBRA_EXODUS_GIT_REPOSITORY}
+      GIT_TAG        ${LIBRA_EXODUS_GIT_TAG}
+      SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/exodus
+      CONFIGURE_COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython && source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
+      BUILD_COMMAND PYTHONUSERBASE=${CMAKE_SOURCE_DIR}/install/librapython ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependencies/exodus/
+      INSTALL_COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus ${CMAKE_SOURCE_DIR}/install/bin/{${EXODUS_APPS}} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
+    )
+  # pip install exodus into the virtual environment
+    #set a list of exodus apps in a bash variable to install
+    execute_process(
+      COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus 
+    )
+#  endif()
+endif()
 
 include_directories(
   ${INSTALL_DIR}/include
