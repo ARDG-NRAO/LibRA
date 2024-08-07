@@ -22,8 +22,8 @@
 // #
 // # $Id$
 
-#ifndef SCREWBALL_H
-#define SCREWBALL_H
+#ifndef CHIP_H
+#define CHIP_H
 
 #include <casa/aips.h>
 #include <ms/MSOper/MSSummary.h>
@@ -45,34 +45,17 @@ using namespace casacore;
 //
 //-------------------------------------------------------------------------
 //
-/**
- * @fn void TableInfo_func(const std::string& tableName)
- * @brief Prints information about a given table.
- * @param tableName The name of the table to print information about.
- */
-namespace Screwball
+namespace Chip
 {
-void screwball(std::vector<std::string>& imageNames, 
-	       std::string& outputImage,
-	       const bool overWrite=false,
-	       const bool restOutputImage=true,
-	       const bool verbose=false);
+void chip(std::vector<std::string>& imageNames, 
+	  std::string& outputImage,
+	  const bool overWrite=false,
+	  const bool restOutputImage=true,
+	  const string& stats="none");
 
-/**
- * @brief This function retrieves command-line arguments using the cl library and sets the input and output file names.
- * 
- * @param restart A boolean flag indicating whether the function is being called for the first time or being restarted.
- * @param argc The number of command-line arguments.
- * @param argv The array of command-line arguments.
- * @param MSNBuf A string reference to store the input table name.
- * @param OutBuf A string reference to store the output file name.
- * @param verbose A boolean reference to store the verbosity flag.
- * 
- * @throws AipsError if the input table name is not set.
- */
 void UI(Bool restart, int argc, char **argv, bool interactive,
         std::vector<std::string>& imageName, std::string& outputImage,
-	bool& overWrite, bool& restOutputImage, bool& verbose);
+	bool& overWrite, bool& restOutputImage, string& stats);
 
 };
 #endif
