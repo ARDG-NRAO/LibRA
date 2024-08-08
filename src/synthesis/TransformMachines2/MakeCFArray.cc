@@ -316,6 +316,7 @@ namespace casa{
       //
       // Loops below just get the cfShapes and use them to set up cfArray
       //-------------------------------------------------------------------------------------------------
+      unsigned long cfVol=0;
       for(int iFreq=0; iFreq < nFreqCF; iFreq++) // CASA CF Freq-index
     	{
     	  for(int iW=0; iW < nWCF; iW++)   // CASA CF W-index
@@ -331,7 +332,7 @@ namespace casa{
 		      IPosition cfShp = getMaxCFShape(mRow,targetIMPol,fNdx,wNdx);
 		      //		      cerr << "CFSHP: " << cfShp << endl;
 		      cfArrayShape.resize(iGrp,cfShp(0), cfShp(1),nMuellerElements,1);//This only sets extents, but does not allocate memory
-
+		      cfVol += cfShp.product()*sizeof(Complex);
 		      // for (uInt mCols=0;mCols<mRow.nelements(); mCols++)
 		      // 	{
 		      // 	  if (mRow[mCols] < 0) break;
@@ -353,6 +354,7 @@ namespace casa{
     	    } // W loop
     	  if (nWCF > 1) iGrp=0;
     	} // Freq loop
+      log_l << "CF volume: " << cfVol << " bytes" << LogIO::POST;
       // cerr << "CFShape: ";
       // {
       // 	uint g=0;

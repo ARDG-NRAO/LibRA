@@ -431,7 +431,7 @@ if (LIBRA_USE_EXODUS)
   if (LIBRA_EXODUS_BUNDLE_PATH STREQUAL "")
     set(LIBRA_EXODUS_BUNDLE_PATH ${CMAKE_SOURCE_DIR}/install/bin)
   endif()
-  set(EXODUS_APPS "roadrunner,hummbee,coyote,acme,dataiter,mssplit,subms,tableinfo")
+  set(EXODUS_APPS "roadrunner,hummbee,coyote,chip,acme,dataiter,mssplit,subms,tableinfo")
     ExternalProject_Add(
       Exodus
       GIT_REPOSITORY ${LIBRA_EXODUS_GIT_REPOSITORY}

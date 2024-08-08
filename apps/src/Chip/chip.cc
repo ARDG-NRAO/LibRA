@@ -23,7 +23,7 @@
 // # $Id$
 
 
-#include <screwball.h>
+#include <chip.h>
 
 #include <iostream>
 #include <sstream>
@@ -37,7 +37,7 @@
 //
 //-------------------------------------------------------------------------
 
-namespace Screwball
+namespace Chip
 {
   bool imageExists(const string& imagename)
   {
@@ -54,10 +54,20 @@ namespace Screwball
     {
       stringstream os;
       os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	 << "Image values after gather: "
+	 << "Image stats: "
 	 << " max(" << name << ") = " << mim;
       logio << os.str() << LogIO::POST;
     }
+  }
+
+  void printImageMax(const vector<string>& nameList,
+		     LogIO& logio)
+  {
+    for (auto name : nameList)
+      {
+	PagedImage<float> target(name);
+	printImageMax(name, target, logio);
+      }
   }
 
 
@@ -86,10 +96,10 @@ namespace Screwball
       }
   }
 
-  void screwball(std::vector<std::string>& imageName, std::string& outputImage,
-		 const bool overWrite,
-		 const bool resetOutputImage,
-		 const bool verbose)
+  void chip(std::vector<std::string>& imageName, std::string& outputImage,
+	    const bool overWrite,
+	    const bool resetOutputImage,
+	    const string& stats)
   {
     //
     //---------------------------------------------------
@@ -98,7 +108,7 @@ namespace Screwball
     // String subType;
     // bool isValidGather, isGatherPSF, isGatherResidual;
 
-    LogIO logio(LogOrigin("Screwball","screwball"));
+    LogIO logio(LogOrigin("Chip","chip"));
 
     // Reset target image if an existing image has to overwritten by
     // the accumulated images.
@@ -150,9 +160,10 @@ namespace Screwball
 	else
 	  targetImage=new PagedImage<float>(outputImage);
 	
+	vector<string> inputImageNames=imageName;
 	string imageExt("");
 	vector<string> subVec={imageName[0]};
-	Screwball::addImages(*targetImage,
+	Chip::addImages(*targetImage,
 			     subVec,
 			     imageExt,
 			     reset_target,
@@ -162,15 +173,20 @@ namespace Screwball
 	// image.
 	reset_target=false;
 	imageName.erase(imageName.begin());
-	Screwball::addImages(*targetImage,
+	Chip::addImages(*targetImage,
 			     imageName,
 			     imageExt,
 			     reset_target,
 			     logio);
-	if (verbose)
-	  printImageMax(outputImage,
-			*targetImage,
-			logio);
+	if (stats=="outputonly")
+	  printImageMax(outputImage, *targetImage, logio);
+	else if (stats=="inputonly")
+	  printImageMax(inputImageNames, logio);
+	else if (stats=="all")
+	  {
+	    printImageMax(inputImageNames, logio);
+	    printImageMax(outputImage, *targetImage, logio);
+	  }
       }
     catch(AipsError& e)
       {

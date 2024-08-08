@@ -1,6 +1,6 @@
 /**
  * @file This file contains the command-line interface implementation
- * screwball application.  The purpose of this application is to
+ * chip application.  The purpose of this application is to
  * accumulate (gather, in CS-speak) a list of images and save the
  * result in an output image.
  */
@@ -32,7 +32,7 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <screwball.h>
+#include <chip.h>
 
 //
 //-------------------------------------------------------------------------
@@ -46,7 +46,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 	std::vector<std::string>& imageName, std::string& outputImage,
 	bool& overWrite,
 	bool& resetOutputImage,
-	bool& verbose)
+	string& stats)
 {
   clSetPrompt(interactive);
 
@@ -65,7 +65,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetSValp("outputimage", outputImage,i);
       i=1;clgetBValp("overwrite", overWrite,i);
       i=1;clgetBValp("resetoutput", resetOutputImage,i);
-      i=1;clgetBValp("verbose", verbose,i);
+      i=1;clgetSValp("stats", stats,i);
+      clSetOptions("stats",{"one","outputonly","inputonly","all"});
       EndCL();
     }
   catch (clError x)
@@ -94,20 +95,20 @@ int main(int argc, char **argv)
   bool interactive = true;
   bool overWrite=false;
   bool resetOutputImage=true;
-  bool verbose=false;
+  string stats="none";
 
  RENTER:// UI re-entry point.
   try
     {
       UI(restartUI,argc, argv, interactive, 
 	 imageName, outputImage,
-	 overWrite, resetOutputImage, verbose);
+	 overWrite, resetOutputImage, stats);
       //      restartUI = False;
       //
       //---------------------------------------------------
       //
-      Screwball::screwball(imageName, outputImage,
-			   overWrite,resetOutputImage,verbose);
+      Chip::chip(imageName, outputImage,
+		 overWrite,resetOutputImage,stats);
     }
   catch (clError& x)
     {
