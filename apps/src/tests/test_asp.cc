@@ -200,7 +200,6 @@ TEST(AspTest, casacore_asp_mdspan_mfs) {
                  specmode
                  );
 
-  std::cout << "mdspan unit test fine" << std::endl;
   PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
 
   float tol = 0.1;

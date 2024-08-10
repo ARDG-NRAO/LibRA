@@ -24,7 +24,6 @@ class TestHummbee(unittest.TestCase):
         # Create a unique directory for this test case
         self.testDir = Path.cwd() / self.testName
         self.testDir.mkdir(parents=True, exist_ok=True)
-        self.testdir = str(self.testDir)
 
         # Copy files to the test directory
         shutil.copytree(Path.cwd() / "gold_standard/unittest_hummbee.pb", self.testDir / "unittest_hummbee.pb")
@@ -71,7 +70,7 @@ class TestHummbee(unittest.TestCase):
 
 
     def test_residual_value(self):
-        self.assertTrue(compare_images_with_tolerance("../gold_standard/unittest_hummbee_gold.residual", "unittest_hummbee.residual"))
+        self.assertTrue(compare_images_with_tolerance("../gold_standard/unittest_hummbee_gold.residual", "unittest_hummbee.residual"), tol)
 
     # can't do the following because hummbee2py internally 
     # has interaction with casa that conflict when both 
