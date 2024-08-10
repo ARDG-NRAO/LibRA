@@ -72,12 +72,14 @@ test-job:
     - base_path=$PWD
     - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
+    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="report.xml"
+    - python -m pytest --junitxml=pytest_report.xml
 
   artifacts:
     when: always
     reports:
       junit: ${base_path}/build/Libra/apps/src/tests/report.xml
+      junit: ${base_path}/build/Libra/apps/src/tests/pytest_report.xml
 
 production-job:
   stage: production
