@@ -5,7 +5,7 @@ nprocs=40
 chdir=""
 
 # Parse command-line options
-while getopts ":n:w:c:E:C:h" opt; do
+while getopts ":n:w:c:E:C:p:h" opt; do
   case ${opt} in
     n )
       nprocs=$OPTARG
@@ -22,7 +22,7 @@ while getopts ":n:w:c:E:C:h" opt; do
     C )
       CASAPATH=$OPTARG
       ;;
-    p)
+    p )
       PYTHON_FILE_PATH=$OPTARG
       ;;
     h )
@@ -61,10 +61,23 @@ if [ ! -d "$cfcache_dir" ]; then
   exit 1
 fi
 
-# if [ ! -d "$exodus_bundle" ]; then
-#   echo "exodus_bundle does not exist"
-#   exit 1
-# fi
+# check is chdir exists else make it before creating logs
+if [ ! -d "$chdir" ]; then
+  echo "chdir does not exist"
+  mkdir -p $chdir
+fi
+
+# Check is a directory called logs exists inside chdir
+if [ ! -d "$chdir/logs" ]; then
+  echo "logs directory does not exist"
+  mkdir -p $chdir/logs
+fi
+
+# Check the exodus bundle file is not present then exit
+if [ ! -f "$coyote_app" ]; then
+  echo "coyote_app does not exist"
+  exit 1
+fi
 
 if [ ! -d "$CASAPATH" ]; then
   echo "CASAPATH does not exist"
