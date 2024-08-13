@@ -88,6 +88,7 @@ fi
    echo "PYTHON_FILE_PATH does not exist"
    echo "Setting it to workig directory"
     PYTHON_FILE_PATH=$chdir 
+ fi
 
 # Write out submit_sbatch.sh
 cat <<EOF > submit_sbatch.sh
