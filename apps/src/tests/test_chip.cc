@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace std::filesystem;
+using namespace Chip;
 
 namespace test{
 
