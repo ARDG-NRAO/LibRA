@@ -29,7 +29,9 @@ enum ImageType {
     PSF,
     RESIDUAL,
     MODEL,
-    MASK
+    MASK,
+    PB,
+    IMAGE
 };
 
 
@@ -64,11 +66,13 @@ py::array_t<float> getchunk(const string& imageName, ImageType type)
     shared_ptr<casa::SIImageStore> itsImages;
     itsImages.reset(new casa::SIImageStore(imageName, true, true));
 
-    casacore::Array<casacore::Float> itsPsf, itsResidual, itsModel, itsMask;
+    casacore::Array<casacore::Float> itsPsf, itsResidual, itsModel, itsMask, itsMatPB, itsMatImage;
     itsImages->residual()->get(itsResidual, false);
     itsImages->model()->get(itsModel, false);
     itsImages->psf()->get(itsPsf, false);
     itsImages->mask()->get(itsMask, false);
+    itsImages->pb()->get( itsMatPB, false);
+    itsImages->image()->get( itsMatImage, false);
 
     auto shape = itsPsf.shape();
     size_t nx = static_cast<size_t>(shape(0));
@@ -91,6 +95,12 @@ py::array_t<float> getchunk(const string& imageName, ImageType type)
         case ImageType::MASK:
             flattened = flatten4DArray(itsMask);
             break;
+        case ImageType::PB:
+            flattened = flatten4DArray(itsMatPB);
+            break;
+        case ImageType::IMAGE:
+            flattened = flatten4DArray(itsMatImage);
+            break;
         default:
             throw std::invalid_argument("Invalid image type");
     }
@@ -108,6 +118,8 @@ PYBIND11_MODULE(utilities2py, m) {
         .value("RESIDUAL", RESIDUAL)
         .value("MODEL", MODEL)
         .value("MASK", MASK)
+        .value("PB", PB)
+        .value("IMAGE", IMAGE)
         .export_values();
 
     m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",

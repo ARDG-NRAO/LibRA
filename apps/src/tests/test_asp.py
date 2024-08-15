@@ -119,59 +119,6 @@ class TestAsp(unittest.TestCase):
         self.assertAlmostEqual(residual[1072, 1639, 0, 0], res_gold_val_loc, delta=tol)
 
 
-    '''def test_asp2py_mfs(self):
-        specmode = "mfs"
-        largestscale = -1
-        fusedthreshold = 0.007
-        nterms = 2
-        gain = 0.2
-        threshold = 2.6e-07
-        nsigma = 0.0
-        cycleniter = 3
-        cyclefactor = 1.0
-
-        psfwidth = 40.0 
-        nsigmathreshold = 0
-        nx = 4000
-        ny = 4000
-        
-        # retrieve the input images
-        image_name = "unittest_hummbee_mfs_revE"
-        residual = utilities2py.getchunk(image_name, utilities2py.ImageType.RESIDUAL)
-        psf = utilities2py.getchunk(image_name, utilities2py.ImageType.PSF)
-        mask = utilities2py.getchunk(image_name, utilities2py.ImageType.MASK)
-        model = np.zeros((nx, ny))
-
-        #residual_list = residual[:, :, 0, 0].tolist()
-        #psf_list = psf[:, :, 0, 0].tolist()
-        #mask_list = mask[:, :, 0, 0].tolist()
-        #model_list = model.tolist()
-
-        asp2py.Asp(model, psf[:, :, 0, 0], residual[:, :, 0, 0], mask[:, :, 0, 0],
-        #asp2py.Asp(model_list, psf_list, residual_list, mask_list,
-            nx, ny,
-            psfwidth,
-            largestscale, fusedthreshold,
-            nterms,
-            gain, 
-            threshold, nsigmathreshold,
-            nsigma,
-            cycleniter, cyclefactor,
-            specmode
-            )
-
-        # Load the result
-        #result_res = utilities2py.getchunk(image_name, utilities2py.ImageType.RESIDUAL)
-        
-        tol = 0.1
-        res_gold_val_loc = 9.44497
-        
-        # Assert that the value is within tolerance
-        #residual_np = np.array(residual_list)
-        self.assertAlmostEqual(residual[1072, 1639, 0, 0], res_gold_val_loc, delta=tol)
-        #self.assertAlmostEqual(residual_np[1072, 1639], res_gold_val_loc, delta=tol)'''
-
-
     def tearDown(self):
         # Move to the parent directory and clean up
         os.chdir(os.path.dirname(self.test_dir))
