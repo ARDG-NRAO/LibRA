@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     restart=false;
 
   string msName="", dataColumnName="data",antStr="", fieldStr="",
-    spwStr="", uvDistStr="";
+    spwStr="*", uvDistStr="";
 
   UI(restart, argc, argv, interactive, 
      msName, dataColumnName,
@@ -111,6 +111,7 @@ int main(int argc, char** argv)
       // Setup the MSSelection object.  This setup is reflected in the
       // db.theSelectedMS object.
       //
+      db.msSelection.setAntennaExpr(antStr);
       db.msSelection.setSpwExpr(spwStr);
       db.msSelection.setAntennaExpr(antStr);
       db.msSelection.setFieldExpr(fieldStr);
@@ -134,8 +135,16 @@ int main(int argc, char** argv)
       //
       // The plugin functor verfiyMS() is defined in dataiter.h
       bool spwSort=false;
+      std::chrono::time_point<std::chrono::steady_clock> db_start;
+      std::chrono::duration<double> this_duration;
+
+      db_start = std::chrono::steady_clock::now();
+
       db.openDB(msName,spwSort,verifyMS);
 
+      this_duration = std::chrono::steady_clock::now() - db_start;
+
+      cerr << "Time for openDB() (sec): " << this_duration.count() << endl;
       //
       // Examples of getting meta-information of the selection.  The
       // msSelection object is a lightweight object that holds the
@@ -159,7 +168,12 @@ int main(int argc, char** argv)
       // The data iterator setup section.
       // dataCol_l, and the plugin functor dataConsumer() are in dataiter.h
 
+      std::chrono::time_point<std::chrono::steady_clock> di_start;
+      di_start = std::chrono::steady_clock::now();
       DataIterator di(isRoot,dataCol_l);
+      this_duration = std::chrono::steady_clock::now() - di_start;
+
+      cerr << "Time for DataIterator() (sec): " << this_duration.count() << endl;
 
       // Trigger the data iterations...dv.vb_l has the data from each
       // iteration, which is passed to the dataConsumer().

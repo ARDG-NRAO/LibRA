@@ -1,0 +1,42 @@
+%%N chip
+	chip accumulates a list of images and writes to the output image.
+
+%%P Author
+	Sanjay Bhatnagar <sbhatnag *at* nrao _dot_ edu>
+
+%%A imagename (default=)
+
+	A comma-separated list of input image names.  A check is done
+	for the existence of these images and the equivalence of their
+	coordinate systems.
+
+
+%%A outputimage (default=)
+
+	Name of the output image.
+
+
+%%A overwrite (default=0)
+
+        If false, a new image will be created.  If one already exists,
+        a non-recoverable error is generated.
+	
+	If true, overwrite an existing image.  The image will be
+	expected to exist.
+
+        If resetoutput=true, the image will be also reset to 0.0
+	before accumulating the images in it.
+
+
+%%A resetoutput (default=1)
+
+	If true, the output image will be first reset.  If false,
+	accumulation will be done one the loaded output image.
+
+
+%%A verbose (default=0)
+
+	If true, statistics of the accumulated image will be printed.
+	Currently, only the maximum pixel value is printed.
+
+

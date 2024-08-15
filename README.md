@@ -96,6 +96,7 @@ Standalone applications (apps) give access to algorithms via commandline options
 #### Currently available Apps
 - [ ] [`roadrunner`](apps/src) : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
 - [ ] [`acme`](apps/src) : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
+- [ ] [`chip`](apps/src) : An application to accumulate mutiple images onto an output image (a.k.a. the "gather" opreation in CS-speak).
 - [ ] [`hummbee`](apps/src) : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] [`coyote`](apps/src) : An application to build the CF Cache used as input to the `roadrunner` application.
 

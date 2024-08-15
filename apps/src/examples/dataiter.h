@@ -73,12 +73,11 @@ auto verifyMS=[](const MeasurementSet& ms)
 // an application-specific interpretation of the rest of the
 // elements of the vector.
 //
-std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
+//std::chrono::time_point<std::chrono::steady_clock> dataIO_start;
 auto dataConsumer = [](vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
  {
    Cube<Complex> dataCube;
-   std::chrono::duration<double> thisIOTime;
-   dataIO_start = std::chrono::steady_clock::now();
+   std::chrono::time_point<std::chrono::steady_clock> dataIO_start = std::chrono::steady_clock::now();
 
    {
      // Read the data from a specific data column into the
@@ -88,7 +87,7 @@ auto dataConsumer = [](vi::VisBuffer2 *vb_l, vi::VisibilityIterator2 *vi2_l)
      else                                                {dataCube=vb_l->visCube();}
    }
 
-   thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
+   std::chrono::duration<double> thisIOTime = std::chrono::steady_clock::now() - dataIO_start;
       
    std::vector<double> ret={(double)dataCube.shape().product()*sizeof(Complex), thisIOTime.count()};
    return ret;

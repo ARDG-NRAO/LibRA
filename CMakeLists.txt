@@ -50,12 +50,22 @@ set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
 set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
+
+set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/sanbee/exodus_sbfork.git")
+set(LIBRA_EXODUS_GIT_TAG          "master")
+
+set(LIBRA_EXODUS_BUNDLE_NAME      "libra_apps.sh")
+set(LIBRA_EXODUS_BUNDLE_PATH       "")
 #------------------------------------------------------------------------------
 #
 
 
 if(NOT DEFINED LIBRA_USE_LIBSAKURA)
   set(LIBRA_USE_LIBSAKURA OFF)
+endif()
+
+if(NOT DEFINED LIBRA_USE_EXODUS)
+  set(LIBRA_USE_EXODUS OFF)
 endif()
 
 # Find system information
@@ -121,6 +131,8 @@ message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
 message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
 message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
 
+message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")  
+
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
@@ -135,6 +147,7 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                    -DCMAKE_INSTALL_LIBDIR=lib
+                   -DCMAKE_INSTALL_BINDIR=bin/kokkos
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
   	               -DKokkos_ENABLE_CUDA=ON
   	               -D${Kokkos_CUDA_ARCH_NAME}=ON
@@ -154,6 +167,7 @@ else()
     BINARY_DIR     ${BUILD_DIR}/Kokkos
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                    -DCMAKE_INSTALL_LIBDIR=lib
+                   -DCMAKE_INSTALL_BINDIR=bin/kokkos
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
                    -DKokkos_ENABLE_CUDA=ON
                    -DKokkos_ENABLE_OPENMP=ON
@@ -170,11 +184,9 @@ ExternalProject_Add(
   URL             ${LIBRA_FFTW_URL}
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR}
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
-  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                 -DCMAKE_INSTALL_LIBDIR=lib
 )
 
 # Get the install directory of Kokkos
@@ -192,16 +204,17 @@ ExternalProject_Add(
   CMAKE_ARGS     PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig
                  -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
+                 -DCMAKE_INSTALL_BINDIR=bin/hpg
                  -DCMAKE_BUILD_TYPE=Release
                  -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/
-	               -DHpg_USE_MIXED_PRECISION=OFF
-	               -DHpg_API=11
-	               -DHpg_BUILD_TESTS=OFF
-	               -DBUILD_SHARED_LIBS=ON
-	               -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/nvcc_wrapper
+	         -DHpg_USE_MIXED_PRECISION=OFF
+	         -DHpg_API=11
+	         -DHpg_BUILD_TESTS=OFF
+	         -DBUILD_SHARED_LIBS=ON
+	         -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                  -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
-                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_USE_MIXED_PRECISION=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
+                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_USE_MIXED_PRECISION=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
@@ -215,6 +228,7 @@ ExternalProject_Add(
   BINARY_DIR     ${BUILD_DIR}/parafeed
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} 
                  -DCMAKE_INSTALL_LIBDIR=lib
+                 -DCMAKE_INSTALL_BINDIR=bin/parafeed
                  -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                  -DBUILD_SHARED_LIBS=ON
   BUILD_COMMAND make -j ${NCORES}
@@ -241,6 +255,7 @@ ExternalProject_Add(
   BINARY_DIR     ${BUILD_DIR}/casacore
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
                  -DCMAKE_INSTALL_LIBDIR=lib
+                 -DCMAKE_INSTALL_BINDIR=bin/casacore
                  -DDATA_DIR=${CMAKE_SOURCE_DIR}/install/data
                  -DBUILD_PYTHON=OFF
                  -DUSE_OPENMP=ON
@@ -252,7 +267,23 @@ ExternalProject_Add(
                  -DBUILD_PYTHON3=OFF
                  -DBUILD_DYSCO=ON
                  -DUseCcache=1 
-		 -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+                 -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/dependencies/casacore
+                    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
+                    -DCMAKE_INSTALL_LIBDIR=lib
+                    -DCMAKE_INSTALL_BINDIR=bin/casacore
+                    -DDATA_DIR=${CMAKE_SOURCE_DIR}/install/data
+                    -DBUILD_PYTHON=OFF
+                    -DUSE_OPENMP=ON
+                    -DUSE_THREADS=ON
+                    -DCMAKE_CXX_FLAGS="-fno-tree-vrp"
+                    -DBUILD_FFTPACK_DEPRECATED=ON
+                    -DBUILD_TESTING=OFF
+                    -DBUILD_PYTHON=OFF
+                    -DBUILD_PYTHON3=OFF
+                    -DBUILD_DYSCO=ON
+                    -DUseCcache=1 
+                    -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
   BUILD_COMMAND  make -j${NCORES}
   INSTALL_COMMAND make install
   DEPENDS DataDownload
@@ -270,6 +301,7 @@ if (LIBRA_USE_LIBSAKURA)
     SOURCE_SUBDIR  libsakura
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
     -DCMAKE_INSTALL_LIBDIR=lib
+    -DCMAKE_INSTALL_BINDIR=bin/sakura
     -DBUILD_DOC:BOOL=OFF
     -DPYTHON_BINDING:BOOL=OFF
     -DSIMD_ARCH=GENERIC
@@ -289,6 +321,7 @@ ExternalProject_Add(
   BINARY_DIR     ${BUILD_DIR}/pybind11
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
+                 -DCMAKE_INSTALL_BINDIR=bin/pybind11
                  -DPYBIND11_TEST=OFF
   BUILD_COMMAND   make -j ${NCORES}; 
   INSTALL_COMMAND make install
@@ -304,6 +337,7 @@ ExternalProject_Add(
   BINARY_DIR     ${BUILD_DIR}/gtest
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
+                 -DCMAKE_INSTALL_BINDIR=bin/gtest
                  -DBUILD_GMOCK=OFF
                  -DBUILD_GTEST=ON
                  -DBUILD_SHARED_LIBS=ON
@@ -327,14 +361,19 @@ ExternalProject_Add(
   #DEPENDS         Casacore Hpg Parafeed Pybind11
   CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                   -DCMAKE_INSTALL_LIBDIR=lib
-                  -DCMAKE_INSTALL_BINDIR=bin
+                  -DCMAKE_INSTALL_BINDIR=bin/casacpp
                   -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
                   -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/
-		  -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
+		              -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
+                  -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                  -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                   -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
-  ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-		    BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
+                                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/casacpp -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include 
+                                    -DHpg_DIR=${INSTALL_DIR}/lib/cmake/hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                                    -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+                                    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+	BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
   INSTALL_COMMAND make install
 )
 
@@ -361,14 +400,54 @@ ExternalProject_Add(
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
                     -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
-		    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+                    -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                    -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
-                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
-		    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+                                      ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
+		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
+                                      -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
     BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
 )
 
+if (LIBRA_USE_EXODUS)
+  # setup a python vitual environment inside the install directory
+  # after checking if python3 is installed
+  find_package(Python3 COMPONENTS Interpreter Development)
+  #if (NOT Python3_FOUND)
+  #  message(FATAL_ERROR "Python3 not found. Please install python3 to use exodus")
+  # else()
+  #  message("${LIBRA_ID} Python3 found at ${Python3_EXECUTABLE}")
+  #  message("${LIBRA_ID} Python3 version: ${Python3_VERSION}")
+  message("Setting up librapython venv")
+    execute_process(
+      COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython
+      COMMAND source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/install
+     
+    ) 
+  # Add exodus as an external project install the python environment
+  if (LIBRA_EXODUS_BUNDLE_PATH STREQUAL "")
+    set(LIBRA_EXODUS_BUNDLE_PATH ${CMAKE_SOURCE_DIR}/install/bin)
+  endif()
+  set(EXODUS_APPS "roadrunner,hummbee,coyote,chip,acme,dataiter,mssplit,subms,tableinfo")
+    ExternalProject_Add(
+      Exodus
+      GIT_REPOSITORY ${LIBRA_EXODUS_GIT_REPOSITORY}
+      GIT_TAG        ${LIBRA_EXODUS_GIT_TAG}
+      SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/exodus
+      CONFIGURE_COMMAND python3 -m venv ${CMAKE_SOURCE_DIR}/install/librapython && source ${CMAKE_SOURCE_DIR}/install/librapython/bin/activate
+      BUILD_COMMAND PYTHONUSERBASE=${CMAKE_SOURCE_DIR}/install/librapython ${CMAKE_SOURCE_DIR}/install/librapython/bin/pip3 install --user ${CMAKE_SOURCE_DIR}/dependencies/exodus/
+      INSTALL_COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus ${CMAKE_SOURCE_DIR}/install/bin/{${EXODUS_APPS}} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
+    )
+  # pip install exodus into the virtual environment
+    #set a list of exodus apps in a bash variable to install
+    execute_process(
+      COMMAND ${CMAKE_SOURCE_DIR}/install/librapython/bin/exodus 
+    )
+#  endif()
+endif()
 
 include_directories(
   ${INSTALL_DIR}/include

@@ -25,8 +25,24 @@
 
 #include <acme.h>
 
+#include <iostream>
+#include <sstream>
+#include <sys/types.h>
+#include <unistd.h>
+#include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/File.h>
+#include <casacore/casa/OS/Path.h>
+
+
 //
 //-------------------------------------------------------------------------
+
+
+bool imageExists(const string& imagename)
+{
+  Directory image(imagename);
+  return image.exists();
+}
 
 void printImageMax(const string& imType,
 		   const ImageInterface<Float>& target,
@@ -49,18 +65,17 @@ void printImageMax(const string& imType,
     }
 }
 
-
-
+template <class T>
 void compute_pb(const string& pbName,
-		const ImageInterface<Float>& weight,
-		const ImageInterface<Float>& sumwt,
+		const ImageInterface<T>& weight,
+		const ImageInterface<T>& sumwt,
 		const float& pblimit,
 		LogIO& logio)
 {
 	double itsPBScaleFactor = sqrt(max(weight.get()));
-	LatticeExpr<Float> norm_pbImage = sqrt(abs(weight)) / itsPBScaleFactor;
-	LatticeExpr<Float> pbImage = iif(norm_pbImage > fabs(pblimit), norm_pbImage, 0.0);
-        PagedImage<Float> tmp(weight.shape(), weight.coordinates(), pbName);
+	LatticeExpr<T> norm_pbImage = sqrt(abs(weight)) / itsPBScaleFactor;
+	LatticeExpr<T> pbImage = iif(norm_pbImage > fabs(pblimit), norm_pbImage, 0.0);
+        PagedImage<T> tmp(weight.shape(), weight.coordinates(), pbName);
         tmp.copyData(pbImage);
         float mpb = max(tmp.get());
         stringstream os;
@@ -69,24 +84,142 @@ void compute_pb(const string& pbName,
         logio << os.str() << LogIO::POST;
 }
 
+template <class T>
+void resetImage(ImageInterface<T>& target)
+{
+  target.set(0.0);
+}
+
+template <class T>
+void addImages(ImageInterface<T>& target,
+	       const vector<string>& partImageNames,
+	       const string& imExt,
+	       const bool& reset_target,
+	       LogIO& logio)
+{
+  if (reset_target)
+    resetImage(target);
+
+  for (auto partName : partImageNames)
+  {
+    if (imageExists(partName + imExt))
+      target += PagedImage<T>(partName + imExt);
+    else
+      logio << "Image " << partName + imExt << " does not exist." << LogIO::EXCEPTION;
+  }
+}
+
+template <class T>
+void gatherPSF(ImageInterface<T>& psf,
+	       ImageInterface<T>& weight,
+	       ImageInterface<T>& sumwt,
+	       const vector<string>& partImageNames,
+	       const bool& reset_target,
+	       LogIO& logio)
+{
+  addImages<T>(sumwt, partImageNames, ".sumwt", reset_target, logio);
+  addImages<T>(weight, partImageNames, ".weight", reset_target, logio);
+  addImages<T>(psf, partImageNames, ".psf", reset_target, logio);
+}
+
+template <class T>
+void gatherResidual(ImageInterface<T>& residual,
+		    const vector<string>& partImageNames,
+		    const bool& reset_target,
+		    LogIO& logio)
+{
+  addImages<T>(residual, partImageNames, ".residual", reset_target, logio);
+}
+
+template <class T>
+void normalize(const std::string& imageName,
+	       ImageInterface<T>& target,
+	       ImageInterface<T>& weight,
+	       ImageInterface<T>& sumwt,
+	       const std::string& imType,
+	       const float& pblimit,
+	       LogIO& logio)
+// normtype, nterms, facets, psfcutoff and restoring beam are not functional yet, will add to interface as needed
+// Normalization equations implemented in this version:
+// pb = sqrt(weight / max(weight))
+// psf = psf / max(psf)
+// weight = weight / SoW
+// itsPBScaleFactor = max(weight)
+// residual = residual / (Sow * (sqrt(weight) * itsPBScaleFactor))
+// model = model / (sqrt(weight) * itsPBScaleFactor)
+{
+  string targetName = imageName + "." + imType;
+
+  IPosition pos(4,0,0,0,0);
+  float SoW = sumwt.getAt(pos);
+
+  if (imType == "psf")
+  {
+      float psfFactor = max(target.get());
+      LatticeExpr<T> newPSF = target / psfFactor;
+      LatticeExpr<T> newWeight = weight / SoW;
+      target.copyData(newPSF);
+      weight.copyData(newWeight);
+  }
+  else if ((imType == "residual") || (imType == "model"))
+  {
+      LatticeExpr<T> newIM;
+      double itsPBScaleFactor = sqrt(max(weight.get()));
+      if (imType == "residual")
+          newIM = target / SoW;
+      else
+          newIM = LatticeExpr<T> (target);
+
+      LatticeExpr<T> ratio;
+      Float scalepb = 1.0;
+      LatticeExpr<T> deno = sqrt(abs(weight)) * itsPBScaleFactor;
+
+      stringstream os;
+      os << fixed << setprecision(numeric_limits<float>::max_digits10)
+         << "Dividing " << targetName << " by [ sqrt(weightimage) * "
+         << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
+      logio << os.str() << LogIO::POST;
+
+      scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+      LatticeExpr<T> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
+      LatticeExpr<T> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
+      ratio = ((newIM) * mask / (deno + maskinv));
+      if (imType == "residual")
+          target.copyData(ratio);
+      else
+      {
+          string newModelName = imageName + ".divmodel";
+          PagedImage<T> tmp(weight.shape(), weight.coordinates(), newModelName);
+          tmp.copyData(ratio);
+          printImageMax(imType, tmp, weight, sumwt, logio, "after");
+      }
+  }
+}
+
 void acme_func(std::string& imageName, std::string& deconvolver,
-               string& normtype, string& workdir, string& imType,
+               string& normtype, string& workdir, string& mode, string& imType,
                float& pblimit, int& nterms, int& facets,
                float& psfcutoff,
                vector<float>& restoringbeam,
+	       vector<string>& partImageNames,
+	       bool& resetImages,
 	       bool& computePB)
 {
   //
   //---------------------------------------------------
   //
-  String type, targetName, weightName, sumwtName, pbName;
+  String type, tableName, targetName, weightName, sumwtName, pbName;
   String subType;
-  
+  bool isValidGather, isGatherPSF, isGatherResidual;
+
   LogIO logio(LogOrigin("acme","acme_func"));
+
+  if (! ((mode == "gather") || (mode == "normalize")))
+    logio << "Unrecognized mode. Allowed values are gather and normalize." << LogIO::EXCEPTION;
 
   if ((imType == "residual") || (imType == "psf") || (imType == "model")) {
     targetName = imageName + "." + imType;
-    cout << "Image name is " << targetName << endl;
+    logio << "Running gather/normalization for " << targetName << LogIO::POST;
   }
   else
     logio << "Unrecognized imtype. Allowed values are psf and residual." << LogIO::EXCEPTION;
@@ -97,134 +230,104 @@ void acme_func(std::string& imageName, std::string& deconvolver,
   if (computePB)
     pbName   = imageName + ".pb";
 
+  if (mode == "gather")
+  {
+    if ((partImageNames.size() > 0) && (imType != "model"))
+    {
+      isValidGather = true;
+      isGatherPSF = (imType == "psf");
+      isGatherResidual = (imType == "residual");
+    }
+    else
+      logio << "Invalid parameters for mode = gather." << LogIO::EXCEPTION;
+  }
 
   try
-    {
-      {
-	Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
-	TableInfo& info = table.tableInfo();
-	type=info.type();
-	subType = info.subType();
-      }
-
-      if (type=="Image")
-	{
-	  LatticeBase* lattPtr = ImageOpener::openImage (targetName);
-	  ImageInterface<Float> *targetImage;
-
-	  targetImage = dynamic_cast<ImageInterface<Float>*>(lattPtr);
-
-
-	  LatticeBase* wPtr = ImageOpener::openImage(weightName);
-	  ImageInterface<Float> *wImage;
-	  wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
-
-	  LatticeBase* swPtr = ImageOpener::openImage(sumwtName);
-	  ImageInterface<Float> *swImage;
-	  swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
-
-
-	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-
-
-// Normalization equations implemented in this version:
-// pb = sqrt(weight / max(weight))
-// psf = psf / max(psf)
-// weight = weight / SoW
-// itsPBScaleFactor = max(weight)
-// residual = residual / (sqrt(weight) * itsPBScaleFactor)
-// model = model * (sqrt(weight) / itsPBScaleFactor)
-	      
-
-	  IPosition pos(4,0,0,0,0);
-	  float SoW = swImage->getAt(pos);
-	  
-          if (imType == "psf")
-	  {
-	      float psfFactor = max(targetImage->get());
-	      LatticeExpr<Float> newPSF = (*targetImage) / psfFactor;
-	      LatticeExpr<Float> newWeight = (*wImage) / SoW;
-	      targetImage->copyData(newPSF);
-	      wImage->copyData(newWeight);
-	  }
-	  else if ((imType == "residual") || (imType == "model"))
-	  {
-              LatticeExpr<Float> newIM;
-	      double itsPBScaleFactor = sqrt(max(wImage->get()));
-	      if (imType == "residual")
-	          newIM = (*targetImage) / SoW;
-	      else
-		  newIM = LatticeExpr<Float> (*targetImage);
-
-	      LatticeExpr<Float> ratio;
-	      Float scalepb = 1.0;
-	      LatticeExpr<Float> deno = sqrt(abs(*wImage)) * itsPBScaleFactor;
-
-	      stringstream os;
-              os << fixed << setprecision(numeric_limits<float>::max_digits10)
-		 << "Dividing " << targetName << " by [ sqrt(weightimage) * " 
-		 << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
-	      logio << os.str() << LogIO::POST;
-
-	      scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
-	      LatticeExpr<Float> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
-	      LatticeExpr<Float> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
-	      ratio = ((newIM) * mask / (deno + maskinv));
-	      if (imType == "residual")
-	          targetImage->copyData(ratio);
-	      else
-	      {
-		  string newModelName = imageName + ".divmodel";
-		  PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), newModelName);
-		  tmp.copyData(ratio);
-		  printImageMax(imType, tmp, *wImage, *swImage, logio, "after");
-	      }
-	  }
-/*	  else if (imType == "model")
-	  {
-	      double itsPBScaleFactor = sqrt(max(wImage->get()));
-
-              LatticeExpr<Float> deno = sqrt(abs(*wImage)) / itsPBScaleFactor;
-
-	      stringstream os;
-	      os << "Multiplying " << targetName << " by [ sqrt(weight) / "
-		 << itsPBScaleFactor <<  " ] to take model back to flat noise with unit pb peak.";
-	      logio << os.str() << LogIO::POST;
-
-	      LatticeExpr<Float> mask( iif( (deno) > fabs(pblimit) , 1.0, 0.0 ) );
-              LatticeExpr<Float> maskinv( iif( (deno) > fabs(pblimit) , 0.0, 1.0 ) );
-
-	      LatticeExpr<Float> modelIM = (*targetImage) * mask * (deno + maskinv);
-	      string newModelName = imageName + ".multiplymodel";
-              PagedImage<Float> tmp(wImage->shape(), wImage->coordinates(), newModelName);
-              tmp.copyData(modelIM);
-	      printImageMax(imType, tmp, *wImage, *swImage, logio, "after");
-	  }*/
- 
-	  printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
-
-	  if (computePB)
-            compute_pb(pbName, *wImage, *swImage, pblimit, logio);
-	    
-/*	  if (imType == "residual"){
-		  IPosition maxpos(4, 1158, 1384, 0, 0);
-		  //float pbatpos = pbImage->getAt(maxpos);
-		  //float pbatpos = deno.getAt(maxpos);  // in current implementation, deno = pb
-		  float pbatpos = 1.0;
-		  float reatpos = targetImage->getAt(maxpos);
-		  stringstream os;
-		  os << fixed << setprecision(numeric_limits<float>::max_digits10)
-		     << "Values to verifiy residual normalization: pb@(1158,1384) = "
-		     << pbatpos << ", residual@(1158,1384) = " << reatpos;
-		  logio << os.str() << LogIO::POST;
-	  }*/
-
-	}
-      else
-	logio << "imagename does not point to an image." << LogIO::EXCEPTION;
-    }
+  {
+    tableName = targetName;
+    if ((! imageExists(targetName)) && (isValidGather))
+      tableName = partImageNames[0] + "." + imType;
+    Table table(tableName,TableLock(TableLock::AutoNoReadLocking));
+    TableInfo& info = table.tableInfo();
+    type=info.type();
+    subType = info.subType();
+  }
   catch(AipsError& e)
-    {
-      logio << e.what() << LogIO::POST;
+  {
+    logio << e.what() << LogIO::EXCEPTION;
+  }
+
+  if (type=="Image")
+  {
+    // checking if all necessary images exist before opening to avoid segfaults
+    // consider to move code to open images to a function
+    LatticeBase *targetPtr, *wPtr, *swPtr;
+    ImageInterface<Float> *targetImage, *wImage, *swImage;
+    
+    if (! imageExists(targetName)) {
+      if (isValidGather) {
+        PagedImage<float> altTarget(tableName);
+        PagedImage<float> targetImage(altTarget.shape(), altTarget.coordinates(), targetName);
+      }
+      else
+        logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
     }
+
+    targetPtr = ImageOpener::openImage (targetName);
+    targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
+
+    if ((mode == "normalize") || (isGatherPSF))
+    {
+      string altWeightName, altSumwtName;
+
+      if (! imageExists(weightName))
+      {
+        altWeightName = partImageNames[0] + ".weight";
+	if (imageExists(altWeightName))
+	{
+          PagedImage<float> altWeight(altWeightName);
+          PagedImage<float> wImage(altWeight.shape(), altWeight.coordinates(), weightName);
+	}
+	else
+          logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
+      }
+      wPtr = ImageOpener::openImage(weightName);
+      wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
+  
+      if (! imageExists(sumwtName))
+      {
+        altSumwtName = partImageNames[0] + ".sumwt";
+        if (imageExists(altSumwtName))
+	{
+	  PagedImage<float> altSumwt(altSumwtName);
+          PagedImage<float> swImage(altSumwt.shape(), altSumwt.coordinates(), sumwtName);
+	}
+	else
+          logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
+      }
+      swPtr = ImageOpener::openImage(sumwtName);
+      swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
+    }
+
+
+    if (mode == "gather")
+    {
+      if (isGatherPSF)
+        gatherPSF<float>(*targetImage, *wImage, *swImage, partImageNames, resetImages, logio);
+      else if (isGatherResidual)
+        gatherResidual<float>(*targetImage, partImageNames, resetImages, logio);
+    }
+
+    if (mode == "normalize")
+    {
+      printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
+      normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
+      printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
+    
+      if (computePB)
+        compute_pb(pbName, *wImage, *swImage, pblimit, logio);
+    }
+  }
+  else
+    logio << "imagename does not point to an image." << LogIO::EXCEPTION;
 }

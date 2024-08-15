@@ -2,7 +2,7 @@
 
 # Default values
 nprocs=40
-chdir="/lustre/pjaganna/evla/cfcache/"
+chdir=""
 
 # Parse command-line options
 while getopts ":n:w:c:E:C:h" opt; do
@@ -22,8 +22,18 @@ while getopts ":n:w:c:E:C:h" opt; do
     C )
       CASAPATH=$OPTARG
       ;;
+    p)
+      PYTHON_FILE_PATH=$OPTARG
+      ;;
     h )
-      echo "Usage: $0 [-n nprocs] [-w chdir] [-c cfcache_dir] [-E exodus_bundle] [-C CASAPATH] [-h]"
+      echo "Usage: $0 
+             [-n nprocs]
+             [-w chdir]
+             [-c cfcache_dir]
+             [-E full path to exodus binary]
+             [-C the directory that contains the casadata in a directory named data, i.e the CASAPATH ]
+             [-p directory that contains the python file that launches the slurm process]
+             [-h help]"
       exit 0
       ;;
     \? )
@@ -61,6 +71,11 @@ if [ ! -d "$CASAPATH" ]; then
   exit 1
 fi
 
+ if [ ! -d "$PYTHON_FILE_PATH" ]; then
+   echo "PYTHON_FILE_PATH does not exist"
+   echo "Setting it to workig directory"
+    PYTHON_FILE_PATH=$chdir 
+
 # Write out submit_sbatch.sh
 cat <<EOF > submit_sbatch.sh
 #!/bin/bash
@@ -78,9 +93,10 @@ cat <<EOF > submit_sbatch.sh
 #SBATCH --mail-user="pjaganna@nrao.edu"
 #SBATCH --mail-type="FAIL"
 
-python3 slurm_fillcf.py --cfcache_dir ${cfcache_dir} --nprocs ${nprocs} --coyote_app ${coyote_app}
+python3 ${PYTHON_FILE_PATH}/slurm_fillcf.py --cfcache_dir ${cfcache_dir} --nprocs ${nprocs} --coyote_app ${coyote_app}
 
 EOF
 
 # Submit the job
+
 sbatch submit_sbatch.sh
