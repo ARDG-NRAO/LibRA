@@ -33,20 +33,9 @@
 #include <cl.h>
 #include <clinteract.h>
 
-#include <acme.h>
+#include <dale.h>
 
-void acme_func(std::string& imageName, std::string& deconvolver,
-		string& normtype, string& workdir, string& mode, string& imType,
-		float& pblimit, int& nterms, int& facets,
-		float& psfcutoff,
-		vector<float>& restoringbeam,
-		vector<string>& partImageNames,
-                bool& resetImages,
-		Bool& computePB);
 
-//
-//-------------------------------------------------------------------------
-//
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
@@ -54,13 +43,11 @@ void acme_func(std::string& imageName, std::string& deconvolver,
 
 void UI(Bool restart, int argc, char **argv, bool interactive,
 	std::string& imageName, std::string& deconvolver,
-        string& normtype, string& workdir, string& mode, string& imType,
+        string& normtype, string& imType,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
-	vector<string>& partImageNames,
-        bool& resetImages,
-	bool& computePB)
+        bool& computePB)
 {
   clSetPrompt(interactive);
 
@@ -77,20 +64,13 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
       i=1;clgetSValp("imagename", imageName,i);  
       //i=1;clgetSValp("deconvolver", deconvolver,i);  
-      i=1;clgetSValp("normtype", normtype,i);
-      i=1;clgetSValp("workdir", workdir,i);
-      i=1;clgetSValp("mode", mode, i); clSetOptions("mode",{"gather","normalize"});
+      //i=1;clgetSValp("normtype", normtype,i);
       i=1;clgetSValp("imtype", imType, i); clSetOptions("imtype",{"psf","residual","model"});
       i=1;clgetFValp("pblimit", pblimit,i);
       //      i=1;clgetIValp("nterms", nterms,i);
       //      i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
-      i=1;clgetBValp("resetimages", resetImages, i);
       i=1;clgetBValp("computepb", computePB, i);
-
-      int N;
-      //      N=0; N=clgetNFValp("restoringbeam", restoringbeam, N);
-        N=0; N=clgetNSValp("partimagenames", partImageNames, N);
       
       EndCL();
     }
@@ -110,14 +90,12 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  string imageName="", deconvolver="hogbom", normtype="flatnoise", workdir, mode="normalize", imType="psf";
+  string imageName="", deconvolver="hogbom", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  vector<string> partImageNames;
-  Bool resetImages=false;
-  Bool computePB=false;
-  Bool restartUI=false;
+  bool computePB=false;
+  bool restartUI=false;
   bool interactive = true;
 
  RENTER:// UI re-entry point.
@@ -125,15 +103,13 @@ int main(int argc, char **argv)
     {
       UI(restartUI,argc, argv, interactive, 
         imageName, deconvolver, normtype, 
-        workdir, mode, imType, pblimit, nterms, 
-        facets, psfcutoff, restoringbeam, partImageNames,
-        resetImages, computePB);
+        imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
       
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      acme_func(imageName, deconvolver, normtype, workdir, mode, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, partImageNames, resetImages, computePB);
+      Dale::dale(imageName, deconvolver, normtype, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
     }
   catch (clError& x)
     {
