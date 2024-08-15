@@ -150,7 +150,7 @@ void normalize(const std::string& imageName,
   }
 }
 
-void acme(std::string& imageName, std::string& deconvolver,
+void dale(std::string& imageName, std::string& deconvolver,
           string& normtype, string& imType,
           float& pblimit, int& nterms, int& facets,
           float& psfcutoff,
@@ -162,7 +162,7 @@ void acme(std::string& imageName, std::string& deconvolver,
   //
   string type, targetName, weightName, sumwtName, pbName;
 
-  LogIO logio(LogOrigin("Acme","acme"));
+  LogIO logio(LogOrigin("Dale","dale"));
 
   if ((imType == "residual") || (imType == "psf") || (imType == "model")) {
     targetName = imageName + "." + imType;
