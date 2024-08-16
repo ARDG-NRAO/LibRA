@@ -1,13 +1,14 @@
 #include <filesystem>
-#include "Acme/acme.h"
+#include "Dale/dale.h"
 #include "gtest/gtest.h"
 
 using namespace std;
 using namespace std::filesystem;
+using namespace Dale;
 
 namespace test{
 
-TEST(AcmeTest, AppLevelPSF) {
+TEST(DaleTest, AppLevelPSF) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -27,18 +28,16 @@ TEST(AcmeTest, AppLevelPSF) {
   std::filesystem::current_path(testDir);
   
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf", mode="normalize";
+  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", imType="psf";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  vector<string> partImageNames;
-  bool resetImages=false;
   bool computePB = true;
 
-  acme_func(imageName, deconvolver, 
-    normtype, workdir, mode, imType, pblimit, 
+  Dale::dale(imageName, deconvolver, 
+    normtype, imType, pblimit, 
     nterms, facets, psfcutoff, restoringbeam, 
-    partImageNames, resetImages, computePB);
+    computePB);
   
 
   // Check that the .psf is generated
@@ -66,7 +65,7 @@ TEST(AcmeTest, AppLevelPSF) {
 }
 
 
-TEST(AcmeTest, AppLevelResidual) {
+TEST(DaleTest, AppLevelResidual) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -87,18 +86,16 @@ TEST(AcmeTest, AppLevelResidual) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", workdir, imType="residual", mode="normalize";
+  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", imType="residual";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  vector<string> partImageNames;
-  bool resetImages=false;
   bool computePB = false;
 
-  acme_func(imageName, deconvolver,
-    normtype, workdir, mode, imType, pblimit,
+  Dale::dale(imageName, deconvolver,
+    normtype, imType, pblimit,
     nterms, facets, psfcutoff, restoringbeam,
-    partImageNames, resetImages, computePB);
+    computePB);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
