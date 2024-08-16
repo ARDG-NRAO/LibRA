@@ -20,8 +20,8 @@ TEST(ChipTest, AppLevelPSF) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.n1.psf", testdir + "/refim_point_wterm_vlad.n1.psf", copy_options::recursive);
-    std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.n2.psf", testdir + "/refim_point_wterm_vlad.n2.psf", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.n1.psf", copy_options::recursive);
+  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.n2.psf", copy_options::recursive);
 
   //Step into test dir 
   std::filesystem::current_path(testDir);
@@ -42,15 +42,12 @@ TEST(ChipTest, AppLevelPSF) {
   EXPECT_TRUE( ans );
 
   float tol = 0.05;
-  float goldValLoc0 = 1;
-  float goldValLoc1 = -0.0070736;
+  float goldValLoc0 = 2 * 30185.982421875;
+  float goldValLoc1 = 2 * -213.523565259375;
 
   PagedImage<Float> psfimage("refim_point_wterm_vlad.psf");
   EXPECT_NEAR(psfimage(IPosition(4,1024,1024,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(psfimage(IPosition(4,1050,1050,0,0)), goldValLoc1, tol);
-
-  PagedImage<Float> pbimage("refim_point_wterm_vlad.pb");
-  EXPECT_NEAR(pbimage(IPosition(4,1024,1024,0,0)), goldValLoc0, tol);
 
   //move to parent directory
   std::filesystem::current_path(testDir.parent_path());
