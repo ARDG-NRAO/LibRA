@@ -66,7 +66,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetBValp("overwrite", overWrite,i);
       i=1;clgetBValp("resetoutput", resetOutputImage,i);
       i=1;clgetSValp("stats", stats,i);
-      clSetOptions("stats",{"one","outputonly","inputonly","all"});
+      clSetOptions("stats",{"none","outputonly","inputonly","all"});
       EndCL();
     }
   catch (clError x)

@@ -54,7 +54,7 @@ namespace Dale
 		vector<float>& restoringbeam,
 		bool& computePB);
 
-	void UI(Bool restart, int argc, char **argv, bool interactive,
+	void UI(bool restart, int argc, char **argv, bool interactive,
         std::string& imageName, std::string& deconvolver,
         string& normtype, string& imType,
         float& pblimit, int& nterms, int& facets,

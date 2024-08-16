@@ -26,7 +26,6 @@ TEST(ChipTest, AppLevelPSF) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   
-  // note, workdir, psfcutoff and facets are actually not used un acme
   std::vector<std::string> imageName={"refim_point_wterm_vlad.n1.psf","refim_point_wterm_vlad.n2.psf"};
   string outputimage="refim_point_wterm_vlad.psf";
   bool overwrite=false;
@@ -54,5 +53,21 @@ TEST(ChipTest, AppLevelPSF) {
 
   remove_all(testDir);
 }
+
+TEST(ChipTest, UIFactory) {
+    // The Factory Settings.
+  int argc = 1;
+  char* argv[] = {"./chip"};
+
+  string imageName={"notEmpty"}, outputImage="notEmpty", stats="none";
+  bool overwrite=false, resetOutputImage=false;
+  bool restartUI=false, interactive=false;
+
+  
+  Chip::UI(restartUI, argc, argv, interactive, 
+    imageName, outputImage, overWrite,
+    resetOutputImage, stats);
+
+};
 
 };
