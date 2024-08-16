@@ -27,7 +27,7 @@ TEST(ChipTest, AppLevelPSF) {
   std::filesystem::current_path(testDir);
   
   // note, workdir, psfcutoff and facets are actually not used un acme
-  std::vector<std::string> imageName="refim_point_wterm_vlad.n1.psf,refim_point_wterm_vlad.n2.psf";
+  std::vector<std::string> imageName={"refim_point_wterm_vlad.n1.psf","refim_point_wterm_vlad.n2.psf"};
   string outputimage="refim_point_wterm_vlad.psf";
   bool overwrite=false;
   bool resetoutput=false;

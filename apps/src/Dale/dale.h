@@ -45,7 +45,7 @@ using namespace casacore;
 //
 //-------------------------------------------------------------------------
 //
-Namespace Dale
+namespace Dale
 {
 	void dale(std::string& imageName, std::string& deconvolver,
 		string& normtype, string& imType,
