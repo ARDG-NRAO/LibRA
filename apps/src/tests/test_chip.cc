@@ -60,7 +60,7 @@ TEST(ChipTest, UIFactory) {
   char* argv[] = {"./chip"};
 
   string imageName={"notEmpty"}, outputImage="notEmpty", stats="none";
-  bool overwrite=false, resetOutputImage=false;
+  bool overWrite=false, resetOutputImage=false;
   bool restartUI=false, interactive=false;
 
   
