@@ -59,7 +59,8 @@ TEST(ChipTest, UIFactory) {
   int argc = 1;
   char* argv[] = {"./chip"};
 
-  string imageName={"notEmpty"}, outputImage="notEmpty", stats="none";
+  std::vector<std::string> imageName={"notEmpty"}, 
+  string outputImage="notEmpty", stats="none";
   bool overWrite=false, resetOutputImage=false;
   bool restartUI=false, interactive=false;
 
