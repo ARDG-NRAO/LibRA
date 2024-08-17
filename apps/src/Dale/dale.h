@@ -53,6 +53,7 @@ namespace Dale
 		float& psfcutoff,
 		vector<float>& restoringbeam,
 		bool& computePB);
+}
 
 	void UI(bool restart, int argc, char **argv, bool interactive,
         std::string& imageName, std::string& deconvolver,
@@ -62,5 +63,5 @@ namespace Dale
         vector<float>& restoringbeam,
         bool& computePB);
 
-}
+
 #endif
