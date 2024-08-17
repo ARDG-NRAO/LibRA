@@ -125,7 +125,7 @@ TEST(DaleTest, UIFactory) {
   bool restartUI=False;;
   bool interactive = false;
   
-  Dale::UI(restartUI, argc, argv, interactive, 
+  UI(restartUI, argc, argv, interactive, 
     imageName, deconvolver, normtype, imType, 
     pblimit, nterms, facets, psfcutoff, 
     restoringbeam, computePB);

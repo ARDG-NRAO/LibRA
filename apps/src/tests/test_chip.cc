@@ -65,7 +65,7 @@ TEST(ChipTest, UIFactory) {
   bool restartUI=false, interactive=false;
 
   
-  Chip::UI(restartUI, argc, argv, interactive, 
+  UI(restartUI, argc, argv, interactive, 
     imageName, outputImage, overWrite,
     resetOutputImage, stats);
 
