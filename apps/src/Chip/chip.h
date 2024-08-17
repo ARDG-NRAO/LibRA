@@ -52,10 +52,10 @@ void chip(std::vector<std::string>& imageNames,
 	  const bool overWrite=false,
 	  const bool restOutputImage=true,
 	  const string& stats="none");
-
+}
 void UI(Bool restart, int argc, char **argv, bool interactive,
         std::vector<std::string>& imageName, std::string& outputImage,
 	bool& overWrite, bool& restOutputImage, string& stats);
 
-};
+
 #endif

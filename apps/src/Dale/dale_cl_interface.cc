@@ -41,7 +41,7 @@
 //
 
 
-void UI(Bool restart, int argc, char **argv, bool interactive,
+void UI(bool restart, int argc, char **argv, bool interactive,
 	std::string& imageName, std::string& deconvolver,
         string& normtype, string& imType,
         float& pblimit, int& nterms, int& facets,
@@ -65,7 +65,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetSValp("imagename", imageName,i);  
       //i=1;clgetSValp("deconvolver", deconvolver,i);  
       //i=1;clgetSValp("normtype", normtype,i);
-      i=1;clgetSValp("imtype", imType, i); clSetOptions("imtype",{"psf","residual","model"});
+      i=1;clgetSValp("imtype", imType, i);
+      clSetOptions("imtype",{"psf","residual","model"});
       i=1;clgetFValp("pblimit", pblimit,i);
       //      i=1;clgetIValp("nterms", nterms,i);
       //      i=1;clgetIValp("facets", facets,i);
