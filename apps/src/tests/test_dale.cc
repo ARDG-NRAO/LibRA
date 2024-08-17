@@ -112,30 +112,24 @@ TEST(DaleTest, AppLevelResidual) {
 }
 
 
-
-// turned off this test until the cl interface is fixed.
-// issue is even though `imageName` is set, the cl interface
-// still thinks it's empty
-/*TEST(AcmeTest, UIFactory) {
+TEST(DaleTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./acme"};
+  char* argv[] = {"./dale"};
 
-  string imageName="notEmpty", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
+  string imageName="notEmpty", deconvolver="hogbom", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  Bool computePB=False;
-  Bool restartUI=False;;
+  bool computePB=False;
+  bool restartUI=False;;
   bool interactive = false;
   
   UI(restartUI, argc, argv, interactive, 
-    imageName, 
-    deconvolver, normtype, workdir, imType, 
+    imageName, deconvolver, normtype, imType, 
     pblimit, nterms, facets, psfcutoff, 
     restoringbeam, computePB);
-}*/
-
+}
 
 
 };
