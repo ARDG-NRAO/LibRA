@@ -11,6 +11,8 @@ using namespace std::filesystem;
 
 namespace test{
 
+  const path goldDir = current_path() / "gold_standard";
+
 TEST(RestoreTest, RestoreFuncLevel)
 {
   const int nx = 2;
@@ -121,17 +123,16 @@ TEST(RestoreTest, casacore_restore) {
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create dir 
   std::filesystem::create_directory(testDir);
 
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.psf", testdir+"/unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.residual", testdir+"/unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", testdir+"/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.psf", testDir/"unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.residual", testDir/"unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.sumwt", testDir/"unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.weight", testDir/"unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.model", testDir/"unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore_gold.image", testDir/"unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
   
   // Set the current working directory to the test directory
   current_path(testDir);
@@ -163,19 +164,18 @@ TEST(RestoreTest, casacore_restore_pbcor) {
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create dir 
   std::filesystem::create_directory(testDir);
 
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.psf", testdir+"/unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.residual", testdir+"/unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", testdir+"/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.pb", testdir+"/unittest_hummbee_mfs_revE_restore.pb", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image.pbcor", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.psf", testDir/"unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.residual", testDir/"unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.sumwt", testDir/"unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.weight", testDir/"unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.model", testDir/"unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore_gold.image", testDir/"unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.pb", testDir/"unittest_hummbee_mfs_revE_restore.pb", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore_gold.image.pbcor", testDir/"unittest_hummbee_mfs_revE_restore_gold.image.pbcor", copy_options::recursive);
 
   // Set the current working directory to the test directory
   current_path(testDir);
@@ -211,17 +211,17 @@ TEST(RestoreTest, casacore_restore_psf) {
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
+  
 
   // create dir 
   std::filesystem::create_directory(testDir);
 
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.psf", testdir+"/unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.residual", testdir+"/unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.sumwt", testdir+"/unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.weight", testdir+"/unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore.model", testdir+"/unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
-  copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE_restore_gold.image", testdir+"/unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.psf", testDir/"unittest_hummbee_mfs_revE_restore.psf", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.residual", testDir/"unittest_hummbee_mfs_revE_restore.residual", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.sumwt", testDir/"unittest_hummbee_mfs_revE_restore.sumwt", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.weight", testDir/"unittest_hummbee_mfs_revE_restore.weight", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore.model", testDir/"unittest_hummbee_mfs_revE_restore.model", copy_options::recursive);
+  copy(goldDir/"unittest_hummbee_mfs_revE_restore_gold.image", testDir/"unittest_hummbee_mfs_revE_restore_gold.image", copy_options::recursive);
   
   // Set the current working directory to the test directory
   current_path(testDir);

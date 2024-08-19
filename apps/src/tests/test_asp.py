@@ -18,9 +18,10 @@ class TestAsp(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True) 
         
         # Copy files
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE.psf', self.test_dir / 'unittest_hummbee_mfs_revE.psf')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE.mask', self.test_dir / 'unittest_hummbee_mfs_revE.mask')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE.residual', self.test_dir / 'unittest_hummbee_mfs_revE.residual')
+        self.goldDir = Path.cwd() / "gold_standard/"
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE.psf', self.test_dir / 'unittest_hummbee_mfs_revE.psf')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE.mask', self.test_dir / 'unittest_hummbee_mfs_revE.mask')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE.residual', self.test_dir / 'unittest_hummbee_mfs_revE.residual')
         
          # Change current working directory to the test directory
         os.chdir(self.test_dir)

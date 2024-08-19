@@ -18,14 +18,15 @@ class TestAsp(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True) 
         
         # Copy files 
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.psf', self.test_dir / 'unittest_hummbee_mfs_revE_restore.psf')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.residual', self.test_dir / 'unittest_hummbee_mfs_revE_restore.residual')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.sumwt', self.test_dir / 'unittest_hummbee_mfs_revE_restore.sumwt')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.weight', self.test_dir / 'unittest_hummbee_mfs_revE_restore.weight')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.model', self.test_dir / 'unittest_hummbee_mfs_revE_restore.model')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore_gold.image', self.test_dir / 'unittest_hummbee_mfs_revE_restore_gold.image')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore.pb', self.test_dir / 'unittest_hummbee_mfs_revE_restore.pb')
-        shutil.copytree(Path.cwd() /'gold_standard/unittest_hummbee_mfs_revE_restore_gold.image.pbcor', self.test_dir / 'unittest_hummbee_mfs_revE_restore_gold.image.pbcor')
+        self.goldDir = Path.cwd() / "gold_standard/"
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.psf', self.test_dir / 'unittest_hummbee_mfs_revE_restore.psf')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.residual', self.test_dir / 'unittest_hummbee_mfs_revE_restore.residual')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.sumwt', self.test_dir / 'unittest_hummbee_mfs_revE_restore.sumwt')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.weight', self.test_dir / 'unittest_hummbee_mfs_revE_restore.weight')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.model', self.test_dir / 'unittest_hummbee_mfs_revE_restore.model')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore_gold.image', self.test_dir / 'unittest_hummbee_mfs_revE_restore_gold.image')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore.pb', self.test_dir / 'unittest_hummbee_mfs_revE_restore.pb')
+        shutil.copytree(self.goldDir /'unittest_hummbee_mfs_revE_restore_gold.image.pbcor', self.test_dir / 'unittest_hummbee_mfs_revE_restore_gold.image.pbcor')
          # Change current working directory to the test directory
         os.chdir(self.test_dir)
 
