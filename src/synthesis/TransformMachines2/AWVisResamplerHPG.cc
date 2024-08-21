@@ -182,6 +182,15 @@ namespace casa{
       hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
 						  cfArray_ptr, grid_size, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);
+      if (!hpg::is_value(g))
+	{
+	  log_l << "Error in hpg::create<N>(): Current setting of NPROCS (="<< NProcs << ") env. variable will require "
+		<< NProcs+1 << "x the value in the following message." << endl
+		<< hpg::get_error(g).message()
+		<< LogIO::EXCEPTION;
+	  throw(std::runtime_error(string("Error in hpg::create<N>()")));
+	}
+
       //hpgGridder_p = new hpg::Gridder(hpg::get_value(std::move(g)));
       
       return new hpg::Gridder(hpg::get_value(std::move(g)));
@@ -507,7 +516,6 @@ namespace casa{
     nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
     log_l << "NPROCS: " << nProcs << endl;
 
-    // uint nProcs = 2;
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,

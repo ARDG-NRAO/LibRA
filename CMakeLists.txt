@@ -30,7 +30,8 @@ set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
 set(LIBRA_KOKKOS_GIT_TAG          "4.3.00")
 
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
-set(LIBRA_HPG_GIT_TAG             "main")
+#set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.com/dsa-2000/rcp/hpg")
+set(LIBRA_HPG_GIT_TAG             "rcgrid")
 
 set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/preshanth/casacore.git")#"https://github.com/casacore/casacore.git")#
 set(LIBRA_CASACORE_GIT_TAG        "fix_regex_v3.5.0")#"2e121e67bf881ac7f309604447a4b0d481913902")#
@@ -207,14 +208,15 @@ ExternalProject_Add(
                  -DCMAKE_INSTALL_BINDIR=bin/hpg
                  -DCMAKE_BUILD_TYPE=Release
                  -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/
-	         -DHpg_USE_MIXED_PRECISION=OFF
+	         -DHpg_ENABLE_MIXED_PRECISION=OFF
+		 -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF
 	         -DHpg_API=11
 	         -DHpg_BUILD_TESTS=OFF
 	         -DBUILD_SHARED_LIBS=ON
 	         -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                  -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
-                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_USE_MIXED_PRECISION=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
+                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )

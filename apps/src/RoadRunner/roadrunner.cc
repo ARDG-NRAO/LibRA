@@ -900,9 +900,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       rrr[DATA_VOLUME] = visResampler->getDataVolume();
       rrr[MAKEVB_TIME] = getMakeHPGVBTime(visResampler);
     }
-  catch(AipsError& er)
+  catch (std::exception& stdErr)
     {
-      log_l << er.what() << LogIO::SEVERE;
+      log_l << stdErr.what() << LogIO::SEVERE;
     }
+  // Looks like AipsError is now derived from std::exception.  Nice.
+  // catch(AipsError& er)
+  //   {
+  //     log_l << er.what() << LogIO::SEVERE;
+  //   }
   return rrr;
 }

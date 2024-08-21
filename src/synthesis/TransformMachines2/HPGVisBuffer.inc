@@ -60,7 +60,8 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
   //  std::vector<hpg::VisData<N>>
   //  hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
 
-  std::array<std::complex<hpg::visibility_fp>, N> vis;
+  //  std::array<std::complex<hpg::visibility_fp>, N> vis;
+  std::array<std::complex<HPG_VIS_FP_TYPE>, N> vis;
   std::array<hpg::vis_weight_fp, N> wt;
 
   const casacore::Matrix<double> UVW=casaVBS.uvw_p;

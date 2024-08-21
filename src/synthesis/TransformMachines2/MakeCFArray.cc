@@ -34,7 +34,7 @@
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/CFDefs.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <synthesis/TransformMachines2/MakeCFArray.h>
+#include <synthesis/TransformMachines2/MyCFArrayShape.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 

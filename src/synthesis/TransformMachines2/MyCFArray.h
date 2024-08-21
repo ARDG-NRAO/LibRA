@@ -32,10 +32,10 @@
 
 namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{
-  struct MyCFArray final: public hpg::CFArray
+    struct MyCFArray final: public hpg::CFArray
   {
-    std::vector<std::array<unsigned, 4>> m_extent;
-    std::vector<std::vector<std::complex<hpg::cf_fp>>> m_values;
+    std::vector<std::array<HPG_ARRAY_INDEX_TYPE, 4>> m_extent;
+    std::vector<std::vector<std::complex<HPG_CF_FP_TYPE>>> m_values;
     unsigned cf_oversampling=0;
     
     MyCFArray(): m_extent(), m_values(), cf_oversampling(0) {};
@@ -83,12 +83,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       return cf_oversampling;
     }
 
-    std::array<unsigned, 4> extents(unsigned i) const override
+    // std::array<unsigned, 4> extents(unsigned i) const 
+    // {
+    //   return m_extent[i];
+    // }
+
+    std::array<HPG_ARRAY_INDEX_TYPE, 4> extents(unsigned i) const 
     {
       return m_extent[i];
     }
 
-    inline std::complex<hpg::cf_fp> operator()(unsigned x, unsigned y, unsigned pol, unsigned freq, unsigned i) const override
+    inline std::complex<HPG_CF_FP_TYPE> operator()
+    (HPG_ARRAY_INDEX_TYPE x, HPG_ARRAY_INDEX_TYPE y, HPG_ARRAY_INDEX_TYPE pol, HPG_ARRAY_INDEX_TYPE freq, HPG_ARRAY_INDEX_TYPE i) const 
     {
       {
 	auto& pix = m_values[i];
