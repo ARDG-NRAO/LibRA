@@ -136,5 +136,5 @@ int main(int argc, char **argv)
 
   showTableCache();
   //if (restartUI) 
-  restartUI=True;RestartUI(RENTER);
+  ///  restartUI=True;RestartUI(RENTER);
 }
