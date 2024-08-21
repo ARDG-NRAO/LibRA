@@ -12,6 +12,8 @@ using namespace std::filesystem;
 
 
 namespace test{
+  const path goldDir = current_path() / "gold_standard";
+
 TEST(AspTest, AspFuncLevel) {
   string specmode="cube";
   float largestscale = -1;
@@ -117,9 +119,9 @@ TEST(AspTest, casacore_asp_mfs) {
   // create dir 
   std::filesystem::create_directory(testDir);
   
-  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.psf", "casacore_asp_mfs/unittest_hummbee_mfs_revE.psf", copy_options::recursive);
-  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.mask", "casacore_asp_mfs/unittest_hummbee_mfs_revE.mask", copy_options::recursive);
-  std::filesystem::copy("gold_standard/unittest_hummbee_mfs_revE.residual", "casacore_asp_mfs/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.psf", testDir/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.mask", testDir/"unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.residual", testDir/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
   //Step into dir
   std::filesystem::current_path(testDir);
 
@@ -180,14 +182,13 @@ TEST(AspTest, casacore_asp_mdspan_mfs) {
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create dir 
   std::filesystem::create_directory(testDir);
 
-  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.psf",  testdir +"/unittest_hummbee_mfs_revE.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.mask",  testdir +"/unittest_hummbee_mfs_revE.mask", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/unittest_hummbee_mfs_revE.residual",  testdir +"/unittest_hummbee_mfs_revE.residual", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.psf",  testDir/"unittest_hummbee_mfs_revE.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.mask",  testDir/"unittest_hummbee_mfs_revE.mask", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee_mfs_revE.residual",  testDir/"unittest_hummbee_mfs_revE.residual", copy_options::recursive);
   //Step into dir
   std::filesystem::current_path(testDir);
 
@@ -200,7 +201,6 @@ TEST(AspTest, casacore_asp_mdspan_mfs) {
                  specmode
                  );
 
-  std::cout << "mdspan unit test fine" << std::endl;
   PagedImage<Float> modelimage("unittest_hummbee_mfs_revE.model");
 
   float tol = 0.1;
@@ -252,10 +252,10 @@ TEST(AspTest, casacore_asp_cube) {
   // create dir 
   std::filesystem::create_directory(testDir);
  
-  std::filesystem::copy("gold_standard/unittest_hummbee.pb", "casacore_asp_cube/unittest_hummbee.pb", copy_options::recursive); 
-  std::filesystem::copy("gold_standard/unittest_hummbee.psf", "casacore_asp_cube/unittest_hummbee.psf", copy_options::recursive);
-  std::filesystem::copy("gold_standard/unittest_hummbee.mask", "casacore_asp_cube/unittest_hummbee.mask", copy_options::recursive);
-  std::filesystem::copy("gold_standard/unittest_hummbee.residual", "casacore_asp_cube/unittest_hummbee.residual", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee.pb", testDir/"unittest_hummbee.pb", copy_options::recursive); 
+  std::filesystem::copy(goldDir/"unittest_hummbee.psf", testDir/"unittest_hummbee.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee.mask", testDir/"unittest_hummbee.mask", copy_options::recursive);
+  std::filesystem::copy(goldDir/"unittest_hummbee.residual", testDir/"unittest_hummbee.residual", copy_options::recursive);
   //Step into dir
   std::filesystem::current_path(testDir);
 

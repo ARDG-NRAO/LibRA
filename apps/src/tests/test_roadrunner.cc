@@ -6,6 +6,8 @@ using namespace std;
 using namespace std::filesystem;
 
 namespace test{
+  const path goldDir = current_path() / "gold_standard";
+
 TEST(RoadrunnerTest, InitializeTest) {
   // Create a LibHPG object
   LibHPG lib_hpg;
@@ -23,15 +25,14 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create dir AppLevelSNRPSF
   std::filesystem::create_directory(testDir);
 
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy(current_path()/"gold_standard/CYGTST.corespiral.ms", testdir +"/CYGTST.corespiral.ms", copy_options::recursive);
+  std::filesystem::copy(goldDir/"CYGTST.corespiral.ms", testDir/"CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelSNRPSF
-  std::filesystem::copy(current_path()/"gold_standard/4k_nosquint.cfc", testdir +"/4k_nosquint.cfc", copy_options::recursive);
+  std::filesystem::copy(goldDir/"4k_nosquint.cfc", testDir/"4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelSNRPSF
   std::filesystem::current_path(testDir);
 
@@ -111,14 +112,13 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create dir AppLevelWeight
   std::filesystem::create_directory(testDir);
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelWeight
-  std::filesystem::copy(current_path()/"gold_standard/CYGTST.corespiral.ms", testdir +"/CYGTST.corespiral.ms", copy_options::recursive);
+  std::filesystem::copy(goldDir/"CYGTST.corespiral.ms", testDir/"CYGTST.corespiral.ms", copy_options::recursive);
   //copy over 4k_nosquint.cfc from gold_standard to AppLevelWeight
-  std::filesystem::copy(current_path()/"gold_standard/4k_nosquint.cfc", testdir + "/4k_nosquint.cfc", copy_options::recursive);
+  std::filesystem::copy(goldDir/"4k_nosquint.cfc", testDir/"4k_nosquint.cfc", copy_options::recursive);
   //Step into AppLevelWeight
   std::filesystem::current_path(testDir);
 

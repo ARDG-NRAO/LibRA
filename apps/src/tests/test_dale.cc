@@ -1,13 +1,15 @@
 #include <filesystem>
-#include "Acme/acme.h"
+#include "Dale/dale.h"
 #include "gtest/gtest.h"
 
 using namespace std;
 using namespace std::filesystem;
+using namespace Dale;
 
 namespace test{
+  const path goldDir = current_path() / "gold_standard";
 
-TEST(AcmeTest, AppLevelPSF) {
+TEST(DaleTest, AppLevelPSF) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -19,26 +21,24 @@ TEST(AcmeTest, AppLevelPSF) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.weight", testdir + "/refim_point_wterm_vlad.weight", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.sumwt", testdir + "/refim_point_wterm_vlad.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.psf", testDir/"refim_point_wterm_vlad.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.weight", testDir/"refim_point_wterm_vlad.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.sumwt", testDir/"refim_point_wterm_vlad.sumwt", copy_options::recursive);
 
   //Step into test dir 
   std::filesystem::current_path(testDir);
   
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf", mode="normalize";
+  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", imType="psf";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  vector<string> partImageNames;
-  bool resetImages=false;
   bool computePB = true;
 
-  acme_func(imageName, deconvolver, 
-    normtype, workdir, mode, imType, pblimit, 
+  Dale::dale(imageName, deconvolver, 
+    normtype, imType, pblimit, 
     nterms, facets, psfcutoff, restoringbeam, 
-    partImageNames, resetImages, computePB);
+    computePB);
   
 
   // Check that the .psf is generated
@@ -66,7 +66,7 @@ TEST(AcmeTest, AppLevelPSF) {
 }
 
 
-TEST(AcmeTest, AppLevelResidual) {
+TEST(DaleTest, AppLevelResidual) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -78,27 +78,25 @@ TEST(AcmeTest, AppLevelResidual) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.psf", testdir + "/refim_point_wterm_vlad_step2.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.weight", testdir + "/refim_point_wterm_vlad_step2.weight", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.sumwt", testdir + "/refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.pb", testdir + "/refim_point_wterm_vlad_step2.pb", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.residual", testdir + "/refim_point_wterm_vlad_step2.residual", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.psf", testDir/"refim_point_wterm_vlad_step2.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.weight", testDir/"refim_point_wterm_vlad_step2.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.sumwt", testDir/"refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.pb", testDir/"refim_point_wterm_vlad_step2.pb", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.residual", testDir/"refim_point_wterm_vlad_step2.residual", copy_options::recursive);
   
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", workdir, imType="residual", mode="normalize";
+  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", imType="residual";
   float pblimit=0.005, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  vector<string> partImageNames;
-  bool resetImages=false;
   bool computePB = false;
 
-  acme_func(imageName, deconvolver,
-    normtype, workdir, mode, imType, pblimit,
+  Dale::dale(imageName, deconvolver,
+    normtype, imType, pblimit,
     nterms, facets, psfcutoff, restoringbeam,
-    partImageNames, resetImages, computePB);
+    computePB);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
@@ -115,30 +113,24 @@ TEST(AcmeTest, AppLevelResidual) {
 }
 
 
-
-// turned off this test until the cl interface is fixed.
-// issue is even though `imageName` is set, the cl interface
-// still thinks it's empty
-/*TEST(AcmeTest, UIFactory) {
+TEST(DaleTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./acme"};
+  char* argv[] = {"./dale"};
 
-  string imageName="notEmpty", deconvolver="hogbom", normtype="flatnoise", workdir, imType="psf";
+  string imageName="notEmpty", deconvolver="hogbom", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  Bool computePB=False;
-  Bool restartUI=False;;
+  bool computePB=False;
+  bool restartUI=False;;
   bool interactive = false;
   
   UI(restartUI, argc, argv, interactive, 
-    imageName, 
-    deconvolver, normtype, workdir, imType, 
+    imageName, deconvolver, normtype, imType, 
     pblimit, nterms, facets, psfcutoff, 
     restoringbeam, computePB);
-}*/
-
+}
 
 
 };
