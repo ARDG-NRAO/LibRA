@@ -7,6 +7,7 @@ using namespace std::filesystem;
 using namespace Chip;
 
 namespace test{
+  const path goldDir = current_path() / "gold_standard";
 
 TEST(ChipTest, AppLevelPSF) {
   // Get the test name
@@ -14,14 +15,13 @@ TEST(ChipTest, AppLevelPSF) {
 
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
-  string testdir = testDir.string();
 
   // create test dir 
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.n1.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.n2.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.psf", testDir/"refim_point_wterm_vlad.n1.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.psf", testDir/"refim_point_wterm_vlad.n2.psf", copy_options::recursive);
 
   //Step into test dir 
   std::filesystem::current_path(testDir);
