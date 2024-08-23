@@ -98,27 +98,24 @@ if [ -z "$CASAPATH" ]; then
   if [ -d "$casa_data_dir" ]; then
     echo -e "${LOG_PREFIX} Found casa data directory at $casa_data_dir"
     echo -e "${LOG_PREFIX} Creating symlink data inside $chdir to casa data directory"
-    ln -s "$casa_data_dir" "$chdir/data"
+    if [ -L "$chdir/data" ]; then
+      echo -e "${LOG_PREFIX} Symlink 'data' already exists"
+    else
+      ln -s "$casa_data_dir" "$chdir/data"
+      echo -e "${LOG_PREFIX} Symlink 'data' created"
+    fi
   else
     echo -e "${WARN_PREFIX} CASAPATH is not set & Casa data directory does not exist"
     exit 1
   fi
 else
+  echo -e "${LOG_PREFIX} CASAPATH is set to: $CASAPATH"
   if [ ! -d "$CASAPATH" ]; then
-    echo -e "${WARN_PREFIX} CASAPATH does not exist"
+    echo -e "${WARN_PREFIX} CASAPATH directory does not exist"
     exit 1
-  else
-    casa_data_dir="/home/casa/data/trunk"
-    if [ -d "$casa_data_dir" ]; then
-      echo -e "${LOG_PREFIX} Found casa data directory at $casa_data_dir"
-      echo -e "${LOG_PREFIX} Creating symlink to casa data directory"
-      ln -s "$casa_data_dir" "$chdir/data"
-    else
-      echo -e "${WARN_PREFIX} casa data directory does not exist"
-      exit 1
-    fi
   fi
 fi
+
 
 # Check if slurm_fillcf.py exists
 PYTHON_FILE_PATH="$chdir/slurm_fillcf.py"
@@ -220,4 +217,5 @@ EOF
 fi
 
 # Submit the job
-sbatch submit_sbatch.sh
+job_id=$(sbatch submit_sbatch.sh | awk '{print $NF}')
+echo -e "${LOG_PREFIX} Job submitted with ID: $job_id"
