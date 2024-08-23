@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   Bool deepCopy=0;
   Bool restartUI=False;
 
- RENTER:// UI re-entry point.
+ REENTER:// UI re-entry point.
   //
   //---------------------------------------------------
   //
@@ -95,10 +95,11 @@ int main(int argc, char **argv)
     try
       {
 	MSNBuf=OutMSBuf=fieldStr=timeStr=spwStr=baselineStr=
-	  uvdistStr=taqlStr=scanStr=arrayStr=polnStr=stateObsModeStr=observationStr="";
-	deepCopy=0;
-	fieldStr=spwStr="*";
+	  uvdistStr=taqlStr=scanStr=arrayStr=polnStr=
+	  stateObsModeStr=observationStr="";
 	fieldStr=spwStr="";
+	deepCopy=0;
+
         bool interactive = true;
 
 	UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, deepCopy,
@@ -136,5 +137,6 @@ int main(int argc, char **argv)
 
   showTableCache();
   //if (restartUI) 
-  restartUI=True;RestartUI(RENTER);
+  //restartUI=True;
+  //RestartUI(REENTER);
 }
