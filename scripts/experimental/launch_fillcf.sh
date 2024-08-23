@@ -4,6 +4,10 @@
 nprocs=40
 chdir=""
 
+# Log prefix colors
+LOG_PREFIX="\e[32m[LOG]\e[0m"
+WARN_PREFIX="\e[33m[WARN]\e[0m"
+
 # Parse command-line options
 while getopts ":n:w:c:E:C:p:h" opt; do
   case ${opt} in
@@ -23,7 +27,7 @@ while getopts ":n:w:c:E:C:p:h" opt; do
       CASAPATH=$OPTARG
       ;;
     h )
-      echo "Usage: $0 
+      echo -e "Usage: $0 
              [-n nprocs]
              [-w chdir]
              [-c cfcache_dir]
@@ -35,11 +39,11 @@ while getopts ":n:w:c:E:C:p:h" opt; do
       exit 0
       ;;
     \? )
-      echo "Invalid option: $OPTARG" 1>&2
+      echo -e "${WARN_PREFIX} Invalid option: $OPTARG" 1>&2
       exit 1
       ;;
     : )
-      echo "Invalid option: $OPTARG requires an argument" 1>&2
+      echo -e "${WARN_PREFIX} Invalid option: $OPTARG requires an argument" 1>&2
       exit 1
       ;;
   esac
@@ -55,80 +59,80 @@ export CASAPATH
 
 # Check if paths exist
 if [ ! -d "$cfcache_dir" ]; then
-  echo "cfcache_dir does not exist"
+  echo -e "${WARN_PREFIX} cfcache_dir does not exist"
   exit 1
 else
-  echo "cfcache_dir is : $cfcache_dir"
+  echo -e "${LOG_PREFIX} cfcache_dir is: $cfcache_dir"
 fi
 
-# check is chdir exists else make it before creating logs
+# Check if chdir exists else make it before creating logs
 if [ ! -d "$chdir" ]; then
-  echo "chdir does not exist making it"
+  echo -e "${WARN_PREFIX} chdir does not exist, creating it"
   mkdir -p $chdir
 else
-  echo "The working directory is set to: $chdir"
+  echo -e "${LOG_PREFIX} The working directory is set to: $chdir"
 fi
 
-# Check is a directory called logs exists inside chdir if not create it
+# Check if a directory called logs exists inside chdir, if not create it
 if [ ! -d "$chdir/logs" ]; then
-  echo "logs directory does not exist inside chdir"
-  echo "Creating logs directory: $chdir/logs "
+  echo -e "${WARN_PREFIX} logs directory does not exist inside chdir"
+  echo -e "${LOG_PREFIX} Creating logs directory: $chdir/logs"
   mkdir -p $chdir/logs
 else
-  echo "logs directory exists and logs will be written to: $chdir/logs"
+  echo -e "${LOG_PREFIX} logs directory exists and logs will be written to: $chdir/logs"
 fi
 
-# Check the exodus bundle file is not present then exit
+# Check if the exodus bundle file is not present, then exit
 if [ ! -f "$coyote_app" ]; then
-  echo "coyote_app does not exist"
+  echo -e "${WARN_PREFIX} coyote_app does not exist"
   exit 1
 else
-  echo "coyote_app PATH is : $coyote_app"
+  echo -e "${LOG_PREFIX} coyote_app PATH is: $coyote_app"
 fi
 
-# Check if CASAPATH was set then check if it exists
+# Check if CASAPATH was set, then check if it exists
 if [ -z "$CASAPATH" ]; then
-  echo "CASAPATH is not set"
-  echo "Checking for /home/casa/data/trunk"
+  echo -e "${WARN_PREFIX} CASAPATH is not set"
+  echo -e "${LOG_PREFIX} Checking for /home/casa/data/trunk"
   casa_data_dir="/home/casa/data/trunk"
   if [ -d "$casa_data_dir" ]; then
-    echo "Found casa data directory at $casa_data_dir"
-    echo "Creating symlink data inside $chdir to casa data directory"
+    echo -e "${LOG_PREFIX} Found casa data directory at $casa_data_dir"
+    echo -e "${LOG_PREFIX} Creating symlink data inside $chdir to casa data directory"
     ln -s "$casa_data_dir" "$chdir/data"
   else
-    echo "CASAPATH is not set & Casa data directory does not exist"
+    echo -e "${WARN_PREFIX} CASAPATH is not set & Casa data directory does not exist"
     exit 1
   fi
 else
   if [ ! -d "$CASAPATH" ]; then
-    echo "CASAPATH does not exist"
+    echo -e "${WARN_PREFIX} CASAPATH does not exist"
     exit 1
   else
     casa_data_dir="/home/casa/data/trunk"
     if [ -d "$casa_data_dir" ]; then
-      echo "Found casa data directory at $casa_data_dir"
-      echo "Creating symlink to casa data directory"
+      echo -e "${LOG_PREFIX} Found casa data directory at $casa_data_dir"
+      echo -e "${LOG_PREFIX} Creating symlink to casa data directory"
       ln -s "$casa_data_dir" "$chdir/data"
     else
-      echo "casa data directory does not exist"
+      echo -e "${WARN_PREFIX} casa data directory does not exist"
       exit 1
     fi
   fi
 fi
 
-
-
-# check if slurm_fillcf.py exists
+# Check if slurm_fillcf.py exists
 PYTHON_FILE_PATH="$chdir/slurm_fillcf.py"
 if [ ! -f $PYTHON_FILE_PATH ]; then
-  echo "slurm_fillcf.py does not exist and will be created"
+  echo -e "${LOG_PREFIX} slurm_fillcf.py does not exist and will be created"
   create_python_file="True"
 fi
+
 # Write out submit_sbatch.sh
-# check if submit_sbatch.sh exists warn that it will be overwritten
+# Check if submit_sbatch.sh exists, warn that it will be overwritten
 if [ -f "$chdir/submit_sbatch.sh" ]; then
-  echo "submit_sbatch.sh exists and will be overwritten"
+  echo -e "${WARN_PREFIX} submit_sbatch.sh exists and will be overwritten"
 fi
+
 cat <<EOF > submit_sbatch.sh
 #!/bin/bash
 #SBATCH --export=ALL
@@ -150,8 +154,8 @@ python3 ${PYTHON_FILE_PATH} --cfcache_dir ${cfcache_dir} --nprocs ${nprocs} --co
 EOF
 
 if [ "$create_python_file" == "True" ]; then
-  echo "Creating python file"
-  # write out the python file
+  echo -e "${LOG_PREFIX} Creating python file"
+  # Write out the python file
   cat <<EOF > ${PYTHON_FILE_PATH}
   import argparse
   import glob
@@ -210,11 +214,10 @@ if [ "$create_python_file" == "True" ]; then
       # Get the task_id
       task_id = int(os.getenv('SLURM_ARRAY_TASK_ID', 'default'))
 
-
       # Distribute tasks among processes
       distribute_tasks(args.nprocs, task_id, cfs, cfcache_dir=args.cfcache_dir, coyote_app=args.coyote_app)
 EOF
-fi  
-# Submit the job
+fi
 
+# Submit the job
 sbatch submit_sbatch.sh
