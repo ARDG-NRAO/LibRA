@@ -9,7 +9,7 @@ LOG_PREFIX="\e[32m[LOG]\e[0m"
 WARN_PREFIX="\e[33m[WARN]\e[0m"
 
 # Parse command-line options
-while getopts ":n:w:c:E:C:p:h" opt; do
+while getopts ":n:w:c:E:C:h" opt; do
   case ${opt} in
     n )
       nprocs=$OPTARG
@@ -57,64 +57,97 @@ export cfcache_dir
 export coyote_app
 export CASAPATH
 
-# Check if paths exist
-if [ ! -d "$cfcache_dir" ]; then
-  echo -e "${WARN_PREFIX} cfcache_dir does not exist"
-  exit 1
-else
-  echo -e "${LOG_PREFIX} cfcache_dir is: $cfcache_dir"
-fi
+# Function to check if a directory exists
+check_directory() {
+  local dir=$1
+  local log_prefix=$2
 
-# Check if chdir exists else make it before creating logs
-if [ ! -d "$chdir" ]; then
-  echo -e "${WARN_PREFIX} chdir does not exist, creating it"
-  mkdir -p $chdir
-else
-  echo -e "${LOG_PREFIX} The working directory is set to: $chdir"
-fi
+  if [ ! -d "$dir" ]; then
+    echo -e "${WARN_PREFIX} $dir does not exist"
+    exit 1
+  else
+    echo -e "${log_prefix} $dir is: $dir"
+  fi
+}
 
-# Check if a directory called logs exists inside chdir, if not create it
-if [ ! -d "$chdir/logs" ]; then
-  echo -e "${WARN_PREFIX} logs directory does not exist inside chdir"
-  echo -e "${LOG_PREFIX} Creating logs directory: $chdir/logs"
-  mkdir -p $chdir/logs
-else
-  echo -e "${LOG_PREFIX} logs directory exists and logs will be written to: $chdir/logs"
-fi
+# Function to create a directory if it doesn't exist
+create_directory() {
+  local dir=$1
+  local log_prefix=$2
 
-# Check if the exodus bundle file is not present, then exit
-if [ ! -f "$coyote_app" ]; then
-  echo -e "${WARN_PREFIX} coyote_app does not exist"
-  exit 1
-else
-  echo -e "${LOG_PREFIX} coyote_app PATH is: $coyote_app"
-fi
+  if [ ! -d "$dir" ]; then
+    echo -e "${WARN_PREFIX} $dir does not exist, creating it"
+    mkdir -p "$dir"
+  else
+    echo -e "${log_prefix} The directory $dir already exists"
+  fi
+}
 
-# Check if CASAPATH was set, then check if it exists
-if [ -z "$CASAPATH" ]; then
-  echo -e "${WARN_PREFIX} CASAPATH is not set"
-  echo -e "${LOG_PREFIX} Checking for /home/casa/data/trunk"
-  casa_data_dir="/home/casa/data/trunk"
-  if [ -d "$casa_data_dir" ]; then
-    echo -e "${LOG_PREFIX} Found casa data directory at $casa_data_dir"
-    echo -e "${LOG_PREFIX} Creating symlink data inside $chdir to casa data directory"
-    if [ -L "$chdir/data" ]; then
-      echo -e "${LOG_PREFIX} Symlink 'data' already exists"
+# Function to create the logs directory
+create_logs_directory() {
+  local dir=$1
+  local log_prefix=$2
+
+  if [ ! -d "$dir/logs" ]; then
+    echo -e "${WARN_PREFIX} logs directory does not exist inside $dir"
+    echo -e "${log_prefix} Creating logs directory: $dir/logs"
+    mkdir -p "$dir/logs"
+  else
+    echo -e "${log_prefix} logs directory exists and logs will be written to: $dir/logs"
+  fi
+}
+
+# Function to check if the exodus bundle file exists
+check_coyote_app() {
+  local app=$1
+  local log_prefix=$2
+
+  if [ ! -f "$app" ]; then
+    echo -e "${WARN_PREFIX} coyote_app does not exist"
+    exit 1
+  else
+    echo -e "${log_prefix} coyote_app PATH is: $app"
+  fi
+}
+
+# Function to check if CASAPATH is set and exists
+check_casapath() {
+  local casapath=$1
+  local chdir=$2
+  local log_prefix=$3
+
+  if [ -z "$casapath" ]; then
+    echo -e "${WARN_PREFIX} CASAPATH is not set"
+    echo -e "${log_prefix} Checking for /home/casa/data/trunk"
+    casa_data_dir="/home/casa/data/trunk"
+    if [ -d "$casa_data_dir" ]; then
+      echo -e "${log_prefix} Found casa data directory at $casa_data_dir"
+      echo -e "${log_prefix} Creating symlink data inside $chdir to casa data directory"
+      if [ -L "$chdir/data" ]; then
+        echo -e "${log_prefix} Symlink 'data' already exists"
+      else
+        ln -s "$casa_data_dir" "$chdir/data"
+        echo -e "${log_prefix} Symlink 'data' created"
+      fi
     else
-      ln -s "$casa_data_dir" "$chdir/data"
-      echo -e "${LOG_PREFIX} Symlink 'data' created"
+      echo -e "${WARN_PREFIX} CASAPATH is not set & Casa data directory does not exist"
+      exit 1
     fi
   else
-    echo -e "${WARN_PREFIX} CASAPATH is not set & Casa data directory does not exist"
-    exit 1
+    echo -e "${log_prefix} CASAPATH is set to: $casapath"
+    if [ ! -d "$casapath" ]; then
+      echo -e "${WARN_PREFIX} CASAPATH directory does not exist"
+      exit 1
+    fi
   fi
-else
-  echo -e "${LOG_PREFIX} CASAPATH is set to: $CASAPATH"
-  if [ ! -d "$CASAPATH" ]; then
-    echo -e "${WARN_PREFIX} CASAPATH directory does not exist"
-    exit 1
-  fi
-fi
+}
+
+# Call the functions
+check_directory "$cfcache_dir" "$LOG_PREFIX"
+create_directory "$chdir" "$LOG_PREFIX"
+create_logs_directory "$chdir" "$LOG_PREFIX"
+check_coyote_app "$coyote_app" "$LOG_PREFIX"
+check_casapath "$CASAPATH" "$chdir" "$LOG_PREFIX"
 
 
 # Check if slurm_fillcf.py exists
