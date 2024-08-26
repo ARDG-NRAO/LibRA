@@ -194,32 +194,29 @@ if create_python_file:
         f.write("""import argparse
 import glob
 import os
+import sys
 import subprocess
-import logging
-
-logger = logging.getLogger(__name__)
 
 def check_path(path, path_name):
     if not os.path.exists(path):
         raise FileNotFoundError(f"The {path} does not exist. Please provide a valid path for {path_name}")
 
 def worker(cfs, start, end, cfcache_dir, coyote_app):
-    pid = os.getenv('SLURM_ARRAY_TASK_ID')
-    if pid is None:
-        logger.error("SLURM_ARRAY_TASK_ID is not set")
-        pid = 'default'
+    pid = os.getenv('SLURM_ARRAY_TASK_ID', 'default')
     with open(f'logs/{pid}.txt', 'w') as f:
-        f.write(f"Starting index: {start}\\n")
-        f.write(f"Ending index: {end-1}\\n")
-        f.write(f"Number of cfs: {len(cfs[start:end])}\\n")
+        f.write(f"Starting index: {start} \n")
+        f.write(f"Ending index: {end-1} \n")
+        f.write(f"Number of cfs: {len(cfs[start:end])} \n")
         for cf in cfs:
-            f.write(cf + '\\n')
+            f.write(cf + '\n')
+    f.close()
     command = [f'{coyote_app}', 'help=noprompt', 'mode=fillcf', f'cfcache={cfcache_dir}', f'cflist={", ".join(cfs)}']
-    logger.info("Running command: " + " ".join(command))
+    print("Running command:", " ".join(command))
     subprocess.run(command)
 
 def distribute_tasks(n_processes, task_id, cfs, cfcache_dir, coyote_app):
     # Distribute tasks among processes
+    print("Number of cfs:", len(cfs))
     base, remainder = divmod(len(cfs), n_processes)
     quantities = [base + 1 if i < remainder else base for i in range(n_processes)]
     # Determine start and end indices for this task
@@ -235,12 +232,19 @@ if __name__ == '__main__':
     parser.add_argument('--coyote_app', required=True, help='Path to coyote_app binary')
     args = parser.parse_args()
 
-    cfs = glob.glob(os.path.join(args.cfcache_dir, '*.cf'))
+    cfs = sorted([os.path.basename(f) for f in glob.glob(os.path.join(args.cfcache_dir, 'CFS*')) if os.path.isdir(f)])
     task_id = os.getenv('SLURM_ARRAY_TASK_ID')
     if task_id is None:
-        logger.error("SLURM_ARRAY_TASK_ID is not set")
+        print("SLURM_ARRAY_TASK_ID is not set")
         task_id = 0
     else:
+        print("SLURM_ARRAY_TASK_ID is set to:", task_id)
+        print("Number of cfs:", len(cfs))
+        print("Number of processes:", args.nprocs)
+        print("Number of cfs per process:", len(cfs) // args.nprocs)
+        print("Using binary:", args.coyote_app)
+        print("Using cfcache directory:", args.cfcache_dir)
+        print("Running task:", task_id)
         task_id = int(task_id)
 
     distribute_tasks(args.nprocs, task_id, cfs, args.cfcache_dir, args.coyote_app)
