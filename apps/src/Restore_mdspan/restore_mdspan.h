@@ -23,26 +23,28 @@
 //#
 //# $Id$
 
-#ifndef RESTORE_FUNC_H
-#define RESTORE_FUNC_H
+#ifndef RESTORE_MDSPAN_FUNC_H
+#define RESTORE_MDSPAN_FUNC_H
 
 
 #include <synthesis/ImagerObjects/SDAlgorithmBase.h>
 #include <synthesis/ImagerObjects/SynthesisUtilMethods.h>
 #include <casacore/scimath/Mathematics/FFTServer.h>
 
+#include <libracore/imageInterface.h>
 
 using namespace casa;
 using namespace casacore;
+using namespace libracore;
 
 
 // Convert String to Quantity
-/*std::string stringToQuantity(String instr, Quantity& qa)
+std::string stringToQuantity(String instr, Quantity& qa)
 {
   
   if ( Quantity::read( qa, instr ) ) { return std::string(""); }
   else  { return std::string("Error in converting " + instr + " to a Quantity \n"); }
-}*/
+}
 
 /*
 
@@ -67,34 +69,26 @@ this is the final image (unit: Jy/beam, where beam refers to the clean beam)
 */
 
 template <typename T>
-void Restore(std::vector<std::vector<T>>& model, 
-  std::vector<std::vector<T>>& residual,
-  std::vector<std::vector<T>>& image,
+void Restore_mdspan(col_major_mdspan<T> model, 
+  /*col_major_mdspan<T> psf,*/ 
+  col_major_mdspan<T> residual,
+  /*col_major_mdspan<T> mask,*/
+  col_major_mdspan<T> image,
   size_t size_x, size_t size_y, 
   double refi, double refj, double inci, double incj,
   double majaxis, double minaxis, double pa,
-  bool pbcor = false, std::vector<std::vector<T>>& pb = NULL, std::vector<std::vector<T>>& image_pbcor=NULL)
+  /*int nSubChans = 1, int chanid = 0,*/
+  /*std::string majaxis="", std::string minaxis="", std::string pa="",*/
+  bool pbcor = false, col_major_mdspan<T> pb = NULL, col_major_mdspan<T> image_pbcor=NULL)
 {
-  LogIO os( LogOrigin("Restore","Restore", WHERE) );
+  LogIO os( LogOrigin("Restore_mdspan","Restore_mdspan", WHERE) );
   
   Matrix<T> dirtyMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      dirtyMat(i,j) = residual[i][j];
-    }
-  }
+  mdspan2casamatrix<T>(residual, dirtyMat);
   
   
   Matrix<T> modelMat(size_x, size_y, 0);  
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      modelMat(i,j) = model[i][j];
-    }
-  }
+  mdspan2casamatrix<T>(model, modelMat);
   
 
   // perform "restore"
@@ -245,7 +239,7 @@ void Restore(std::vector<std::vector<T>>& model,
       //if( (image(term)->getDefaultMask()).matches("mask0") ) removeMask( image(term) );
       //copyMask(residual(term),image(term));
 
-      if(pb.empty())
+      if(pb.extent(0) == 0 && pb.extent(1) == 0)
       {
         // Cannot pbcor without pb
         os << LogIO::WARN << "Cannot pbcor without pb" << LogIO::POST;
@@ -253,13 +247,7 @@ void Restore(std::vector<std::vector<T>>& model,
       }
 
       Matrix<T> pbMat(size_x, size_y, 0); 
-      for (int j = 0; j < size_y; j++)
-      {
-        for (int i = 0; i < size_x; i++)
-        {
-          pbMat(i,j) = pb[i][j];
-        }
-      }
+      mdspan2casamatrix<T>(pb, pbMat);
       
       Matrix<T> image_pbcorMat(size_x, size_y, 0);
 
@@ -285,24 +273,11 @@ void Restore(std::vector<std::vector<T>>& model,
       }
 
       // send back STL image_pbcor
-      for (int j = 0; j < size_y; j++)
-      {
-        for (int i = 0; i < size_x; i++)
-        {
-          image_pbcor[i][j] = image_pbcorMat(i,j);
-        }
-      }
-
+      casamatrix2mdspan<T>(image_pbcorMat, image_pbcor);
     }
 
   // send back STL retored image
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      image[i][j] = imageMat(i,j);
-    }
-  }
+  casamatrix2mdspan<T>(imageMat, image);
  
 }
 
@@ -310,43 +285,26 @@ void Restore(std::vector<std::vector<T>>& model,
 
 
 template <typename T>
-void Restore_psf(std::vector<std::vector<T>>& model, 
-  std::vector<std::vector<T>>& psf, 
-  std::vector<std::vector<T>>& residual,
-  std::vector<std::vector<T>>& image,
+void Restore_mdspan_psf(col_major_mdspan<T> model, 
+  col_major_mdspan<T> psf, 
+  col_major_mdspan<T> residual,
+  col_major_mdspan<T> image,
   size_t size_x, size_t size_y, 
   double refi, double refj, double inci, double incj,
-  bool pbcor = false, std::vector<std::vector<T>>& pb = NULL, std::vector<std::vector<T>>& image_pbcor=NULL,
+  /*int nSubChans = 1, int chanid = 0,*/
+  bool pbcor = false, col_major_mdspan<T> pb = NULL, col_major_mdspan<T> image_pbcor=NULL,
   double psfcutoff = 0.35)
 {
   LogIO os( LogOrigin("Restore","Restore", WHERE) );
   
   Matrix<T> psfMat(size_x, size_y, 0);  
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      psfMat(i,j) = psf[i][j];
-    }
-  }
+  mdspan2casamatrix<T>(psf, psfMat);
 
   Matrix<T> dirtyMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      dirtyMat(i,j) = residual[i][j];
-    }
-  }
+  mdspan2casamatrix<T>(residual, dirtyMat);
     
   Matrix<T> modelMat(size_x, size_y, 0);  
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      modelMat(i,j) = model[i][j];
-    }
-  }
+  mdspan2casamatrix<T>(model, modelMat);
   
 
 
@@ -393,7 +351,7 @@ void Restore_psf(std::vector<std::vector<T>>& model,
   cout << "degree " << C::degree << endl;*/
 
 
-  Restore(model, residual, image,
+  Restore_mdspan(model, residual, image,
   size_x, size_y, 
   refi, refj, inci, incj,
   majaxis, minaxis, pa,

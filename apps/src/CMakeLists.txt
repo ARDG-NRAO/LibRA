@@ -23,9 +23,9 @@ foreach(APP_DIR IN LISTS APP_LIST)
    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/)
    string(TOLOWER ${APP_DIR} APP_NAME)
 
+
    file(GLOB APP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/*.h")
    install(FILES ${APP_HEADERS} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
-
 
    # build app CL interface binary
    set(BUILD_CLWRAPPER ON)
@@ -48,9 +48,18 @@ foreach(APP_DIR IN LISTS APP_LIST)
    if(BUILD_PYWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_py_interface.cc")
      pybind11_add_module(${APP_NAME}2py "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_py_interface.cc")
      target_link_libraries(${APP_NAME}2py PRIVATE ${APP_LINK_LIBRARIES} libra)
+     #target_link_libraries(${APP_NAME}2py PRIVATE libra)
      install(TARGETS ${APP_NAME}2py
      	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
    endif()
 endforeach()
+
+# build app utilities python wrapper
+if(BUILD_PYWRAPPER)
+  pybind11_add_module(utilities2py "${CMAKE_CURRENT_SOURCE_DIR}/Utilities/utilities_py_interface.cc")
+  target_link_libraries(utilities2py PRIVATE ${APP_LINK_LIBRARIES})
+  install(TARGETS utilities2py
+  LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/examples)

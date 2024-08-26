@@ -114,7 +114,8 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner Dale Chip MSSplit SubMS TableInfo Asp Asp_mdspan Restore)
+set(APP_LIST Coyote Hummbee RoadRunner Dale Chip MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan)
+
 foreach(APP IN LISTS APP_LIST)
    set(APP_DIR ${APP})
    string(TOLOWER ${APP_DIR} APP_NAME)

@@ -37,7 +37,7 @@
 #include <casacore/casa/Quanta/Quantum.h>
 #include <casacore/measures/Measures/MDirection.h>
 
-#include <Restore/restore.h>
+#include <Restore_mdspan/restore_mdspan.h>
 
 
 using namespace casa;
@@ -151,9 +151,15 @@ void casacore_restore(std::string& imageName, bool& doPBCorr)
     minaxis = 4.67228e-06;
     pa = 2.76764;*/
 
+    /*cout << "nx " << nx << " ny " << ny << endl;
+    cout << "refi " << refi << " refj " << refj << endl;
+    cout << "inci " << inci << " incj " << incj << endl;
+    cout << "majaxis " << majaxis << " minaxis " << minaxis << endl;
+    cout << "pa " << pa << endl;*/
+
     //////////interface to the raw restore function////////
    
-    Restore<float>(model, residual,
+    Restore_mdspan<float>(model, residual,
       image,
       nx, ny, 
       refi, refj, inci, incj,
@@ -249,8 +255,9 @@ void casacore_restore_psf(std::string& imageName, bool& doPBCorr)
     minaxis = 4.67228e-06;
     pa = 2.76764;*/
 
+
     //////////interface to the raw restore_psf function////////
-    Restore_psf<float>(model, psf, residual,
+    Restore_mdspan_psf<float>(model, psf, residual,
       image,
       nx, ny, 
       refi, refj, inci, incj,

@@ -7,6 +7,7 @@ using namespace std::filesystem;
 using namespace Dale;
 
 namespace test{
+  const path goldDir = current_path() / "gold_standard";
 
 TEST(DaleTest, AppLevelPSF) {
   // Get the test name
@@ -20,9 +21,9 @@ TEST(DaleTest, AppLevelPSF) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.psf", testdir + "/refim_point_wterm_vlad.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.weight", testdir + "/refim_point_wterm_vlad.weight", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad.sumwt", testdir + "/refim_point_wterm_vlad.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.psf", testDir/"refim_point_wterm_vlad.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.weight", testDir/"refim_point_wterm_vlad.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.sumwt", testDir/"refim_point_wterm_vlad.sumwt", copy_options::recursive);
 
   //Step into test dir 
   std::filesystem::current_path(testDir);
@@ -77,11 +78,11 @@ TEST(DaleTest, AppLevelResidual) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.psf", testdir + "/refim_point_wterm_vlad_step2.psf", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.weight", testdir + "/refim_point_wterm_vlad_step2.weight", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.sumwt", testdir + "/refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.pb", testdir + "/refim_point_wterm_vlad_step2.pb", copy_options::recursive);
-  std::filesystem::copy(current_path()/"gold_standard/refim_point_wterm_vlad_step2.residual", testdir + "/refim_point_wterm_vlad_step2.residual", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.psf", testDir/"refim_point_wterm_vlad_step2.psf", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.weight", testDir/"refim_point_wterm_vlad_step2.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.sumwt", testDir/"refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.pb", testDir/"refim_point_wterm_vlad_step2.pb", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.residual", testDir/"refim_point_wterm_vlad_step2.residual", copy_options::recursive);
   
   //Step into test dir 
   std::filesystem::current_path(testDir);
