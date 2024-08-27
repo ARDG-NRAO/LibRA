@@ -128,7 +128,7 @@ elif checkfile == "file":
 # Check if CASAPATH is set and exists
 if casapath is None:
     logger.warning("CASAPATH is not set")
-    logger.warning("Setting CASAPATH to {chdir}/data")
+    logger.warning(f"Setting CASAPATH to {chdir}/data")
     casapath = os.path.join(chdir, "data")
 direxists = check_path(casapath)
 if direxists == "symlink":
@@ -168,23 +168,26 @@ else:
 submit_sbatch_path = os.path.join(chdir, "submit_sbatch.sh")
 if os.path.isfile(submit_sbatch_path):
     logger.warning("submit_sbatch.sh exists and will be overwritten")
-
+print("submit_sbatch_path:", submit_sbatch_path)
+print("chdir:", chdir)
+print("start:", start)
+print("end:", end)
 with open(submit_sbatch_path, "w") as f:
     f.write(f'''#!/bin/bash
-    #SBATCH --export=ALL
-    #SBATCH --array={startidx}-{endidx}
-    #SBATCH --chdir={chdir}
-    #SBATCH --time=1-0:0:0
-    #SBATCH --mem=2G
-    #SBATCH --nodes=1
-    #SBATCH --ntasks-per-node=1
-    #SBATCH --output=logs/slurm_%A_%a.out
-    #SBATCH --error=logs/slurm_%A_%a.err
-    #SBATCH --job-name=fillcf
-    #SBATCH --account={username}
-    #SBATCH --mail-user={email}
-    #SBATCH --mail-type=FAIL
-    python3 {python_file_path} --cfcache_dir {cfcache_dir} --nprocs {nprocs} --coyote_app {coyote_app}
+#SBATCH --export=ALL
+#SBATCH --array={start}-{end}
+#SBATCH --chdir={chdir}
+#SBATCH --time=1-0:0:0
+#SBATCH --mem=2G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --output=logs/slurm_%A_%a.out
+#SBATCH --error=logs/slurm_%A_%a.err
+#SBATCH --job-name=fillcf
+#SBATCH --account={username}
+#SBATCH --mail-user={email}
+#SBATCH --mail-type=FAIL
+python3 {python_file_path} --cfcache_dir {cfcache_dir} --nprocs {nprocs} --coyote_app {coyote_app}
     ''')
 
 if create_python_file:
@@ -203,12 +206,14 @@ def check_path(path, path_name):
 
 def worker(cfs, start, end, cfcache_dir, coyote_app):
     pid = os.getenv('SLURM_ARRAY_TASK_ID', 'default')
+    print("Current working directory:", os.getcwd())
+    print("SLURM_ARRAY_TASK_ID:", pid)
     with open(f'logs/{pid}.txt', 'w') as f:
-        f.write(f"Starting index: {start} \n")
-        f.write(f"Ending index: {end-1} \n")
-        f.write(f"Number of cfs: {len(cfs[start:end])} \n")
+        f.write(f"Starting index: {start} \\n")
+        f.write(f"Ending index: {end-1} \\n")
+        f.write(f"Number of cfs: {len(cfs[start:end])} \\n")
         for cf in cfs:
-            f.write(cf + '\n')
+            f.write(cf + '\\n')
     f.close()
     command = [f'{coyote_app}', 'help=noprompt', 'mode=fillcf', f'cfcache={cfcache_dir}', f'cflist={", ".join(cfs)}']
     print("Running command:", " ".join(command))
@@ -253,8 +258,8 @@ if __name__ == '__main__':
 # Submit the job
 if submit:
     logger.info("Submitting the job")
-    job_id = subprocess.check_output(["sbatch", submit_sbatch_path]).decode("utf-8").split()[-1]
-    logger.info(f"Job submitted with ID: {job_id}")
+    job_id = subprocess.call(["sbatch", submit_sbatch_path])
+    # logger.info(f"Job submitted with ID: {job_id}")
     # slurm_array_task_id = int(job_id.split('.')[0])
     # logger.info(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
     # Cancel the job
