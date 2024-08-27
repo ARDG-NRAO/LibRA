@@ -61,7 +61,6 @@ namespace Acme
 	
 	float threshold = 1e20;
 	if (mim >= threshold)
-		//logio << "Image amplitude is out of range." << LogIO::EXCEPTION;
 		throw(AipsError("Image amplitude is out of range."));
   }
 
@@ -86,7 +85,7 @@ namespace Acme
 	    TableInfo& info = table.tableInfo();
 	    string type = info.type();
 	    if (type != "Image")
-	      logio << imageName + string(" is not an image!") << LogIO::EXCEPTION;
+	    	throw(AipsError(imageName + string(" is not an image!")));
 	  }
 		//
 		// By this place in the program, all user error should be taken
@@ -95,6 +94,10 @@ namespace Acme
 
 		LatticeBase *targetPtr;
 		ImageInterface<Float> *targetImage;
+
+	    if (! imageExists(targetName))
+        	throw(AipsError(string("Image ") + targetName + string(" does not exist.")));
+
 		targetPtr = ImageOpener::openImage (imageName);
 		targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
 
@@ -108,9 +111,9 @@ namespace Acme
 		}
       }
     catch(AipsError& e)
-      {
-	logio << e.what() << LogIO::POST;
-	exit(-1);
-      }
+    {
+		logio << e.what() << LogIO::POST;
+		exit(-1);
+    }
   }
 };
