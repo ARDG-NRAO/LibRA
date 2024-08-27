@@ -37,7 +37,7 @@
 //
 //-------------------------------------------------------------------------
 
-namespace Chip
+namespace Acme
 {
   bool imageExists(const string& imagename)
   {
@@ -99,7 +99,7 @@ namespace Chip
 
 		if (stats=="checkamp")
 		{
-			checkamp = checkImageMax(imageName, *targetImage, logio);
+			checkImageMax(imageName, *targetImage, logio);
 		}
 		else if (stats=="all")
 		{

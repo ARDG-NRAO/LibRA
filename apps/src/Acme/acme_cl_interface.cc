@@ -59,7 +59,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
   {
     int i;
 
-    i=0;i=clgetNSValp("imagename", imageName,i);  
+    i=1;clgetSValp("imagename", imageName,i);  
     i=1;clgetSValp("stats", stats,i);
     clSetOptions("stats",{"checkamp","all"});
     EndCL();
@@ -82,7 +82,10 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  std::string>imageName;
+
+  bool restartUI = false;
+  bool interactive = true;
+  std::string imageName;
   string stats="checkamp";
 
  RENTER:// UI re-entry point.
