@@ -95,8 +95,8 @@ namespace Acme
 		LatticeBase *targetPtr;
 		ImageInterface<Float> *targetImage;
 
-	    if (! imageExists(targetName))
-        	throw(AipsError(string("Image ") + targetName + string(" does not exist.")));
+	    if (! imageExists(imageName))
+        	throw(AipsError(string("Image ") + imageName + string(" does not exist.")));
 
 		targetPtr = ImageOpener::openImage (imageName);
 		targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
