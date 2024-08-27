@@ -31,7 +31,6 @@
  */
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-#include <clgetBaseCode.h>
 
 #include <coyote.h>
 
@@ -96,7 +95,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       i=1;clgetBValp("psterm", psTerm,i); 
       i=1;clgetBValp("conjbeams", conjBeams,i);
       i=1;clgetSValp("muellertype", mType,i);
-      i=1;dbgclgetFValp("pa", pa, i);
+      i=1;cldbggetFValp("pa", pa, i);
       i=1;clgetFValp("dpa", dpa, i);
       
       i=1;clgetFullValp("field", fieldStr);

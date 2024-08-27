@@ -31,7 +31,6 @@
 //
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-
 #ifdef CONTACT_USE_MPI
 # include <mpi.h>
 #endif

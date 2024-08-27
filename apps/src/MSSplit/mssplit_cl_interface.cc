@@ -96,8 +96,8 @@ int main(int argc, char **argv)
       {
 	MSNBuf=OutMSBuf=fieldStr=timeStr=spwStr=baselineStr=
 	  uvdistStr=taqlStr=scanStr=arrayStr=polnStr=
-	  stateObsModeStr=observationStr="";
-	fieldStr=spwStr="";
+	  stateObsModeStr=observationStr=fieldStr="";
+	spwStr="*";
 	deepCopy=0;
 
         bool interactive = true;
