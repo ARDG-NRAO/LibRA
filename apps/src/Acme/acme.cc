@@ -61,7 +61,8 @@ namespace Acme
 	
 	float threshold = 1e20;
 	if (mim >= threshold)
-		logio << "Image amplitude is out of range." << LogIO::EXCEPTION;
+		//logio << "Image amplitude is out of range." << LogIO::EXCEPTION;
+		throw(AipsError("Image amplitude is out of range."));
   }
 
 
@@ -108,7 +109,8 @@ namespace Acme
       }
     catch(AipsError& e)
       {
-	logio << e.what() << LogIO::EXCEPTION;
+	logio << e.what() << LogIO::POST;
+	exit(-1);
       }
   }
 };
