@@ -475,8 +475,8 @@ namespace casa{
 				    // Intialize the target buffer for the (infrequent) case when it is larger than the
 				    // source buffer.
 				    //
-				    for(uint x=0; x < cfArrayShape.m_extent[iGrp][0]; x++)
-				      for(uint y=0; y < cfArrayShape.m_extent[iGrp][1]; y++)
+				    for(int x=0; x < cfArrayShape.m_extent[iGrp][0]; x++)
+				      for(int y=0; y < cfArrayShape.m_extent[iGrp][1]; y++)
 					(*rwDCFArray)(x,y,tt[0],tt[1],iGrp)=0.0;
 				  }
 				{

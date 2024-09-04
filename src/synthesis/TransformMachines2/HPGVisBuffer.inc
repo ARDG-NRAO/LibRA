@@ -61,17 +61,17 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
   //  hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
 
   //  std::array<std::complex<hpg::visibility_fp>, N> vis;
-  std::array<std::complex<HPG_VIS_FP_TYPE>, N> vis;
-  std::array<hpg::vis_weight_fp, N> wt;
+  std::array<std::complex<hpg::vis_fp_t>, N> vis;
+  std::array<hpg::vis_fp_t, N> wt;
 
   const casacore::Matrix<double> UVW=casaVBS.uvw_p;
   //cerr << "SHAPE UVW " << UVW.shape() << endl;
-  std::array<hpg::vis_uvw_fp, 3> hpgUVW;
-  hpg::vis_phase_fp              dphaseHPG;
+  std::array<hpg::uvw_fp_t, 3> hpgUVW;
+  hpg::vis_fp_t              dphaseHPG;
   unsigned                       grid_cube=0; // For now, grid on the same plane.
-  hpg::cf_phase_gradient_t       cf_phase_gradient;
+  hpg::cf_phase_gradient_t      cf_phase_gradient;
   // SB: hpg::vis_cf_index_t vis_cf_index = {0,cfFreqNdx}; // For fndx A-only
-  std::array<unsigned, 2>        cf_index;
+  std::array<int, 2>        cf_index;
 
   assert(muellerVals.nelements() == N);
 
@@ -91,6 +91,7 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
   //
   // extents[0:5] correspond to nBaselineType, nTime/PA, nW, nFreq, nPol
   std::array<unsigned, 5> cfsi_extents = cfsi.cell_extents();
+  //hpg::cf_index_t cfsi_extents = cfsi.cell_extents();
   //  cerr << "cfsi: "; for(auto i:cfsi_extents) cerr << i << " "; cerr << endl;
 
   //  cerr << "HPGVB.Bucket: " << hpgVBBucket_p.totalUnits() << " " << hpgVBBucket_p.counter() << endl;
@@ -183,7 +184,7 @@ unsigned mRow=0;
 			    }
 			} // End poln-loop
 
-		      hpg::vis_frequency_fp frequency=freq[ichan];
+		      hpg::freq_fp_t frequency=freq[ichan];
 		      if (casaVBS.ftmType_p==casa::refim::FTMachine::SNRPSF)
 			{
 			  // Grid just the pure weights
@@ -216,8 +217,8 @@ unsigned mRow=0;
 			}
 		      //hpg::vis_frequency_fp frequency=casaVB.getFrequencies(irow)(ichan);
 		      grid_cube=0; // For now, grid on the same plane.
-		      cf_phase_gradient={(hpg::cf_phase_gradient_fp)pointingOffsets[0][0],
-					 (hpg::cf_phase_gradient_fp)pointingOffsets[0][1]};
+		      cf_phase_gradient={(hpg::phase_fp_t)pointingOffsets[0][0],
+					 (hpg::phase_fp_t)pointingOffsets[0][1]};
 				      
 		      // SB: hpg::vis_cf_index_t vis_cf_index = {0,cfFreqNdx}; // For fndx A-only
 
@@ -230,7 +231,9 @@ unsigned mRow=0;
 		      auto& cf_cube_index=full_hpgcf_index[1];
 		      auto& cf_group_index=full_hpgcf_index[2];
 		      
-		      cf_index = {cf_cube_index,cf_group_index};
+		      //cf_index = {cf_cube_index,cf_group_index};
+		      cf_index[0] = cf_cube_index;
+		      cf_index[1] = cf_group_index;
 
 		      hpgVBBucket_p.append(hpg::VisData<N>(vis,wt,frequency,dphaseHPG,hpgUVW,grid_cube,cf_index
 							   ,cf_phase_gradient
@@ -350,8 +353,8 @@ create_vis_data_vector(const casa::VisBuffer2& casaVB,
 	      // cerr << "casaVB.flag.shape: " << casaVB.flag().shape() << endl;
 	      // if (!(casaVB.flag())(r,ch))
 	      {
-		std::array<std::complex<hpg::visibility_fp>, N> vis;
-		std::array<hpg::vis_weight_fp, N> wt;
+		std::array<std::complex<hpg::vis_fp_t>, N> vis;
+		std::array<hpg::vis_fp_t, N> wt;
 		//cerr << "casaVB.flag.shape: " << casaVB.flagCube().shape() << endl;
 		for (unsigned p=0; p<N;p++)
 		  {
@@ -367,15 +370,19 @@ create_vis_data_vector(const casa::VisBuffer2& casaVB,
 		      }
 		  }
 		
-		hpg::vis_frequency_fp    frequency=casaVB.getFrequencies(r)(ch);
-		hpg::vis_phase_fp        phase=dphase;
-		hpg::vis_uvw_t           uvw = {(hpg::vis_uvw_fp)casaVB.uvw()(0,r),
-						(hpg::vis_uvw_fp)casaVB.uvw()(1,r),
-						(hpg::vis_uvw_fp)casaVB.uvw()(2,r)};
-		unsigned                 grid_cube=0; // For now, grid on the same plane.
-		std::array<unsigned, 2>  cf_index=vis_cf_index;
-		hpg::cf_phase_gradient_t cf_phase_gradient={(hpg::cf_phase_gradient_fp)pointingOffsets[0][0],
-							    (hpg::cf_phase_gradient_fp)pointingOffsets[0][1]};
+		hpg::freq_fp_t    frequency=casaVB.getFrequencies(r)(ch);
+		hpg::vis_fp_t     phase=dphase;
+		hpg::vis_uvw_t    uvw = {(hpg::uvw_fp_t)casaVB.uvw()(0,r),
+					(hpg::uvw_fp_t)casaVB.uvw()(1,r),
+					(hpg::uvw_fp_t)casaVB.uvw()(2,r)};
+		unsigned          grid_cube=0; // For now, grid on the same plane.
+
+		// !!!!!!!!!!!! vis_cf_index COMES-IN as array<unsigned...> BUT cf_index from HPG rcgrid BRANCH WANTS array<int....>
+		std::array<int, 2>  cf_index;
+		cf_index[0]=vis_cf_index[0];
+		cf_index[1]=vis_cf_index[1];
+		hpg::cf_phase_gradient_t cf_phase_gradient={(hpg::phase_fp_t)pointingOffsets[0][0],
+							    (hpg::phase_fp_t)pointingOffsets[0][1]};
 		
 		result.push_back(
 				 hpg::VisData<N>(vis,wt,frequency,phase,uvw,grid_cube,cf_index,cf_phase_gradient)
@@ -449,17 +456,17 @@ makeHPGVisBuffer(std::vector<hpg::VisData<N>>& hpgVB,
   //  std::vector<hpg::VisData<N>>
   hpgVB=create_blank_vis_data_vector<N>(nVisPol,nVisChan,nVisRow);
 
-  std::array<std::complex<hpg::visibility_fp>, N> vis;
-  std::array<hpg::vis_weight_fp, N> wt;
+  std::array<std::complex<hpg::vis_fp_t>, N> vis;
+  std::array<hpg::vis_fp_t, N> wt;
 
   const casacore::Matrix<double> UVW=casaVBS.uvw_p;
   //cerr << "SHAPE UVW " << UVW.shape() << endl;
-  std::array<hpg::vis_uvw_fp, 3> hpgUVW;
-  hpg::vis_phase_fp              dphaseHPG;
-  unsigned                       grid_cube=0; // For now, grid on the same plane.
-  hpg::cf_phase_gradient_t       cf_phase_gradient;
+  std::array<hpg::uvw_fp_t, 3> hpgUVW;
+  hpg::vis_fp_t              dphaseHPG;
+  unsigned                   grid_cube=0; // For now, grid on the same plane.
+  hpg::cf_phase_gradient_t   cf_phase_gradient;
   // SB: hpg::vis_cf_index_t vis_cf_index = {0,cfFreqNdx}; // For fndx A-only
-  std::array<unsigned, 2>        cf_index;
+  std::array<hpg::coord_t, 2>        cf_index;
 
   assert(muellerVals.nelements() == N);
 
@@ -479,6 +486,7 @@ makeHPGVisBuffer(std::vector<hpg::VisData<N>>& hpgVB,
   //
   // extents[0:5] correspond to nBaselineType, nTime/PA, nW, nFreq, nPol
   std::array<unsigned, 5> cfsi_extents = cfsi.cell_extents();
+  //hpg::cf_index_t cfsi_extents = cfsi.cell_extents();
   //  cerr << "cfsi: "; for(auto i:cfsi_extents) cerr << i << " "; cerr << endl;
 
   unsigned hpgIRow=0;
@@ -581,7 +589,7 @@ unsigned mRow=0;
 			    }
 			} // End poln-loop
 
-		      hpg::vis_frequency_fp frequency=freq[ichan];
+		      hpg::freq_fp_t frequency=freq[ichan];
 		      if (casaVBS.ftmType_p==casa::refim::FTMachine::SNRPSF)
 			{
 			  // Grid just the pure weights
@@ -614,8 +622,8 @@ unsigned mRow=0;
 			}
 		      //hpg::vis_frequency_fp frequency=casaVB.getFrequencies(irow)(ichan);
 		      grid_cube=0; // For now, grid on the same plane.
-		      cf_phase_gradient={(hpg::cf_phase_gradient_fp)pointingOffsets[0][0],
-					 (hpg::cf_phase_gradient_fp)pointingOffsets[0][1]};
+		      cf_phase_gradient={(hpg::phase_fp_t)pointingOffsets[0][0],
+					 (hpg::phase_fp_t)pointingOffsets[0][1]};
 				      
 		      // SB: hpg::vis_cf_index_t vis_cf_index = {0,cfFreqNdx}; // For fndx A-only
 
@@ -625,10 +633,13 @@ unsigned mRow=0;
 		      // full_hpgcf_index[1] ==> cube : should always be 0
 		      // full_hpgcf_index[2] ==> group : linearized index from (BLType, PA, W, SPW)
 		      std::array<unsigned, 3> full_hpgcf_index=cfsi.cf_index(cfCellNdx);
+		      //hpg::cf_index_t full_hpgcf_index=cfsi.cf_index(cfCellNdx);
 		      auto& cf_cube_index=full_hpgcf_index[1];
 		      auto& cf_group_index=full_hpgcf_index[2];
 		      
-		      cf_index = {cf_cube_index,cf_group_index};
+		      //cf_index = {cf_cube_index,cf_group_index};
+		      cf_index[0] = cf_cube_index;
+		      cf_index[1] = cf_group_index;
 
 		      hpgVB[hpgIRow++] = hpg::VisData<N>(vis,wt,frequency,dphaseHPG,hpgUVW,grid_cube,cf_index
 							 ,cf_phase_gradient

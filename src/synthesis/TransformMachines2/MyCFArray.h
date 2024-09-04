@@ -34,8 +34,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{
     struct MyCFArray final: public hpg::CFArray
   {
-    std::vector<std::array<HPG_ARRAY_INDEX_TYPE, 4>> m_extent;
-    std::vector<std::vector<std::complex<HPG_CF_FP_TYPE>>> m_values;
+    std::vector<std::array<hpg::coord_t, 4>> m_extent;
+    std::vector<std::vector<std::complex<hpg::cf_fp_t>>> m_values;
     unsigned cf_oversampling=0;
     
     MyCFArray(): m_extent(), m_values(), cf_oversampling(0) {};
@@ -88,13 +88,20 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //   return m_extent[i];
     // }
 
-    std::array<HPG_ARRAY_INDEX_TYPE, 4> extents(unsigned i) const 
+    std::array<hpg::coord_t, 4> extents(unsigned i) const 
     {
       return m_extent[i];
     }
 
-    inline std::complex<HPG_CF_FP_TYPE> operator()
-    (HPG_ARRAY_INDEX_TYPE x, HPG_ARRAY_INDEX_TYPE y, HPG_ARRAY_INDEX_TYPE pol, HPG_ARRAY_INDEX_TYPE freq, HPG_ARRAY_INDEX_TYPE i) const 
+    // !!!!!!!!!!! REQUIRED FOR rcgrid HPG BRANCH !!!!!!!!!!!!!!
+    std::array<hpg::coord_t, 4> extents(int i) const 
+    {
+      return m_extent[i];
+    }
+
+    inline std::complex<hpg::cf_fp_t> operator()
+    //(HPG_ARRAY_INDEX_TYPE x, HPG_ARRAY_INDEX_TYPE y, HPG_ARRAY_INDEX_TYPE pol, HPG_ARRAY_INDEX_TYPE freq, HPG_ARRAY_INDEX_TYPE i) const 
+    (hpg::coord_t x, hpg::coord_t y, hpg::coord_t pol, hpg::coord_t freq, hpg::coord_t i) const 
     {
       {
 	auto& pix = m_values[i];

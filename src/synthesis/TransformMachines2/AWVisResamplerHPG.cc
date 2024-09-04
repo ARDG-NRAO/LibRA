@@ -179,8 +179,17 @@ namespace casa{
       //	  cerr << "Mueller index shape: " << mueller_indexes.size() << "X" << HPGNPOL << endl;
       //	  if (hpgDevice=="serial") Device=hpg::Device::Serial;
       
+
+      // !!!!!!!!!! CHANGE OF TYPE FROM COMES-IN TO WHAT THE HPG CODE IN rcgrid BRANCH WANTS for Gridder::create<N> !!!!!!!!!!!!!!
+      std::array<int, 4> grid_size_int;
+      grid_size_int[0]=grid_size[0];
+      grid_size_int[1]=grid_size[1];
+      grid_size_int[2]=grid_size[2];
+      grid_size_int[3]=grid_size[3];
+      
+	
       hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
-						  cfArray_ptr, grid_size, grid_scale, mueller_indexes,
+						  cfArray_ptr, grid_size_int, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);
       if (!hpg::is_value(g))
 	{
@@ -418,10 +427,14 @@ namespace casa{
     }
     Bool dummy;
     assert(hpg::GridValueArray::rank == modelImageGrid.shape().nelements());
-    std::array<unsigned,hpg::GridValueArray::rank> extents={(unsigned)modelImageGrid.shape()[0],
-							    (unsigned)modelImageGrid.shape()[1],
-							    (unsigned)modelImageGrid.shape()[2],
-							    (unsigned)modelImageGrid.shape()[3]};
+    // std::array<unsigned,hpg::GridValueArray::rank> extents={(unsigned)modelImageGrid.shape()[0],
+    // 							    (unsigned)modelImageGrid.shape()[1],
+    // 							    (unsigned)modelImageGrid.shape()[2],
+    // 							    (unsigned)modelImageGrid.shape()[3]};
+    std::array<int,hpg::GridValueArray::rank> extents={(int)modelImageGrid.shape()[0],
+						       (int)modelImageGrid.shape()[1],
+						       (int)modelImageGrid.shape()[2],
+						       (int)modelImageGrid.shape()[3]};
     casacore::Array<casacore::DComplex> tarr=modelImageGrid.get();
     casacore::DComplex *tstor = tarr.getStorage(dummy);
     
@@ -455,7 +468,7 @@ namespace casa{
       log_l << "Finished sending image to the device" << LogIO::POST;
     
     
-    grid_value_fp norm = 1.0;//((grid_value_fp)(shape[0]*shape[1]));
+    grid_scale_fp norm = 1.0;//((grid_value_fp)(shape[0]*shape[1]));
     log_l << "Applying (in-place) FFT on the model image.  Norm = " << norm << LogIO::POST;
     
     // Below is the following sequence of operations on the GPU: shift -> FFT -> shift.

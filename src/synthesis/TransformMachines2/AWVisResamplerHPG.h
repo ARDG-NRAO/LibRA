@@ -268,13 +268,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::tuple<bool, CountedPtr<CFBuffer>>
     initializeHPG(VBStore& vbs, const IPosition& gridShape);
 
-    std::vector<std::complex<HPG_VIS_FP_TYPE>> vis;
+    std::vector<std::complex<hpg::vis_fp_t>> vis;
     std::vector<unsigned> grid_cubes, cf_cubes;
-    std::vector<hpg::vis_weight_fp> weights;
-    std::vector<HPG_FREQ_FP_TYPE> frequencies;
-    std::vector<hpg::cf_phase_gradient_t> cf_phase_screens;
-    std::vector<HPG_PHASE_FP_TYPE> hpgPhases;
-    std::vector<HPG_UVW_FP_TYPE> visUVW;
+    std::vector<hpg::vis_fp_t> weights;
+    std::vector<hpg::freq_fp_t> frequencies;
+    std::vector<hpg::vis_fp_t> cf_phase_screens;
+    std::vector<hpg::vis_fp_t> hpgPhases;
+    std::vector<hpg::uvw_fp_t> visUVW;
     uInt nVBS_p, maxVBList_p;
     Int cachedVBSpw_p;
     std::vector < std::vector<hpg::VisData<HPGNPOL> > > hpgVBList_p;
