@@ -27,7 +27,7 @@ LIST(APPEND CMAKE_PROGRAM_PATH  "/usr/local/cuda/bin" ...)
 # Various repositories and the tags we dependend on
 #
 set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
-set(LIBRA_KOKKOS_GIT_TAG          "4.3.00")
+set(LIBRA_KOKKOS_GIT_TAG          "4.4.00")
 
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
 #set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.com/dsa-2000/rcp/hpg")
