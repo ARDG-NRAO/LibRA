@@ -787,6 +787,9 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
       if (imagingMode!="predict")
 	{
+	  if (cmplxGridName!="")
+	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
+
 	  // Do the FFT of the grid on the device and get the grid and
 	  // weights to the CPU memory.
 	  //
@@ -810,9 +813,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		<< "Row processing rate: " << nRows/griddingTime << " rows/sec" << endl
 		<< "Data volume from VR: " << visResampler->getDataVolume() << " bytes" << endl
 		<< LogIO::POST;
-
-	  if (cmplxGridName!="")
-	    visResampler->saveGriddedData(cmplxGridName+".vis",cgrid.coordinates());
 
 	  // Is the following block of code required?
 	  {
