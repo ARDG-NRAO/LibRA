@@ -29,6 +29,8 @@ create_blank_vis_data_vector(const unsigned nPol, const unsigned nChan, const un
 //
 // -------------------------------------------------------------------------------
 //
+// Version that creates a vis buckect, which is a collection of CASA VBs
+//
 template <unsigned N>
 //std::vector<hpg::VisData<N>>
 unsigned int
@@ -325,106 +327,8 @@ unsigned long nVis(const std::vector<hpg::VisData<N>>& hpgVB)
 //
 // -------------------------------------------------------------------------------
 //
-
-// MP: here's the good stuff
-template <unsigned N>
-std::vector<hpg::VisData<N> >
-create_vis_data_vector(const casa::VisBuffer2& casaVB,
-		       const double& dphase,
-		       const casacore::Vector<casacore::Vector<casacore::Double> >& pointingOffsets,
-		       const std::array<unsigned, 2>& vis_cf_index)
-{
-  unsigned nRow,nPol,nChan;
-  IPosition dataShape = casaVB.visCube().shape();
-  nRow=dataShape(0);
-  nChan=dataShape(1);
-  nPol=dataShape(2);
-  if (nPol != N) abort();
-  
-  std::vector<VisData<N> > result;
-  result.reserve(nRow*nChan);
-  
-  for (unsigned r=0;r<nRow;r++)
-    {
-      if (!(casaVB.flagRow())(r))
-	{
-	  for (unsigned ch=0;ch<nChan;ch++)
-	    {
-	      // cerr << "casaVB.flag.shape: " << casaVB.flag().shape() << endl;
-	      // if (!(casaVB.flag())(r,ch))
-	      {
-		std::array<std::complex<hpg::vis_fp_t>, N> vis;
-		std::array<hpg::vis_fp_t, N> wt;
-		//cerr << "casaVB.flag.shape: " << casaVB.flagCube().shape() << endl;
-		for (unsigned p=0; p<N;p++)
-		  {
-		    if (!(casaVB.flagCube())(p,ch,r))
-		      {
-			vis[p]=casaVB.visCube()(p,ch,r);
-			wt[p]=casaVB.imagingWeight()(r,ch);
-		      }
-		    else
-		      {
-			vis[p]=0.0;
-			wt[p]=0.0;
-		      }
-		  }
-		
-		hpg::freq_fp_t    frequency=casaVB.getFrequencies(r)(ch);
-		hpg::vis_fp_t     phase=dphase;
-		hpg::vis_uvw_t    uvw = {(hpg::uvw_fp_t)casaVB.uvw()(0,r),
-					(hpg::uvw_fp_t)casaVB.uvw()(1,r),
-					(hpg::uvw_fp_t)casaVB.uvw()(2,r)};
-		unsigned          grid_cube=0; // For now, grid on the same plane.
-
-		// !!!!!!!!!!!! vis_cf_index COMES-IN as array<unsigned...> BUT cf_index from HPG rcgrid BRANCH WANTS array<int....>
-		std::array<int, 2>  cf_index;
-		cf_index[0]=vis_cf_index[0];
-		cf_index[1]=vis_cf_index[1];
-		hpg::cf_phase_gradient_t cf_phase_gradient={(hpg::phase_fp_t)pointingOffsets[0][0],
-							    (hpg::phase_fp_t)pointingOffsets[0][1]};
-		
-		result.push_back(
-				 hpg::VisData<N>(vis,wt,frequency,phase,uvw,grid_cube,cf_index,cf_phase_gradient)
-				 );
-	      }
-	    }
-	}
-    }
-  return result;
-}
-
-hpg::VisDataVector HPGVisBuffer(casa::VisBuffer2& casaVB,
-				const double& dphase,
-				const casacore::Vector<casacore::Vector<casacore::Double> >& pointingOffsets,
-				const std::array<unsigned, 2>& vis_cf_index)
-{
-  unsigned dataNPol = casaVB.visCube().shape()[2];
-  switch (dataNPol)
-    {
-    case 1:
-      return hpg::VisDataVector(create_vis_data_vector<1>(casaVB,dphase, pointingOffsets,vis_cf_index));
-      break;
-    case 2:
-      return hpg::VisDataVector(create_vis_data_vector<2>(casaVB,dphase, pointingOffsets,vis_cf_index));
-      break;
-    case 3:
-      return hpg::VisDataVector(create_vis_data_vector<3>(casaVB,dphase, pointingOffsets,vis_cf_index));
-      break;
-    case 4:
-      return hpg::VisDataVector(create_vis_data_vector<4>(casaVB,dphase, pointingOffsets,vis_cf_index));
-      break;
-    default:
-      throw(AipsError("HPGVisBuffer.cc: Incorrect value of dataNPol in HOGVisBuffer()"));
-    }
-}
-
-
-
-
-
-
-
+// Convert a CASA VB to hpg::VisData format.
+//
 template <unsigned N>
 //std::vector<hpg::VisData<N>>
 unsigned int
@@ -632,6 +536,7 @@ unsigned mRow=0;
 		      // full_hpgcf_index[0] ==> pol
 		      // full_hpgcf_index[1] ==> cube : should always be 0
 		      // full_hpgcf_index[2] ==> group : linearized index from (BLType, PA, W, SPW)
+
 		      std::array<unsigned, 3> full_hpgcf_index=cfsi.cf_index(cfCellNdx);
 		      //hpg::cf_index_t full_hpgcf_index=cfsi.cf_index(cfCellNdx);
 		      auto& cf_cube_index=full_hpgcf_index[1];
@@ -652,24 +557,105 @@ unsigned mRow=0;
 
   return hpgIRow;
 }
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//
+// Unused code below this.  Read it/use it if you need to (even cherry
+// pick code from here if you need to)
+//
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+// // MP: here's the good stuff
+// template <unsigned N>
+// std::vector<hpg::VisData<N> >
+// create_vis_data_vector(const casa::VisBuffer2& casaVB,
+// 		       const double& dphase,
+// 		       const casacore::Vector<casacore::Vector<casacore::Double> >& pointingOffsets,
+// 		       const std::array<unsigned, 2>& vis_cf_index)
+// {
+//   unsigned nRow,nPol,nChan;
+//   IPosition dataShape = casaVB.visCube().shape();
+//   nRow=dataShape(0);
+//   nChan=dataShape(1);
+//   nPol=dataShape(2);
+//   if (nPol != N) abort();
+  
+//   std::vector<VisData<N> > result;
+//   result.reserve(nRow*nChan);
+  
+//   for (unsigned r=0;r<nRow;r++)
+//     {
+//       if (!(casaVB.flagRow())(r))
+// 	{
+// 	  for (unsigned ch=0;ch<nChan;ch++)
+// 	    {
+// 	      // cerr << "casaVB.flag.shape: " << casaVB.flag().shape() << endl;
+// 	      // if (!(casaVB.flag())(r,ch))
+// 	      {
+// 		std::array<std::complex<hpg::vis_fp_t>, N> vis;
+// 		std::array<hpg::vis_fp_t, N> wt;
+// 		//cerr << "casaVB.flag.shape: " << casaVB.flagCube().shape() << endl;
+// 		for (unsigned p=0; p<N;p++)
+// 		  {
+// 		    if (!(casaVB.flagCube())(p,ch,r))
+// 		      {
+// 			vis[p]=casaVB.visCube()(p,ch,r);
+// 			wt[p]=casaVB.imagingWeight()(r,ch);
+// 		      }
+// 		    else
+// 		      {
+// 			vis[p]=0.0;
+// 			wt[p]=0.0;
+// 		      }
+// 		  }
+		
+// 		hpg::freq_fp_t    frequency=casaVB.getFrequencies(r)(ch);
+// 		hpg::vis_fp_t     phase=dphase;
+// 		hpg::vis_uvw_t    uvw = {(hpg::uvw_fp_t)casaVB.uvw()(0,r),
+// 					(hpg::uvw_fp_t)casaVB.uvw()(1,r),
+// 					(hpg::uvw_fp_t)casaVB.uvw()(2,r)};
+// 		unsigned          grid_cube=0; // For now, grid on the same plane.
 
+// 		// !!!!!!!!!!!! vis_cf_index COMES-IN as array<unsigned...> BUT cf_index from HPG rcgrid BRANCH WANTS array<int....>
+// 		std::array<int, 2>  cf_index;
+// 		cf_index[0]=vis_cf_index[0];
+// 		cf_index[1]=vis_cf_index[1];
+// 		hpg::cf_phase_gradient_t cf_phase_gradient={(hpg::phase_fp_t)pointingOffsets[0][0],
+// 							    (hpg::phase_fp_t)pointingOffsets[0][1]};
+		
+// 		result.push_back(
+// 				 hpg::VisData<N>(vis,wt,frequency,phase,uvw,grid_cube,cf_index,cf_phase_gradient)
+// 				 );
+// 	      }
+// 	    }
+// 	}
+//     }
+//   return result;
+// }
 
+// hpg::VisDataVector HPGVisBuffer(casa::VisBuffer2& casaVB,
+// 				const double& dphase,
+// 				const casacore::Vector<casacore::Vector<casacore::Double> >& pointingOffsets,
+// 				const std::array<unsigned, 2>& vis_cf_index)
+// {
+//   unsigned dataNPol = casaVB.visCube().shape()[2];
+//   switch (dataNPol)
+//     {
+//     case 1:
+//       return hpg::VisDataVector(create_vis_data_vector<1>(casaVB,dphase, pointingOffsets,vis_cf_index));
+//       break;
+//     case 2:
+//       return hpg::VisDataVector(create_vis_data_vector<2>(casaVB,dphase, pointingOffsets,vis_cf_index));
+//       break;
+//     case 3:
+//       return hpg::VisDataVector(create_vis_data_vector<3>(casaVB,dphase, pointingOffsets,vis_cf_index));
+//       break;
+//     case 4:
+//       return hpg::VisDataVector(create_vis_data_vector<4>(casaVB,dphase, pointingOffsets,vis_cf_index));
+//       break;
+//     default:
+//       throw(AipsError("HPGVisBuffer.cc: Incorrect value of dataNPol in HOGVisBuffer()"));
+//     }
+// }
 
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
