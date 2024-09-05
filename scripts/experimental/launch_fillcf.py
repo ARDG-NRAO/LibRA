@@ -168,10 +168,11 @@ else:
 submit_sbatch_path = os.path.join(chdir, "submit_sbatch.sh")
 if os.path.isfile(submit_sbatch_path):
     logger.warning("submit_sbatch.sh exists and will be overwritten")
-print("submit_sbatch_path:", submit_sbatch_path)
-print("chdir:", chdir)
-print("start:", start)
-print("end:", end)
+    logger.warning(f"Overwriting {submit_sbatch_path}")
+# print("submit_sbatch_path:", submit_sbatch_path)
+# print("chdir:", chdir)
+# print("start:", start)
+# print("end:", end)
 with open(submit_sbatch_path, "w") as f:
     f.write(f'''#!/bin/bash
 #SBATCH --export=ALL
