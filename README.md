@@ -95,10 +95,11 @@ Standalone applications (apps) give access to algorithms via commandline options
 
 #### Currently available Apps
 - [ ] [`roadrunner`](apps/src) : An application to transform the data in a Measurement Set (MS) to an image.  This can be deployed on a single CPU core, or on a GPU.  This is a.k.a. as the `major cycle` in RA.
-- [ ] [`acme`](apps/src) : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
+- [ ] [`dale`](apps/src) : An application to apply normalization to the `weight`, `psf`, `residual` and `model` images created with `roadrunner` and `hummbee`, and compute the primary beam.
 - [ ] [`chip`](apps/src) : An application to accumulate mutiple images onto an output image (a.k.a. the "gather" opreation in CS-speak).
 - [ ] [`hummbee`](apps/src) : An application to derive a model of the signal in the raw image (e.g., made using `roadrunner`).  This is a.k.a. the `minor cycle` in RA.
 - [ ] [`coyote`](apps/src) : An application to build the CF Cache used as input to the `roadrunner` application.
+- [ ] [`acme`](apps/src) : An application to print/verify image statistics.
 
 - [ ] [`libra_htclean.sh`](frameworks/htclean) : A script that implements the [Algorithm Architecture](doc/AlgoArch/README.md) and uses the [apps](#currently-available-apps) as algorithmic components for imaging.  This implements the iterative image reconstruction technique widely used in RA for derivative and model update calculations (the `major cycle` and `minor cycle` respectively).  The execution graph can be deployed as a DAG on a CPU, a GPU, or on a cluster of CPUs/GPUs using the framework in `template_PATh`.  This has been used to deploy the parallel imaging execution graph on a local cluster, and on the [PATh](https://path-cc.io/about/) and [OSG](https://osg-htc.org/) clusters.  A variant that uses LibRA [apps](#currently-available-apps) as components has also been used for a prototype deployment on AWS.
 
