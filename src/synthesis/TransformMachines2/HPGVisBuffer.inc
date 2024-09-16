@@ -9,7 +9,8 @@
 #include <synthesis/TransformMachines2/FTMachine.h>
 
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 using namespace hpg;
 //
 // -------------------------------------------------------------------------------
@@ -73,7 +74,6 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
   unsigned                       grid_cube=0; // For now, grid on the same plane.
   hpg::cf_phase_gradient_t      cf_phase_gradient;
   // SB: hpg::vis_cf_index_t vis_cf_index = {0,cfFreqNdx}; // For fndx A-only
-  std::array<int, 2>        cf_index;
 
   assert(muellerVals.nelements() == N);
 
@@ -229,6 +229,10 @@ unsigned mRow=0;
 		      // full_hpgcf_index[0] ==> pol
 		      // full_hpgcf_index[1] ==> cube : should always be 0
 		      // full_hpgcf_index[2] ==> group : linearized index from (BLType, PA, W, SPW)
+
+		      //std::array<int, 2>        cf_index;
+		      std::array<uint, 2>        cf_index;
+
 		      std::array<unsigned, 3> full_hpgcf_index=cfsi.cf_index(cfCellNdx);
 		      auto& cf_cube_index=full_hpgcf_index[1];
 		      auto& cf_group_index=full_hpgcf_index[2];

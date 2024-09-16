@@ -41,7 +41,8 @@
 #include <synthesis/TransformMachines2/FortranizedLoops.h>
 //#include <synthesis/TransformMachines2/hpg.hpp>
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 #include <type_traits>
 #include <synthesis/TransformMachines2/HPGVisBuffer.inc>
 #include <thread>
@@ -181,7 +182,8 @@ namespace casa{
       
 
       // !!!!!!!!!! CHANGE OF TYPE FROM COMES-IN TO WHAT THE HPG CODE IN rcgrid BRANCH WANTS for Gridder::create<N> !!!!!!!!!!!!!!
-      std::array<int, 4> grid_size_int;
+      //      std::array<int, 4> grid_size_int;
+      std::array<uint, 4> grid_size_int;
       grid_size_int[0]=grid_size[0];
       grid_size_int[1]=grid_size[1];
       grid_size_int[2]=grid_size[2];
@@ -427,20 +429,20 @@ namespace casa{
     }
     Bool dummy;
     assert(hpg::GridValueArray::rank == modelImageGrid.shape().nelements());
-    // std::array<unsigned,hpg::GridValueArray::rank> extents={(unsigned)modelImageGrid.shape()[0],
-    // 							    (unsigned)modelImageGrid.shape()[1],
-    // 							    (unsigned)modelImageGrid.shape()[2],
-    // 							    (unsigned)modelImageGrid.shape()[3]};
-    std::array<int,hpg::GridValueArray::rank> extents={(int)modelImageGrid.shape()[0],
-						       (int)modelImageGrid.shape()[1],
-						       (int)modelImageGrid.shape()[2],
-						       (int)modelImageGrid.shape()[3]};
+    std::array<unsigned,hpg::GridValueArray::rank> extents={(unsigned)modelImageGrid.shape()[0],
+    							    (unsigned)modelImageGrid.shape()[1],
+    							    (unsigned)modelImageGrid.shape()[2],
+    							    (unsigned)modelImageGrid.shape()[3]};
+    // std::array<int,hpg::GridValueArray::rank> extents={(int)modelImageGrid.shape()[0],
+    // 						       (int)modelImageGrid.shape()[1],
+    // 						       (int)modelImageGrid.shape()[2],
+    // 						       (int)modelImageGrid.shape()[3]};
     casacore::Array<casacore::DComplex> tarr=modelImageGrid.get();
     casacore::DComplex *tstor = tarr.getStorage(dummy);
     
     std::unique_ptr<hpg::GridValueArray> HPGModelImage;
     
-    HPGModelImage = hpg::GridValueArray::copy_from("whatever",
+    HPGModelImage = hpg::GridValueArray::copy_from(std::string("whatever"),
 						   HPGDevice_p, // target_device
 						   //hpg::Device::Cuda, //target_device
 						   hpg::Device::OpenMP,//Device host_device,

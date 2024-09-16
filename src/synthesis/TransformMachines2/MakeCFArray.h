@@ -39,7 +39,8 @@
 #include <synthesis/TransformMachines2/MyCFArray.h>
 #include <synthesis/TransformMachines2/MyCFArrayShape.h>
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN

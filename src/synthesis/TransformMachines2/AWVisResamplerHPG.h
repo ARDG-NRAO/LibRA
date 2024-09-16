@@ -43,7 +43,8 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 #include <tuple>
 #define HPGNPOL 2
 #define VBS_IN_THE_BUCKET 1
