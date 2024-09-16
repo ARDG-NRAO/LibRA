@@ -4,7 +4,7 @@ if [ "$#" -ne 1 ]; then
 fi
 ROOT=$1
 local_exodus=$PWD/l_exodus
-apps="roadrunner coyote hummbee mssplit tableinfo subms chip dale"
+apps="roadrunner coyote hummbee mssplit tableinfo subms chip dale acme"
 apps_bundle=libra.sh
 
 # if test -d $local_exodus; then
