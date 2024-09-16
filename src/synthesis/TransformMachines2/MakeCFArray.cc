@@ -371,7 +371,7 @@ namespace casa{
       auto err_or_val = hpg::RWDeviceCFArray::create(hpg::Device::Cuda, cfArrayShape);
       if (!hpg::is_value(err_or_val))
 	throw(AipsError("Error while creating hpg::RWDeviceCFArray in MakeCFArray::makeRWDCFA_p()"));
-      std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = std::move(hpg::get_value(err_or_val));
+      std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = hpg::get_value(std::move(err_or_val));
       //-------------------------------------------------------------------------------------------------
 
       double paTolerance = 360.0;
