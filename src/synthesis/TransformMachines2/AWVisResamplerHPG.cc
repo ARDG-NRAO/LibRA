@@ -150,8 +150,9 @@ namespace casa{
       
       //size_t max_visibilities_batch_size = 351*2*1000;
 
-      unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
-      size_t max_visibilities_batch_size = nRows*nVBsPerBucket;
+      // unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
+      // size_t max_visibilities_batch_size = nRows*nVBsPerBucket;
+      size_t max_visibilities_batch_size = nVBsPerBucket;
 
       cerr << "Mueller indexes: initgridder2: " << endl;
       cerr << "M: " << endl;
@@ -531,17 +532,17 @@ namespace casa{
     nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
     log_l << "NPROCS: " << nProcs << endl;
 
+    nVisPerBucket_p = hpgVBBucket_p.size();
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
-					 nVBAntenna, nVBChannels,nVBsPerBucket_p);
+					 nVBAntenna, nVBChannels,nVisPerBucket_p);
 
     
-    unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
-    log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
-	  << " x " << nVBsPerBucket_p << endl;
+    //    unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
+    log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << endl;
 
-    hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*nVBsPerBucket_p);
+    hpgVBBucket_p.resize(nVisPerBucket_p);
 
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;
@@ -652,13 +653,13 @@ namespace casa{
 	  err = hpgGridder_p->degrid_grid_visibilities(
 						       hpg::Device::OpenMP,
 						       //std::move(hpgVBList_p[i])
-						       std::move(VBBucket.hpgVB_p)
+						       std::move(VBBucket.vbbBuf())
 						       );
 	else
 	  err = hpgGridder_p->grid_visibilities(
 						hpg::Device::OpenMP,
 						//std::move(hpgVBList_p[i])
-						std::move(VBBucket.hpgVB_p)
+						std::move(VBBucket.vbbBuf())
 						);
 	assert(VBBucket.size()==0);
 	VBBucket.reset();
@@ -739,6 +740,7 @@ namespace casa{
     // Resize so that there are no unused VisData in the hpgVB at the end.
     if (!hpgVBBucket_p.isFull())
       {
+	//	cout << "########## Sending VBB: " << hpgVBBucket_p.vbbBuf().size() << " " << hpgVBBucket_p.vbbSOBuf().size() << endl;
 	//	cerr << "VisData bucket not yet full. HPGList, hpgRows: " << hpgVB_p.size() << " " << hpgVBNRows << endl;
       }
     else

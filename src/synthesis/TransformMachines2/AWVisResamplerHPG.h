@@ -74,7 +74,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //Get the bucket size in units of the number of VBs it can hold.
       //The supplied size is sanatized to the [1,n] range in the
       //VisBufferBucket object.
-      nVBsPerBucket_p=hpgVBBucket_p.totalUnits();
+      nVisPerBucket_p=hpgVBBucket_p.size();
 
       hpgVBList_p.reserve(maxVBList_p);
       // (int)vbBucketSize; //Unused input variable in this branch.
@@ -83,7 +83,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
       LogIO log_l(LogOrigin("AWVRHPG", "AWVRHPG()"));
       log_l << "Using HPG device " << hpgDevice << LogIO::POST;
-      log_l << "VB Bucket size: " << nVBsPerBucket_p << LogIO::POST;
+      log_l << "VB Bucket size: " << nVisPerBucket_p << LogIO::POST;
 
       //      cached_PointingOffset_p.resize(2);cached_PointingOffset_p=-1000.0;runTimeG_p=runTimeDG_p=0.0;
       hpg::VisData<HPGNPOL> vd;
@@ -290,7 +290,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
     std::chrono::duration<double> mkHPGVB_duration;
 
-    unsigned int sizeofVisData_p,nVBsPerBucket_p;
+    unsigned int sizeofVisData_p,nVisPerBucket_p;
     std::vector<hpg::VisData<HPGNPOL> > hpgVB_p;
     HPGVisBufferBucket<HPGNPOL> hpgVBBucket_p;
 
