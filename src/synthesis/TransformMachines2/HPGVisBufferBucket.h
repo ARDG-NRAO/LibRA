@@ -28,7 +28,7 @@ public:
   HPGVisBufferBucket(HPGVisBufferBucket&& other) noexcept
   {
     VBB_p=std::move(other.VBB_p);
-    VBB_SOBuf_p = std::move(other.VBB_SOBuf_p);
+    //    VBB_SOBuf_p = std::move(other.VBB_SOBuf_p);
     cout << "HPGVBB.move constructor\n";
   }
 
@@ -44,12 +44,12 @@ public:
   // }
   
   // move assignment operator
-  HPGVisBufferBucket& operator=(HPGVisBufferBucket&& rhs) noexcept
+  std::vector<hpg::VisData<NCorr>>& operator=(HPGVisBufferBucket&& rhs) noexcept
   {
     cout << "HPGVBB.move= operator\n";
-    this->VBB_p.swap(rhs.VBB_p);
-    this->VBB_SOBuf_p.swap(rhs.VBB_SOBuf_p);
-    return *this;
+    std::swap(VBB_p, rhs.VBB_p);
+    //    this->VBB_SOBuf_p.swap(rhs.VBB_SOBuf_p);
+    return VBB_p;
   }
 
 
@@ -101,16 +101,22 @@ public:
   inline bool isFull()
   {return (rowCounter_p >= size());}
 
+  inline bool isEmpty() {return counter()==0;}
+
+  // Copy the contents of the over flow buffer
+  inline uint moveSOBuf()
+  {
+    uint n=vbbSOBuf().size();
+    for (auto v : vbbSOBuf()) append(v);
+    vbbSOBuf().resize(0);
+    return n;
+  }
+
   inline unsigned reset()
   {
-    // Resize internal storage. Move the overflow buffer to the main storage.
+    // Resize internal storage. Copy the overflow buffer to the main storage.
     resize(nVis_p);
-
-    // if (VBB_SOBuf_p.size() != 0)
-    //   cout << "##########VBB.reset(): Copying SOBuf of size " << VBB_SOBuf_p.size() << endl;
-    for (auto v : VBB_SOBuf_p) append(v);
-    VBB_SOBuf_p.resize(0);
-
+    moveSOBuf();
     return size();
   }
 

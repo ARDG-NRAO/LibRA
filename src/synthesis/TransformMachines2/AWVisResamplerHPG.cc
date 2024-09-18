@@ -253,9 +253,27 @@ namespace casa{
   {
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","finalizeToSky(DCompelx)"));
     log_l << "Finalizing gridding..." << LogIO::POST;
-    if (hpgVBBucket_p.counter() != 0)
+
+    // Cover the edge-case where the last set of VBs only partially filled the bucket.
+    if (!hpgVBBucket_p.isEmpty())
       {
-	log_l << "Sending the last of the " << hpgVBBucket_p.counter() << " data points" << LogIO::POST;
+	log_l << "Sending "
+	      << hpgVBBucket_p.counter()
+	      << " data points from a partially filled vis bucket" << LogIO::POST;
+	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+				 sizeofVisData_p, (HPGModelImageName_p != ""));
+	hpgGridder_p->fence();
+      }
+
+    // Cover the edge-case where the very last of the VBs spilled over the bucket boundry.
+    // Copy the contents of the spillover buffer to the bucket.
+    hpgVBBucket_p.moveSOBuf();
+
+    if (!hpgVBBucket_p.isEmpty())
+      {
+	log_l << "Sending "
+	      << hpgVBBucket_p.counter()
+	      << " spillover data points" << LogIO::POST;
 	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
 				 sizeofVisData_p, (HPGModelImageName_p != ""));
 	hpgGridder_p->fence();
@@ -652,13 +670,11 @@ namespace casa{
 	if (do_degrid)
 	  err = hpgGridder_p->degrid_grid_visibilities(
 						       hpg::Device::OpenMP,
-						       //std::move(hpgVBList_p[i])
 						       std::move(VBBucket.vbbBuf())
 						       );
 	else
 	  err = hpgGridder_p->grid_visibilities(
 						hpg::Device::OpenMP,
-						//std::move(hpgVBList_p[i])
 						std::move(VBBucket.vbbBuf())
 						);
 	assert(VBBucket.size()==0);
