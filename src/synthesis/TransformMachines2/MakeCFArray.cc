@@ -470,7 +470,7 @@ namespace casa{
 				    log_l << "Difference in CFA and CF shapes detected: "
 					  << cfArrayShape.m_extent[iGrp][0] << "-" <<  cfShape(0) << " "
 					  << "MuellerTerm: " << tt[0] << " Group: " << iGrp
-					  << LogIO::POST;
+					  << LogIO::DEBUG1;
 
 				    // Intialize the target buffer for the (infrequent) case when it is larger than the
 				    // source buffer.

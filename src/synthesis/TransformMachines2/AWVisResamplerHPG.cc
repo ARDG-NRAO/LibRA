@@ -121,11 +121,7 @@ namespace casa{
 			     const PolMapType& mVals,
 			     const PolMapType& conjMNdx,
 			     const PolMapType& conjMVals,
-			     const int& nAntenna,
-			     const int& nChannel,
 			     const unsigned& nVBsPerBucket
-			     // std::vector<std::array<int, N> > mueller_indexes,
-			     // std::vector<std::array<int, N> > conjugate_mueller_indexes
 			     )
   {
     //
@@ -136,7 +132,6 @@ namespace casa{
     log_l << "grid_size: "
 	  << grid_size[0] << " " << grid_size[1] << " "
 	  << grid_size[2] << " " << grid_size[3] << " " << LogIO::POST;
-    log_l << "Per VB:  nAnt: " << nAntenna << ", nChannel: " << nChannel << LogIO::POST;
     
     if (!hpg::is_initialized()) hpg::initialize();
     
@@ -148,10 +143,6 @@ namespace casa{
       makeMuellerIndexes<N>(conjMNdx, conjMVals, grid_size[2]/*nGridPol*/, conjugate_mueller_indexes);
       
       
-      //size_t max_visibilities_batch_size = 351*2*1000;
-
-      // unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
-      // size_t max_visibilities_batch_size = nRows*nVBsPerBucket;
       size_t max_visibilities_batch_size = nVBsPerBucket;
 
       cerr << "Mueller indexes: initgridder2: " << endl;
@@ -533,7 +524,6 @@ namespace casa{
   // requested, load the model image as well.
   //
   bool AWVisResamplerHPG::createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
-				    const int& nVBAntenna, const int& nVBChannels,
 				    const PolMapType& mVals,  const PolMapType& mNdx,
 				    const PolMapType& conjMVals, const PolMapType& conjMNdx)
   {
@@ -554,10 +544,9 @@ namespace casa{
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
-					 nVBAntenna, nVBChannels,nVisPerBucket_p);
+					 nVisPerBucket_p);
 
     
-    //    unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
     log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << endl;
 
     hpgVBBucket_p.resize(nVisPerBucket_p);
@@ -589,8 +578,6 @@ namespace casa{
     //    int nDataPol  = vbs.flagCube_p.shape()[0];
 
     int vbSpw = (vbs.vb_p)->spectralWindows()(0);
-    int nVBAntenna = vbs.vb_p->nAntennas();
-    int nVBChannels = vbs.vb_p->nChannels();
 
     Vector<Double> wVals, fVals; PolMapType mVals, mNdx, conjMVals, conjMNdx;
     Double fIncr, wIncr;
@@ -599,15 +586,6 @@ namespace casa{
     // This loads the all-importnat conjMNDx and mNdx maps
     //
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
-    //    runTimeG1_p += timer_p.real();
-
-    // uint nVisPol=0;// nRows=rend-rbeg+1, nVisChan=endChan - startChan+1;
-    // for(int ipol=0; ipol< nDataPol; ipol++)
-    //   {
-    // 	int targetIMPol=polMap_p(ipol);
-    // 	if ((targetIMPol>=0) && (targetIMPol<nGridPol))
-    // 	  nVisPol++;
-    //   }
     //
     // Page-in the new CFs and load them on the device upon SPW change.
     //
@@ -621,7 +599,7 @@ namespace casa{
     bool do_degrid=(HPGModelImageName_p != "");
 
     // If this is the first pass, create the HPG object.
-    if (hpgGridder_p==NULL) do_degrid = createHPG(nx,ny,nGridPol, nGridChan, nVBAntenna, nVBChannels,
+    if (hpgGridder_p==NULL) do_degrid = createHPG(nx,ny,nGridPol, nGridChan,
 						  mVals, mNdx, conjMVals, conjMNdx);
 
     if (reloadCFs)
