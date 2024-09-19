@@ -245,30 +245,34 @@ namespace casa{
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","finalizeToSky(DCompelx)"));
     log_l << "Finalizing gridding..." << LogIO::POST;
 
-    // Cover the edge-case where the last set of VBs only partially filled the bucket.
-    if (!hpgVBBucket_p.isEmpty())
+    // Lambda function to send a partially filled bucket to the
+    // device, and print a custom message.
+    auto sendPartialBucket =
+      [&](const std::string& mesg)
       {
-	log_l << "Sending "
-	      << hpgVBBucket_p.counter()
-	      << " data points from a partially filled vis bucket" << LogIO::POST;
-	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
-				 sizeofVisData_p, (HPGModelImageName_p != ""));
-	hpgGridder_p->fence();
-      }
+	if (!hpgVBBucket_p.isEmpty())
+	  {
+	    log_l << "Sending "
+		  << hpgVBBucket_p.counter()
+		  << " " << mesg.c_str() << LogIO::POST;
+	    griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+				     sizeofVisData_p, (HPGModelImageName_p != ""));
+	    hpgGridder_p->fence();
+	  }
+      };
 
-    // Cover the edge-case where the very last of the VBs spilled over the bucket boundry.
-    // Copy the contents of the spillover buffer to the bucket.
+    // Cover the edge-case where the last set of VBs only partially
+    // filled the bucket.
+    sendPartialBucket(std::string("data points from a partially filled vis bucket"));
+
+    // Cover the edge-case where the very last of the VBs spilled over
+    // the bucket boundry.
+    //
+    // Move the contents of the spillover buffer (SOBuf) to the
+    // bucket.  SOBuf is empty after this call.
     hpgVBBucket_p.moveSOBuf();
 
-    if (!hpgVBBucket_p.isEmpty())
-      {
-	log_l << "Sending "
-	      << hpgVBBucket_p.counter()
-	      << " spillover data points" << LogIO::POST;
-	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
-				 sizeofVisData_p, (HPGModelImageName_p != ""));
-	hpgGridder_p->fence();
-      }
+    sendPartialBucket(std::string("data points from the spillover buffer"));
     
     hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
     hpgGridder_p->apply_grid_fft();
