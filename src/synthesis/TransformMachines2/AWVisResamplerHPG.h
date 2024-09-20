@@ -47,7 +47,7 @@
 #include <hpg/indexing.hpp>
 #include <tuple>
 #define HPGNPOL 2
-#define VBS_IN_THE_BUCKET 1
+#define VIS_IN_THE_BUCKET 20000
 #define NPROCS 2
 #include <chrono>
 
@@ -59,7 +59,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   public:
     AWVisResamplerHPG(bool hpgInitAndFin=false,
-		      int nVBsPerBucket=VBS_IN_THE_BUCKET):
+		      int nVisPerBucket=VIS_IN_THE_BUCKET):
       AWVisResampler(), hpgGridder_p(NULL), vis(),
       grid_cubes(), cf_cubes(), weights(), frequencies(),
       cf_phase_screens(), hpgPhases(), visUVW(),nVBS_p(0),
@@ -69,15 +69,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       cfsi_p({1,false},{1,false},{1,true},{1,true}, 1),
       cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
       mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),
-      hpgVB_p(),hpgVBBucket_p(nVBsPerBucket)
+      hpgVB_p(),hpgVBBucket_p(nVisPerBucket)
     {
-      //Get the bucket size in units of the number of VBs it can hold.
-      //The supplied size is sanatized to the [1,n] range in the
-      //VisBufferBucket object.
+      //Get the bucket size in units of the number of visibilites it
+      //can hold.  The supplied size is sanatized to the [1,n] range
+      //in the VisBufferBucket object.
       nVisPerBucket_p=hpgVBBucket_p.size();
 
       hpgVBList_p.reserve(maxVBList_p);
-      // (int)vbBucketSize; //Unused input variable in this branch.
 
       String hpgDevice="cuda";
       std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();

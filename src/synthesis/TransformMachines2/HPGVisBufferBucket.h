@@ -144,6 +144,10 @@ public:
     // Resize internal storage. Copy the overflow buffer to the main storage.
     resize(nVis_p);
     moveSOBuf();
+    cout << "ResetVBB: " << size()
+	 << " " << vbbSOBuf().size()
+	 << " " << counter() 
+	 << endl;
     return size();
   }
 

@@ -121,7 +121,7 @@ namespace casa{
 			     const PolMapType& mVals,
 			     const PolMapType& conjMNdx,
 			     const PolMapType& conjMVals,
-			     const unsigned& nVBsPerBucket
+			     const unsigned& nVisPerBucket
 			     )
   {
     //
@@ -143,7 +143,7 @@ namespace casa{
       makeMuellerIndexes<N>(conjMNdx, conjMVals, grid_size[2]/*nGridPol*/, conjugate_mueller_indexes);
       
       
-      size_t max_visibilities_batch_size = nVBsPerBucket;
+      size_t max_visibilities_batch_size = nVisPerBucket;
 
       cerr << "Mueller indexes: initgridder2: " << endl;
       cerr << "M: " << endl;
@@ -182,6 +182,7 @@ namespace casa{
       grid_size_int[3]=grid_size[3];
       
 	
+      cerr << "max_visibility_batch_size=" << max_visibilities_batch_size << endl;
       hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
 						  cfArray_ptr, grid_size_int, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);
@@ -638,7 +639,10 @@ namespace casa{
 	// it is filled (so that unfilled content does not reach
 	// the gridder).
 	VBBucket.shrink();
-
+	cout << "SendVBB: " << VBBucket.size()
+	     << " " << VBBucket.vbbSOBuf().size()
+	     << " " << VBBucket.counter() 
+	     << endl;
 
 	timer_p.mark();
 	unsigned nHPGVBRows = VBBucket.counter();
