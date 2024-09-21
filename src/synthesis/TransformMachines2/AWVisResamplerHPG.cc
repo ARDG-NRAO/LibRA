@@ -39,7 +39,6 @@
 #include <iomanip>
 #include <map>
 #include <synthesis/TransformMachines2/FortranizedLoops.h>
-//#include <synthesis/TransformMachines2/hpg.hpp>
 #include <hpg/hpg.hpp>
 //#include <hpg/hpg_indexing.hpp>
 #include <hpg/indexing.hpp>
@@ -68,12 +67,6 @@ namespace casa{
   {
     PolMapType tt;
     
-    // for(unsigned i=0;i<mNdx.size();i++)
-    //   {
-    // 	cerr << mNdx[i] << endl;
-    //   }
-    // cerr << endl;
-    
     for(unsigned i=0,k=0;i<mNdx.size();i++)
       {
 	if (mNdx[i].size()>0)
@@ -92,11 +85,9 @@ namespace casa{
     
     for(unsigned i=0;i<mValues.size();i++)
       {
-	//	cerr << mValues[i] << " " << tt[i] << endl;
 	for(unsigned j=0;j<mValues[i].size();j++)
 	  {
 	    muellerIndexes[j][mValues[i][j]%N]=tt[i][j];
-	    //muellerIndexes[j][mValues[i][j]%N]=1;
 	  }
       }
     
@@ -346,9 +337,6 @@ namespace casa{
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","GatherGrids(DCompelx)"));
     {
       std::unique_ptr<hpg::GridWeightArray> wts=hpgGridder_p->grid_weights();
-      // log_l << "Got the grid from the device " << griddedData.shape() << LogIO::POST;
-      // cerr << std::setprecision(20) << "Weights shape "
-      // 	   << wts->extent(0) << " x " << wts->extent(1) << endl;
       
       hpgSoW_p.resize(wts->extent(0));
       for (unsigned i=0;i<hpgSoW_p.size();i++)
@@ -363,7 +351,6 @@ namespace casa{
       	    }
 	  //      	  cerr << endl;
       	}
-      // cerr << "Shapes: hpgSoW_p, sumwt: " << sumwt << endl;
 
       // hpgSoW_p is of type sumofweight_fp (vector<vector<double>>).  sumWeight is a Matrix.
       // sow[i][*] is a Mueller row. i is the index for the polarization product.
@@ -623,9 +610,6 @@ namespace casa{
 				     const uint& sizeofVisData,
 				     const bool& do_degrid)
   {
-    //if (VBBucket.isFull() && (hpgVBNRows>0))
-    //if (VBBucket.isFull() && (VBBucket.counter()>0))
-
     //
     // If the VBBucket is full, shrink() it remove any unfilled space
     // in the bucket, send the rest of the buffer to the gridder, and
@@ -633,21 +617,20 @@ namespace casa{
     // its argument.  The emptying of the buffer may (?)  happen with
     // the std::move(VBBucket.hpgVB_p) anyway.
     //
-    if (VBBucket.counter()>0)
+    if (!VBBucket.isEmpty())
       {
 	// Shrink the internal storage of the bucket to be length
 	// it is filled (so that unfilled content does not reach
 	// the gridder).
 	VBBucket.shrink();
-	cout << "SendVBB: " << VBBucket.size()
-	     << " " << VBBucket.vbbSOBuf().size()
-	     << " " << VBBucket.counter() 
-	     << endl;
+	// cout << "SendVBB: " << VBBucket.size()
+	//      << " " << VBBucket.vbbSOBuf().size()
+	//      << " " << VBBucket.counter() 
+	//      << endl;
 
 	timer_p.mark();
 	unsigned nHPGVBRows = VBBucket.counter();
 
-	//	cerr << nHPGVBRows << " " << VBBucket.totalUnits() << " " << VBBucket.size() << endl;
 	nVisGridded += nHPGVBRows*HPGNPOL;
 	nDataBytes += sizeofVisData*nHPGVBRows;
 

@@ -56,7 +56,7 @@ public:
   {
     VBB_p=std::move(other.VBB_p);
     //    VBB_SOBuf_p = std::move(other.VBB_SOBuf_p);
-    cout << "HPGVBB.move constructor\n";
+    //    cout << "HPGVBB.move constructor\n";
   }
 
   // assignment operator
@@ -73,7 +73,7 @@ public:
   // move assignment operator
   std::vector<hpg::VisData<NCorr>>& operator=(HPGVisBufferBucket&& rhs) noexcept
   {
-    cout << "HPGVBB.move= operator\n";
+    //    cout << "HPGVBB.move= operator\n";
     std::swap(VBB_p, rhs.VBB_p);
     //    this->VBB_SOBuf_p.swap(rhs.VBB_SOBuf_p);
     return VBB_p;
@@ -144,10 +144,10 @@ public:
     // Resize internal storage. Copy the overflow buffer to the main storage.
     resize(nVis_p);
     moveSOBuf();
-    cout << "ResetVBB: " << size()
-	 << " " << vbbSOBuf().size()
-	 << " " << counter() 
-	 << endl;
+    // cout << "ResetVBB: " << size()
+    // 	 << " " << vbbSOBuf().size()
+    // 	 << " " << counter() 
+    // 	 << endl;
     return size();
   }
 
