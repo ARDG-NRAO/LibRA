@@ -173,7 +173,6 @@ namespace casa{
       grid_size_int[3]=grid_size[3];
       
 	
-      cerr << "max_visibility_batch_size=" << max_visibilities_batch_size << endl;
       hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
 						  cfArray_ptr, grid_size_int, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);

@@ -40,6 +40,16 @@
 using namespace hpg;
 //
 // -------------------------------------------------------------------------------
+// A class to hold a fixed number of visibilities (as hpg::VisData).
+// Fractions of the input source, e.g., casa::VisBuffer that don't fit
+// in the container are held intenrally in a spill-over (SOBuf) buffer
+// and transferred to the main buffer before the start of the next
+// iteration of filling new data.  Client code can use a combination
+// of isFull() and isEmpty() methods to consume partially filled
+// buffer and copy from the SOBuf to the main buffer using the
+// moveSOBuf() method.
+//
+// The ordering in the input data is preserved.
 //
 template <unsigned NCorr>
 class HPGVisBufferBucket
@@ -134,8 +144,16 @@ public:
   inline uint moveSOBuf()
   {
     uint n=vbbSOBuf().size();
+
+    // vbbBuf().insert(vbbBuf().begin(),
+    // 		    std::make_move_iterator(vbbSOBuf().begin()),
+    //                 std::make_move_iterator(vbbSOBuf().end()));
+    // //    vbbSOBuf().erase(vbbSOBuf().begin(),vbbSOBuf().end());
+    // rowCounter_p=n;
+
     for (auto v : vbbSOBuf()) append(v);
     vbbSOBuf().resize(0);
+
     return n;
   }
 
