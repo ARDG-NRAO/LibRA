@@ -43,10 +43,11 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 #include <tuple>
 #define HPGNPOL 2
-#define VBS_IN_THE_BUCKET 1
+#define VIS_IN_THE_BUCKET 20000
 #define NPROCS 2
 #include <chrono>
 
@@ -58,7 +59,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   public:
     AWVisResamplerHPG(bool hpgInitAndFin=false,
-		      int nVBsPerBucket=VBS_IN_THE_BUCKET):
+		      int nVisPerBucket=VIS_IN_THE_BUCKET):
       AWVisResampler(), hpgGridder_p(NULL), vis(),
       grid_cubes(), cf_cubes(), weights(), frequencies(),
       cf_phase_screens(), hpgPhases(), visUVW(),nVBS_p(0),
@@ -68,21 +69,20 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       cfsi_p({1,false},{1,false},{1,true},{1,true}, 1),
       cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
       mkHPGVB_startTime(), mkHPGVB_duration(), sizeofVisData_p(0),
-      hpgVB_p(),hpgVBBucket_p(nVBsPerBucket)
+      hpgVB_p(),hpgVBBucket_p(nVisPerBucket)
     {
-      //Get the bucket size in units of the number of VBs it can hold.
-      //The supplied size is sanatized to the [1,n] range in the
-      //VisBufferBucket object.
-      nVBsPerBucket_p=hpgVBBucket_p.totalUnits();
+      //Get the bucket size in units of the number of visibilites it
+      //can hold.  The supplied size is sanatized to the [1,n] range
+      //in the VisBufferBucket object.
+      nVisPerBucket_p=hpgVBBucket_p.size();
 
       hpgVBList_p.reserve(maxVBList_p);
-      // (int)vbBucketSize; //Unused input variable in this branch.
 
       String hpgDevice="cuda";
       std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
       LogIO log_l(LogOrigin("AWVRHPG", "AWVRHPG()"));
       log_l << "Using HPG device " << hpgDevice << LogIO::POST;
-      log_l << "VB Bucket size: " << nVBsPerBucket_p << LogIO::POST;
+      log_l << "VB Bucket size: " << nVisPerBucket_p << LogIO::POST;
 
       //      cached_PointingOffset_p.resize(2);cached_PointingOffset_p=-1000.0;runTimeG_p=runTimeDG_p=0.0;
       hpg::VisData<HPGNPOL> vd;
@@ -237,7 +237,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const override;
     virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const override;
     bool createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
-		   const int& nVBAntenna, const int& nVBChannels,
 		   const PolMapType& mVals,  const PolMapType& mNdx,
 		   const PolMapType& conjMVals, const PolMapType& conjMNdx);
     double getMakeHPGVBTime() {return mkHPGVB_duration.count();}
@@ -268,13 +267,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::tuple<bool, CountedPtr<CFBuffer>>
     initializeHPG(VBStore& vbs, const IPosition& gridShape);
 
-    std::vector<std::complex<hpg::visibility_fp>> vis;
+    std::vector<std::complex<hpg::vis_fp_t>> vis;
     std::vector<unsigned> grid_cubes, cf_cubes;
-    std::vector<hpg::vis_weight_fp> weights;
-    std::vector<hpg::vis_frequency_fp> frequencies;
-    std::vector<hpg::cf_phase_gradient_t> cf_phase_screens;
-    std::vector<hpg::vis_phase_fp> hpgPhases;
-    std::vector<hpg::vis_uvw_t> visUVW;
+    std::vector<hpg::vis_fp_t> weights;
+    std::vector<hpg::freq_fp_t> frequencies;
+    std::vector<hpg::vis_fp_t> cf_phase_screens;
+    std::vector<hpg::vis_fp_t> hpgPhases;
+    std::vector<hpg::uvw_fp_t> visUVW;
     uInt nVBS_p, maxVBList_p;
     Int cachedVBSpw_p;
     std::vector < std::vector<hpg::VisData<HPGNPOL> > > hpgVBList_p;
@@ -289,7 +288,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
     std::chrono::duration<double> mkHPGVB_duration;
 
-    unsigned int sizeofVisData_p,nVBsPerBucket_p;
+    unsigned int sizeofVisData_p,nVisPerBucket_p;
     std::vector<hpg::VisData<HPGNPOL> > hpgVB_p;
     HPGVisBufferBucket<HPGNPOL> hpgVBBucket_p;
 

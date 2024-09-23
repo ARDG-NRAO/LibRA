@@ -34,7 +34,7 @@
 #include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/CFDefs.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include <synthesis/TransformMachines2/MakeCFArray.h>
+#include <synthesis/TransformMachines2/MyCFArrayShape.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 
@@ -371,7 +371,7 @@ namespace casa{
       auto err_or_val = hpg::RWDeviceCFArray::create(hpg::Device::Cuda, cfArrayShape);
       if (!hpg::is_value(err_or_val))
 	throw(AipsError("Error while creating hpg::RWDeviceCFArray in MakeCFArray::makeRWDCFA_p()"));
-      std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = std::move(hpg::get_value(err_or_val));
+      std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = hpg::get_value(std::move(err_or_val));
       //-------------------------------------------------------------------------------------------------
 
       double paTolerance = 360.0;
@@ -470,13 +470,13 @@ namespace casa{
 				    log_l << "Difference in CFA and CF shapes detected: "
 					  << cfArrayShape.m_extent[iGrp][0] << "-" <<  cfShape(0) << " "
 					  << "MuellerTerm: " << tt[0] << " Group: " << iGrp
-					  << LogIO::POST;
+					  << LogIO::DEBUG1;
 
 				    // Intialize the target buffer for the (infrequent) case when it is larger than the
 				    // source buffer.
 				    //
-				    for(uint x=0; x < cfArrayShape.m_extent[iGrp][0]; x++)
-				      for(uint y=0; y < cfArrayShape.m_extent[iGrp][1]; y++)
+				    for(int x=0; x < cfArrayShape.m_extent[iGrp][0]; x++)
+				      for(int y=0; y < cfArrayShape.m_extent[iGrp][1]; y++)
 					(*rwDCFArray)(x,y,tt[0],tt[1],iGrp)=0.0;
 				  }
 				{

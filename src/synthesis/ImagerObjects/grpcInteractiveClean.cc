@@ -553,51 +553,50 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         return result;
 
 
-/*      return access( returnRecord,
-                       std::function< casacore::Record ( casacore::Record, grpcInteractiveCleanState & )>(
-                       [&]( casacore::Record rec, grpcInteractiveCleanState &state )->casacore::Record {
-                           //*** Control Variables **************************************************
-                           rec.define( RecordFieldId("niter"), state.Niter );
-                           rec.define( RecordFieldId("cycleniter"), state.CycleNiter );
-                           rec.define( RecordFieldId("interactiveniter"), state.InteractiveNiter );
+    //   return access( returnRecord,
+    //                    std::function< casacore::Record ( casacore::Record, grpcInteractiveCleanState & )>(
+    //                    [&]( casacore::Record rec, grpcInteractiveCleanState &state )->casacore::Record {
+    //                        //*** Control Variables **************************************************
+    //                        rec.define( RecordFieldId("niter"), state.Niter );
+    //                        rec.define( RecordFieldId("cycleniter"), state.CycleNiter );
+    //                        rec.define( RecordFieldId("interactiveniter"), state.InteractiveNiter );
 
-                           rec.define( RecordFieldId("threshold"),  state.Threshold );
-                           rec.define( RecordFieldId("nsigma"),  state.Nsigma );
-                           if( state.IsCycleThresholdAuto == true ) updateCycleThreshold(state);
-                           state.IsCycleThresholdAuto = true && state.IsCycleThresholdMutable;        // Reset this, for the next round
+    //                        rec.define( RecordFieldId("threshold"),  state.Threshold );
+    //                        rec.define( RecordFieldId("nsigma"),  state.Nsigma );
+    //                        if( state.IsCycleThresholdAuto == true ) updateCycleThreshold(state);
+    //                        state.IsCycleThresholdAuto = true && state.IsCycleThresholdMutable;        // Reset this, for the next round
 
-                           rec.define( RecordFieldId("cyclethreshold"), state.CycleThreshold );
-                           rec.define( RecordFieldId("interactivethreshold"), state.InteractiveThreshold );
+    //                        rec.define( RecordFieldId("cyclethreshold"), state.CycleThreshold );
+    //                        rec.define( RecordFieldId("interactivethreshold"), state.InteractiveThreshold );
 
-                           rec.define( RecordFieldId("loopgain"), state.LoopGain );
-                           rec.define( RecordFieldId("cyclefactor"), state.CycleFactor );
+    //                        rec.define( RecordFieldId("loopgain"), state.LoopGain );
+    //                        rec.define( RecordFieldId("cyclefactor"), state.CycleFactor );
 
-                           //*** Status Reporting Variables *****************************************
-                           rec.define( RecordFieldId("iterdone"),  state.IterDone );
-                           rec.define( RecordFieldId("cycleiterdone"), state.MaxCycleIterDone );
-                           rec.define( RecordFieldId("interactiveiterdone"),
-                                       state.InteractiveIterDone + state.MaxCycleIterDone);
+    //                        //*** Status Reporting Variables *****************************************
+    //                        rec.define( RecordFieldId("iterdone"),  state.IterDone );
+    //                        rec.define( RecordFieldId("cycleiterdone"), state.MaxCycleIterDone );
+    //                        rec.define( RecordFieldId("interactiveiterdone"),
+    //                                    state.InteractiveIterDone + state.MaxCycleIterDone);
 
-                           rec.define( RecordFieldId("nmajordone"), state.MajorDone );
-                           rec.define( RecordFieldId("maxpsfsidelobe"), state.MaxPsfSidelobe );
-                           rec.define( RecordFieldId("maxpsffraction"), state.MaxPsfFraction );
-                           rec.define( RecordFieldId("minpsffraction"), state.MinPsfFraction );
-                           rec.define( RecordFieldId("interactivemode"), state.InteractiveMode );
+    //                        rec.define( RecordFieldId("nmajordone"), state.MajorDone );
+    //                        rec.define( RecordFieldId("maxpsfsidelobe"), state.MaxPsfSidelobe );
+    //                        rec.define( RecordFieldId("maxpsffraction"), state.MaxPsfFraction );
+    //                        rec.define( RecordFieldId("minpsffraction"), state.MinPsfFraction );
+    //                        rec.define( RecordFieldId("interactivemode"), state.InteractiveMode );
 
-                           rec.define( RecordFieldId("stopcode"), state.StopCode );
+    //                        rec.define( RecordFieldId("stopcode"), state.StopCode );
 
-                           //*** report clean's state ***********************************************
-                           rec.define( RecordFieldId("cleanstate"),
-                                       state.StopFlag ? "stopped" : state.PauseFlag ? "paused" : "running" );
+    //                        //*** report clean's state ***********************************************
+    //                        rec.define( RecordFieldId("cleanstate"),
+    //                                    state.StopFlag ? "stopped" : state.PauseFlag ? "paused" : "running" );
 
-                           if ( includeSummary ) {
-                               rec.define( RecordFieldId("summaryminor"), state.SummaryMinor );
-                               rec.define( RecordFieldId("summarymajor"), state.SummaryMajor );
-                           }
+    //                        if ( includeSummary ) {
+    //                            rec.define( RecordFieldId("summaryminor"), state.SummaryMinor );
+    //                            rec.define( RecordFieldId("summarymajor"), state.SummaryMajor );
+    //                        }
 
-                           return rec; }) );
-*/
-    }
+    //                        return rec; }) );
+    // }
 
 
 	Record grpcInteractiveCleanManager::getMinorCycleControls( ){

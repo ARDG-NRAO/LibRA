@@ -39,9 +39,9 @@
 #include <iomanip>
 #include <map>
 #include <synthesis/TransformMachines2/FortranizedLoops.h>
-//#include <synthesis/TransformMachines2/hpg.hpp>
 #include <hpg/hpg.hpp>
-#include <hpg/hpg_indexing.hpp>
+//#include <hpg/hpg_indexing.hpp>
+#include <hpg/indexing.hpp>
 #include <type_traits>
 #include <synthesis/TransformMachines2/HPGVisBuffer.inc>
 #include <thread>
@@ -67,12 +67,6 @@ namespace casa{
   {
     PolMapType tt;
     
-    // for(unsigned i=0;i<mNdx.size();i++)
-    //   {
-    // 	cerr << mNdx[i] << endl;
-    //   }
-    // cerr << endl;
-    
     for(unsigned i=0,k=0;i<mNdx.size();i++)
       {
 	if (mNdx[i].size()>0)
@@ -91,11 +85,9 @@ namespace casa{
     
     for(unsigned i=0;i<mValues.size();i++)
       {
-	//	cerr << mValues[i] << " " << tt[i] << endl;
 	for(unsigned j=0;j<mValues[i].size();j++)
 	  {
 	    muellerIndexes[j][mValues[i][j]%N]=tt[i][j];
-	    //muellerIndexes[j][mValues[i][j]%N]=1;
 	  }
       }
     
@@ -120,11 +112,7 @@ namespace casa{
 			     const PolMapType& mVals,
 			     const PolMapType& conjMNdx,
 			     const PolMapType& conjMVals,
-			     const int& nAntenna,
-			     const int& nChannel,
-			     const unsigned& nVBsPerBucket
-			     // std::vector<std::array<int, N> > mueller_indexes,
-			     // std::vector<std::array<int, N> > conjugate_mueller_indexes
+			     const unsigned& nVisPerBucket
 			     )
   {
     //
@@ -135,7 +123,6 @@ namespace casa{
     log_l << "grid_size: "
 	  << grid_size[0] << " " << grid_size[1] << " "
 	  << grid_size[2] << " " << grid_size[3] << " " << LogIO::POST;
-    log_l << "Per VB:  nAnt: " << nAntenna << ", nChannel: " << nChannel << LogIO::POST;
     
     if (!hpg::is_initialized()) hpg::initialize();
     
@@ -147,10 +134,7 @@ namespace casa{
       makeMuellerIndexes<N>(conjMNdx, conjMVals, grid_size[2]/*nGridPol*/, conjugate_mueller_indexes);
       
       
-      //size_t max_visibilities_batch_size = 351*2*1000;
-
-      unsigned nRows=(nAntenna*(nAntenna-1)/2)*2*nChannel;
-      size_t max_visibilities_batch_size = nRows*nVBsPerBucket;
+      size_t max_visibilities_batch_size = nVisPerBucket;
 
       cerr << "Mueller indexes: initgridder2: " << endl;
       cerr << "M: " << endl;
@@ -179,9 +163,28 @@ namespace casa{
       //	  cerr << "Mueller index shape: " << mueller_indexes.size() << "X" << HPGNPOL << endl;
       //	  if (hpgDevice=="serial") Device=hpg::Device::Serial;
       
+
+      // !!!!!!!!!! CHANGE OF TYPE FROM COMES-IN TO WHAT THE HPG CODE IN rcgrid BRANCH WANTS for Gridder::create<N> !!!!!!!!!!!!!!
+      //      std::array<int, 4> grid_size_int;
+      std::array<uint, 4> grid_size_int;
+      grid_size_int[0]=grid_size[0];
+      grid_size_int[1]=grid_size[1];
+      grid_size_int[2]=grid_size[2];
+      grid_size_int[3]=grid_size[3];
+      
+	
       hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
-						  cfArray_ptr, grid_size, grid_scale, mueller_indexes,
+						  cfArray_ptr, grid_size_int, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);
+      if (!hpg::is_value(g))
+	{
+	  log_l << "Error in hpg::create<N>(): Current setting of NPROCS (="<< NProcs << ") env. variable will require "
+		<< NProcs+1 << "x the value in the following message." << endl
+		<< hpg::get_error(g).message()
+		<< LogIO::EXCEPTION;
+	  throw(std::runtime_error(string("Error in hpg::create<N>()")));
+	}
+
       //hpgGridder_p = new hpg::Gridder(hpg::get_value(std::move(g)));
       
       return new hpg::Gridder(hpg::get_value(std::move(g)));
@@ -232,13 +235,35 @@ namespace casa{
   {
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","finalizeToSky(DCompelx)"));
     log_l << "Finalizing gridding..." << LogIO::POST;
-    if (hpgVBBucket_p.counter() != 0)
+
+    // Lambda function to send a partially filled bucket to the
+    // device, and print a custom message.
+    auto sendPartialBucket =
+      [&](const std::string& mesg)
       {
-	log_l << "Sending the last of the " << hpgVBBucket_p.counter() << " data points" << LogIO::POST;
-	griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
-				 sizeofVisData_p, (HPGModelImageName_p != ""));
-	hpgGridder_p->fence();
-      }
+	if (!hpgVBBucket_p.isEmpty())
+	  {
+	    log_l << "Sending "
+		  << hpgVBBucket_p.counter()
+		  << " " << mesg.c_str() << LogIO::POST;
+	    griddingTime += sendData(hpgVBBucket_p, nVisGridded_p, nDataBytes_p,
+				     sizeofVisData_p, (HPGModelImageName_p != ""));
+	    hpgGridder_p->fence();
+	  }
+      };
+
+    // Cover the edge-case where the last set of VBs only partially
+    // filled the bucket.
+    sendPartialBucket(std::string("data points from a partially filled vis bucket"));
+
+    // Cover the edge-case where the very last of the VBs spilled over
+    // the bucket boundry.
+    //
+    // Move the contents of the spillover buffer (SOBuf) to the
+    // bucket.  SOBuf is empty after this call.
+    hpgVBBucket_p.moveSOBuf();
+
+    sendPartialBucket(std::string("data points from the spillover buffer"));
     
     hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
     hpgGridder_p->apply_grid_fft();
@@ -311,9 +336,6 @@ namespace casa{
     LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","GatherGrids(DCompelx)"));
     {
       std::unique_ptr<hpg::GridWeightArray> wts=hpgGridder_p->grid_weights();
-      // log_l << "Got the grid from the device " << griddedData.shape() << LogIO::POST;
-      // cerr << std::setprecision(20) << "Weights shape "
-      // 	   << wts->extent(0) << " x " << wts->extent(1) << endl;
       
       hpgSoW_p.resize(wts->extent(0));
       for (unsigned i=0;i<hpgSoW_p.size();i++)
@@ -328,7 +350,6 @@ namespace casa{
       	    }
 	  //      	  cerr << endl;
       	}
-      // cerr << "Shapes: hpgSoW_p, sumwt: " << sumwt << endl;
 
       // hpgSoW_p is of type sumofweight_fp (vector<vector<double>>).  sumWeight is a Matrix.
       // sow[i][*] is a Mueller row. i is the index for the polarization product.
@@ -410,15 +431,19 @@ namespace casa{
     Bool dummy;
     assert(hpg::GridValueArray::rank == modelImageGrid.shape().nelements());
     std::array<unsigned,hpg::GridValueArray::rank> extents={(unsigned)modelImageGrid.shape()[0],
-							    (unsigned)modelImageGrid.shape()[1],
-							    (unsigned)modelImageGrid.shape()[2],
-							    (unsigned)modelImageGrid.shape()[3]};
+    							    (unsigned)modelImageGrid.shape()[1],
+    							    (unsigned)modelImageGrid.shape()[2],
+    							    (unsigned)modelImageGrid.shape()[3]};
+    // std::array<int,hpg::GridValueArray::rank> extents={(int)modelImageGrid.shape()[0],
+    // 						       (int)modelImageGrid.shape()[1],
+    // 						       (int)modelImageGrid.shape()[2],
+    // 						       (int)modelImageGrid.shape()[3]};
     casacore::Array<casacore::DComplex> tarr=modelImageGrid.get();
     casacore::DComplex *tstor = tarr.getStorage(dummy);
     
     std::unique_ptr<hpg::GridValueArray> HPGModelImage;
     
-    HPGModelImage = hpg::GridValueArray::copy_from("whatever",
+    HPGModelImage = hpg::GridValueArray::copy_from(std::string("whatever"),
 						   HPGDevice_p, // target_device
 						   //hpg::Device::Cuda, //target_device
 						   hpg::Device::OpenMP,//Device host_device,
@@ -446,7 +471,7 @@ namespace casa{
       log_l << "Finished sending image to the device" << LogIO::POST;
     
     
-    grid_value_fp norm = 1.0;//((grid_value_fp)(shape[0]*shape[1]));
+    grid_scale_fp norm = 1.0;//((grid_value_fp)(shape[0]*shape[1]));
     log_l << "Applying (in-place) FFT on the model image.  Norm = " << norm << LogIO::POST;
     
     // Below is the following sequence of operations on the GPU: shift -> FFT -> shift.
@@ -490,7 +515,6 @@ namespace casa{
   // requested, load the model image as well.
   //
   bool AWVisResamplerHPG::createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
-				    const int& nVBAntenna, const int& nVBChannels,
 				    const PolMapType& mVals,  const PolMapType& mNdx,
 				    const PolMapType& conjMVals, const PolMapType& conjMNdx)
   {
@@ -507,18 +531,16 @@ namespace casa{
     nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
     log_l << "NPROCS: " << nProcs << endl;
 
-    // uint nProcs = 2;
+    nVisPerBucket_p = hpgVBBucket_p.size();
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
-					 nVBAntenna, nVBChannels,nVBsPerBucket_p);
+					 nVisPerBucket_p);
 
     
-    unsigned nRows=(nVBAntenna*(nVBAntenna-1)/2);
-    log_l << "Resizing HPGVB Bucket: " << HPGNPOL << " " << nVBChannels << " " << nRows
-	  << " x " << nVBsPerBucket_p << endl;
+    log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << endl;
 
-    hpgVBBucket_p.resize(HPGNPOL, nVBChannels, nRows*nVBsPerBucket_p);
+    hpgVBBucket_p.resize(nVisPerBucket_p);
 
     cerr << "Gridder initialized..." << endl;
     bool do_degrid;
@@ -547,8 +569,6 @@ namespace casa{
     //    int nDataPol  = vbs.flagCube_p.shape()[0];
 
     int vbSpw = (vbs.vb_p)->spectralWindows()(0);
-    int nVBAntenna = vbs.vb_p->nAntennas();
-    int nVBChannels = vbs.vb_p->nChannels();
 
     Vector<Double> wVals, fVals; PolMapType mVals, mNdx, conjMVals, conjMNdx;
     Double fIncr, wIncr;
@@ -557,15 +577,6 @@ namespace casa{
     // This loads the all-importnat conjMNDx and mNdx maps
     //
     cfb->getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
-    //    runTimeG1_p += timer_p.real();
-
-    // uint nVisPol=0;// nRows=rend-rbeg+1, nVisChan=endChan - startChan+1;
-    // for(int ipol=0; ipol< nDataPol; ipol++)
-    //   {
-    // 	int targetIMPol=polMap_p(ipol);
-    // 	if ((targetIMPol>=0) && (targetIMPol<nGridPol))
-    // 	  nVisPol++;
-    //   }
     //
     // Page-in the new CFs and load them on the device upon SPW change.
     //
@@ -579,7 +590,7 @@ namespace casa{
     bool do_degrid=(HPGModelImageName_p != "");
 
     // If this is the first pass, create the HPG object.
-    if (hpgGridder_p==NULL) do_degrid = createHPG(nx,ny,nGridPol, nGridChan, nVBAntenna, nVBChannels,
+    if (hpgGridder_p==NULL) do_degrid = createHPG(nx,ny,nGridPol, nGridChan,
 						  mVals, mNdx, conjMVals, conjMNdx);
 
     if (reloadCFs)
@@ -598,9 +609,6 @@ namespace casa{
 				     const uint& sizeofVisData,
 				     const bool& do_degrid)
   {
-    //if (VBBucket.isFull() && (hpgVBNRows>0))
-    //if (VBBucket.isFull() && (VBBucket.counter()>0))
-
     //
     // If the VBBucket is full, shrink() it remove any unfilled space
     // in the bucket, send the rest of the buffer to the gridder, and
@@ -608,18 +616,20 @@ namespace casa{
     // its argument.  The emptying of the buffer may (?)  happen with
     // the std::move(VBBucket.hpgVB_p) anyway.
     //
-    if (VBBucket.counter()>0)
+    if (!VBBucket.isEmpty())
       {
 	// Shrink the internal storage of the bucket to be length
 	// it is filled (so that unfilled content does not reach
 	// the gridder).
 	VBBucket.shrink();
-
+	// cout << "SendVBB: " << VBBucket.size()
+	//      << " " << VBBucket.vbbSOBuf().size()
+	//      << " " << VBBucket.counter() 
+	//      << endl;
 
 	timer_p.mark();
 	unsigned nHPGVBRows = VBBucket.counter();
 
-	//	cerr << nHPGVBRows << " " << VBBucket.totalUnits() << " " << VBBucket.size() << endl;
 	nVisGridded += nHPGVBRows*HPGNPOL;
 	nDataBytes += sizeofVisData*nHPGVBRows;
 
@@ -628,14 +638,12 @@ namespace casa{
 	if (do_degrid)
 	  err = hpgGridder_p->degrid_grid_visibilities(
 						       hpg::Device::OpenMP,
-						       //std::move(hpgVBList_p[i])
-						       std::move(VBBucket.hpgVB_p)
+						       std::move(VBBucket.vbbBuf())
 						       );
 	else
 	  err = hpgGridder_p->grid_visibilities(
 						hpg::Device::OpenMP,
-						//std::move(hpgVBList_p[i])
-						std::move(VBBucket.hpgVB_p)
+						std::move(VBBucket.vbbBuf())
 						);
 	assert(VBBucket.size()==0);
 	VBBucket.reset();
@@ -716,6 +724,7 @@ namespace casa{
     // Resize so that there are no unused VisData in the hpgVB at the end.
     if (!hpgVBBucket_p.isFull())
       {
+	//	cout << "########## Sending VBB: " << hpgVBBucket_p.vbbBuf().size() << " " << hpgVBBucket_p.vbbSOBuf().size() << endl;
 	//	cerr << "VisData bucket not yet full. HPGList, hpgRows: " << hpgVB_p.size() << " " << hpgVBNRows << endl;
       }
     else

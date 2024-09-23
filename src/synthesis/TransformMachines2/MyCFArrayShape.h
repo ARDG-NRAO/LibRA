@@ -34,7 +34,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   namespace refim{
   struct MyCFArrayShape final: public hpg::CFArrayShape
   {
-    std::vector<std::array<unsigned, 4>> m_extent;
+    //    std::vector<std::array<hpg::coord_t, 4>> m_extent;
+    std::vector<std::array<HPG_ARRAY_INDEX_TYPE, 4>> m_extent;
     unsigned cf_oversampling=0;
     
     MyCFArrayShape(): m_extent(), cf_oversampling(0) {};
@@ -62,7 +63,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       return cf_oversampling;
     }
 
-    std::array<unsigned, 4> extents(unsigned i) const override
+    // std::array<unsigned, 4> extents(unsigned i) const 
+    // {
+    //   return m_extent[i];
+    // }
+    std::array<HPG_ARRAY_INDEX_TYPE, 4> extents(HPG_ARRAY_INDEX_TYPE i) const 
     {
       return m_extent[i];
     }

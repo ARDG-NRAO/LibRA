@@ -106,8 +106,8 @@ if (LIBRA_USE_LIBSAKURA)
   pkg_check_modules(SAKURA REQUIRED IMPORTED_TARGET libsakura)
 endif()
 # HPG dependency
-find_package(hpg CONFIG)
-if(DEFINED hpg_FOUND AND ${hpg_FOUND})
+find_package(Hpg CONFIG)
+if(DEFINED Hpg_FOUND AND ${Hpg_FOUND})
   add_definitions(-DUSE_HPG)
 endif()
 
