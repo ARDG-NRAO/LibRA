@@ -119,14 +119,14 @@ createAWPFTMachine(const String ftmName,
   // MSObservationColumns msoc(mss4vi_p[0].observation());
   // String telescopeName=msoc.telescopeName()(0);
   CountedPtr<refim::ConvolutionFunction> awConvFunc = AWProjectFT::makeCFObject(telescopeName, 
-									 aTermOn,
-									 psTermOn, true, mTermOn, wbAWP,
-									 false);
+										aTermOn,
+										psTermOn, true, mTermOn, wbAWP,
+										false);
   //
   // Construct the appropriate re-sampler.
   //
   CountedPtr<refim::VisibilityResamplerBase> visResampler;
-  int vbBucketSize = refim::SynthesisUtils::getenv("VBBUCKETSIZE",1);
+  int vbBucketSize = refim::SynthesisUtils::getenv("VBBUCKETSIZE",20000);
   if (ftmName == "awphpg") visResampler = new refim::AWVisResamplerHPG(false,vbBucketSize);
   else visResampler = new refim::AWVisResampler();
   visResampler->setModelImage(modelImageName);
@@ -144,18 +144,18 @@ createAWPFTMachine(const String ftmName,
   //
   if (ftmName == "awphpg")
     theFT = new refim::AWProjectWBFTHPG(wprojPlane, cache/2,
-					   cfCacheObj, awConvFunc,
-					   visResampler,
-					   /*true */doPointing, posigdev, doPBCorr,
-					   tile, computePAStep, pbLimit_l, true,conjBeams,
-					   useDoublePrec);
+					cfCacheObj, awConvFunc,
+					visResampler,
+					/*true */doPointing, posigdev, doPBCorr,
+					tile, computePAStep, pbLimit_l, true,conjBeams,
+					useDoublePrec);
   else
     theFT = new refim::AWProjectWBFT(wprojPlane, cache/2,
-					   cfCacheObj, awConvFunc,
-					   visResampler,
-					   /*true */doPointing, posigdev, doPBCorr,
-					   tile, computePAStep, pbLimit_l, true,conjBeams,
-					   useDoublePrec);
+				     cfCacheObj, awConvFunc,
+				     visResampler,
+				     /*true */doPointing, posigdev, doPBCorr,
+				     tile, computePAStep, pbLimit_l, true,conjBeams,
+				     useDoublePrec);
   
   if (imagingMode=="weight")    {theFT->setFTMType(casa::refim::FTMachine::WEIGHT);}
   else if (imagingMode=="psf")  {theFT->setFTMType(casa::refim::FTMachine::PSF);}

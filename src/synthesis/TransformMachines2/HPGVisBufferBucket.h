@@ -1,4 +1,31 @@
 // -*- C++ -*-
+// -*- C++ -*-
+//# HPGVisBufferBucket.h: Header-only implementation of the HPGVisBufferBucket class
+//# Copyright (C) 2024
+//# Associated Universities, Inc. Washington DC, USA.
+//#
+//# This library is free software; you can redistribute it and/or modify it
+//# under the terms of the GNU Library General Public License as published by
+//# the Free Software Foundation; either version 2 of the License, or (at your
+//# option) any later version.
+//#
+//# This library is distributed in the hope that it will be useful, but WITHOUT
+//# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+//# License for more details.
+//#
+//# You should have received a copy of the GNU Library General Public License
+//# along with this library; if not, write to the Free Software Foundation,
+//# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+//#
+//# Correspondence concerning AIPS++ should be addressed as follows:
+//#        Internet email: aips2-request@nrao.edu.
+//#        Postal address: AIPS++ Project Office
+//#                        National Radio Astronomy Observatory
+//#                        520 Edgemont Road
+//#                        Charlottesville, VA 22903-2475 USA
+//#
+//# $Id$
 #ifndef SYNTHESIS_TRANSFORM2_HPGVISBUFFERBUCKET_H
 #define SYNTHESIS_TRANSFORM2_HPGVISBUFFERBUCKET_H
 
@@ -13,23 +40,33 @@
 using namespace hpg;
 //
 // -------------------------------------------------------------------------------
+// A class to hold a fixed number of visibilities (as hpg::VisData).
+// Fractions of the input source, e.g., casa::VisBuffer that don't fit
+// in the container are held intenrally in a spill-over (SOBuf) buffer
+// and transferred to the main buffer before the start of the next
+// iteration of filling new data.  Client code can use a combination
+// of isFull() and isEmpty() methods to consume partially filled
+// buffer and copy from the SOBuf to the main buffer using the
+// moveSOBuf() method.
+//
+// The ordering in the input data is preserved.
 //
 template <unsigned NCorr>
 class HPGVisBufferBucket
 {
 public:
-  HPGVisBufferBucket(const unsigned& nVBs)
-    :hpgVB_p()
+  HPGVisBufferBucket(const int& nVis)
+    :VBB_p(), VBB_SOBuf_p(),nFills_p(0), rowCounter_p(0), nVis_p(nVis)
   {
-    nVBs_p=(nVBs > 0 ? nVBs : 1);
-    nFills_p=rowCounter_p=nPol_p=nChan_p=nRow_p=0;
+    resize(nVis_p);
   };
 
   // Move constructor
   HPGVisBufferBucket(HPGVisBufferBucket&& other) noexcept
   {
-    hpgVB_p=std::move(other.hpgVB_p);
-    cout << "HPGVBB.move constructor\n";
+    VBB_p=std::move(other.VBB_p);
+    //    VBB_SOBuf_p = std::move(other.VBB_SOBuf_p);
+    //    cout << "HPGVBB.move constructor\n";
   }
 
   // assignment operator
@@ -44,11 +81,12 @@ public:
   // }
   
   // move assignment operator
-  HPGVisBufferBucket& operator=(HPGVisBufferBucket&& rhs) noexcept
+  std::vector<hpg::VisData<NCorr>>& operator=(HPGVisBufferBucket&& rhs) noexcept
   {
-    cout << "HPGVBB.move= operator\n";
-    this->hpgVB_p.swap(rhs.hpgVB_p);
-    return *this;
+    //    cout << "HPGVBB.move= operator\n";
+    std::swap(VBB_p, rhs.VBB_p);
+    //    this->VBB_SOBuf_p.swap(rhs.VBB_SOBuf_p);
+    return VBB_p;
   }
 
 
@@ -64,39 +102,32 @@ public:
   {
     (void)nPol; // Just to remove an annoying compile-time warning ("unused parameter").
     assert(nPol == NCorr);
-    hpgVB_p.resize(nRow*nChan);
+    VBB_p.resize(nRow*nChan);
   }
   //
   // -------------------------------------------------------------------------------
   //
-  inline unsigned int resize(const unsigned nPol,
-			     const unsigned nChan,
-			     const unsigned nRow)
+  inline int resize(const int n=-1)
   {
-    //    cerr << "HPGVBB resizing...." << nPol << " " << nChan << " " << nRow << endl;
-    //    if (hpgVB_p.size()==0)
+    if (n != -1)
       {
-	hpgVB_p.resize(nRow*nChan*nVBs_p);
-	rowCounter_p=0;
-	nFills_p=0;
-	// Save the dimensions for use in reset() later.  Think of a better mechanism!
-	nPol_p = nPol;
-	nChan_p = nChan;
-	nRow_p = nRow;
+	//	cout << "###### Resizein VBB " << n << endl;
+	VBB_p.resize(n);
       }
-    return hpgVB_p.size();
+
+    rowCounter_p=0;
+    nFills_p=0;
+
+    return VBB_p.size();
   }
   //
   // -------------------------------------------------------------------------------
   //
   inline unsigned size()
-  {return hpgVB_p.size();}
+  {return VBB_p.size();}
 
   inline unsigned counter()
   {return rowCounter_p;}
-
-  inline unsigned totalUnits()
-  {return nVBs_p;}
 
   inline unsigned filledUnits()
   {return nFills_p;}
@@ -105,28 +136,71 @@ public:
   {return nFills_p++;}
 
   inline bool isFull()
-  {return (rowCounter_p >= size())||(nFills_p == nVBs_p);}
+  {return (rowCounter_p >= size());}
+
+  inline bool isEmpty() {return counter()==0;}
+
+  // Copy the contents of the over flow buffer
+  inline uint moveSOBuf()
+  {
+    uint n=vbbSOBuf().size();
+
+    // vbbBuf().insert(vbbBuf().begin(),
+    // 		    std::make_move_iterator(vbbSOBuf().begin()),
+    //                 std::make_move_iterator(vbbSOBuf().end()));
+    // //    vbbSOBuf().erase(vbbSOBuf().begin(),vbbSOBuf().end());
+    // rowCounter_p=n;
+
+    for (auto v : vbbSOBuf()) append(v);
+    vbbSOBuf().resize(0);
+
+    return n;
+  }
 
   inline unsigned reset()
-  {return resize(nPol_p, nChan_p, nRow_p);}
+  {
+    // Resize internal storage. Copy the overflow buffer to the main storage.
+    resize(nVis_p);
+    moveSOBuf();
+    // cout << "ResetVBB: " << size()
+    // 	 << " " << vbbSOBuf().size()
+    // 	 << " " << counter() 
+    // 	 << endl;
+    return size();
+  }
 
   inline unsigned shrink()
-  {if (rowCounter_p > 0) hpgVB_p.resize(rowCounter_p); return hpgVB_p.size();}
+  {
+    if (rowCounter_p > 0) VBB_p.resize(rowCounter_p);
+    return VBB_p.size();
+  }
   //
   // -------------------------------------------------------------------------------
   //
   inline bool append(const hpg::VisData<NCorr>& visData)
   {
-    hpgVB_p[rowCounter_p]=visData;rowCounter_p++;
+    //    cout << size() << " " << rowCounter_p << " " << VBB_SOBuf_p.size() << " " << isFull() << endl;
+    if (isFull())
+      VBB_SOBuf_p.push_back(visData); //!! Optimization required?
+    else
+      VBB_p[rowCounter_p++]=visData;
+
     return rowCounter_p==size();
   }
   //
   // -------------------------------------------------------------------------------
   //
-  std::vector<hpg::VisData<NCorr>> hpgVB_p;  
+  std::vector<hpg::VisData<NCorr>>& vbbBuf() {return VBB_p;}
+  std::vector<hpg::VisData<NCorr>>& vbbSOBuf() {return VBB_SOBuf_p;}
+  //
+  // -------------------------------------------------------------------------------
+  //
+
+  std::vector<hpg::VisData<NCorr>> VBB_p;  
+  std::vector<hpg::VisData<NCorr>> VBB_SOBuf_p;  
 private:
-  unsigned int nVBs_p, nFills_p;
+  unsigned int nFills_p;
   unsigned int rowCounter_p;
-  unsigned int nPol_p, nChan_p, nRow_p;
+  uint nVis_p;
 };
 #endif

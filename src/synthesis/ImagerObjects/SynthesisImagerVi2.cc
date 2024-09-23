@@ -441,7 +441,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   }
 void SynthesisImagerVi2::andChanSelection(const Int msId, const Int spwId, const Int startchan, const Int endchan){
 
-	map<Int, Vector<Int> > spwsel;
+        std::map<Int, Vector<Int> > spwsel;
 	auto it=channelSelections_p.find(msId);
 	if(it !=channelSelections_p.end())
 		spwsel=it->second;
