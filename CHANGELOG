@@ -1,0 +1,20 @@
+v1.0.0 is the baseline code.  This uses the following versions of the direct depenedencies 
+
+    Kokkos: Version tag v4.4.00 
+    HPG: Version tag v2.0.2  This is the stable version of libhpg 
+    CASACore: Version tag fix_regex_v3.5.0 from https://github.com/preshanth/casacore.git
+    Parafeed: Branch `master` from https://github.com/sanbee/parafeed.git
+    PyBind11: Version tag v2.10.2
+    Google Test: Version tag v1.14.0
+
+    The following dependencies are optional, required only when the relvant `cmake` options are turned ON.  The options that require these are OFF by default.
+
+        LibSakura: Version tag libsakura-5.1.3 from https://github.com/tnakazato/sakura.git
+        Exodus: Branch `master` from https://github.com/sanbee/exodus_sbfork.git
+----------------------------------------------------------------------------------------------------------
+
+v1.0.1: This includes the changes in the code to link with HPG tag v3.0.2, which has the same API as HPG tag v2.0.2 but with type changes, plus a bug fix (in internal CF indexing).  
+This version also includes change in how the data bucket is filled, which is used to send data for gridding to HPG.  In this version the data bucket is sized independent of the `casa::VisBuffer` size.  In v1.0.0, the bucket size is an integer multiple of the `casa::VisBuffer`.  The size of the bucket in units of number of visibilities per bucket is determined from the value of the `VBBUCKETSIZE` environment variable, which is set to 20000 by default.
+The version of the following dependencies change compared to v1.0.0 as below: 
+    Kokkos: Version v4.4.01
+    HPG: Version tag v3.0.2
