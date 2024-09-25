@@ -77,12 +77,34 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
   if (refFreq != "")
     {
       imageParams.reffreq=refFreq;
+
+      // // Parse the user string. It may be parse as a pure numerical
+      // // value, or as a numerical value with units.
+      // Quantity freq; Quantity::read(freq, refFreq);
+
+      // // If no units were provided, assume it to be Hz.
+      // std::string unit = freq.getFullUnit().getName();
+      // if (unit.find("Hz") == std::string::npos)
+      // 	throw(AipsError(units+string(" is not a valid unit for frequency")));
       
-      std::istringstream iss(refFreq);
-      Double ff;
-      iss >> ff;
-      //      cerr << "Ref. freq. = " << ff << endl;
-      imageParams.refFreq=Quantity(ff,"GHz");
+      // if (freq.getFullUnit().empty()) freq.convert("Hz");
+
+
+      // // refFreq element of the imageParams struct requires a Quantity
+      // // in GHz units.  We provide it as such, without understanding
+      // // why it is required in these units, or even why this element
+      // // is required at all (given that imageParams.reffreq also
+      // // exist which takes the frequency as a string).
+      // imageParams.refFreq=Quantity(freq.getValue("GHz"),"GHz");
+      try
+	{
+	  imageParams.refFreq=SynthesisUtils::makeFreqQuantity(refFreq,"GHz");
+	}
+      catch (AipsError& e)
+	{
+	  string msg("reffreq setting: "); msg+=e.what();
+	  throw(AipsError(msg));
+	}
     }
   
   casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;

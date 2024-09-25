@@ -250,6 +250,8 @@ namespace casa
 			  casacore::IPosition& imShape,
 			  const casacore::String& fileName,
 			  const casacore::String& keyName);
+      casacore::Quantity makeFreqQuantity(const casacore::String& freqStr,
+					  const casacore::String& unit);
     }
     
     void getHADec(casacore::MeasurementSet& ms, const VisBuffer2& vb, casacore::Double &HA, casacore::Double& RA, casacore::Double& Dec);
