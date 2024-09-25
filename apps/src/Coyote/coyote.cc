@@ -87,7 +87,6 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
       // why it is required in these units, or even why this element
       // is required at all (given that imageParams.reffreq also
       // exist which takes the frequency as a string).
-      imageParams.refFreq=Quantity(freq.getValue("GHz"),"GHz");
       try
 	{
 	  imageParams.refFreq=SynthesisUtils::makeFreqQuantity(refFreq,"GHz");
