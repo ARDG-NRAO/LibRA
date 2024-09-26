@@ -1714,6 +1714,28 @@ namespace casa
       // 	for(auto x :tt->list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
       // }
     }
+
+    casacore::Quantity SynthesisUtils::makeFreqQuantity(const casacore::String& freqStr,
+							const casacore::String& unit)
+    {
+      // Parse the user string. It may be parse as a pure numerical
+      // value, or as a numerical value with units.
+      Quantity freq; Quantity::read(freq, freqStr);
+
+      // If no units were provided, assume it to be Hz.
+      std::string unit_p = freq.getFullUnit().getName();
+      std::string errUnit("");
+      if (unit_p.find("Hz") == std::string::npos) errUnit=unit_p;
+      if (unit.find("Hz") == std::string::npos) errUnit=unit;
+      if (errUnit != "")
+	throw(AipsError(errUnit+string(" is not a valid unit for frequency")));
+      
+      if (freq.getFullUnit().empty()) freq.convert("Hz");
+
+      // Return a casacore::Quantity in the specified unit
+      return Quantity(freq.getValue(unit),unit);
+    }
+
     template
     std::vector<Double>::iterator SynthesisUtils::Unique(std::vector<Double>::iterator first, std::vector<Double>::iterator last);
     template
