@@ -347,12 +347,15 @@ inline PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
   if (refFreq != "")
     {
       imageParams.reffreq=refFreq;
-     
-      std::istringstream iss(refFreq);
-      Double ff;
-      iss >> ff;
-      //      cerr << "Ref. freq. = " << ff << endl;
-      imageParams.refFreq=Quantity(ff,"GHz");
+      try
+	{
+	  imageParams.refFreq=SynthesisUtils::makeFreqQuantity(refFreq,"GHz");
+	}
+      catch (AipsError& e)
+	{
+	  string msg("reffreq setting: "); msg+=e.what();
+	  throw(AipsError(msg));
+	}
     }
   
   casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;

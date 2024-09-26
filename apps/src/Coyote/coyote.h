@@ -27,7 +27,6 @@
 
 #include <casacore/casa/namespace.h>
 //#include <casacore/casa/OS/Directory.h>
-//#include <casacore/casa/Utilities/Regex.h>
 #include <casacore/casa/Logging/LogFilter.h>
 //#include <casacore/casa/System/ProgressMeter.h>
 
@@ -50,6 +49,7 @@
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/PolOuterProduct.h>
 #include <synthesis/TransformMachines2/ImageInformation.h>
+#include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/casa/Utilities/Regex.h>
 
 // #include <hpg/hpg.hpp>
