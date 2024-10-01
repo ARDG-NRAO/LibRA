@@ -31,7 +31,7 @@ set(LIBRA_KOKKOS_GIT_TAG          "4.4.01")
 
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
 #set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.com/dsa-2000/rcp/hpg")
-set(LIBRA_HPG_GIT_TAG             "v3.0.2")
+set(LIBRA_HPG_GIT_TAG             "v3.0.3")
 
 set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/preshanth/casacore.git")#"https://github.com/casacore/casacore.git")#
 set(LIBRA_CASACORE_GIT_TAG        "fix_regex_v3.5.0")#"2e121e67bf881ac7f309604447a4b0d481913902")#
