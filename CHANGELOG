@@ -17,4 +17,11 @@ v1.0.1: This includes the changes in the code to link with HPG tag v3.0.2, which
 This version also includes change in how the data bucket is filled, which is used to send data for gridding to HPG.  In this version the data bucket is sized independent of the `casa::VisBuffer` size.  In v1.0.0, the bucket size is an integer multiple of the `casa::VisBuffer`.  The size of the bucket in units of number of visibilities per bucket is determined from the value of the `VBBUCKETSIZE` environment variable, which is set to 20000 by default.
 The version of the following dependencies change compared to v1.0.0 as below: 
     Kokkos: Version v4.4.01
-    HPG: Version tag v3.0.2
+	HPG: Version tag v3.0.2
+
+_______________________________________________________________________________________________________
+
+	v1.0.2: This includes the changes in the code to link with HPG tag v3.0.3 which has a bug fix on top of v3.0.2.
+	The version of the following dependencies change compared to v1.0.0 as below: 
+	Kokkos: Version v4.4.01
+	HPG: Version tag v3.0.3
