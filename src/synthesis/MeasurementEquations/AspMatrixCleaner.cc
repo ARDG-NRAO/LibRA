@@ -16,7 +16,7 @@
 //# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
 //#
 //# Correspondence concerning AIPS++ should be addressed as follows:
-//#        Internet email: aips2-request@nrao.edu.
+//#        Internet email: casa-feedback@nrao.edu.
 //#        Postal address: AIPS++ Project Office
 //#                        National Radio Astronomy Observatory
 //#                        520 Edgemont Road
@@ -58,6 +58,7 @@
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/coordinates/Coordinates/TabularCoordinate.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -71,6 +72,9 @@
 
 // for alglib
 #include <synthesis/MeasurementEquations/objfunc_alglib.h>
+//#include <synthesis/MeasurementEquations/objfunc_alglib_lm.h>
+//#include <synthesis/MeasurementEquations/objfunc_alglib_log.h>
+//#include <synthesis/MeasurementEquations/objfunc_alglib_beta.h>
 using namespace alglib;
 
 using namespace casacore;
@@ -283,10 +287,11 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
   // calculate rms residual
   float rms = 0.0;
-  int num = int(model.shape()(0) * model.shape()(1));
-  for (int j = 0; j < model.shape()(1); ++j)
+  // should be masked
+  int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
+  for (int j = blcDirty(1); j <= trcDirty(1); ++j)
   {
-    for (int i = 0; i < model.shape()(0); ++i)
+    for (int i = blcDirty(0); i <= trcDirty(0); ++i)
     {
       rms += pow((*itsDirty)(i, j), 2);
     }
@@ -305,9 +310,9 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
     // calculate rms residual
     rms = 0.0;
-    for (int j = 0; j < model.shape()(1); ++j)
+    for (int j = blcDirty(1); j <= trcDirty(1); ++j)
     {
-      for (int i = 0; i < model.shape()(0); ++i)
+      for (int i = blcDirty(0); i <= trcDirty(0); ++i)
       {
         rms += pow((*itsDirty)(i, j), 2);
       }
@@ -402,7 +407,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. init model flux " << initModelFlux << " model flux " << modelFlux << LogIO::POST;
         }*/
-
+        
         switchedToHogbom(runlong);
       }
     }
@@ -831,15 +836,17 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
   {
     AlwaysAssert(scaleSize>0.0, AipsError);
 
-    /*const Int mini = max(0, (Int)(refi - scaleSize));
+    /* const Int mini = max(0, (Int)(refi - scaleSize));
     const Int maxi = min(nx-1, (Int)(refi + scaleSize));
     const Int minj = max(0, (Int)(refj - scaleSize));
     const Int maxj = min(ny-1, (Int)(refj + scaleSize));*/
+
     os << "Initial scale size " << scaleSize << " pixels." << LogIO::POST;
 
     //Gaussian2D<Float> gbeam(1.0/(sqrt(2*M_PI)*scaleSize), 0, 0, scaleSize, 1, 0);
 
-    // has to make the whole scale image
+    // 04/06/2022 Has to make the whole scale image. If only using min/max i/j, 
+    // .image looks spotty and not as smooth as before.
     for (int j = 0; j < ny; j++)
     {
       for (int i = 0; i < nx; i++)
@@ -1013,6 +1020,9 @@ void AspMatrixCleaner::setInitScales()
     }
     else 
     {
+      itsInitScaleSizes.resize(1, false);
+      itsInitScaleSizes[0] = 0.0f;
+
       Int scale = 1;
       while (((itsPsfWidth * pow(2, scale-1)) < itsUserLargestScale) && (scale < 5))
       {
@@ -1023,7 +1033,7 @@ void AspMatrixCleaner::setInitScales()
       if (scale <= 4) // restricted the # init scales based on `largestscale"
         itsInitScaleSizes.push_back(itsUserLargestScale);
 
-      itsNInitScales = itsInitScaleSizes.size();      
+      itsNInitScales = itsInitScaleSizes.size();     
     }
 
   }
@@ -1197,8 +1207,6 @@ Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float>
       {
         if(itsMaskThreshold > 0)
           (itsInitScaleMasks[scale])(k,j) =  (itsInitScaleMasks[scale])(k,j) > itsMaskThreshold ? 1.0 : 0.0;
-
-        //cout << "itsInitScaleMasks[" << scale << "](" << k << "," << j << ") = " << (itsInitScaleMasks[scale])(k,j) << endl;
       }
     }
     Float mysum = sum(itsInitScaleMasks[scale]);
@@ -1238,15 +1246,59 @@ Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float>
     trc1[0] = nx; trc1[1] = ny-border-1;
     LCBox::verify(blc1, trc1, inc1, itsInitScaleMasks[scale].shape());
     (itsInitScaleMasks[scale])(blc1,trc1) = 0.0;
-
-    /*for (Int j=0 ; j < (itsMask->shape())(1); ++j)
-    {
-      for (Int k =0 ; k < (itsMask->shape())(0); ++k)
-      {
-        cout << "After blc: itsInitScaleMasks[" << scale << "](" << k << "," << j << ") = " << (itsInitScaleMasks[scale])(k,j) << endl;
-      }
-    }*/
   }
+
+  // set blcDirty and trcDirty here for speedup
+  blcDirty = IPosition(itsInitScaleMasks[0].shape().nelements(), 0);
+  trcDirty = IPosition(itsInitScaleMasks[0].shape() - 1);
+
+  if(!itsMask.null())
+  {
+    os << LogIO::NORMAL3 << "Finding initial scales for Asp using given mask" << LogIO::POST;
+    if (itsMaskThreshold < 0)
+    {
+        os << LogIO::NORMAL3
+           << "Mask thresholding is not used, values are interpreted as weights"
+           <<LogIO::POST;
+    }
+    else
+    {
+      // a mask that does not allow for clean was sent
+      if(noClean_p)
+        return true;
+
+      os << LogIO::NORMAL3
+         << "Finding initial scales with mask values above " << itsMaskThreshold
+         << LogIO::POST;
+    }
+
+    AlwaysAssert(itsMask->shape()(0) == nx, AipsError);
+    AlwaysAssert(itsMask->shape()(1) == ny, AipsError);
+    Int xbeg=nx-1;
+    Int ybeg=ny-1;
+    Int xend=0;
+    Int yend=0;
+    for (Int iy=0;iy<ny;iy++)
+    {
+      for (Int ix=0;ix<nx;ix++)
+      {
+        if((*itsMask)(ix,iy)>0.000001)
+        {
+          xbeg=min(xbeg,ix);
+          ybeg=min(ybeg,iy);
+          xend=max(xend,ix);
+          yend=max(yend,iy);
+        }
+      }
+    }
+    blcDirty(0)=xbeg;
+    blcDirty(1)=ybeg;
+    trcDirty(0)=xend;
+    trcDirty(1)=yend;
+  }
+  else
+    os << LogIO::NORMAL3 << "Finding initial scales using the entire image" << LogIO::POST; 
+
 
   return true;
 }
@@ -1255,8 +1307,8 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
 {
   LogIO os(LogOrigin("AspMatrixCleaner", "maxDirtyConvInitScales()", WHERE));
 
-  // /* We still need the following to define a region. Using minMaxMasked itself is NOT sufficient and results in components outside of mask.
-
+  /* We still need the following to define a region. Using minMaxMasked itself is NOT sufficient and results in components outside of mask.
+  // this can be done only once at setup since maxDirtyConvInitScales is called every iter
   const int nx = itsDirty->shape()[0];
   const int ny = itsDirty->shape()[1];
 
@@ -1308,7 +1360,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     trcDirty(1)=yend;
   }
   else
-    os << LogIO::NORMAL3 << "Finding initial scales using the entire image" << LogIO::POST;  //*/
+    os << LogIO::NORMAL3 << "Finding initial scales using the entire image" << LogIO::POST;  */
 
 
   Vector<Float> maxima(itsNInitScales);
@@ -1333,6 +1385,8 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     cout << "posmin " << posmin << " posmax " << posmax << endl; */
 
     IPosition gip;
+    const int nx = itsDirty->shape()[0];
+    const int ny = itsDirty->shape()[1];
     gip = IPosition(2, nx, ny);
     Block<casacore::Matrix<Float>> vecWork_p;
     vecWork_p.resize(itsNInitScales);
@@ -1358,6 +1412,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
       cout << "posmin " << posmin << " posmax " << posmax << endl; */
 
       // Note, must find peak from the (blcDirty, trcDirty) subregion to ensure components are within mask
+      // this is using patch already
       if (!itsMask.null())
       {
         findMaxAbsMask(vecWork_p[scale], itsInitScaleMasks[scale],
@@ -1408,7 +1463,10 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
   AlwaysAssert(optimumScale < itsNInitScales, AipsError);
 }
 
-// ALGLIB
+
+
+// ALGLIB - gold - not "log"
+
 vector<Float> AspMatrixCleaner::getActiveSetAspen()
 {
   LogIO os(LogOrigin("AspMatrixCleaner", "getActiveSetAspen()", WHERE));
@@ -1457,6 +1515,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
   maxDirtyConvInitScales(strengthOptimum, optimumScale, positionOptimum);
 
   os << LogIO::NORMAL3 << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << LogIO::POST;
+  //cout << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << endl;
   // cout << " its itsDirty is " << (*itsDirty)(positionOptimum);
   // cout << " at location " << positionOptimum[0] << " " << positionOptimum[1] << " " << positionOptimum[2];
 
@@ -1485,18 +1544,26 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
     real_1d_array x;
 	  x.setlength(length);
 
+    // for G55 ,etc
+    real_1d_array s;
+    s.setlength(length);
+
 	  // initialize starting point
 	  for (unsigned int i = 0; i < length; i+=2)
 	  {
-	      x[i] = tempx[i];
-	      x[i+1] = tempx[i+1];
+	      x[i] = tempx[i]; //amp
+	      x[i+1] = tempx[i+1]; //scale
+
+        s[i] = tempx[i]; //amp
+        s[i+1] = tempx[i+1]; //scale
 	  }
 
 	  ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
     ParamAlglibObj *ptrParam;
     ptrParam = &optParam;
 
-	  real_1d_array s = "[1,1]";
+	  //real_1d_array s = "[1,1]";
+      //real_1d_array s = "[0.001,10]";
 	  double epsg = 1e-3;
 	  double epsf = 1e-3;
 	  double epsx = 1e-3;
@@ -1508,7 +1575,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 	  minlbfgsreport rep;
 	  alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
 	  minlbfgsresults(state, x, rep);
-	  //double *x1 = x.getcontent();
+	  double *x1 = x.getcontent();
 	  //cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
 
 	  // end alglib bfgs optimization
@@ -1534,7 +1601,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 
     // debug
     os << LogIO::NORMAL3 << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
-    //cout << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << endl;
+    //cout << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << " at " << itsPositionOptimum << endl;
 
   } // finish bfgs optimization
 
@@ -1801,7 +1868,13 @@ void AspMatrixCleaner::switchedToHogbom(bool runlong)
 {
 	LogIO os(LogOrigin("AspMatrixCleaner", "switchedToHogbom", WHERE));
 
-	itsSwitchedToHogbom = true;
+  itsSwitchedToHogbom = true;
+
+  // if users set it, do not automatically switch to hogbom 
+  // this makes G55 result even better 
+  if (itsFusedThreshold < 0)
+    itsSwitchedToHogbom = false;
+  
   itsNthHogbom += 1;
   itsNumIterNoGoodAspen.resize(0);
   //itsNumHogbomIter = ceil(100 + 50 * (exp(0.05*itsNthHogbom) - 1)); // zhang's formula

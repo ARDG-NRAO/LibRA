@@ -121,11 +121,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //Matrix<Float> tempMat1(itsMatResidual);
       //itsCleaner.setOrigDirty( tempMat1 );
 
-      if (itsFusedThreshold < 0)
-      {
-        os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to 0." << LogIO::POST;
-        itsFusedThreshold = 0.0;
-      }
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
     }
