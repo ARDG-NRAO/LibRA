@@ -180,6 +180,7 @@ private:
   unsigned int itsNumNoChange; // number of times peakres rarely changes
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
+  casacore::IPosition blcDirty, trcDirty;
 };
 
 } //# NAMESPACE CASA - END
