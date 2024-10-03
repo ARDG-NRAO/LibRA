@@ -43,8 +43,8 @@
 #include <synthesis/TransformMachines2/AWVisResampler.h>
 #include <synthesis/TransformMachines2/MyCFArray.h>
 #include <hpg/hpg.hpp>
-//#include <hpg/hpg_indexing.hpp>
-#include <hpg/indexing.hpp>
+#include <hpg/hpg_indexing.hpp>
+// #include <hpg/indexing.hpp>
 #include <tuple>
 #define HPGNPOL 2
 #define VIS_IN_THE_BUCKET 20000
@@ -267,13 +267,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::tuple<bool, CountedPtr<CFBuffer>>
     initializeHPG(VBStore& vbs, const IPosition& gridShape);
 
-    std::vector<std::complex<hpg::vis_fp_t>> vis;
+    std::vector<std::complex<hpg::visibility_fp>> vis;
     std::vector<unsigned> grid_cubes, cf_cubes;
-    std::vector<hpg::vis_fp_t> weights;
-    std::vector<hpg::freq_fp_t> frequencies;
-    std::vector<hpg::vis_fp_t> cf_phase_screens;
-    std::vector<hpg::vis_fp_t> hpgPhases;
-    std::vector<hpg::uvw_fp_t> visUVW;
+    std::vector<hpg::vis_weight_fp> weights;
+    std::vector<hpg::vis_frequency_fp> frequencies;
+    std::vector<hpg::cf_phase_gradient_t> cf_phase_screens;
+    std::vector<hpg::vis_phase_fp> hpgPhases;
+    std::vector<hpg::vis_uvw_t> visUVW;
     uInt nVBS_p, maxVBList_p;
     Int cachedVBSpw_p;
     std::vector < std::vector<hpg::VisData<HPGNPOL> > > hpgVBList_p;
@@ -287,6 +287,28 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::shared_ptr<hpg::RWDeviceCFArray> rwdcf_ptr_p;
     std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
     std::chrono::duration<double> mkHPGVB_duration;
+
+
+    // std::vector<std::complex<hpg::vis_fp_t>> vis;
+    // std::vector<unsigned> grid_cubes, cf_cubes;
+    // std::vector<hpg::vis_fp_t> weights;
+    // std::vector<hpg::freq_fp_t> frequencies;
+    // std::vector<hpg::vis_fp_t> cf_phase_screens;
+    // std::vector<hpg::vis_fp_t> hpgPhases;
+    // std::vector<hpg::uvw_fp_t> visUVW;
+    // uInt nVBS_p, maxVBList_p;
+    // Int cachedVBSpw_p;
+    // std::vector < std::vector<hpg::VisData<HPGNPOL> > > hpgVBList_p;
+    // std::string HPGModelImageName_p;
+    // sumofweight_fp hpgSoW_p;
+    // hpg::Device HPGDevice_p;
+    // bool isHPGCustodian_p;
+    // hpg::CFSimpleIndexer cfsi_p;
+    // casa::refim::MyCFArray cfArray_p;
+    // std::shared_ptr<hpg::DeviceCFArray> dcf_ptr_p;
+    // std::shared_ptr<hpg::RWDeviceCFArray> rwdcf_ptr_p;
+    // std::chrono::time_point<std::chrono::steady_clock> mkHPGVB_startTime;
+    // std::chrono::duration<double> mkHPGVB_duration;
 
     unsigned int sizeofVisData_p,nVisPerBucket_p;
     std::vector<hpg::VisData<HPGNPOL> > hpgVB_p;

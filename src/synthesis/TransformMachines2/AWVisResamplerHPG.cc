@@ -40,8 +40,8 @@
 #include <map>
 #include <synthesis/TransformMachines2/FortranizedLoops.h>
 #include <hpg/hpg.hpp>
-//#include <hpg/hpg_indexing.hpp>
-#include <hpg/indexing.hpp>
+#include <hpg/hpg_indexing.hpp>
+// #include <hpg/indexing.hpp>
 #include <type_traits>
 #include <synthesis/TransformMachines2/HPGVisBuffer.inc>
 #include <thread>

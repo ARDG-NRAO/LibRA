@@ -45,7 +45,8 @@
 #include <casacore/casa/Logging/LogMessage.h>
 #include <casacore/casa/OS/Timer.h>
 #include <hpg/hpg.hpp>
-#include <hpg/indexing.hpp>
+#include <hpg/hpg_indexing.hpp>
+// #include <hpg/indexing.hpp>
 //#include <hpg.hpp>
 
 using sumofweight_fp = std::vector<std::vector<double>>;

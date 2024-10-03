@@ -51,7 +51,7 @@ if (LIBRA_USE_LIBSAKURA)
   target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 endif()
 # Libhpg dependency
-target_link_libraries(${LIB_NAME} PUBLIC Hpg::hpg)
+target_link_libraries(${LIB_NAME} PUBLIC hpg::hpg)
 # Libparafeed dependency
 target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
 
