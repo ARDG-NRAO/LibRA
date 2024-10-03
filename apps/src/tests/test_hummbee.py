@@ -71,7 +71,7 @@ class TestHummbee(unittest.TestCase):
 
 
     def test_residual_value(self):
-        self.assertTrue(compare_images_with_tolerance(self.goldDir/"unittest_hummbee_gold.residual", "unittest_hummbee.residual"), tol)
+        self.assertTrue(compare_images_with_tolerance(self.goldDir/"unittest_hummbee_gold2.residual", "unittest_hummbee.residual"), tol)
 
     # can't do the following because hummbee2py internally 
     # has interaction with casa that conflict when both 
