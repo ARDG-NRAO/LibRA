@@ -1726,7 +1726,7 @@ namespace casa
       std::string unit_p = freq.getFullUnit().getName();
       std::string errUnit("");
       if (unit_p.find("Hz") == std::string::npos) errUnit=unit_p;
-      if (unit.find("Hz") == std::string::npos) errUnit=unit;
+      if (unit.find("Hz") == std::string::npos) errUnit="[internal software bug] "+unit;
       if (errUnit != "")
 	throw(AipsError(errUnit+string(" is not a valid unit for frequency")));
       
