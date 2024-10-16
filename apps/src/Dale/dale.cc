@@ -100,7 +100,7 @@ void normalize(const std::string& imageName,
 // weight = weight / SoW
 // itsPBScaleFactor = max(weight)
 // residual = residual / (Sow * (sqrt(weight) * itsPBScaleFactor))
-// model = model / (sqrt(weight) * itsPBScaleFactor)
+// model = model / (sqrt(weight) / itsPBScaleFactor)
 {
   string targetName = imageName + "." + imType;
 
@@ -126,18 +126,34 @@ void normalize(const std::string& imageName,
 
       LatticeExpr<T> ratio;
       Float scalepb = 1.0;
-      LatticeExpr<T> deno = sqrt(abs(weight)) * itsPBScaleFactor;
+      if (imType == "residual")
+      {
+          LatticeExpr<T> deno = sqrt(abs(weight)) * itsPBScaleFactor;
+          stringstream os;
+          os << fixed << setprecision(numeric_limits<float>::max_digits10)
+             << "Dividing " << targetName << " by [ sqrt(weightimage) * "
+             << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
+          logio << os.str() << LogIO::POST;
 
-      stringstream os;
-      os << fixed << setprecision(numeric_limits<float>::max_digits10)
-         << "Dividing " << targetName << " by [ sqrt(weightimage) * "
-         << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
-      logio << os.str() << LogIO::POST;
+          scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+      }
+      else if (imType == "model")
+      {
+          LatticeExpr<T> deno = sqrt(abs(weight)) / itsPBScaleFactor;
 
-      scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
+          stringstream os;
+          os << fixed << setprecision(numeric_limits<float>::max_digits10)
+             << "Dividing " << targetName << " by [ sqrt(weightimage) / "
+             << itsPBScaleFactor << " ] to get to flat sky model before prediction.";
+          logio << os.str() << LogIO::POST;
+
+          scalepb=fabs(pblimit);
+      }
+
       LatticeExpr<T> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
       LatticeExpr<T> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
       ratio = ((newIM) * mask / (deno + maskinv));
+
       if (imType == "residual")
           target.copyData(ratio);
       else
