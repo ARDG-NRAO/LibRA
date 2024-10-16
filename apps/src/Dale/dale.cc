@@ -124,11 +124,11 @@ void normalize(const std::string& imageName,
       else
           newIM = LatticeExpr<T> (target);
 
-      LatticeExpr<T> ratio;
+      LatticeExpr<T> ratio, deno;
       Float scalepb = 1.0;
       if (imType == "residual")
       {
-          LatticeExpr<T> deno = sqrt(abs(weight)) * itsPBScaleFactor;
+          deno = sqrt(abs(weight)) * itsPBScaleFactor;
           stringstream os;
           os << fixed << setprecision(numeric_limits<float>::max_digits10)
              << "Dividing " << targetName << " by [ sqrt(weightimage) * "
@@ -139,7 +139,7 @@ void normalize(const std::string& imageName,
       }
       else if (imType == "model")
       {
-          LatticeExpr<T> deno = sqrt(abs(weight)) / itsPBScaleFactor;
+          deno = sqrt(abs(weight)) / itsPBScaleFactor;
 
           stringstream os;
           os << fixed << setprecision(numeric_limits<float>::max_digits10)
