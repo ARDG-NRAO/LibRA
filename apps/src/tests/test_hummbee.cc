@@ -52,7 +52,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  int nterms=2;
+  int nterms=1;
   float gain=0.1;
   float threshold=1e-4;
   float nsigma=1.5;
@@ -134,7 +134,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
-  int nterms=2;
+  int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
   float nsigma=0.0;
@@ -216,7 +216,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
-  int nterms=2;
+  int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
   float nsigma=0.0;
@@ -304,7 +304,7 @@ TEST(HummbeeTest, UIFactory) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  int nterms=2;
+  int nterms=1;
   float gain=0.1; 
   float threshold=0.0;
   float nsigma=0.0;
