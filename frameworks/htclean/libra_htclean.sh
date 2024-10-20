@@ -34,14 +34,13 @@ griddingAPP=${LIBRAHOME}/install/bin/roadrunner
 deconvolutionAPP=${LIBRAHOME}/install/bin/hummbee
 normalizationAPP=${LIBRAHOME}/install/bin/dale
 
+name=`basename $0 .sh`
 
 # Input arguments
-imgname=$1
+imagename=$1
 ncycle=${2:-10}
-parfile=${3:-libra_htclean.def}
+input_file=${3:-${name}.def}
 
-BIN=/users/fmadsen/htclean/
-GO="\n inp \n go \n";
 
 # restart=1 will pick up files from an existing htclean run and continue CLEANing
 # set start_index to the current number of imaging cycles + 1 (next imaging cycle after restart)
@@ -61,26 +60,42 @@ then
     #echo "Computing initial images...";
     # makeWeights
     #echo "Making weight images using HPG...";
-    change_parameters="\n imagename=${imgname}.weight \n mode=weight"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${griddingAPP} help=dbg 2>| weight.out
+    logname=weight-$(date +%Y%m%d-%H%M%S)
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}.weight" >> ${logname}.def
+    echo "mode = weight" >> ${logname}.def
+    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
  
     # makePSF
     #echo "Making PSF using HPG...";
-    change_parameters="\n imagename=${imgname}.psf \n mode=psf"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${griddingAPP} help=dbg 2>| psf.out
+    logname=psf-$(date +%Y%m%d-%H%M%S)
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}.psf" >> ${logname}.def
+    echo "mode = psf" >> ${logname}.def
+    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
  
     # normalize the PSF and make primary beam
-    change_parameters="\n imagename=${imgname} \n imtype=psf \n computepb=1"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${normalizationAPP} help=dbg 2>| norm_psf.out
- 
+    logname=norm_psf-$(date +%Y%m%d-%H%M%S)
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}" >> ${logname}.def
+    echo "imtype = psf" >> ${logname}.def
+    echo "computepb = 1" >> ${logname}.def
+    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
+
     #echo "Making Dirty image using HPG...";
     # make dirty image
-    change_parameters="\n imagename=${imgname}.residual \n mode=residual"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${griddingAPP} help=dbg 2>| dirty.out
+    logname=dirty-$(date +%Y%m%d-%H%M%S)
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}.residual" >> ${logname}.def
+    echo "mode = residual" >> ${logname}.def
+    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
 
     # normalize the residual
-    change_parameters="\n imagename=${imgname} \n imtype=residual"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${normalizationAPP} help=dbg 2>| norm_dirty.out
+    logname=norm_dirty-$(date +%Y%m%d-%H%M%S)
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}" >> ${logname}.def
+    echo "imtype = residual" >> ${logname}.def
+    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
 else
     echo "Doing only the update step..."
 fi
@@ -90,27 +105,43 @@ i=$start_index
 while [ ! -f stopIMCycles ] && [ "${i}" -lt "${ncycle}" ]
 do
     # run hummbee for updateModel deconvolution iterations
-    change_parameters="\n imagename=${imgname} \n mode=deconvolve"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${deconvolutionAPP} help=dbg 2>| updateModel_cycle${i}.out
-    grep "Reached n-sigma threshold" updateModel_cycle${i}.out
+    logname=modelUpdate-$(date +%Y%m%d-%H%M%S)_imcycle${i}
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}" >> ${logname}.def
+    echo "mode = deconvolve" >> ${logname}.def
+    ${deconvolutionAPP} help=def,${logname}.def &> ${logname}.log
+    grep "Reached global stopping criteria\|Reached n-sigma threshold" ${logname}.log
     [ "$?" -eq "0" ] && touch stopIMCycles
 
-    # run acme to multiply model by weights
-    change_parameters="\n imagename=${imgname} \n imtype=model"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${normalizationAPP} help=dbg 2>| divideModel_cycle${i}.out
-    
-    # run roadrunner for updateDir
-    change_parameters="\n imagename=${imgname}.residual \n modelimagename=${imgname}.divmodel \n mode=residual"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${griddingAPP} help=dbg 2>| updateDir_cycle${i}.out
+    # run dale to divide model by weights
+    logname=norm_model-$(date +%Y%m%d-%H%M%S)_imcycle${i}
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}" >> ${logname}.def
+    echo "imtype = model" >> ${logname}.def
+    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
 
-    # run acme to divide residual by weights
-    change_parameters="\n imagename=${imgname} \n imtype=residual"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${normalizationAPP} help=dbg 2>| divideResidual_cycle${i}.out
-       
+    # run roadrunner for updateDir
+    logname=residual-$(date +%Y%m%d-%H%M%S)_imcycle${i}
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}.residual" >> ${logname}.def
+    echo "modelimagename=${imagename}.divmodel" >> ${logname}.def
+    echo "mode = residual" >> ${logname}.def
+    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
+
+    # run dale to divide residual by weights
+    logname=norm_residual-$(date +%Y%m%d-%H%M%S)_imcycle${i}
+    cp ${input_file} ${logname}.def
+    echo "imagename = ${imagename}" >> ${logname}.def
+    echo "imtype = residual" >> ${logname}.def
+    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
+
     i=$((i+1))
 done
 
-    # run hummbee for restore
-    change_parameters="\n imagename=${imgname} \n mode=restore"
-    echo -e "load ${parfile} ${change_parameters} $GO" | ${deconvolutionAPP} help=dbg 2>| makeFinalImages.out
+# run hummbee for restore
+logname=makeFinalImages-$(date +%Y%m%d-%H%M%S)
+cp ${input_file} ${logname}.def
+echo "imagename = ${imagename}" >> ${logname}.def
+echo "mode = restore" >> ${logname}.def
+${deconvolutionAPP} help=def,${logname}.def &> ${logname}.log
 
