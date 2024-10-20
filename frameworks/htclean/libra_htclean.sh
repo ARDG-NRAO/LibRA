@@ -25,21 +25,216 @@
 
 #!/bin/bash
 
+usage()
+{
+    echo "$0 : Script to make images using LibRA components."
+    echo "Usage: $0 -i <imagename> [-n <ncycles>] [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-d] [-h]"$'\n'\
+         "       -i set the basename of the images to be generated (without extension)"$'\n'\
+         "       -n (optional) set the maximum number of imaging cycles. Default: 10 "$'\n'\
+	 "       -p (optional) set the name of the iput parameter file. Default: `basename $0 .sh`.def"$'\n'\
+	 "       -l (optional) directory to save .log and .def files. Default: save to current directory."$'\n'\
+         "       -L (optional) LibRA root directory. Default is <user home directory>/libra."$'\n'\
+         "       -d (optional) run as part of a distributed workflow. Default: False"$'\n'\
+         "       -h prints help and exits"$'\n\n'\
+	 "       Example: $0 -i test_image -d (for a job that makes test_image.* images and runs on a distributed computing environment.)"$'\n'
+}
+
+lsdir()
+{
+    path=$1
+    echo ""
+    echo "Listing contents of ${path}:"
+    echo "`ls -l ${path}`"$'\n\n'
+}
+
+setupLibra()
+{
+    # Add casa-data to .casarc
+    echo "measures.directory:${PWD}/casa-data" > ~/.casarc
+
+    libra_bundle=`find . -name 'libra.*.sh'`
+    sh ${libra_bundle} libra;# rm -rf ${libra_bundle}
+    libra_install=$?
+    if [ ${libra_install} -ne "0" ]
+    then
+        return 5 # Error code to indicate failure to install libra
+    else
+        libraBIN=${PWD}/libra/bin
+        return 0
+    fi
+
+    echo "Setting up roadrunner on `hostname`. Output of nvidia-smi is:"
+    echo "`nvidia-smi`"
+    echo "`nvidia-smi --query-gpu=name,compute_cap --format=csv --id=${NVIDIA_VISIBLE_DEVICES}`"
+    echo ""
+
+    nvidia-smi --query-gpu=timestamp,name,utilization.memory,memory.used --format=csv -l 5 --id=${NVIDIA_VISIBLE_DEVICES} > working/logs/nvidia.${jobmode}.${partId}.out &
+
+    bundles_dir=`ls libra/bundles`
+    echo "bundles_dir: $bundles_dir"
+    if [ -e /.singularity.d/libs/libcuda.so.1 ]
+    then
+        cp -f /.singularity.d/libs/libcuda.so.1 libra/bundles/${bundles_dir}/lib64
+    else
+        if [ -e /lib64/libcuda.so.1 ]
+        then
+            cp -f /lib64/libcuda.so.1 libra/bundles/${bundles_dir}/lib64
+        else
+            echo "libcuda.so.1: File not found on knwon paths. Trying with packaged version"
+        fi
+    fi
+
+    echo "LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}"
+    echo ""
+
+    # OMP_PROC_BIND should always be set to false. Setting it to true limits the data rate when
+    # more than one instance of roadrunner runs on the same execute host
+    export OMP_PROC_BIND=false
+    export NPROCS=0
+}
+
+createTar()
+{
+    if [ $# -gt 0 ]
+    then
+        imglist="$@"
+        for img in ${imglist}
+        do
+            name=${imagename}.${img}
+            echo "Making tarball: ${name}.tar"
+            if [ -e ${name} ]
+            then
+                tar cf ${name}.tar ${name}
+            else
+                echo "${name}: file not found."
+            return 1
+            fi
+        done
+        return 0
+    else
+        echo "$0 expects at least one argument, none given."
+        return 2
+    fi
+}
+
+runapp()
+{
+    state=$1
+    shift
+
+    while true
+    do
+        case "$1" in
+	    -t) imtype=$2          ; shift 2  ;;
+	    -m) modelimagename=$2  ; shift 2  ;;
+	    -c) imcycle=_imcycle$2 ; shift 2  ;;
+	    *) break ;;
+        esac
+    done
+
+    case "$state" in
+	weight|psf)
+            app=${griddingAPP}
+            logname=${logdir}${state}-$(date +%Y%m%d-%H%M%S)${imcycle}
+            cp ${input_file} ${logname}.def
+	    echo "imagename = ${imagename}.${state}" >> ${logname}.def
+	    echo "mode = ${state}" >> ${logname}.def
+	    ;;
+	residual)
+	    app=${griddingAPP}
+            logname=${logdir}${state}-$(date +%Y%m%d-%H%M%S)${imcycle}
+            cp ${input_file} ${logname}.def
+	    echo "imagename = ${imagename}.${state}" >> ${logname}.def
+	    echo "mode = residual" >> ${logname}.def
+	    [ -n "${modelimagename}" ] && echo "modelimagename = ${modelimagename}" >> ${logname}.def
+	    ;;
+        normalize)
+            app=${normalizationAPP}
+            logname=${logdir}${state}_${imtype}-$(date +%Y%m%d-%H%M%S)${imcycle}
+            cp ${input_file} ${logname}.def
+	    echo "imagename = ${imagename}" >> ${logname}.def
+	    echo "imtype = ${imtype}" >> ${logname}.def
+	    [ "${imtype}" = "psf" ] && echo "computepb = 1" >> ${logname}.def
+	    ;;
+        deconvolve | restore)
+	    app=${deconvolutionAPP}
+	    if [ $state = deconvolve ]
+	    then
+                logname=${logdir}modelUpdate-$(date +%Y%m%d-%H%M%S)${imcycle}
+	    else
+		logname=${logdir}makeFinalImages-$(date +%Y%m%d-%H%M%S)${imcycle}
+	    fi
+            cp ${input_file} ${logname}.def
+	    echo "imagename = ${imagename}" >> ${logname}.def
+	    echo "mode = ${state}" >> ${logname}.def
+	    ;;
+    esac
+
+    ${app} help=def,${logname}.def &> ${logname}.log
+    if [ $state = deconvolve ]
+    then
+        grep "Reached global stopping criteria\|Reached n-sigma threshold" ${logname}.log
+        [ "$?" -eq "0" ] && touch stopIMCycles
+    fi
+}
 
 OMP_NUM_THREADS=1
-OMP_PROC_BIND=False
 
-LIBRAHOME=/home/gpuhost003/fmadsen/libra
-griddingAPP=${LIBRAHOME}/install/bin/roadrunner
-deconvolutionAPP=${LIBRAHOME}/install/bin/hummbee
-normalizationAPP=${LIBRAHOME}/install/bin/dale
-
-name=`basename $0 .sh`
+# Default parameters
+OSGjob=false
+imagename=""
+ncycle=10
+input_file=`basename $0 .sh`.def
+LIBRAHOME=${HOME}/libra
 
 # Input arguments
-imagename=$1
-ncycle=${2:-10}
-input_file=${3:-${name}.def}
+while getopts "i:l:L:n:p:dh" option
+do
+    case "$option" in
+        d) OSGjob=true                            ;;
+        i) imagename=${OPTARG}                    ;;
+        l) logdir=${OPTARG}/                      ;;
+	n) ncycle=${OPTARG}                       ;;
+	p) input_file=${OPTARG}                   ;;
+	L) LIBRAHOME=${OPTARG}                    ;;
+	h) usage
+           exit 0                                 ;;
+	*) echo "${option}: Unknown option"
+	   usage
+	   exit 1                                 ;;
+    esac
+done
+
+if [ -n "${imagename}" ]
+then
+    echo "Running $0 with the following input parameters:"
+    echo "imagename = ${imagename}"
+    echo "ncycle = ${ncycle}"
+    echo "input_file = ${input_file}"
+    echo ""
+else
+    echo "Imagename not set. Exiting now."$'\n'
+    usage
+    exit 1
+fi
+
+if ${OSGjob}
+then
+    setupLibra
+    lsdir
+else
+    libraBIN=${LIBRAHOME}/install/bin
+fi
+
+if [ -n "${logdir}" ]
+then
+    echo "logdir = ${logdir}"
+    mkdir -p ${logdir}
+fi
+
+griddingAPP=${libraBIN}/roadrunner
+deconvolutionAPP=${libraBIN}/hummbee
+normalizationAPP=${libraBIN}/dale
 
 
 # restart=1 will pick up files from an existing htclean run and continue CLEANing
@@ -50,52 +245,27 @@ start_index=1
 
 # Begin execution block
 
-echo "Using gridding application: "${griddingAPP}
+echo "Using gridding application:      "${griddingAPP}
 echo "Using deconvolution application: "${deconvolutionAPP}
 echo "Using normalization application: "${normalizationAPP}
-
+echo ""
 
 if [ "$restart" -eq "0" ]
 then
-    #echo "Computing initial images...";
     # makeWeights
-    #echo "Making weight images using HPG...";
-    logname=weight-$(date +%Y%m%d-%H%M%S)
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}.weight" >> ${logname}.def
-    echo "mode = weight" >> ${logname}.def
-    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
+    runapp weight 
  
     # makePSF
-    #echo "Making PSF using HPG...";
-    logname=psf-$(date +%Y%m%d-%H%M%S)
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}.psf" >> ${logname}.def
-    echo "mode = psf" >> ${logname}.def
-    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
- 
-    # normalize the PSF and make primary beam
-    logname=norm_psf-$(date +%Y%m%d-%H%M%S)
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}" >> ${logname}.def
-    echo "imtype = psf" >> ${logname}.def
-    echo "computepb = 1" >> ${logname}.def
-    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
+    runapp psf
 
-    #echo "Making Dirty image using HPG...";
+    # normalize the PSF and make primary beam
+    runapp normalize -t psf
+
     # make dirty image
-    logname=dirty-$(date +%Y%m%d-%H%M%S)
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}.residual" >> ${logname}.def
-    echo "mode = residual" >> ${logname}.def
-    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
+    runapp residual -c 0
 
     # normalize the residual
-    logname=norm_dirty-$(date +%Y%m%d-%H%M%S)
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}" >> ${logname}.def
-    echo "imtype = residual" >> ${logname}.def
-    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
+    runapp normalize -t residual -c 0
 else
     echo "Doing only the update step..."
 fi
@@ -105,43 +275,25 @@ i=$start_index
 while [ ! -f stopIMCycles ] && [ "${i}" -lt "${ncycle}" ]
 do
     # run hummbee for updateModel deconvolution iterations
-    logname=modelUpdate-$(date +%Y%m%d-%H%M%S)_imcycle${i}
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}" >> ${logname}.def
-    echo "mode = deconvolve" >> ${logname}.def
-    ${deconvolutionAPP} help=def,${logname}.def &> ${logname}.log
-    grep "Reached global stopping criteria\|Reached n-sigma threshold" ${logname}.log
-    [ "$?" -eq "0" ] && touch stopIMCycles
+    runapp deconvolve -c ${i}
 
     # run dale to divide model by weights
-    logname=norm_model-$(date +%Y%m%d-%H%M%S)_imcycle${i}
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}" >> ${logname}.def
-    echo "imtype = model" >> ${logname}.def
-    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
+    runapp normalize -t model -c ${i}
 
     # run roadrunner for updateDir
-    logname=residual-$(date +%Y%m%d-%H%M%S)_imcycle${i}
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}.residual" >> ${logname}.def
-    echo "modelimagename=${imagename}.divmodel" >> ${logname}.def
-    echo "mode = residual" >> ${logname}.def
-    ${griddingAPP} help=def,${logname}.def &> ${logname}.log
+    runapp residual -m ${imagename}.divmodel -c ${i}
 
     # run dale to divide residual by weights
-    logname=norm_residual-$(date +%Y%m%d-%H%M%S)_imcycle${i}
-    cp ${input_file} ${logname}.def
-    echo "imagename = ${imagename}" >> ${logname}.def
-    echo "imtype = residual" >> ${logname}.def
-    ${normalizationAPP} help=def,${logname}.def &> ${logname}.log
-
+    runapp normalize -t residual -c ${i}
+     
     i=$((i+1))
 done
 
 # run hummbee for restore
-logname=makeFinalImages-$(date +%Y%m%d-%H%M%S)
-cp ${input_file} ${logname}.def
-echo "imagename = ${imagename}" >> ${logname}.def
-echo "mode = restore" >> ${logname}.def
-${deconvolutionAPP} help=def,${logname}.def &> ${logname}.log
+runapp restore
 
+if [ "${OSGjob}" = "True" ]
+then
+    createTar weight sumwt psf mask model residual image image.pbcor
+    lsdir
+fi
