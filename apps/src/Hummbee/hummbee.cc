@@ -297,11 +297,12 @@ float Hummbee(
       
 
       std::shared_ptr<SIImageStore> itsImages;
-      if( deconvolver == "mtmfs" )
+      if( deconvolver == "mtmfs" ||
+          (deconvolver == "asp" && nterms > 1))
         {  itsImages.reset( new SIImageStoreMultiTerm( imageName, nterms, true, true ) ); }
       else
         {  itsImages.reset( new SIImageStore( imageName, true, true) ); }
-
+      
       float MaxPsfSidelobe =  itsImages->getPSFSidelobeLevel();
 
       Float masksum;

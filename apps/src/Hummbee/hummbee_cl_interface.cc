@@ -207,7 +207,7 @@ int main(int argc, char **argv)
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  int nterms=2;
+  int nterms=1;
   float gain=0.1; 
   float threshold=0.0;
   float nsigma=0.0;

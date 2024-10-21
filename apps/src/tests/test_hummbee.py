@@ -43,7 +43,7 @@ class TestHummbee(unittest.TestCase):
         self.scales = []
         self.largestscale = -1
         self.fusedthreshold = 0
-        self.nterms = 2
+        self.nterms = 1
         self.gain = 0.1
         self.threshold = 1e-4
         self.nsigma = 1.5
