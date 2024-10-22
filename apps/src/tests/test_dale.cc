@@ -112,6 +112,48 @@ TEST(DaleTest, AppLevelResidual) {
   remove_all(testDir);
 }
 
+TEST(DaleTest, AppLevelModel) {
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+  string testdir = testDir.string();
+  
+  // create test dir 
+  std::filesystem::create_directory(testDir);
+
+  //copy over from gold_standard to test dir
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.model", testDir/"refim_point_wterm_vlad_step3.model", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.weight", testDir/"refim_point_wterm_vlad_step3.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.sumwt", testDir/"refim_point_wterm_vlad_step3.sumwt", copy_options::recursive);
+    
+  //Step into test dir 
+  std::filesystem::current_path(testDir);
+  // note, workdir, psfcutoff and facets are actually not used un acme
+  string imageName="refim_point_wterm_vlad_step3", deconvolver="hogbom", normtype="flatnoise", imType="model";
+  float pblimit=0.005, psfcutoff=0.35;
+  int nterms=1, facets=1;
+  vector<float> restoringbeam;
+  bool computePB = false;
+
+  Dale::dale(imageName, deconvolver,
+    normtype, imType, pblimit,
+    nterms, facets, psfcutoff, restoringbeam,
+    computePB);
+
+  float tol = 0.01;
+  float goldValLoc0 = 1.52205098;
+  
+  PagedImage<Float> modimage("refim_point_wterm_vlad_step3.divmodel");
+  EXPECT_NEAR(modimage(IPosition(4,1158,1384,0,0)), goldValLoc0, tol);
+  
+  //move to parent directory
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
+}
+
 
 TEST(DaleTest, UIFactory) {
     // The Factory Settings.
