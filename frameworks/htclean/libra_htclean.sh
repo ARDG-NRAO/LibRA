@@ -31,8 +31,8 @@ usage()
     echo "Usage: $0 -i <imagename> [-n <ncycles>] [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-d] [-h]"$'\n'\
          "       -i set the basename of the images to be generated (without extension)"$'\n'\
          "       -n (optional) set the maximum number of imaging cycles. Default: 10 "$'\n'\
-	 "       -p (optional) set the name of the iput parameter file. Default: `basename $0 .sh`.def"$'\n'\
-	 "       -l (optional) directory to save .log and .def files. Default: save to current directory."$'\n'\
+         "       -p (optional) set the name of the iput parameter file. Default: `basename $0 .sh`.def"$'\n'\
+         "       -l (optional) directory to save .log and .def files. Default: save to current directory."$'\n'\
          "       -L (optional) LibRA root directory. Default is <user home directory>/libra."$'\n'\
          "       -d (optional) run as part of a distributed workflow. Default: False"$'\n'\
          "       -h prints help and exits"$'\n\n'\
@@ -186,6 +186,7 @@ imagename=""
 ncycle=10
 input_file=`basename $0 .sh`.def
 LIBRAHOME=${HOME}/libra
+logdir=${PWD}
 
 # Input arguments
 while getopts "i:l:L:n:p:dh" option
@@ -194,14 +195,14 @@ do
         d) OSGjob=true                            ;;
         i) imagename=${OPTARG}                    ;;
         l) logdir=${OPTARG}/                      ;;
-	n) ncycle=${OPTARG}                       ;;
-	p) input_file=${OPTARG}                   ;;
-	L) LIBRAHOME=${OPTARG}                    ;;
-	h) usage
+    	n) ncycle=${OPTARG}                       ;;
+    	p) input_file=${OPTARG}                   ;;
+    	L) LIBRAHOME=${OPTARG}                    ;;
+    	h) usage
            exit 0                                 ;;
-	*) echo "${option}: Unknown option"
-	   usage
-	   exit 1                                 ;;
+    	*) echo "${option}: Unknown option"
+    	   usage
+    	   exit 1                                 ;;
     esac
 done
 
@@ -226,11 +227,7 @@ else
     libraBIN=${LIBRAHOME}/install/bin
 fi
 
-if [ -n "${logdir}" ]
-then
-    echo "logdir = ${logdir}"
-    mkdir -p ${logdir}
-fi
+mkdir -p ${logdir}
 
 griddingAPP=${libraBIN}/roadrunner
 deconvolutionAPP=${libraBIN}/hummbee
@@ -253,19 +250,24 @@ echo ""
 if [ "$restart" -eq "0" ]
 then
     # makeWeights
-    runapp weight 
- 
+#    runapp weight 
+    runapp.sh ${griddingAPP} weight ${imagename} ${input_file} ${logdir}
+  
     # makePSF
-    runapp psf
+#    runapp psf
+    runapp.sh ${griddingAPP} psf ${imagename} ${input_file} ${logdir}
 
     # normalize the PSF and make primary beam
-    runapp normalize -t psf
+#    runapp normalize -t psf
+    runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t psf
 
     # make dirty image
-    runapp residual -c 0
+#    runapp residual -c 0
+    runapp.sh ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -c 0
 
     # normalize the residual
-    runapp normalize -t residual -c 0
+#    runapp normalize -t residual -c 0
+    runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c 0
 else
     echo "Doing only the update step..."
 fi
@@ -275,22 +277,27 @@ i=$start_index
 while [ ! -f stopIMCycles ] && [ "${i}" -lt "${ncycle}" ]
 do
     # run hummbee for updateModel deconvolution iterations
-    runapp deconvolve -c ${i}
+#    runapp deconvolve -c ${i}
+    runapp.sh ${deconvolutionAPP} deconvolve ${imagename} ${input_file} ${logdir} -c ${i}
 
     # run dale to divide model by weights
-    runapp normalize -t model -c ${i}
+#    runapp normalize -t model -c ${i}
+    runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t model -c ${i}
 
     # run roadrunner for updateDir
-    runapp residual -m ${imagename}.divmodel -c ${i}
+#    runapp residual -m ${imagename}.divmodel -c ${i}
+    runapp.sh ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -m ${imagename}.divmodel -c ${i}
 
     # run dale to divide residual by weights
-    runapp normalize -t residual -c ${i}
+#    runapp normalize -t residual -c ${i}
+    runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c ${i}
      
     i=$((i+1))
 done
 
 # run hummbee for restore
-runapp restore
+#runapp restore
+runapp.sh ${deconvolutionAPP} restore ${imagename} ${input_file} ${logdir}
 
 if [ "${OSGjob}" = "True" ]
 then
