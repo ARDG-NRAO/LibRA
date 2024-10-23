@@ -34,14 +34,14 @@ usage()
          "       mode         : application specific mode if running roadrunner or hummbee. Set to normalize if running dale."$'\n'\
          "       imagename    : basename of the image to be generated or processed"$'\n'\
          "       input file   : name of input parameter file"$'\n'\
-	     "       logdir       : directory to save .log and .def files."$'\n'\
+         "       logdir       : directory to save .log and .def files."$'\n'\
          "   Optional parameters:"$'\n'\
          "       -t set imtype when running dale."$'\n'\
          "       -f set name of convolution function cache (cfcache) to use with mode = weight | psf | residual."$'\n'\
          "       -s set modelimagename for model subtraction if running roadrunner with mode=residual."$'\n'\
          "       -c index of the current imaging cycle."$'\n'\
          "       -h prints help and exits"$'\n'\
-	     "   Example: $0 /path/to/roadrunner weight my_image my_parameters.def -l /path/to/my_logs (for running roadrunner to compute weights and save logs to given location.)"$'\n\n'
+         "   Example: $0 /path/to/roadrunner weight my_image my_parameters.def -l /path/to/my_logs (for running roadrunner to compute weights and save logs to given location.)"$'\n\n'
 }
 
 app=$1
@@ -56,40 +56,41 @@ do
     case "$1" in
     -t) imtype=$2               ; shift 2  ;;
     -f) cfcache=$2              ; shift 2  ;;
-    -s) modelimagename=$2       ; shift 2  ;;
+    -m) modelimagename=$2       ; shift 2  ;;
     -c) imcycle=_imcycle$2      ; shift 2  ;;
     -l) logdir=$2/              ; shift 2  ;;
+    -h) usage; exit                        ;;
     *) break ;;
     esac
 done
 
 case "$mode" in
-	weight | psf | residual)
+    weight | psf | residual)
         logname=${logdir}${mode}-$(date +%Y%m%d-%H%M%S)${imcycle}
         cp ${input_file} ${logname}.def
-	    echo "imagename = ${imagename}.${mode}" >> ${logname}.def
-	    echo "mode = ${mode}" >> ${logname}.def
+        echo "imagename = ${imagename}.${mode}" >> ${logname}.def
+        echo "mode = ${mode}" >> ${logname}.def
         [ -n "${modelimagename}" ] && echo "modelimagename = ${modelimagename}" >> ${logname}.def
         [ -n "${cfcache}" ] && echo "cfcache = ${cfcache}" >> ${logname}.def
-	    ;;
+	;;
     normalize)
         logname=${logdir}${mode}_${imtype}-$(date +%Y%m%d-%H%M%S)${imcycle}
         cp ${input_file} ${logname}.def
-	    echo "imagename = ${imagename}" >> ${logname}.def
-	    echo "imtype = ${imtype}" >> ${logname}.def
-	    [ "${imtype}" = "psf" ] && echo "computepb = 1" >> ${logname}.def
-	    ;;
+        echo "imagename = ${imagename}" >> ${logname}.def
+        echo "imtype = ${imtype}" >> ${logname}.def
+        [ "${imtype}" = "psf" ] && echo "computepb = 1" >> ${logname}.def
+        ;;
     deconvolve | restore)
-	    if [ $mode = deconvolve ]
-	    then
+        if [ $mode = deconvolve ]
+        then
             logname=${logdir}modelUpdate-$(date +%Y%m%d-%H%M%S)${imcycle}
-	    else
-		    logname=${logdir}makeFinalImages-$(date +%Y%m%d-%H%M%S)${imcycle}
-	    fi
+        else
+            logname=${logdir}makeFinalImages-$(date +%Y%m%d-%H%M%S)${imcycle}
+	fi
         cp ${input_file} ${logname}.def
-	    echo "imagename = ${imagename}" >> ${logname}.def
-	    echo "mode = ${mode}" >> ${logname}.def
-	    ;;
+	echo "imagename = ${imagename}" >> ${logname}.def
+        echo "mode = ${mode}" >> ${logname}.def
+        ;;
 esac
 
 ${app} help=def,${logname}.def &> ${logname}.log
