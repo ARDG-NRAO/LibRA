@@ -1013,9 +1013,18 @@ void AspMatrixCleaner::setInitScales()
     int numscale = floor(itsUserLargestScale / itsPsfWidth);
     if (numscale == 0)
     {
-      itsNInitScales = 1;
+      /*itsNInitScales = 1;
+      itsInitScaleSizes.resize(itsNInitScales);
+      itsInitScaleSizes[0] = 0.0f;*/
+      //If the `largestscale` provided by user is smaller than psf width, 
+      //the initial scales would be [0, largestscale, psf_width]. 
+      //This is to make WAsp have the same good result as before 
+      itsNInitScales = 3;
       itsInitScaleSizes.resize(itsNInitScales);
       itsInitScaleSizes[0] = 0.0f;
+      itsInitScaleSizes[1] = itsUserLargestScale;
+      itsInitScaleSizes[2] = itsPsfWidth;
+
       os << LogIO::WARN << "`largestscale` " << itsUserLargestScale << " is smaller than the psf width. Only 0 scale is used" << LogIO::POST;
     }
     else 

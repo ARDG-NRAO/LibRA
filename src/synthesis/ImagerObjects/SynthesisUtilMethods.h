@@ -409,6 +409,7 @@ public:
 
   // Mapper Type.
   casacore::String mType;
+  casacore::Int nTaylorTerms;
 
 };
 
