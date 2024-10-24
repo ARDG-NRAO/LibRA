@@ -3580,9 +3580,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  ftmachine="sd";
 	}
 
+  err += readVal( inrec, String("nterms"), nTaylorTerms );
+
 	String deconvolver;
 	err += readVal( inrec, String("deconvolver"), deconvolver );
-	if( deconvolver== "mtmfs" ) 
+	if( deconvolver== "mtmfs" || deconvolver== "asp" && nTaylorTerms > 1) 
 	  { mType="multiterm"; }// Takes precedence over imagemosaic
 
 	// facets	
@@ -3806,6 +3808,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     gridpar.define("jwidth", QuantityToString(jwidth) );
     gridpar.define("minweight", minWeight );
     gridpar.define("clipminmax", clipMinMax );
+    gridpar.define("nterms", nTaylorTerms);
 
     if( mType=="multiterm") gridpar.define("deconvolver","mtmfs");
     ///    else gridpar.define("deconvolver","singleterm");

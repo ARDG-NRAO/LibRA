@@ -32,7 +32,7 @@ PYBIND11_MODULE(hummbee2py, m)
     "scales"_a,
     "largestscale"_a=-1,
     "fusedthreshold"_a=0,
-    "nterms"_a=2,
+    "nterms"_a=1,
     "gain"_a=0.1,
     "threshold"_a=0.0,
     "nsigma"_a=0.0,

@@ -102,8 +102,8 @@ public:
   void getFluxByBins(const std::vector<casacore::Float>& scaleSizes,const std::vector<casacore::Float>& optimum, casacore::Int binSize, std::vector<casacore::Float>&  sumFluxByBins, std::vector<casacore::Float>&  rangeFluxByBins);
 
 
-//protected:
-private:
+protected:
+//private:
 
   using MatrixCleaner::findMaxAbs;
   using MatrixCleaner::findMaxAbsMask;

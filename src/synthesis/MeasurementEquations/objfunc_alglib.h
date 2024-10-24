@@ -74,7 +74,7 @@ public:
   casacore::Matrix<casacore::Float>  getterDAsp() { return dAsp; }
 };
 
-void objfunc_alglib(const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad, void *ptr) 
+inline void objfunc_alglib(const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad, void *ptr)
 {
     // retrieve params for GSL bfgs optimization
     casa::ParamAlglibObj *MyP = (casa::ParamAlglibObj *) ptr; //re-cast back to ParamAlglibObj to retrieve images

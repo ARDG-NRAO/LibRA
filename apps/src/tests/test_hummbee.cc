@@ -52,7 +52,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  int nterms=2;
+  int nterms=1;
   float gain=0.1;
   float threshold=1e-4;
   float nsigma=1.5;
@@ -134,7 +134,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
-  int nterms=2;
+  int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
   float nsigma=0.0;
@@ -186,6 +186,82 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
 }
 
 
+TEST(HummbeeTest,  AppLevelWAsp) {
+
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
+  // create test dir 
+  std::filesystem::create_directory(testDir);
+
+  copy(goldDir/"wasp_jet.psf.tt0", testDir/"wasp_jet.psf.tt0", copy_options::recursive);
+  copy(goldDir/"wasp_jet.psf.tt1", testDir/"wasp_jet.psf.tt1", copy_options::recursive);
+  copy(goldDir/"wasp_jet.psf.tt2", testDir/"wasp_jet.psf.tt2", copy_options::recursive);
+  copy(goldDir/"wasp_jet.psf.tt3", testDir/"wasp_jet.psf.tt3", copy_options::recursive);
+  copy(goldDir/"wasp_jet.psf.tt4", testDir/"wasp_jet.psf.tt4", copy_options::recursive);
+  copy(goldDir/"wasp_jet.residual.tt0", testDir/"wasp_jet.residual.tt0", copy_options::recursive);
+  copy(goldDir/"wasp_jet.residual.tt1", testDir/"wasp_jet.residual.tt1", copy_options::recursive);
+  copy(goldDir/"wasp_jet.residual.tt2", testDir/"wasp_jet.residual.tt2", copy_options::recursive);
+  copy(goldDir/"wasp_jet.sumwt.tt0", testDir/"wasp_jet.sumwt.tt0", copy_options::recursive);
+  copy(goldDir/"wasp_jet.sumwt.tt1", testDir/"wasp_jet.sumwt.tt1", copy_options::recursive);
+  copy(goldDir/"wasp_jet.sumwt.tt2", testDir/"wasp_jet.sumwt.tt2", copy_options::recursive);
+  copy(goldDir/"wasp_jet.sumwt.tt3", testDir/"wasp_jet.sumwt.tt3", copy_options::recursive);
+  copy(goldDir/"wasp_jet.sumwt.tt4", testDir/"wasp_jet.sumwt.tt4", copy_options::recursive);
+
+
+  // Set the current working directory to the test directory
+  current_path(testDir);
+
+   // Check that the return value is true
+  string imageName = "wasp_jet";
+  string modelImageName = "wasp_jet.image";
+  string deconvolver="asp", specmode="mfs";
+  vector<float> scales;
+  float largestscale = 5;
+  float fusedthreshold = 0.05;
+  int nterms=3;
+  float gain=0.6;
+  float threshold=0.2;
+  float nsigma=0.0;
+  int cycleniter=3;
+  float cyclefactor=1.0;
+  bool doPBCorr = false;
+  vector<string> mask;
+  string imagingMode="deconvolve";
+
+  float PeakRes = Hummbee(imageName, modelImageName,
+                 deconvolver,
+                 scales,
+                 largestscale, fusedthreshold,
+                 nterms,
+                 gain, threshold,
+                 nsigma,
+                 cycleniter, cyclefactor,
+                 mask, specmode,
+                 doPBCorr,
+                 imagingMode
+                 );
+
+  PagedImage<Float> modelimage("wasp_jet.model.tt0");
+
+  float tol = 0.05;
+  float goldPeakRes = 2.43175;
+  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+
+  float goldValLoc0 = 0.000633522;
+  EXPECT_NEAR(modelimage(IPosition(4,254,331,0,0)), goldValLoc0, tol);
+  
+
+  // Set the current working directory back to the parent dir
+  current_path(testDir.parent_path());
+
+  remove_directory(testDir);
+}
+
+
 TEST(HummbeeTest,  AppLevelMfsRestore) {
 
   // Get the test name
@@ -216,7 +292,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
-  int nterms=2;
+  int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
   float nsigma=0.0;
@@ -304,7 +380,7 @@ TEST(HummbeeTest, UIFactory) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
-  int nterms=2;
+  int nterms=1;
   float gain=0.1; 
   float threshold=0.0;
   float nsigma=0.0;
