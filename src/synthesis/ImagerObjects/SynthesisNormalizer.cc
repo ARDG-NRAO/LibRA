@@ -129,18 +129,22 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	{ itsMapperType = "default";}
       */
 
-      if( normpars.isDefined("deconvolver") )  // A single string
-	{ String dec = normpars.asString( RecordFieldId("deconvolver")); 
-	  if (dec == "mtmfs") { itsMapperType="multiterm"; }
-	  else itsMapperType="default";
-	}
-      else
-	{ itsMapperType = "default";}
-
       if( normpars.isDefined("nterms") )  // A single int
 	{ itsNTaylorTerms = normpars.asuInt( RecordFieldId("nterms")); }
       else
 	{ itsNTaylorTerms = 1;}
+
+      
+      if( normpars.isDefined("deconvolver") )  // A single string
+      { 
+        String dec = normpars.asString( RecordFieldId("deconvolver"));
+        if (dec == "mtmfs" || dec == "asp" && itsNTaylorTerms > 1) 
+          itsMapperType="multiterm";
+        else 
+          itsMapperType="default";
+      }
+      else
+        itsMapperType = "default";
 
       if( normpars.isDefined("facets") )  // A single int
 	{ itsNFacets = normpars.asuInt( RecordFieldId("facets")); }
@@ -434,7 +438,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       }
     catch(AipsError &x)
       {
-	//throw( AipsError("Error in constructing a Deconvolver : "+x.getMesg()) );
+	throw( AipsError("Error in constructing a Deconvolver : "+x.getMesg()) ); 
 	err = err += String(x.getMesg()) + "\n";
 	foundFullImage = false;
       }

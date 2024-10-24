@@ -151,8 +151,21 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (decpars.specmode == String("mfs"))
         isSingle = true;
 
-	    itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.fusedThreshold, isSingle, decpars.largestscale));
+
+      if (decpars.nTaylorTerms > 1) // wide-band
+        itsDeconvolver.reset(new SDAlgorithmMTAspClean(decpars.nTaylorTerms, decpars.fusedThreshold, isSingle, decpars.largestscale));
+      else //narrow-band. WAsp can be use for cube imaging as well but for now let AspClean handle that.
+	      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.fusedThreshold, isSingle, decpars.largestscale));
 	  }
+  /*else if (decpars.algorithm==String("asp")) 
+    {
+      bool isSingle = false;
+      if (decpars.specmode == String("mfs"))
+        isSingle = true;
+
+      //narrow-band
+      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.fusedThreshold, isSingle, decpars.largestscale));
+    }*/
 	else
 	  {
 	    throw( AipsError("Un-known algorithm : "+decpars.algorithm) );
@@ -955,10 +968,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   std::shared_ptr<SIImageStore> SynthesisDeconvolver::makeImageStore( String imagename, Bool noRequireSumwt )
   {
     std::shared_ptr<SIImageStore> imstore;
-    if( itsDeconvolver->getAlgorithmName() == "mtmfs" )
-      {  imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true, noRequireSumwt ) ); }
+
+    if (itsDeconvolver->getAlgorithmName() == "mtmfs" ||
+        itsDeconvolver->getAlgorithmName() == "asp" && itsDeconvolver->getNTaylorTerms() > 1)
+    {
+      //std::cout << "The " << itsDeconvolver->getAlgorithmName() << " is calling SIImageStoreMultiTerm to makeImageStore" << std::endl;
+      imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true ) );
+      //std:cout << "Done successfully" << std::endl;
+    }
     else
-      {  imstore.reset( new SIImageStore( imagename, true, noRequireSumwt ) ); }
+      imstore.reset( new SIImageStore( imagename, true ) );
 
     return imstore;
 
