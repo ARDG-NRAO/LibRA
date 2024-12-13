@@ -236,7 +236,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     virtual std::shared_ptr<std::complex<double>> getGridPtr(size_t& size) const override;
     virtual std::shared_ptr<double> getSumWeightsPtr(size_t& size) const override;
-    bool createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
+    bool createHPG(const uint& nVBRows,
+		   const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
 		   const PolMapType& mVals,  const PolMapType& mNdx,
 		   const PolMapType& conjMVals, const PolMapType& conjMNdx);
     double getMakeHPGVBTime() {return mkHPGVB_duration.count();}

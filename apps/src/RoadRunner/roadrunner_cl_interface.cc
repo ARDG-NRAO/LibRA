@@ -152,10 +152,10 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
 
       i=1;clgetValp("usepointing", doPointing,i,watchPoints);
-      i=2;i=clgetNValp("pointingoffsetsigdev", posigdev,i);
+      i=2;i=clgetValp("pointingoffsetsigdev", posigdev,i);
 
-      i=1;dbgclgetBValp("normalize",normalize,i);
-      i=1;dbgclgetBValp("spwdataiter",doSPWDataIter,i);
+      i=1;cldbggetBValp("normalize",normalize,i);
+      i=1;cldbggetBValp("spwdataiter",doSPWDataIter,i);
      EndCL();
 
      // do some input parameter checking now.

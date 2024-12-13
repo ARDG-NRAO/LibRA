@@ -514,7 +514,8 @@ namespace casa{
   // Create an instance of the HPG.  If a new HPG was created, if
   // requested, load the model image as well.
   //
-  bool AWVisResamplerHPG::createHPG(const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
+  bool AWVisResamplerHPG::createHPG(const uint& nVBRows,
+				    const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
 				    const PolMapType& mVals,  const PolMapType& mNdx,
 				    const PolMapType& conjMVals, const PolMapType& conjMNdx)
   {
@@ -529,20 +530,21 @@ namespace casa{
     int nProcs=2;
 
     nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
-    log_l << "NPROCS: " << nProcs << endl;
+    log_l << "NPROCS: " << nProcs << LogIO::POST;
 
     nVisPerBucket_p = hpgVBBucket_p.size();
+    nVisPerBucket_p = nVisPerBucket_p <= nVBRows ? nVBRows : nVisPerBucket_p;
     //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
 					 nVisPerBucket_p);
 
     
-    log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << endl;
+    log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << LogIO::POST;
 
     hpgVBBucket_p.resize(nVisPerBucket_p);
 
-    cerr << "Gridder initialized..." << endl;
+    log_l << "Gridder initialized..." << LogIO::POST;
     bool do_degrid;
     do_degrid = sendModelImage(HPGModelImageName_p,gridSize);
     if (do_degrid)
@@ -590,7 +592,8 @@ namespace casa{
     bool do_degrid=(HPGModelImageName_p != "");
 
     // If this is the first pass, create the HPG object.
-    if (hpgGridder_p==NULL) do_degrid = createHPG(nx,ny,nGridPol, nGridChan,
+    if (hpgGridder_p==NULL) do_degrid = createHPG(vbs.vb_p->nRows(),
+						  nx,ny,nGridPol, nGridChan,
 						  mVals, mNdx, conjMVals, conjMNdx);
 
     if (reloadCFs)

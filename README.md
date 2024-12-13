@@ -78,9 +78,7 @@ Library (STL)_.  With a translation layer RA-specific libraries
 (CASACore, RA Data Access/Iterators) may be replaced for use of RA
 Algorithms in other domains.
 
-| Current Stack | Target Stack |
-| :----:         | :----:        |
-| ![Stack of software layers](doc/figures/RRStack-Libra.png "LibRA software stack") | ![Stack of software layers](doc/figures/RRStack-Intended-2.png "Target LibRA software stack")
+![LibRA Software Stack](doc/figures/libra_stack.png)
 
 [`libparafeed`](https://github.com/sanbee/parafeed.git) in the figures is a standalone library for embedded user interface used for command-line configuration of LibRA apps.  
 
