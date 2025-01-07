@@ -40,6 +40,9 @@ then
 	exit 0
 fi
 
+# Default is where this script resides
+LIBRAHOME=$(dirname $(readlink -f $0));
+
 while getopts "i:l:L:p:h" option
 do
     case "$option" in
@@ -55,10 +58,10 @@ do
     esac
 done
 
+runApp=${LIBRAHOME}/runapp.sh
 libraBIN=${LIBRAHOME}/bin
 griddingAPP=${libraBIN}/roadrunner
 normalizationAPP=${libraBIN}/dale
-runApp=$(dirname $(readlink -f $0))/runapp.sh
 mkdir -p ${logdir}
 
 # Begin execution block

@@ -164,7 +164,7 @@ then
     setupLibra
     lsdir
 else
-    libraBIN=${LIBRAHOME}/install/bin
+    libraBIN=${LIBRAHOME}
 fi
 
 mkdir -p ${logdir}
@@ -172,7 +172,10 @@ mkdir -p ${logdir}
 griddingAPP=${libraBIN}/roadrunner
 deconvolutionAPP=${libraBIN}/hummbee
 normalizationAPP=${libraBIN}/dale
-
+# Expect runapp.sh to be in the same location as this script.
+# We should make this logic a bit more friendly, like:
+#      Use local copy if found, else use the following setting.
+runApp=$(dirname $(readlink -f $0))/runapp.sh
 
 # restart=1 will pick up files from an existing htclean run and continue CLEANing
 # set start_index to the current number of imaging cycles + 1 (next imaging cycle after restart)
@@ -190,19 +193,19 @@ echo ""
 if [ "$restart" -eq "0" ]
 then
     # makeWeights
-    ${PWD}/runapp.sh ${griddingAPP} weight ${imagename} ${input_file} ${logdir}
+    ${runApp} ${griddingAPP} weight ${imagename} ${input_file} ${logdir}
   
     # makePSF
-    ${PWD}/runapp.sh ${griddingAPP} psf ${imagename} ${input_file} ${logdir}
+    ${runApp} ${griddingAPP} psf ${imagename} ${input_file} ${logdir}
 
     # normalize the PSF and make primary beam
-    ${PWD}/runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t psf
+    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t psf
 
     # make dirty image
-    ${PWD}/runapp.sh ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -c 0
+    ${runApp} ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -c 0
 
     # normalize the residual
-    ${PWD}/runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c 0
+    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c 0
 else
     echo "Doing only the update step..."
 fi
@@ -212,22 +215,22 @@ i=$start_index
 while [ ! -f stopIMCycles ] && [ "${i}" -lt "${ncycle}" ]
 do
     # run hummbee for updateModel deconvolution iterations
-    ${PWD}/runapp.sh ${deconvolutionAPP} deconvolve ${imagename} ${input_file} ${logdir} -c ${i}
+    ${runApp} ${deconvolutionAPP} deconvolve ${imagename} ${input_file} ${logdir} -c ${i}
 
     # run dale to divide model by weights
-    ${PWD}/runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t model -c ${i}
+    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t model -c ${i}
 
     # run roadrunner for updateDir
-    ${PWD}/runapp.sh ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -m ${imagename}.divmodel -c ${i}
+    ${runApp} ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -m ${imagename}.divmodel -c ${i}
 
     # run dale to divide residual by weights
-    ${PWD}/runapp.sh ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c ${i}
+    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c ${i}
      
     i=$((i+1))
 done
 
 # run hummbee for restore
-${PWD}/runapp.sh ${deconvolutionAPP} restore ${imagename} ${input_file} ${logdir}
+${runApp} ${deconvolutionAPP} restore ${imagename} ${input_file} ${logdir}
 
 if [ "${OSGjob}" = "True" ]
 then
