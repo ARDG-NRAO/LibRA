@@ -47,7 +47,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
-        bool& computePB)
+        bool& computePB, bool& normalize_weight)
 {
   clSetPrompt(interactive);
 
@@ -72,6 +72,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       //      i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
       i=1;clgetBValp("computepb", computePB, i);
+      i=1;clgetBValp("normalizeweight", normalize_weight, i);
       
       EndCL();
     }
@@ -96,6 +97,7 @@ int main(int argc, char **argv)
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   bool computePB=false;
+  bool normalize_weight=true;
   bool restartUI=false;
   bool interactive = true;
 
@@ -104,13 +106,13 @@ int main(int argc, char **argv)
     {
       UI(restartUI,argc, argv, interactive, 
         imageName, deconvolver, normtype, 
-        imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
+        imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB, normalize_weight);
       
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      Dale::dale(imageName, deconvolver, normtype, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB);
+      Dale::dale(imageName, deconvolver, normtype, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB, normalize_weight);
     }
   catch (clError& x)
     {

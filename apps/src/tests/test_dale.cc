@@ -34,11 +34,12 @@ TEST(DaleTest, AppLevelPSF) {
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   bool computePB = true;
+  bool normalize_weight = true;
 
   Dale::dale(imageName, deconvolver, 
     normtype, imType, pblimit, 
     nterms, facets, psfcutoff, restoringbeam, 
-    computePB);
+    computePB, normalize_weight);
   
 
   // Check that the .psf is generated
@@ -92,11 +93,12 @@ TEST(DaleTest, AppLevelResidual) {
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   bool computePB = false;
+  bool normalize_weight = false;
 
   Dale::dale(imageName, deconvolver,
     normtype, imType, pblimit,
     nterms, facets, psfcutoff, restoringbeam,
-    computePB);
+    computePB, normalize_weight);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
@@ -136,11 +138,12 @@ TEST(DaleTest, AppLevelModel) {
   int nterms=1, facets=1;
   vector<float> restoringbeam;
   bool computePB = false;
+  bool normalize_weight = false;
 
   Dale::dale(imageName, deconvolver,
     normtype, imType, pblimit,
     nterms, facets, psfcutoff, restoringbeam,
-    computePB);
+    computePB, normalize_weight);
 
   float tol = 0.01;
   float goldValLoc0 = 1.52205098;
@@ -164,14 +167,15 @@ TEST(DaleTest, UIFactory) {
   float pblimit=0.2, psfcutoff=0.35;
   int nterms=1, facets=1;
   vector<float> restoringbeam;
-  bool computePB=False;
-  bool restartUI=False;;
+  bool computePB=false;
+  bool normalize_weight=false;
+  bool restartUI=false;;
   bool interactive = false;
   
   UI(restartUI, argc, argv, interactive, 
     imageName, deconvolver, normtype, imType, 
     pblimit, nterms, facets, psfcutoff, 
-    restoringbeam, computePB);
+    restoringbeam, computePB, normalize_weight);
 }
 
 

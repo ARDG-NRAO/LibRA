@@ -52,7 +52,7 @@ namespace Dale
 		float& pblimit, int& nterms, int& facets,
 		float& psfcutoff,
 		vector<float>& restoringbeam,
-		bool& computePB);
+		bool& computePB, bool& normalize_weight);
 }
 
 	void UI(bool restart, int argc, char **argv, bool interactive,
@@ -61,7 +61,7 @@ namespace Dale
         float& pblimit, int& nterms, int& facets,
         float& psfcutoff,
         vector<float>& restoringbeam,
-        bool& computePB);
+        bool& computePB, bool& normalize_weight);
 
 
 #endif
