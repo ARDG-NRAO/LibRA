@@ -224,12 +224,13 @@ namespace Dale
     return dynamic_cast<ImageInterface<T>*>(imPtr);
   }
 
-  void dale(std::string& imageName, std::string& deconvolver,
-	    string& normtype, string& imType,
-	    float& pblimit, int& nterms, int& facets,
+  void dale(std::string& imageName,
+	    std::string& normtype,
+	    std::string& imType,
+	    float& pblimit, 
 	    float& psfcutoff,
-	    vector<float>& restoringbeam,
-	    bool& computePB, bool normalize_weight)
+	    bool& computePB,
+	    bool& normalize_weight)
   {
     //
     //---------------------------------------------------
@@ -264,30 +265,6 @@ namespace Dale
 	ImageInterface<Float>* targetImage = checkAndOpen<float>(targetName);
 	ImageInterface<Float>* wImage = checkAndOpen<float>(weightName);
 	ImageInterface<Float>* swImage = checkAndOpen<float>(sumwtName);
-	
-	// ImageInterface<Float> *targetImage, *wImage, *swImage;
-	// LatticeBase *targetPtr, *wPtr, *swPtr;
-	// if (! imageExists(targetName)) {
-	//   logio << "Image " << targetName << " does not exist." << LogIO::EXCEPTION;
-	// }
-	
-	// targetPtr = ImageOpener::openImage (targetName);
-	// targetImage = dynamic_cast<ImageInterface<Float>*>(targetPtr);
-	
-	// if (! imageExists(weightName))
-	//   {
-	//     logio << "Image " << weightName << " does not exist." << LogIO::EXCEPTION;
-	//   }
-	// wPtr = ImageOpener::openImage(weightName);
-	// wImage = dynamic_cast<ImageInterface<Float>*>(wPtr);
-	
-	// if (! imageExists(sumwtName))
-	//   {
-	//     logio << "Image " << sumwtName << " does not exist." << LogIO::EXCEPTION;
-	//   }
-	// swPtr = ImageOpener::openImage(sumwtName);
-	// swImage = dynamic_cast<ImageInterface<Float>*>(swPtr);
-	
 	
 	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
 	normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
