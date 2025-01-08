@@ -134,6 +134,7 @@ namespace Dale
 		 ImageInterface<T>& sumwt,
 		 const std::string& imType,
 		 const float& pblimit,
+		 const bool normalize_weight,
 		 LogIO& logio)
   // normtype, nterms, facets, psfcutoff and restoring beam are not functional yet, will add to interface as needed
   // Normalization equations implemented in this version:
@@ -153,9 +154,12 @@ namespace Dale
       {
 	float psfFactor = max(target.get());
 	LatticeExpr<T> newPSF = target / psfFactor;
-	LatticeExpr<T> newWeight = weight / SoW;
 	target.copyData(newPSF);
-	weight.copyData(newWeight);
+	if (normalize_weight)
+	  {
+	    LatticeExpr<T> newWeight = weight / SoW;
+	    weight.copyData(newWeight);
+	  }
       }
     else if ((imType == "residual") || (imType == "model"))
       {
@@ -225,7 +229,7 @@ namespace Dale
 	    float& pblimit, int& nterms, int& facets,
 	    float& psfcutoff,
 	    vector<float>& restoringbeam,
-	    bool& computePB)
+	    bool& computePB, bool normalize_weight)
   {
     //
     //---------------------------------------------------
@@ -286,7 +290,7 @@ namespace Dale
 	
 	
 	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, logio); 
+	normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
 	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
 	if (computePB)
