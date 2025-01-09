@@ -30,14 +30,16 @@ TEST(DaleTest, AppLevelPSF) {
   
   // note, workdir, psfcutoff and facets are actually not used un acme
   string imageName="refim_point_wterm_vlad", normtype="flatnoise", imType="psf";
+  string wtImageName, sowImageName;
   float pblimit=0.005, psfcutoff=0.35;
   bool computePB = true;
   bool normalize_weight = true;
 
   Dale::dale(imageName, 
-    normtype, imType, pblimit, 
-    psfcutoff,
-    computePB, normalize_weight);
+	     wtImageName, sowImageName,
+	     normtype, imType, pblimit, 
+	     psfcutoff,
+	     computePB, normalize_weight);
   
 
   // Check that the .psf is generated
@@ -86,12 +88,15 @@ TEST(DaleTest, AppLevelResidual) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2", normtype="flatnoise", imType="residual";
+  string imageName="refim_point_wterm_vlad_step2",
+    normtype="flatnoise", imType="residual";
+  string wtImageName, sowImageName;
   float pblimit=0.005, psfcutoff=0.35;
   bool computePB = false;
   bool normalize_weight = false;
 
   Dale::dale(imageName, 
+	     wtImageName, sowImageName,
 	     normtype, imType, pblimit,
 	     psfcutoff, 
 	     computePB, normalize_weight);
@@ -129,15 +134,19 @@ TEST(DaleTest, AppLevelModel) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step3", normtype="flatnoise", imType="model";
+  string imageName="refim_point_wterm_vlad_step3",
+    normtype="flatnoise", imType="model";
+  string wtImageName, sowImageName;
+  
   float pblimit=0.005, psfcutoff=0.35;
   bool computePB = false;
   bool normalize_weight = false;
 
   Dale::dale(imageName, 
-    normtype, imType, pblimit,
-    psfcutoff, 
-    computePB, normalize_weight);
+	     wtImageName, sowImageName,
+	     normtype, imType, pblimit,
+	     psfcutoff, 
+	     computePB, normalize_weight);
 
   float tol = 0.01;
   float goldValLoc0 = 1.52205098;

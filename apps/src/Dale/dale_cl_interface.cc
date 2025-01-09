@@ -62,13 +62,10 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       int i;
 
       i=1;clgetSValp("imagename", imageName,i);  
-      //i=1;clgetSValp("deconvolver", deconvolver,i);  
       //i=1;clgetSValp("normtype", normtype,i);
       i=1;clgetSValp("imtype", imType, i);
       clSetOptions("imtype",{"psf","residual","model"});
       i=1;clgetFValp("pblimit", pblimit,i);
-      //      i=1;clgetIValp("nterms", nterms,i);
-      //      i=1;clgetIValp("facets", facets,i);
       i=1;clgetFValp("psfcutoff", psfcutoff,i);
       i=1;clgetBValp("computepb", computePB, i);
       i=1;clgetBValp("normalizeweight", normalize_weight, i);
@@ -92,6 +89,7 @@ int main(int argc, char **argv)
   //---------------------------------------------------
   //
   string imageName="", normtype="flatnoise", imType="psf";
+  string wtImageName="", sowImageName="";
   float pblimit=0.2, psfcutoff=0.35;
   bool computePB=false;
   bool normalize_weight=true;
@@ -110,7 +108,11 @@ int main(int argc, char **argv)
       //
       //---------------------------------------------------
       //
-      Dale::dale(imageName, normtype, imType, pblimit, psfcutoff, computePB, normalize_weight);
+      Dale::dale(imageName, wtImageName, sowImageName,
+		 normtype, imType,
+		 pblimit, psfcutoff,
+		 computePB,
+		 normalize_weight);
     }
   catch (clError& x)
     {

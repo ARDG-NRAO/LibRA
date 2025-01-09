@@ -130,8 +130,8 @@ namespace Dale
   template <class T>
   void normalize(const std::string& imageName,
 		 ImageInterface<T>& target,
-		 ImageInterface<T>& weight,
-		 ImageInterface<T>& sumwt,
+		 const ImageInterface<T>& weight,
+		 const ImageInterface<T>& sumwt,
 		 const std::string& imType,
 		 const float& pblimit,
 		 const bool normalize_weight,
@@ -146,6 +146,7 @@ namespace Dale
   // model = model / (sqrt(weight) / itsPBScaleFactor)
   {
     string targetName = imageName + "." + imType;
+    TableInfo& info = target.tableInfo();
     
     IPosition pos(4,0,0,0,0);
     float SoW = sumwt.getAt(pos);
@@ -158,7 +159,7 @@ namespace Dale
 	if (normalize_weight)
 	  {
 	    LatticeExpr<T> newWeight = weight / SoW;
-	    weight.copyData(newWeight);
+	    //	    weight.copyData(newWeight);
 	  }
       }
     else if ((imType == "residual") || (imType == "model"))
@@ -224,13 +225,20 @@ namespace Dale
     return dynamic_cast<ImageInterface<T>*>(imPtr);
   }
 
-  void dale(std::string& imageName,
-	    std::string& normtype,
-	    std::string& imType,
-	    float& pblimit, 
-	    float& psfcutoff,
-	    bool& computePB,
-	    bool& normalize_weight)
+  inline std::string getExtension(const std::string& name)
+  {
+    return name.substr(name.find_last_of(".") + 1);
+  }
+
+  void dale(const std::string& imageName,
+	    const std::string& wtImageName,
+	    const std::string& sowImageName,
+	    const std::string& normtype,
+	    const std::string& imType,
+	    const float& pblimit, 
+	    const float& psfcutoff,
+	    const bool& computePB,
+	    const bool& normalize_weight)
   {
     //
     //---------------------------------------------------
@@ -241,9 +249,10 @@ namespace Dale
     
     try
       {
+	targetName = imageName;
 	if ((imType == "residual") || (imType == "psf") || (imType == "model"))
 	  {
-	    targetName = imageName + "." + imType;
+	    if (getExtension(targetName)=="") targetName += "." + imType;
 	    logio << "Running normalization for " << targetName << LogIO::POST;
 	  }
 	else
@@ -259,12 +268,10 @@ namespace Dale
 	  if (type != "Image")
 	    throw(AipsError("imagename does not point to an image."));
 	}
-	// checking if all necessary images exist before opening to avoid segfaults
-	// consider to move code to open images to a function
-	
+	// checking if all necessary images exist before opening
 	ImageInterface<Float>* targetImage = checkAndOpen<float>(targetName);
-	ImageInterface<Float>* wImage = checkAndOpen<float>(weightName);
-	ImageInterface<Float>* swImage = checkAndOpen<float>(sumwtName);
+	const ImageInterface<Float>* wImage = checkAndOpen<float>(weightName);
+	const ImageInterface<Float>* swImage = checkAndOpen<float>(sumwtName);
 	
 	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
 	normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
