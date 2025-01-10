@@ -351,11 +351,11 @@ namespace Dale
 	
 	    setNormalized<float>(*targetImage);
 	    getImageType<float>(*targetImage, type, subType);
-	    cerr << "Target image type: "
-		 << type << " "
-		 << subType << " "
-		 << targetImage->name() << " "
-		 << endl;
+	    // cerr << "Target image type: "
+	    // 	 << type << " "
+	    // 	 << subType << " "
+	    // 	 << targetImage->name() << " "
+	    // 	 << endl;
 	    if (computePB)
 	      {
 		pbName   = imageName + ".pb";
