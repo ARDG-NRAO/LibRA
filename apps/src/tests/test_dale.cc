@@ -167,6 +167,7 @@ TEST(DaleTest, UIFactory) {
   char* argv[] = {"./dale"};
 
   string imageName="notEmpty", normtype="flatnoise", imType="psf";
+  string weightImageName, sowImageName;
   float pblimit=0.2, psfcutoff=0.35;
   bool computePB=false;
   bool normalize_weight=false;
@@ -174,9 +175,10 @@ TEST(DaleTest, UIFactory) {
   bool interactive = false;
   
   UI(restartUI, argc, argv, interactive, 
-    imageName, normtype, imType, 
-    pblimit, psfcutoff, 
-    computePB, normalize_weight);
+     imageName, weightImageName, sowImageName,
+     normtype, imType, 
+     pblimit, psfcutoff, 
+     computePB, normalize_weight);
 }
 
 

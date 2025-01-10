@@ -43,6 +43,8 @@
 
 void UI(bool restart, int argc, char **argv, bool interactive,
 	std::string& imageName, 
+	std::string& weightImageName, 
+	std::string& sowImageName, 
         string& normtype, string& imType,
         float& pblimit, 
         float& psfcutoff,
@@ -59,17 +61,29 @@ void UI(bool restart, int argc, char **argv, bool interactive,
    clRetry();
   try
     {
+      SMap watchPoints; VString exposedKeys;
       int i;
 
-      i=1;clgetSValp("imagename", imageName,i);  
+      i=1;clgetValp("imagename", imageName,i);  
       //i=1;clgetSValp("normtype", normtype,i);
-      i=1;clgetSValp("imtype", imType, i);
+
+      InitMap(watchPoints,exposedKeys);
+      exposedKeys.push_back("weightimage");
+      exposedKeys.push_back("sowimage");
+      watchPoints["residual"]=exposedKeys;
+      watchPoints["model"]=exposedKeys;
+
+      i=1;clgetValp("imtype", imType, i, watchPoints);
+      i=1;clgetValp("weightimage", weightImageName, i);
+      i=1;clgetValp("sowimage", sowImageName, i);
       clSetOptions("imtype",{"psf","residual","model"});
-      i=1;clgetFValp("pblimit", pblimit,i);
-      i=1;clgetFValp("psfcutoff", psfcutoff,i);
-      i=1;clgetBValp("computepb", computePB, i);
-      i=1;clgetBValp("normalizeweight", normalize_weight, i);
+
+      i=1;clgetValp("pblimit", pblimit,i);
+      i=1;clgetValp("psfcutoff", psfcutoff,i);
+      i=1;clgetValp("computepb", computePB, i);
+      i=1;clgetValp("normalizeweight", normalize_weight, i);
       
+
       EndCL();
     }
   catch (clError x)
@@ -100,7 +114,8 @@ int main(int argc, char **argv)
   try
     {
       UI(restartUI,argc, argv, interactive, 
-	 imageName, normtype, 
+	 imageName, wtImageName, sowImageName,
+	 normtype, 
 	 imType, pblimit, psfcutoff,
 	 computePB, normalize_weight);
       

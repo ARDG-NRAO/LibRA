@@ -60,6 +60,8 @@ namespace Dale
 
 void UI(bool restart, int argc, char **argv, bool interactive,
         std::string& imageName, 
+        std::string& wtImageName, 
+        std::string& sowImageName, 
         string& normtype, string& imType,
         float& pblimit, 
         float& psfcutoff,

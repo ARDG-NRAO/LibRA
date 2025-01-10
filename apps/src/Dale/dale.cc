@@ -32,19 +32,74 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/Path.h>
-
+//#include <Utilities/LibRA_Utils.h>
 
 //
 //-------------------------------------------------------------------------
+//
 
 namespace Dale
 {
+  std::string removeExtension(const std::string& path) {
+    if (path == "." || path == "..")
+      return path;
+    
+    size_t pos = path.find_last_of("\\/.");
+    if (pos != std::string::npos && path[pos] == '.')
+      return path.substr(0, pos);
+    
+    return path;
+  }
+  //
+  //-------------------------------------------------------------------------
+  //
+  inline std::string getExtension(const std::string& name)
+  {
+    return name.substr(name.find_last_of(".") + 1);
+  }
+  //
+  //-------------------------------------------------------------------------
+  //
   bool imageExists(const string& imagename)
   {
     Directory image(imagename);
     return image.exists();
   }
-  
+  //
+  //-------------------------------------------------------------------------
+  //
+  template <class T>
+  void getImageType(PagedImage<T>& im,
+		    std::string& type, std::string& subType)
+  {
+    type    = im.table().tableInfo().type();
+    subType = im.table().tableInfo().subType();
+  }
+  //
+  //-------------------------------------------------------------------------
+  //
+  template <class T>
+  bool isNormalized(PagedImage<T>& im)
+  {
+    string type, subType;
+    getImageType(im, type,subType);
+
+    return (subType.find("normalized") != std::string::npos);
+  }
+  //
+  //-------------------------------------------------------------------------
+  //
+  template <class T>
+  void setNormalized(PagedImage<T>& im)
+  {
+    string type, subType;
+    getImageType(im, type,subType);
+    im.table().tableInfo().setSubType(subType+" normalized");
+    im.table().flushTableInfo();
+  }
+  //
+  //-------------------------------------------------------------------------
+  //
   void printImageMax(const string& imType,
 		     const ImageInterface<Float>& target,
 		     const ImageInterface<Float>& weight,
@@ -65,7 +120,9 @@ namespace Dale
       logio << os.str() << LogIO::POST;
     }
   }
-  
+  //
+  //-------------------------------------------------------------------------
+  //
   template <class T>
   void compute_pb(const string& pbName,
 		  const ImageInterface<T>& weight,
@@ -84,7 +141,9 @@ namespace Dale
        << "Max PB value is " << mpb;
     logio << os.str() << LogIO::POST;
   }
-  
+  //
+  //-------------------------------------------------------------------------
+  //
   // Normalizer for residual and model images.
   template <class T>
   void normalizeModel(const std::string& name,
@@ -99,39 +158,41 @@ namespace Dale
     // residual = residual / (Sow * (sqrt(weight) * itsPBScaleFactor))
     // model = model / (sqrt(weight) / itsPBScaleFactor)
     LatticeExpr<T> newTarget = LatticeExpr<T> (target);
-
+    
     IPosition pos(4,0,0,0,0);
     T SoW = sumwt.getAt(pos);
     LatticeExpr<T> normalizedWeight = weight / SoW;
-    weight.copyData(normalizedWeight);
+    //    weight.copyData(normalizedWeight);
     double itsPBScaleFactor = sqrt(max(weight.get()));
     
     LatticeExpr<T> ratio, deno;
     deno = sqrt(abs(weight)) / itsPBScaleFactor;
-	    
+    
     stringstream os;
     os << fixed << setprecision(numeric_limits<float>::max_digits10)
        << "Dividing " << name << " by [ sqrt(weightimage) / "
        << itsPBScaleFactor << " ] to get to flat sky model before prediction.";
     logio << os.str() << LogIO::POST;
-
-    	
+    
+    
     float scalepb=fabs(pblimit);
     LatticeExpr<T> mask( iif( (deno) > scalepb , 1.0, 0.0 ) );
     LatticeExpr<T> maskinv( iif( (deno) > scalepb , 0.0, 1.0 ) );
     ratio = ((newTarget) * mask / (deno + maskinv));
-
+    
     string newModelName = name + ".divmodel";
     PagedImage<T> tmp(weight.shape(), weight.coordinates(), newModelName);
     tmp.copyData(ratio);
     printImageMax(string("model"), tmp, weight, sumwt, logio, "after");
   }
-
+  //
+  //-------------------------------------------------------------------------
+  //
   template <class T>
   void normalize(const std::string& imageName,
-		 ImageInterface<T>& target,
-		 const ImageInterface<T>& weight,
-		 const ImageInterface<T>& sumwt,
+		 PagedImage<T>& target,
+		 PagedImage<T>& weight,
+		 PagedImage<T>& sumwt,
 		 const std::string& imType,
 		 const float& pblimit,
 		 const bool normalize_weight,
@@ -146,7 +207,6 @@ namespace Dale
   // model = model / (sqrt(weight) / itsPBScaleFactor)
   {
     string targetName = imageName + "." + imType;
-    TableInfo& info = target.tableInfo();
     
     IPosition pos(4,0,0,0,0);
     float SoW = sumwt.getAt(pos);
@@ -164,18 +224,18 @@ namespace Dale
       }
     else if ((imType == "residual") || (imType == "model"))
       {
-	LatticeExpr<T> newIM;
-	double itsPBScaleFactor = sqrt(max(weight.get()));
-	if (imType == "residual")
-          newIM = target / SoW;
-	else
-          newIM = LatticeExpr<T> (target);
+	LatticeExpr<T> newIM(target), normWt(weight);
+
+	if (!isNormalized(weight)) normWt = weight / SoW;
+	
+	double itsPBScaleFactor = sqrt(max(normWt.get()));
+	if (imType == "residual") newIM = target / SoW;
 	
 	LatticeExpr<T> ratio, deno;
 	Float scalepb = 1.0;
 	if (imType == "residual")
 	  {
-	    deno = sqrt(abs(weight)) * itsPBScaleFactor;
+	    deno = sqrt(abs(normWt)) * itsPBScaleFactor;
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
 	       << "Dividing " << targetName << " by [ sqrt(weightimage) * "
@@ -186,7 +246,7 @@ namespace Dale
 	  }
 	else if (imType == "model")
 	  {
-	    deno = sqrt(abs(weight)) / itsPBScaleFactor;
+	    deno = sqrt(abs(normWt)) / itsPBScaleFactor;
 	    
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
@@ -206,30 +266,29 @@ namespace Dale
 	else
 	  {
 	    string newModelName = imageName + ".divmodel";
-	    PagedImage<T> tmp(weight.shape(), weight.coordinates(), newModelName);
+	    PagedImage<T> tmp(normWt.shape(), weight.coordinates(), newModelName);
 	    tmp.copyData(ratio);
 	    printImageMax(imType, tmp, weight, sumwt, logio, "after");
 	  }
       }
   }
-  
+  //
+  //-------------------------------------------------------------------------
+  //
   template <class T>
-  ImageInterface<T>* checkAndOpen(const string& name)
+  PagedImage<T>* checkAndOpen(const string& name)
   {
     if (!imageExists(name))
       throw(AipsError("Image " + name + " does not exist."));
-
+    
     LatticeBase *imPtr;
-	
+    
     imPtr = ImageOpener::openImage (name);
-    return dynamic_cast<ImageInterface<T>*>(imPtr);
+    return dynamic_cast<PagedImage<T>*>(imPtr);
   }
-
-  inline std::string getExtension(const std::string& name)
-  {
-    return name.substr(name.find_last_of(".") + 1);
-  }
-
+  //
+  //-------------------------------------------------------------------------
+  //
   void dale(const std::string& imageName,
 	    const std::string& wtImageName,
 	    const std::string& sowImageName,
@@ -243,7 +302,7 @@ namespace Dale
     //
     //---------------------------------------------------
     //
-    string type, targetName, weightName, sumwtName, pbName;
+    string type, subType, targetName, weightName, sumwtName, pbName;
     
     LogIO logio(LogOrigin("Dale","dale"));
     
@@ -252,14 +311,16 @@ namespace Dale
 	targetName = imageName;
 	if ((imType == "residual") || (imType == "psf") || (imType == "model"))
 	  {
+	    // Use name extension conventions only if targetName did not have an extension
 	    if (getExtension(targetName)=="") targetName += "." + imType;
 	    logio << "Running normalization for " << targetName << LogIO::POST;
 	  }
 	else
 	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf and residual."));
 	
-	weightName   = imageName + ".weight";
-	sumwtName    = imageName + ".sumwt";
+	// Use a convention for image names only if the names aren't provided.
+	if (weightName == "") weightName   = removeExtension(imageName) + ".weight";
+	if (sumwtName  == "") sumwtName    = removeExtension(imageName) + ".sumwt";
 	
 	{
 	  Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
@@ -269,19 +330,40 @@ namespace Dale
 	    throw(AipsError("imagename does not point to an image."));
 	}
 	// checking if all necessary images exist before opening
-	ImageInterface<Float>* targetImage = checkAndOpen<float>(targetName);
-	const ImageInterface<Float>* wImage = checkAndOpen<float>(weightName);
-	const ImageInterface<Float>* swImage = checkAndOpen<float>(sumwtName);
-	
-	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
-	printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
-	
-	if (computePB)
+	PagedImage<Float>* targetImage = checkAndOpen<float>(targetName);
+	if (!isNormalized<float>(*targetImage))
 	  {
-	    pbName   = imageName + ".pb";
-	    compute_pb(pbName, *wImage, *swImage, pblimit, logio);
+	    PagedImage<Float>* wImage = checkAndOpen<float>(weightName);
+	    PagedImage<Float>* swImage = checkAndOpen<float>(sumwtName);
+	
+	    //PagedImage<float> pw(*wImage);
+	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
+	    getImageType<float>(*targetImage, type, subType);
+	    cerr << "Target image type: "
+		 << type << " "
+		 << subType << " "
+		 << targetImage->name() << " "
+		 << endl;
+	
+	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
+	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
+	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
+	
+	    setNormalized<float>(*targetImage);
+	    getImageType<float>(*targetImage, type, subType);
+	    cerr << "Target image type: "
+		 << type << " "
+		 << subType << " "
+		 << targetImage->name() << " "
+		 << endl;
+	    if (computePB)
+	      {
+		pbName   = imageName + ".pb";
+		compute_pb(pbName, *wImage, *swImage, pblimit, logio);
+	      }
 	  }
+	else
+	  logio << targetImage->name() << " is already normalized" << LogIO::POST;
       }
     catch(AipsError& e)
       {
