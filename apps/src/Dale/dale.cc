@@ -53,9 +53,18 @@ namespace Dale
   //
   //-------------------------------------------------------------------------
   //
-  inline std::string getExtension(const std::string& name)
+  inline std::string getExtension(const std::string& path)
   {
-    return name.substr(name.find_last_of(".") + 1);
+    string ext("");
+    size_t pos = path.find_last_of("\\/.");
+    if (pos != std::string::npos)
+      {
+	string ss=path.substr(pos);
+	if ((pos=ss.find_last_of("."))!=std::string::npos)
+	  ext=ss.substr(pos + 1);
+      }
+
+    return ext;
   }
   //
   //-------------------------------------------------------------------------
@@ -216,17 +225,17 @@ namespace Dale
 	float psfFactor = max(target.get());
 	LatticeExpr<T> newPSF = target / psfFactor;
 	target.copyData(newPSF);
-	if (normalize_weight)
-	  {
-	    LatticeExpr<T> newWeight = weight / SoW;
-	    //	    weight.copyData(newWeight);
-	  }
+	// if (normalize_weight)
+	//   {
+	//     LatticeExpr<T> newWeight = weight / SoW;
+	//     //	    weight.copyData(newWeight);
+	//   }
       }
     else if ((imType == "residual") || (imType == "model"))
       {
 	LatticeExpr<T> newIM(target), normWt(weight);
 
-	if (!isNormalized(weight)) normWt = weight / SoW;
+	//	if (!isNormalized(weight)) normWt = weight / SoW;
 	
 	double itsPBScaleFactor = sqrt(max(normWt.get()));
 	if (imType == "residual") newIM = target / SoW;
@@ -339,11 +348,11 @@ namespace Dale
 	    //PagedImage<float> pw(*wImage);
 	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
 	    getImageType<float>(*targetImage, type, subType);
-	    cerr << "Target image type: "
-		 << type << " "
-		 << subType << " "
-		 << targetImage->name() << " "
-		 << endl;
+	    logio << "Target image type: "
+		  << type << " "
+		  << "subType: " << subType << " "
+		  << targetImage->name() << " "
+		  << endl;
 	
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
 	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
