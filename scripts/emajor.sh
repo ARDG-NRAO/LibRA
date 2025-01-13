@@ -59,7 +59,7 @@ do
 done
 
 runApp=${LIBRAHOME}/runapp.sh
-libraBIN=${LIBRAHOME}/bin
+libraBIN=${LIBRAHOME}
 griddingAPP=${libraBIN}/roadrunner
 normalizationAPP=${libraBIN}/dale
 mkdir -p ${logdir}
