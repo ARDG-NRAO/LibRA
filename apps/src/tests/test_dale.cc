@@ -38,8 +38,8 @@ TEST(DaleTest, AppLevelPSF) {
   Dale::dale(imageName, 
 	     wtImageName, sowImageName,
 	     normtype, imType, pblimit, 
-	     psfcutoff,
-	     computePB, normalize_weight);
+	     //psfcutoff,
+	     computePB);// normalize_weight);
   
 
   // Check that the .psf is generated
@@ -79,16 +79,20 @@ TEST(DaleTest, AppLevelResidual) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.psf", testDir/"refim_point_wterm_vlad_step2.psf", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.weight", testDir/"refim_point_wterm_vlad_step2.weight", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.sumwt", testDir/"refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.pb", testDir/"refim_point_wterm_vlad_step2.pb", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.residual", testDir/"refim_point_wterm_vlad_step2.residual", copy_options::recursive);
-  
+  // std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.psf", testDir/"refim_point_wterm_vlad_step2.psf", copy_options::recursive);
+  // std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.weight", testDir/"refim_point_wterm_vlad_step2.weight", copy_options::recursive);
+  // std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.sumwt", testDir/"refim_point_wterm_vlad_step2.sumwt", copy_options::recursive);
+  // std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.pb", testDir/"refim_point_wterm_vlad_step2.pb", copy_options::recursive);
+  // std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.residual", testDir/"refim_point_wterm_vlad_step2.residual", copy_options::recursive);
+
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.weight", testDir/"refim_point_wterm_vlad.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.sumwt", testDir/"refim_point_wterm_vlad.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step2.residual", testDir/"refim_point_wterm_vlad.residual", copy_options::recursive);
+
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2",
+  string imageName="refim_point_wterm_vlad",
     normtype="flatnoise", imType="residual";
   string wtImageName, sowImageName;
   float pblimit=0.005, psfcutoff=0.35;
@@ -98,14 +102,14 @@ TEST(DaleTest, AppLevelResidual) {
   Dale::dale(imageName, 
 	     wtImageName, sowImageName,
 	     normtype, imType, pblimit,
-	     psfcutoff, 
-	     computePB, normalize_weight);
+	     //psfcutoff, 
+	     computePB);// normalize_weight);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
   float goldValLoc1 = 0.007225;
 
-  PagedImage<Float> resimage("refim_point_wterm_vlad_step2.residual");
+  PagedImage<Float> resimage("refim_point_wterm_vlad.residual");
   EXPECT_NEAR(resimage(IPosition(4,1158,1384,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(resimage(IPosition(4,1050,1050,0,0)), goldValLoc1, tol);
 
@@ -127,14 +131,14 @@ TEST(DaleTest, AppLevelModel) {
   std::filesystem::create_directory(testDir);
 
   //copy over from gold_standard to test dir
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.model", testDir/"refim_point_wterm_vlad_step3.model", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.weight", testDir/"refim_point_wterm_vlad_step3.weight", copy_options::recursive);
-  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.sumwt", testDir/"refim_point_wterm_vlad_step3.sumwt", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad_step3.model", testDir/"refim_point_wterm_vlad.model", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.weight", testDir/"refim_point_wterm_vlad.weight", copy_options::recursive);
+  std::filesystem::copy(goldDir/"refim_point_wterm_vlad.sumwt", testDir/"refim_point_wterm_vlad.sumwt", copy_options::recursive);
     
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step3",
+  string imageName="refim_point_wterm_vlad",
     normtype="flatnoise", imType="model";
   string wtImageName, sowImageName;
   
@@ -145,13 +149,13 @@ TEST(DaleTest, AppLevelModel) {
   Dale::dale(imageName, 
 	     wtImageName, sowImageName,
 	     normtype, imType, pblimit,
-	     psfcutoff, 
-	     computePB, normalize_weight);
+	     //psfcutoff, 
+	     computePB);// normalize_weight);
 
   float tol = 0.01;
   float goldValLoc0 = 1.52205098;
   
-  PagedImage<Float> modimage("refim_point_wterm_vlad_step3.divmodel");
+  PagedImage<Float> modimage("refim_point_wterm_vlad.divmodel");
   EXPECT_NEAR(modimage(IPosition(4,1158,1384,0,0)), goldValLoc0, tol);
   
   //move to parent directory
@@ -177,8 +181,9 @@ TEST(DaleTest, UIFactory) {
   UI(restartUI, argc, argv, interactive, 
      imageName, weightImageName, sowImageName,
      normtype, imType, 
-     pblimit, psfcutoff, 
-     computePB, normalize_weight);
+     pblimit,
+     //psfcutoff, 
+     computePB);// normalize_weight);
 }
 
 

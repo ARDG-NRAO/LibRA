@@ -14,7 +14,7 @@ PYBIND11_MODULE(dale2py, m) {
 	  py::arg("normtype")="flatnoise",
 	  py::arg("imType")="psf",
 	  py::arg("pblimit")=0.2,
-	  py::arg("psfcutoff")=0.35,
-	  py::arg("computePB")=False,
-	  py::arg("normalize_weight")=True);
+	  //py::arg("psfcutoff")=0.35,
+	  py::arg("computePB")=False);
+    //py::arg("normalize_weight")=True);
 }

@@ -53,9 +53,9 @@ namespace Dale
 		  const std::string& normtype,
 		  const std::string& imType,
 		  const float& pblimit,
-		  const float& psfcutoff,
-		  const bool& computePB,
-		  const bool& normalize_weight);
+		  //const float& psfcutoff,
+		  const bool& computePB);
+  //const bool& normalize_weight);
 }
 
 void UI(bool restart, int argc, char **argv, bool interactive,
@@ -64,8 +64,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         std::string& sowImageName, 
         string& normtype, string& imType,
         float& pblimit, 
-        float& psfcutoff,
-        bool& computePB, bool& normalize_weight);
+        //float& psfcutoff,
+        bool& computePB);// bool& normalize_weight);
 
 
 #endif

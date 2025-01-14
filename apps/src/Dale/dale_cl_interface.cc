@@ -47,8 +47,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 	std::string& sowImageName, 
         string& normtype, string& imType,
         float& pblimit, 
-        float& psfcutoff,
-        bool& computePB, bool& normalize_weight)
+        //float& psfcutoff,
+        bool& computePB)// bool& normalize_weight)
 {
   clSetPrompt(interactive);
 
@@ -79,9 +79,9 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       clSetOptions("imtype",{"psf","residual","model"});
 
       i=1;clgetValp("pblimit", pblimit,i);
-      i=1;clgetValp("psfcutoff", psfcutoff,i);
+      //      i=1;clgetValp("psfcutoff", psfcutoff,i);
       i=1;clgetValp("computepb", computePB, i);
-      i=1;clgetValp("normalizeweight", normalize_weight, i);
+      //      i=1;clgetValp("normalizeweight", normalize_weight, i);
       
 
       EndCL();
@@ -106,7 +106,8 @@ int main(int argc, char **argv)
   string wtImageName="", sowImageName="";
   float pblimit=0.2, psfcutoff=0.35;
   bool computePB=false;
-  bool normalize_weight=true;
+  // Setting the default to false, in prep for removing it in the next commmit
+  bool normalize_weight=false;
   bool restartUI=false;
   bool interactive = true;
 
@@ -116,8 +117,10 @@ int main(int argc, char **argv)
       UI(restartUI,argc, argv, interactive, 
 	 imageName, wtImageName, sowImageName,
 	 normtype, 
-	 imType, pblimit, psfcutoff,
-	 computePB, normalize_weight);
+	 imType, pblimit,
+	 //psfcutoff,
+	 computePB);
+	 //normalize_weight);
       
       restartUI = False;
       //
@@ -125,9 +128,10 @@ int main(int argc, char **argv)
       //
       Dale::dale(imageName, wtImageName, sowImageName,
 		 normtype, imType,
-		 pblimit, psfcutoff,
-		 computePB,
-		 normalize_weight);
+		 pblimit,
+		 //psfcutoff,
+		 computePB);
+	//		 normalize_weight);
     }
   catch (clError& x)
     {

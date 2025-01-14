@@ -26,6 +26,7 @@
 #include <dale.h>
 
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <sys/types.h>
 #include <unistd.h>
@@ -90,10 +91,13 @@ namespace Dale
   template <class T>
   bool isNormalized(PagedImage<T>& im)
   {
+    // Regular expression to match the token "normalized" as a word.
+    std::regex rx(R"(\bnormalized\b)");
     string type, subType;
     getImageType(im, type,subType);
 
-    return (subType.find("normalized") != std::string::npos);
+    std::smatch m;
+    return std::regex_search(subType, m, rx);
   }
   //
   //-------------------------------------------------------------------------
@@ -235,7 +239,7 @@ namespace Dale
       {
 	LatticeExpr<T> newIM(target), normWt(weight);
 
-	//	if (!isNormalized(weight)) normWt = weight / SoW;
+	if (!isNormalized(weight)) normWt = weight / SoW;
 	
 	double itsPBScaleFactor = sqrt(max(normWt.get()));
 	if (imType == "residual") newIM = target / SoW;
@@ -304,10 +308,12 @@ namespace Dale
 	    const std::string& normtype,
 	    const std::string& imType,
 	    const float& pblimit, 
-	    const float& psfcutoff,
-	    const bool& computePB,
-	    const bool& normalize_weight)
+	    //const float& psfcutoff,
+	    const bool& computePB)
+  //const bool& normalize_weight)
   {
+    float psfcutoff=0.35;
+    bool normalize_weight=false;
     //
     //---------------------------------------------------
     //
@@ -355,7 +361,7 @@ namespace Dale
 		  << endl;
 	
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio); 
+	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
 	    setNormalized<float>(*targetImage);
