@@ -1,0 +1,67 @@
+%%N dale
+
+        An application to normalized images.
+
+        This app looks for the word "normalized" in the
+	image subType string to determine if the images
+	(.psf, .weight, .residual, .model) are already
+	normalized.  Absence of an exact match for the
+	word "normalized" is interpreted as un-normalized
+	image.
+
+%%P Author
+	ARDG
+
+%%A imagename (default=)
+
+	Name of the image to be normalized.  If a name
+	without extension is given, the imtype (see below)
+	will be used as the name extension.
+
+%%A imtype (default=psf) Options:[ psf residual model]
+
+	Watched keywords (<VALUE> : <Keywords exposed>):
+          model : weightimage sowimage 
+          residual : weightimage sowimage 
+
+	The type of the input image supplied via the imagename
+	keyword.
+
+%%A weightimage (default=)
+
+	The name of the weight image.  This is required
+	for normalizing residual and model images.
+
+        If no name is given, a name is generated with the
+	basename derived from the imagename keyword and
+	extension ".weight".
+
+%%A sowimage (default=)
+
+	The name of the sum-of-weights image.  This is
+	required for normalizing residual and model images.
+
+        If no name is given, a name is generated with the
+	basename derived from the imagename keyword and
+	extension ".sumwt".
+
+%%A pblimit (default=0.2)
+
+	The PB limit used when normalizing residual and model
+	images.  Pixels beyond the this value of the PB are
+	set to 0.0.
+
+%%A computepb (default=0)
+
+	If set to true, also compute the .pb image as sqrt(weightimage)
+	with the peak normalized to unity.
+
+%%A normalizeweight (default=1)
+
+	This is currently ineffective.  We don't need to normalize this
+	image.  If a need is found, we should explicitly normalize it via
+	a new imtype=weight.
+
+        If set to true, normalize the weight image on the disk by the
+	sum of weights when imtype=psf.  This is a side-effect that seems
+	unnecessary.
