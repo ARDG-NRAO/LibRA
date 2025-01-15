@@ -10,7 +10,7 @@ namespace test{
 TEST(MSSplitTest, UIFactory) {
   // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./mssplit"};
+  const char* argv[] = {"./mssplit"};
 
   // The Factory Settings.
   string MSNBuf,OutMSBuf,fieldStr,timeStr,spwStr,baselineStr,
@@ -25,7 +25,7 @@ TEST(MSSplitTest, UIFactory) {
 	  Bool restartUI = false;
     Bool interactive = false;
 
-    UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, deepCopy,
+    UI(restartUI,argc, (char **)argv, interactive, MSNBuf,OutMSBuf, deepCopy,
         fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,
         uvdistStr,taqlStr,polnStr,stateObsModeStr,observationStr);
 

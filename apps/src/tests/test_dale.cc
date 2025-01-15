@@ -220,7 +220,7 @@ TEST(DaleTest, AppLevelModel) {
 TEST(DaleTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./dale"};
+  const char* argv[] = {"./dale"};
 
   string imageName="notEmpty", normtype="flatnoise", imType="psf";
   string weightImageName, sowImageName;
@@ -230,7 +230,7 @@ TEST(DaleTest, UIFactory) {
   bool restartUI=false;;
   bool interactive = false;
   
-  UI(restartUI, argc, argv, interactive, 
+  UI(restartUI, argc, (char **)argv, interactive, 
      imageName, weightImageName, sowImageName,
      normtype, imType, 
      pblimit,
