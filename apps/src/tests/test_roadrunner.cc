@@ -182,7 +182,7 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 TEST(RoadrunnerTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./roadrunner"};
+  const char* argv[] = {"./roadrunner"};
 
 
   string MSNBuf,ftmName="awphpg",
@@ -208,7 +208,7 @@ TEST(RoadrunnerTest, UIFactory) {
   vector<float> posigdev = {300.0,300.0};
   bool interactive = false;
   cfCache="test";
-  UI(restartUI, argc, argv, interactive,
+  UI(restartUI, argc, (char **)argv, interactive,
      MSNBuf,imageName, modelImageName, dataColumnName,
      sowImageExt, cmplxGridName, NX, nW, cellSize,
      stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
