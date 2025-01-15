@@ -371,7 +371,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
 TEST(HummbeeTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./hummbee"};
+  const char* argv[] = {"./hummbee"};
 
   // The Factory Settings.
   string imageName, modelImageName, deconvolver="hogbom", specmode="mfs";
@@ -391,7 +391,7 @@ TEST(HummbeeTest, UIFactory) {
   bool doPBCorr = false;
   string imagingMode;
 
-  UI(restartUI, argc, argv, interactive,
+  UI(restartUI, argc, (char **)argv, interactive,
     imageName, modelImageName, 
     deconvolver,
     scales,

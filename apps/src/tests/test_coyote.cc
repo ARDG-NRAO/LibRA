@@ -93,7 +93,7 @@ namespace test{
   TEST(CoyoteTest, UIFactory) {
     // The Factory Settings.
     int argc = 1;
-    char* argv[] = {"./coyote"};
+    const char* argv[] = {"./coyote"};
 
     // The Factory Settings.
     string MSNBuf="", cfCache="test", fieldStr="", spwStr="*",
@@ -116,7 +116,7 @@ namespace test{
   
     bool interactive = false;
 
-    UI(restartUI, argc, argv, interactive, 
+    UI(restartUI, argc, (char **)argv, interactive, 
        MSNBuf,
        telescopeName,
        NX, cellSize, stokes, refFreqStr, nW,

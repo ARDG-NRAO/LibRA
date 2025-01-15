@@ -42,11 +42,10 @@
 
 
 void UI(bool restart, int argc, char **argv, bool interactive,
-	std::string& imageName, std::string& deconvolver,
+	std::string& imageName, 
         string& normtype, string& imType,
-        float& pblimit, int& nterms, int& facets,
+        float& pblimit, 
         float& psfcutoff,
-        vector<float>& restoringbeam,
         bool& computePB, bool& normalize_weight)
 {
   clSetPrompt(interactive);
@@ -92,10 +91,8 @@ int main(int argc, char **argv)
   //
   //---------------------------------------------------
   //
-  string imageName="", deconvolver="hogbom", normtype="flatnoise", imType="psf";
+  string imageName="", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
-  int nterms=1, facets=1;
-  vector<float> restoringbeam;
   bool computePB=false;
   bool normalize_weight=true;
   bool restartUI=false;
@@ -105,14 +102,15 @@ int main(int argc, char **argv)
   try
     {
       UI(restartUI,argc, argv, interactive, 
-        imageName, deconvolver, normtype, 
-        imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB, normalize_weight);
+	 imageName, normtype, 
+	 imType, pblimit, psfcutoff,
+	 computePB, normalize_weight);
       
       restartUI = False;
       //
       //---------------------------------------------------
       //
-      Dale::dale(imageName, deconvolver, normtype, imType, pblimit, nterms, facets, psfcutoff, restoringbeam, computePB, normalize_weight);
+      Dale::dale(imageName, normtype, imType, pblimit, psfcutoff, computePB, normalize_weight);
     }
   catch (clError& x)
     {

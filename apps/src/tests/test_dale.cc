@@ -29,16 +29,14 @@ TEST(DaleTest, AppLevelPSF) {
   std::filesystem::current_path(testDir);
   
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad", deconvolver="hogbom", normtype="flatnoise", imType="psf";
+  string imageName="refim_point_wterm_vlad", normtype="flatnoise", imType="psf";
   float pblimit=0.005, psfcutoff=0.35;
-  int nterms=1, facets=1;
-  vector<float> restoringbeam;
   bool computePB = true;
   bool normalize_weight = true;
 
-  Dale::dale(imageName, deconvolver, 
+  Dale::dale(imageName, 
     normtype, imType, pblimit, 
-    nterms, facets, psfcutoff, restoringbeam, 
+    psfcutoff,
     computePB, normalize_weight);
   
 
@@ -88,17 +86,15 @@ TEST(DaleTest, AppLevelResidual) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step2", deconvolver="hogbom", normtype="flatnoise", imType="residual";
+  string imageName="refim_point_wterm_vlad_step2", normtype="flatnoise", imType="residual";
   float pblimit=0.005, psfcutoff=0.35;
-  int nterms=1, facets=1;
-  vector<float> restoringbeam;
   bool computePB = false;
   bool normalize_weight = false;
 
-  Dale::dale(imageName, deconvolver,
-    normtype, imType, pblimit,
-    nterms, facets, psfcutoff, restoringbeam,
-    computePB, normalize_weight);
+  Dale::dale(imageName, 
+	     normtype, imType, pblimit,
+	     psfcutoff, 
+	     computePB, normalize_weight);
 
   float tol = 0.05;
   float goldValLoc0 = 0.9942138;
@@ -133,16 +129,14 @@ TEST(DaleTest, AppLevelModel) {
   //Step into test dir 
   std::filesystem::current_path(testDir);
   // note, workdir, psfcutoff and facets are actually not used un acme
-  string imageName="refim_point_wterm_vlad_step3", deconvolver="hogbom", normtype="flatnoise", imType="model";
+  string imageName="refim_point_wterm_vlad_step3", normtype="flatnoise", imType="model";
   float pblimit=0.005, psfcutoff=0.35;
-  int nterms=1, facets=1;
-  vector<float> restoringbeam;
   bool computePB = false;
   bool normalize_weight = false;
 
-  Dale::dale(imageName, deconvolver,
+  Dale::dale(imageName, 
     normtype, imType, pblimit,
-    nterms, facets, psfcutoff, restoringbeam,
+    psfcutoff, 
     computePB, normalize_weight);
 
   float tol = 0.01;
@@ -161,21 +155,19 @@ TEST(DaleTest, AppLevelModel) {
 TEST(DaleTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./dale"};
+  const char* argv[] = {"./dale"};
 
-  string imageName="notEmpty", deconvolver="hogbom", normtype="flatnoise", imType="psf";
+  string imageName="notEmpty", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
-  int nterms=1, facets=1;
-  vector<float> restoringbeam;
   bool computePB=false;
   bool normalize_weight=false;
   bool restartUI=false;;
   bool interactive = false;
   
-  UI(restartUI, argc, argv, interactive, 
-    imageName, deconvolver, normtype, imType, 
-    pblimit, nterms, facets, psfcutoff, 
-    restoringbeam, computePB, normalize_weight);
+  UI(restartUI, argc, (char **)argv, interactive, 
+    imageName, normtype, imType, 
+    pblimit, psfcutoff, 
+    computePB, normalize_weight);
 }
 
 

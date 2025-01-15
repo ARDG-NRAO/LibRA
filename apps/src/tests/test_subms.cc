@@ -11,7 +11,7 @@ namespace test{
 TEST(SubMSTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./subms"};
+  const char* argv[] = {"./subms"};
 
   // The Factory Settings.
    string MSNBuf,OutMSBuf,WhichColStr="data",fieldStr="*",timeStr,spwStr="*",
@@ -27,7 +27,7 @@ TEST(SubMSTest, UIFactory) {
    Bool restartUI = false;
    Bool interactive = false;
 
-      UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
+   UI(restartUI,argc, (char **)argv, interactive, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
          fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
 }
 
