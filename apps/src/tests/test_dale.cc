@@ -155,7 +155,7 @@ TEST(DaleTest, AppLevelModel) {
 TEST(DaleTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
-  char* argv[] = {"./dale"};
+  const char* argv[] = {"./dale"};
 
   string imageName="notEmpty", normtype="flatnoise", imType="psf";
   float pblimit=0.2, psfcutoff=0.35;
@@ -164,7 +164,7 @@ TEST(DaleTest, UIFactory) {
   bool restartUI=false;;
   bool interactive = false;
   
-  UI(restartUI, argc, argv, interactive, 
+  UI(restartUI, argc, (char **)argv, interactive, 
     imageName, normtype, imType, 
     pblimit, psfcutoff, 
     computePB, normalize_weight);
