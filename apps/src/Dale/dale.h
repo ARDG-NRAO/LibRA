@@ -47,20 +47,25 @@ using namespace casacore;
 //
 namespace Dale
 {
-	void dale(std::string& imageName, 
-		  std::string& normtype,
-		  std::string& imType,
-		  float& pblimit,
-		  float& psfcutoff,
-		  bool& computePB, bool& normalize_weight);
+	void dale(const std::string& imageName, 
+		  const std::string& wtImageName,
+		  const std::string& sowImageName,
+		  const std::string& normtype,
+		  const std::string& imType,
+		  const float& pblimit,
+		  //const float& psfcutoff,
+		  const bool& computePB);
+  //const bool& normalize_weight);
 }
 
 void UI(bool restart, int argc, char **argv, bool interactive,
         std::string& imageName, 
+        std::string& wtImageName, 
+        std::string& sowImageName, 
         string& normtype, string& imType,
         float& pblimit, 
-        float& psfcutoff,
-        bool& computePB, bool& normalize_weight);
+        //float& psfcutoff,
+        bool& computePB);// bool& normalize_weight);
 
 
 #endif
