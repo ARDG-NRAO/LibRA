@@ -63,3 +63,21 @@ if(BUILD_PYWRAPPER)
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/examples)
+
+# Install the htclean scripts into the bin directory
+if(NOT DEFINED TOP_LEVEL_DIR)
+  message(FATAL_ERROR "TOP_LEVEL_DIR is not defined")
+endif()
+
+if(NOT DEFINED INSTALL_DIR)
+  message(FATAL_ERROR "INSTALL_DIR is not defined")
+endif()
+
+install(FILES 
+  ${TOP_LEVEL_DIR}/frameworks/htclean/libra_htclean.sh 
+  ${TOP_LEVEL_DIR}/scripts/runapp.sh 
+  ${TOP_LEVEL_DIR}/scripts/emajor.sh 
+  DESTINATION ${INSTALL_DIR}/bin)
+
+
+
