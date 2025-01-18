@@ -101,6 +101,7 @@ message(${LIBRA_ID} "Setting number of cores to ${NCORES}")
 # Set the top-level build and install directories
 set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
+set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_INSTALL_LIBDIR lib)
 set(CMAKE_INSTALL_INCLUDEDIR include)
 set(CMAKE_INSTALL_BINDIR bin)
@@ -405,10 +406,13 @@ ExternalProject_Add(
                     -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
 		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+                    -DINSTALL_DIR=${INSTALL_DIR}
+                    -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                       ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
                                       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+                                      -DINSTALL_DIR=${INSTALL_DIR} -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
     BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
 )
