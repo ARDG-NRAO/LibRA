@@ -406,15 +406,46 @@ ExternalProject_Add(
                     -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
 		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-                    -DINSTALL_DIR=${INSTALL_DIR}
                     -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                       ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
                                       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-                                      -DINSTALL_DIR=${INSTALL_DIR} -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
+                                      #-DINSTALL_DIR=${INSTALL_DIR} -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
     BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
+)
+
+# Add Libra/frameworks as an external project
+ExternalProject_Add(
+  Frameworks
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/frameworks
+  DOWNLOAD_COMMAND ""
+  BINARY_DIR      ${BUILD_DIR}/Libra/frameworks
+  DEPENDS         Apps
+  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                  -DCMAKE_INSTALL_LIBDIR=lib
+                  -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
+                  -DINSTALL_DIR=${INSTALL_DIR}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
+  BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
+  INSTALL_COMMAND make install -C <BINARY_DIR>
+)
+
+# Add Libra/scripts as an external project
+ExternalProject_Add(
+  Scripts
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/scripts
+  DOWNLOAD_COMMAND ""
+  BINARY_DIR      ${BUILD_DIR}/Libra/scripts
+  DEPENDS         Frameworks
+  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                  -DCMAKE_INSTALL_LIBDIR=lib
+                  -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
+                  -DINSTALL_DIR=${INSTALL_DIR}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
+  BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
+  INSTALL_COMMAND make install -C <BINARY_DIR>
 )
 
 if (LIBRA_USE_EXODUS)
