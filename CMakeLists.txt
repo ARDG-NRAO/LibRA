@@ -37,11 +37,7 @@ set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/preshanth/casacore.git")#"
 set(LIBRA_CASACORE_GIT_TAG        "fix_regex_v3.5.0")#"2e121e67bf881ac7f309604447a4b0d481913902")#
 
 set(LIBRA_PARAFEED_GIT_REPOSITORY "https://github.com/sanbee/parafeed.git")
-<<<<<<< HEAD
-set(LIBRA_PARAFEED_GIT_TAG        "getsval")
-=======
-set(LIBRA_PARAFEED_GIT_TAG        "v1.1.1")
->>>>>>> main
+set(LIBRA_PARAFEED_GIT_TAG        "v1.1.2")
 
 set(LIBRA_SAKURA_GIT_REPOSITORY   "https://github.com/tnakazato/sakura.git")
 set(LIBRA_SAKURA_GIT_TAG          "libsakura-5.1.3")
