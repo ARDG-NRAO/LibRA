@@ -30,7 +30,6 @@
 //
 #include <cl.h> // C++ized version
 #include <clinteract.h>
-#include <clgetBaseCode.h>
 
 #ifdef ROADRUNNER_USE_MPI
 # include <mpi.h>
