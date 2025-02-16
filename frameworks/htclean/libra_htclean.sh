@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (C) 2021
 # Associated Universities, Inc. Washington DC, USA.
 #
@@ -22,8 +23,6 @@
 #
 # $Id$
 
-
-#!/bin/bash
 
 usage()
 {
@@ -125,7 +124,7 @@ OSGjob=false
 imagename=""
 ncycle=10
 input_file=`basename $0 .sh`.def
-LIBRAHOME=${HOME}/libra
+LIBRAHOME=$(dirname $(readlink -f $0))
 logdir=${PWD}/
 
 # Input arguments
