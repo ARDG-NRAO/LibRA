@@ -262,13 +262,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       }
     else
       {
-	if(!ignoresumwt)
-	  {throw( AipsError( "Multi-term SumWt does not exist. Please create PSFs or Residuals." ) );}
-	else
-	  {
+	//if(!ignoresumwt) // .sumwt image not required for just the minor cycle (aka hummbee or maybe task deconvolve)
+	  //{throw( AipsError( "Multi-term SumWt does not exist. Please create PSFs or Residuals." ) );}
+	//else
+	  //{
 	    os << "SumWt.ttx do not exist. Proceeding only with PSFs" << LogIO::POST;
 	    std::shared_ptr<ImageInterface<Float> > imptr;
-	    //	imptr.reset( new PagedImage<Float> (itsImageName+String(".sumwt.tt0")) );
+	    
 	    if( doesImageExist(itsImageName+String(".residual.tt0")) )
 	      {buildImage( imptr, (itsImageName+String(".residual.tt0")) );}
 	    else
@@ -279,7 +279,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    itsUseWeight = False;
 	    itsCoordSys = imptr->coordinates();
 	    itsMiscInfo=imptr->miscInfo();
-	  }
+	  //}
       }
       }// if psf0 or res0 exist
     
