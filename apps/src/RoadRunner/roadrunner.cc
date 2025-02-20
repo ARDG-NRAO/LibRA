@@ -38,7 +38,7 @@
 
 #include <stdexcept>
 
-static std::exception_ptr teptr = nullptr;
+std::exception_ptr teptr = nullptr;
 
 
 CountedPtr<refim::FTMachine> ftm_g;
@@ -115,65 +115,67 @@ void CFServer(ThreadCoordinator& thcoord,
 	      casacore::Vector<double>& spwRefFreqList,
 	      int& nDataPol)
 {
-  //for(auto i : spwidList ) cerr << i << " ";
-  //cerr << endl;
-  try {
-  for(auto ispw : spwidList)
+  try
     {
-      cerr << ".................CFServer................" << endl;
-
-      //Declare the in-memory CFCache dirty.  Specifically, the memory
-      //accessed by the dcfa_sptr_g point should be considered dirty and
-      //remain so till prepCFEngine returns.
-      thcoord.setCFReady(false);
-      // Using the global VB to get SPWID.  While most reliable, vb_g
-      // is used in the main thread while CFServer runs in another
-      // thread.  This can lead to runtime issues. If this list can be
-      // determined up front before starting the data iteration (which
-      // uses two threads), this can be made reliable.
-      double spwRefFreq = spwRefFreqList[ispw];//spwRefFreqList[ispw];
-      // int vbSPWID=(vb_g)->spectralWindows()(0);
-      // cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
-      cerr << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
-      auto ret = prepCFEngine(mkCF,
-			      WBAwp, nW,
-			      //vbSPWID,
-			      ispw,
-			      spwRefFreq,nDataPol,
-			      skyImage,
-			      polMap,
-			      cfs2_l);
-      thcoord.newCF=std::get<0>(ret);
-      dcfa_sptr_g = std::get<1>(ret);
-
-      thcoord.setCFReady(true);
-      thcoord.Notify_CFReady();
-      cerr << ".................CFServer waitForCFSent................" << endl;
-      if (thcoord.isEoD())
+      for(auto ispw : spwidList)
 	{
-	  cerr << ".................EoD detected (CFServer exiting)................" << endl;
-	  return;
-	}
-      thcoord.waitForCFSent();
+	  cerr << ".................CFServer................" << endl;
 
-      if (
-	  ((nW == 1) && (WBAwp == true)) ||  // A-only projection
-	  ((nW > 1) && (WBAwp == false)) // W-only projection
-	  )
-	{
-	  thcoord.setEoD(true);
-	  return;
+	  //Declare the in-memory CFCache dirty.  Specifically, the memory
+	  //accessed by the dcfa_sptr_g point should be considered dirty and
+	  //remain so till prepCFEngine returns.
+	  thcoord.setCFReady(false);
+	  // Using the global VB to get SPWID.  While most reliable, vb_g
+	  // is used in the main thread while CFServer runs in another
+	  // thread.  This can lead to runtime issues. If this list can be
+	  // determined up front before starting the data iteration (which
+	  // uses two threads), this can be made reliable.
+	  double spwRefFreq = spwRefFreqList[ispw];//spwRefFreqList[ispw];
+	  // int vbSPWID=(vb_g)->spectralWindows()(0);
+	  // cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+	  cerr << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+	  auto ret = prepCFEngine(mkCF,
+				  WBAwp, nW,
+				  //vbSPWID,
+				  ispw,
+				  spwRefFreq,nDataPol,
+				  skyImage,
+				  polMap,
+				  cfs2_l);
+	  thcoord.newCF=std::get<0>(ret);
+	  dcfa_sptr_g = std::get<1>(ret);
+
+	  thcoord.setCFReady(true);
+	  thcoord.Notify_CFReady();
+	  cerr << ".................CFServer waitForCFSent................" << endl;
+	  if (thcoord.isEoD())
+	    {
+	      cerr << ".................EoD detected (CFServer exiting)................" << endl;
+	      return;
+	    }
+	  thcoord.waitForCFSent();
+
+	  if (
+	      ((nW == 1) && (WBAwp == true)) ||  // A-only projection
+	      ((nW > 1) && (WBAwp == false)) // W-only projection
+	      )
+	    {
+	      thcoord.setEoD(true);
+	      return;
+	    }
+	  // if (vi2_cfsrvr->moreChunks())
+	  //  {
+	  //    vi2_cfsrvr->nextChunk();
+	  //    vi2_cfsrvr->origin(); // So that the associated vb is valid
+	  //    cerr << "Next SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
+	  //  }
 	}
-      // if (vi2_cfsrvr->moreChunks())
-      //  {
-      //    vi2_cfsrvr->nextChunk();
-      //    vi2_cfsrvr->origin(); // So that the associated vb is valid
-      //    cerr << "Next SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
-      //  }
     }
-  } catch (...) {
-	  cout << "This is a thread exception" << endl;
-	  teptr = std::current_exception(); }
+  catch (...)
+    {
+      thcoord.setEoD(true);
+      teptr = std::current_exception();
+    }
 }
 
 
@@ -680,18 +682,24 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  thcoord.newCF=false;
 
 	  // Start the CFServer thread.
-	  try {
-	  auto cfPrep = std::async(&CFServer,
-				   std::ref(thcoord),
-				   std::ref(mkCF),
-				   std::ref(WBAwp), std::ref(nW),
-				   std::ref(skyImage),
-				   std::ref(polMap),
-				   std::ref(cfs2_l),
-				   std::ref(db.spwidList),
-				   std::ref(spwRefFreqList),
-				   std::ref(nDataPol));
-	  } catch (...) { std::rethrow_exception(teptr); }
+	  try
+	    {
+	      auto cfPrep = std::async(&CFServer,
+				       std::ref(thcoord),
+				       std::ref(mkCF),
+				       std::ref(WBAwp), std::ref(nW),
+				       std::ref(skyImage),
+				       std::ref(polMap),
+				       std::ref(cfs2_l),
+				       std::ref(db.spwidList),
+				       std::ref(spwRefFreqList),
+				       std::ref(nDataPol));
+	    }
+	  catch (...)
+	    {
+	      cerr << "Exception in cfPrep thread!" << endl;
+	      std::rethrow_exception(teptr);
+	    }
 
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
