@@ -36,6 +36,11 @@
 #include <roadrunner.h>
 //#include <Utilities/LibRA_Utils.h>
 
+#include <stdexcept>
+
+static std::exception_ptr teptr = nullptr;
+
+
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
 std::shared_ptr<hpg::RWDeviceCFArray> dcfa_sptr_g;
@@ -112,6 +117,7 @@ void CFServer(ThreadCoordinator& thcoord,
 {
   //for(auto i : spwidList ) cerr << i << " ";
   //cerr << endl;
+  try {
   for(auto ispw : spwidList)
     {
       cerr << ".................CFServer................" << endl;
@@ -165,6 +171,9 @@ void CFServer(ThreadCoordinator& thcoord,
       //    cerr << "Next SPWID from vi2_cfsrvr: " << vb_cfsrvr->spectralWindows()(0) << endl;
       //  }
     }
+  } catch (...) {
+	  cout << "This is a thread exception" << endl;
+	  teptr = std::current_exception(); }
 }
 
 
@@ -671,6 +680,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  thcoord.newCF=false;
 
 	  // Start the CFServer thread.
+	  try {
 	  auto cfPrep = std::async(&CFServer,
 				   std::ref(thcoord),
 				   std::ref(mkCF),
@@ -681,6 +691,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 				   std::ref(db.spwidList),
 				   std::ref(spwRefFreqList),
 				   std::ref(nDataPol));
+	  } catch (...) { std::rethrow_exception(teptr); }
 
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
