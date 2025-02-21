@@ -38,7 +38,7 @@
 
 #include <stdexcept>
 
-std::exception_ptr teptr = nullptr;
+std::exception_ptr CFServerThreadExceptionPtr_g = nullptr;
 
 
 CountedPtr<refim::FTMachine> ftm_g;
@@ -125,7 +125,7 @@ void CFServer(ThreadCoordinator& thcoord,
 	  //accessed by the dcfa_sptr_g point should be considered dirty and
 	  //remain so till prepCFEngine returns.
 	  thcoord.setCFReady(false);
-	  // Using the global VB to get SPWID.  While most reliable, vb_g
+	  // Using the global VB to get SPWID.  While mostly reliable, vb_g
 	  // is used in the main thread while CFServer runs in another
 	  // thread.  This can lead to runtime issues. If this list can be
 	  // determined up front before starting the data iteration (which
@@ -173,8 +173,16 @@ void CFServer(ThreadCoordinator& thcoord,
     }
   catch (...)
     {
+      // First setup the global pointer to the exception on the top of
+      // the stack of this thread.
+      CFServerThreadExceptionPtr_g = std::current_exception();
+
+      // Now unblock the parent thread.
+      thcoord.setCFReady(true);
+      thcoord.Notify_CFReady();
+      // Also notify that the CFServer thread is treating this
+      // condition as EoD
       thcoord.setEoD(true);
-      teptr = std::current_exception();
     }
 }
 
@@ -681,26 +689,16 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
-	  // Start the CFServer thread.
-	  try
-	    {
-	      auto cfPrep = std::async(&CFServer,
-				       std::ref(thcoord),
-				       std::ref(mkCF),
-				       std::ref(WBAwp), std::ref(nW),
-				       std::ref(skyImage),
-				       std::ref(polMap),
-				       std::ref(cfs2_l),
-				       std::ref(db.spwidList),
-				       std::ref(spwRefFreqList),
-				       std::ref(nDataPol));
-	    }
-	  catch (...)
-	    {
-	      cerr << "Exception in cfPrep thread!" << endl;
-	      std::rethrow_exception(teptr);
-	    }
-
+	  auto cfPrep = std::async(&CFServer,
+				   std::ref(thcoord),
+				   std::ref(mkCF),
+				   std::ref(WBAwp), std::ref(nW),
+				   std::ref(skyImage),
+				   std::ref(polMap),
+				   std::ref(cfs2_l),
+				   std::ref(db.spwidList),
+				   std::ref(spwRefFreqList),
+				   std::ref(nDataPol));
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
 	  // since the call to .waitForCFReady_or_EoD() in the

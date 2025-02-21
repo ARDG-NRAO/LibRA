@@ -69,7 +69,7 @@ using namespace casacore;
  *
  * This class provides functions for iterating over visibility data.
  */
-extern std::exception_ptr teptr;
+extern std::exception_ptr CFServerThreadExceptionPtr_g;
 
 class DataIterator
 {
@@ -216,7 +216,7 @@ public:
 			  dataConsumer,
 			  cfSentNotifier);
 
-	if (teptr) throw(AipsError("Exception in the CFServer thread"));
+	if (CFServerThreadExceptionPtr_g) throw(AipsError("Exception in the CFServer thread"));
   	std::chrono::duration<double> tt = std::chrono::steady_clock::now() - griddingEngine_start;
   	griddingEngine_time += tt.count();
 
