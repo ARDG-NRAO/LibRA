@@ -24,7 +24,7 @@
 
 
 #include <dale.h>
-
+#include <Utilities/utils.h>
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -78,38 +78,38 @@ namespace Dale
   //
   //-------------------------------------------------------------------------
   //
-  template <class T>
-  void getImageType(PagedImage<T>& im,
-		    std::string& type, std::string& subType)
-  {
-    type    = im.table().tableInfo().type();
-    subType = im.table().tableInfo().subType();
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  template <class T>
-  bool isNormalized(PagedImage<T>& im)
-  {
-    // Regular expression to match the token "normalized" as a word.
-    std::regex rx(R"(\bnormalized\b)");
-    string type, subType;
-    getImageType(im, type,subType);
+  // template <class T>
+  // void getImageType(PagedImage<T>& im,
+	// 	    std::string& type, std::string& subType)
+  // {
+  //   type    = im.table().tableInfo().type();
+  //   subType = im.table().tableInfo().subType();
+  // }
+  // //
+  // //-------------------------------------------------------------------------
+  // //
+  // template <class T>
+  // bool isNormalized(PagedImage<T>& im)
+  // {
+  //   // Regular expression to match the token "normalized" as a word.
+  //   std::regex rx(R"(\bnormalized\b)");
+  //   string type, subType;
+  //   getImageType(im, type,subType);
 
-    std::smatch m;
-    return std::regex_search(subType, m, rx);
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  template <class T>
-  void setNormalized(PagedImage<T>& im)
-  {
-    string type, subType;
-    getImageType(im, type,subType);
-    im.table().tableInfo().setSubType(subType+" normalized");
-    im.table().flushTableInfo();
-  }
+  //   std::smatch m;
+  //   return std::regex_search(subType, m, rx);
+  // }
+  // //
+  // //-------------------------------------------------------------------------
+  // //
+  // template <class T>
+  // void setNormalized(PagedImage<T>& im)
+  // {
+  //   string type, subType;
+  //   getImageType(im, type,subType);
+  //   im.table().tableInfo().setSubType(subType+" normalized");
+  //   im.table().flushTableInfo();
+  // }
   //
   //-------------------------------------------------------------------------
   //
@@ -239,7 +239,7 @@ namespace Dale
       {
 	LatticeExpr<T> newIM(target), normWt(weight);
 
-	if (!isNormalized(weight)) normWt = weight / SoW;
+	if (!utils::isNormalized(weight)) normWt = weight / SoW;
 	
 	double itsPBScaleFactor = sqrt(max(normWt.get()));
 	if (imType == "residual") newIM = target / SoW;
@@ -346,14 +346,14 @@ namespace Dale
 	}
 	// checking if all necessary images exist before opening
 	PagedImage<Float>* targetImage = checkAndOpen<float>(targetName);
-	if (!isNormalized<float>(*targetImage))
+	if (!utils::isNormalized<float>(*targetImage))
 	  {
 	    PagedImage<Float>* wImage = checkAndOpen<float>(weightName);
 	    PagedImage<Float>* swImage = checkAndOpen<float>(sumwtName);
 	
 	    //PagedImage<float> pw(*wImage);
 	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
-	    getImageType<float>(*targetImage, type, subType);
+	    utils::getImageType<float>(*targetImage, type, subType);
 	    logio << "Target image type: "
 		  << type << " "
 		  << "subType: " << subType << " "
@@ -364,8 +364,8 @@ namespace Dale
 	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
-	    setNormalized<float>(*targetImage);
-	    getImageType<float>(*targetImage, type, subType);
+	    utils::setNormalized<float>(*targetImage);
+	    utils::getImageType<float>(*targetImage, type, subType);
 	    // cerr << "Target image type: "
 	    // 	 << type << " "
 	    // 	 << subType << " "
