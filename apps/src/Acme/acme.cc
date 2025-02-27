@@ -40,31 +40,6 @@
 
 namespace Acme
 {
-//   bool imageExists(const string& imagename)
-//   {
-    // Directory image(imagename);
-    // return image.exists();
-//   }
-// 
-//   void checkImageMax(const string& name,
-		    //  const ImageInterface<Float>& target,
-		    //  LogIO& logio)
-//   {
-    // float mim = max(target.get());
-//  
-    // {
-    //   stringstream os;
-    //   os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	//  << "Image stats: "
-	//  << " max(" << name << ") = " << mim;
-    //   logio << os.str() << LogIO::POST;
-    // }
-	// 
-	// float threshold = 1e20;
-	// if (mim >= threshold)
-		// throw(AipsError("Image amplitude is out of range."));
-//   }
-// 
 
   void acme(std::string& imageName, const string& stats)
   {

@@ -41,5 +41,19 @@ namespace utils
           return path.substr(0, pos);
       
         return path;
-      }
+    }
+
+    std::string getExtension(const std::string& path)
+    {
+      string ext("");
+      size_t pos = path.find_last_of("\\/.");
+      if (pos != std::string::npos)
+        {
+      string ss=path.substr(pos);
+      if ((pos=ss.find_last_of("."))!=std::string::npos)
+        ext=ss.substr(pos + 1);
+        }
+  
+      return ext;
+    }
 }; // namespace utils

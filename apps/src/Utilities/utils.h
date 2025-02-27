@@ -159,6 +159,7 @@ namespace utils
     void printImageMax(const std::string &name, LogIO &logio);
     void printImageMax(const std::vector<std::string> &nameList, LogIO &logio);
     std::string removeExtension(const std::string &path);
+    std::string getExtension(const std::string &path);
 
     template <class T>
     void checkImageMax(const std::string &name, const ImageInterface<T> &target, LogIO &logio)
