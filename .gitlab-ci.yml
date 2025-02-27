@@ -84,8 +84,8 @@ test-job:
   artifacts:
     when: always
     reports:
-      junit: ${base_path}/build/Libra/apps/src/tests/report.xml
-      junit: ${base_path}/build/Libra/apps/src/tests/pytest_report.xml
+      junit: ./report.xml
+      junit: ./pytest_report.xml
 
 production-job:
   stage: production
