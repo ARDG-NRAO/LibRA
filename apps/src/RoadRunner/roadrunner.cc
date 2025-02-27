@@ -30,8 +30,8 @@
 //
 #define ROADRUNNER_USE_HPG
 #include <rWeightor.h>
-#include <DataIterations.h>
-#include <DataBase.h>
+#include <Utilities/DataIterations.h>
+#include <Utilities/DataBase.h>
 #include <MakeComponents.h>
 #include <roadrunner.h>
 //#include <Utilities/LibRA_Utils.h>
