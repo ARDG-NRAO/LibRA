@@ -34,26 +34,12 @@
 #include <Utilities/DataBase.h>
 #include <MakeComponents.h>
 #include <roadrunner.h>
-//#include <Utilities/LibRA_Utils.h>
+#include <Utilities/utils.h>
 
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
 std::shared_ptr<hpg::RWDeviceCFArray> dcfa_sptr_g;
 bool isRoot=true;
-
-
-std::string removeExtension(const std::string& path) {
-  if (path == "." || path == "..")
-    return path;
-
-  size_t pos = path.find_last_of("\\/.");
-  if (pos != std::string::npos && path[pos] == '.')
-    return path.substr(0, pos);
-
-  return path;
-}
-
-
 
 std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>>
 prepCFEngine(casa::refim::MakeCFArray& mkCF,
@@ -864,7 +850,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	      // Split any extension in imageName to construct a name with
 	      // same base name and extension given by sowImageExt
 	      std::string baseName=imageName;
-	      baseName=removeExtension(imageName);
+	      baseName=utils::removeExtension(imageName);
 
 	      PagedImage<float> sowImage(sow.shape(),cgrid.coordinates(), baseName+"."+sowImageExt);
 

@@ -114,7 +114,7 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner Chip MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Acme Utilities Dale)
+set(APP_LIST Coyote Hummbee RoadRunner Chip Dale Acme MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Utilities)
 
 set (ACME_SOURCES
   Acme/acme.cc
@@ -187,7 +187,7 @@ set (TABLEINFO_SOURCES
 )
 
 set(UTILITIES_SOURCES
-  # Utilities/utils.cc
+  Utilities/utils.cc
   Utilities/utils.h
   Utilities/DataBase.h
   Utilities/DataIterations.h
