@@ -10,7 +10,7 @@
 
 using namespace std;
 using namespace casacore;
-namespace utils
+namespace librautils
 {
     bool imageExists(const std::string &imagename)
     {

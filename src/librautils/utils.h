@@ -100,8 +100,8 @@
  * @param logio The LogIO object for logging.
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef LIBRAUTILS_UTILS_H
+#define LIBRAUTILS_UTILS_H
 
 #include <casacore/images/Images/PagedImage.h>
 #include <regex>
@@ -112,7 +112,7 @@
 
 using namespace std;
 using namespace casacore;
-namespace utils
+namespace librautils
 {
     template <class T>
     void getImageType(PagedImage<T> &im,

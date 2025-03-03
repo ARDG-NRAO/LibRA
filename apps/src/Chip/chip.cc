@@ -24,7 +24,7 @@
 
 
 #include <chip.h>
-#include <Utilities/utils.h>
+#include <librautils/utils.h>
 #include <iostream>
 #include <sstream>
 #include <sys/types.h>
@@ -36,7 +36,7 @@
 
 //
 //-------------------------------------------------------------------------
-using namespace utils;
+using namespace librautils;
 using namespace std;
 namespace Chip
 {
@@ -67,7 +67,7 @@ namespace Chip
     //
     try
       {
-	if (utils::imageExists(outputImage) &&  (!overWrite))
+	if (librautils::imageExists(outputImage) &&  (!overWrite))
 	  logio << "Output image exists.  Won't overwrite it." << LogIO::EXCEPTION;
 
 	// Cost of this loop scales as imageName.size().  Can this become a performance bottl%eneck?
@@ -107,7 +107,7 @@ namespace Chip
 	vector<string> inputImageNames=imageName;
 	string imageExt("");
 	vector<string> subVec={imageName[0]};
-	utils::addImages(*targetImage,
+	librautils::addImages(*targetImage,
 			     subVec,
 			     imageExt,
 			     reset_target,
@@ -117,19 +117,19 @@ namespace Chip
 	// image.
 	reset_target=false;
 	imageName.erase(imageName.begin());
-	utils::addImages(*targetImage,
+	librautils::addImages(*targetImage,
 			     imageName,
 			     imageExt,
 			     reset_target,
 			     logio);
 	if (stats=="outputonly")
-	  utils::printImageMax(outputImage, *targetImage, logio);
+	  librautils::printImageMax(outputImage, *targetImage, logio);
 	else if (stats=="inputonly")
-	  utils::printImageMax(inputImageNames, logio);
+	  librautils::printImageMax(inputImageNames, logio);
 	else if (stats=="all")
 	  {
-	    utils::printImageMax(inputImageNames, logio);
-	    utils::printImageMax(outputImage, *targetImage, logio);
+	    librautils::printImageMax(inputImageNames, logio);
+	    librautils::printImageMax(outputImage, *targetImage, logio);
 	  }
       }
     catch(AipsError& e)

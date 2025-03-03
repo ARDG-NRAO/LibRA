@@ -40,8 +40,8 @@
 //
 #define RestartUI(Label)  {if(clIsInteractive()) {goto Label;}}
 
-#include <Utilities/DataIterations.h>
-#include <Utilities/DataBase.h>
+#include <libracore/DataIterations.h>
+#include <libracore/DataBase.h>
 
 
 // Data column to use for the data fidelity term in a solver.

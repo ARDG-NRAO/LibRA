@@ -30,11 +30,11 @@
 //
 #define ROADRUNNER_USE_HPG
 #include <rWeightor.h>
-#include <Utilities/DataIterations.h>
-#include <Utilities/DataBase.h>
+#include <libracore/DataIterations.h>
+#include <libracore/DataBase.h>
 #include <MakeComponents.h>
 #include <roadrunner.h>
-#include <Utilities/utils.h>
+#include <librautils/utils.h>
 
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
@@ -850,7 +850,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	      // Split any extension in imageName to construct a name with
 	      // same base name and extension given by sowImageExt
 	      std::string baseName=imageName;
-	      baseName=utils::removeExtension(imageName);
+	      baseName=librautils::removeExtension(imageName);
 
 	      PagedImage<float> sowImage(sow.shape(),cgrid.coordinates(), baseName+"."+sowImageExt);
 

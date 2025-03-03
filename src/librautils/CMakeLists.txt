@@ -15,12 +15,12 @@
 #
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_CXX_STANDARD 17)
-project(libracore)
+project(librautils)
 
 find_package(Kokkos REQUIRED)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
+include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}  
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
@@ -28,11 +28,10 @@ include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/inclu
 )
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
-add_library(${PROJECT_NAME} SHARED "${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc")
+add_library(${PROJECT_NAME} SHARED "${CMAKE_CURRENT_SOURCE_DIR}/utils.cc")
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER 
 	"${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.h;${CMAKE_CURRENT_SOURCE_DIR}/DataBase.h;${CMAKE_CURRENT_SOURCE_DIR}/DataIterations.h")
 target_include_directories(${PROJECT_NAME} PUBLIC
-  ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
@@ -40,36 +39,3 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   )
 install(TARGETS ${PROJECT_NAME} 
 	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
-	#PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/libracore")
-
-# does NOT work since the header includes headers in other experimental dirs
-#set(MDSPAN_HEADER "${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/mdspan.hpp")
-#install(FILES ${MDSPAN_HEADER} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/mdspan")
-
-# for testing
-#link_directories("${CMAKE_INSTALL_PREFIX}/lib")
-#add_executable(testmdspan "${CMAKE_CURRENT_SOURCE_DIR}/testmdspan.cc")
-#target_link_libraries(testmdspan PRIVATE libracore
-	#  casacpp_synthesis
-	#casacpp_msvis
-	#hpg
-	#kokkoscore
-	#casa_msfits
-	#casa_ms
-	#casa_images
-	#casa_coordinates
-	#casa_lattices
-	#casa_fits
-	#casa_measures
-	#casa_tables
-	#casa_scimath
-	#casa_scimath_f
-	#casa_casa
-	#pthread
-	#parafeed
-	#readline
-	#history
-	#termcap
-	#m
-	#c
-	#"-Wl,--disable-new-dtags")

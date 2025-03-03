@@ -70,6 +70,8 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
 set(APP_LINK_LIBRARIES
   casacpp_synthesis
   casacpp_msvis
+  librautils
+  libracore
   hpg
   kokkoscore
   casa_msfits
@@ -114,7 +116,7 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner Chip Dale Acme MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Utilities)
+set(APP_LIST Coyote Hummbee RoadRunner Chip Dale Acme MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan)
 
 set (ACME_SOURCES
   Acme/acme.cc
@@ -186,12 +188,12 @@ set (TABLEINFO_SOURCES
   TableInfo/tableinfo.h
 )
 
-set(UTILITIES_SOURCES
-  Utilities/utils.cc
-  Utilities/utils.h
-  Utilities/DataBase.h
-  Utilities/DataIterations.h
-)
+# set(UTILITIES_SOURCES
+  # Utilities/utils.cc
+  # Utilities/utils.h
+  # Utilities/DataBase.h
+  # Utilities/DataIterations.h
+# )
 
 set (LIBRA_SOURCES
   ${ACME_SOURCES}
@@ -206,7 +208,7 @@ set (LIBRA_SOURCES
   ${ROADRUNNER_SOURCES}
   ${SUBMS_SOURCES}
   ${TABLEINFO_SOURCES}
-  ${UTILITIES_SOURCES}
+  # ${UTILITIES_SOURCES}
   ${DALE_SOURCES}
 )
 

@@ -29,8 +29,8 @@
  * @brief Contains classes for iterating over visibility data.
  */
 
-#ifndef ROADRUNNER_DATAITERATOR_H
-#define ROADRUNNER_DATAITERATOR_H
+#ifndef LIBRACORE_DATAITERATOR_H
+#define LIBRACORE_DATAITERATOR_H
 
 #include <mutex>
 #include <future>

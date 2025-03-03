@@ -32,7 +32,7 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/Path.h>
-#include <Utilities/utils.h>
+#include <librautils/utils.h>
 
 
 //
@@ -71,7 +71,7 @@ namespace Acme
 		LatticeBase *targetPtr;
 		ImageInterface<Float> *targetImage;
 
-	    if (! utils::imageExists(imageName))
+	    if (! librautils::imageExists(imageName))
         	throw(AipsError(string("Image ") + imageName + string(" does not exist.")));
 
 		targetPtr = ImageOpener::openImage (imageName);
@@ -79,7 +79,7 @@ namespace Acme
 
 		if (stats=="checkamp")
 		{
-			utils::checkImageMax(imageName, *targetImage, logio);
+			librautils::checkImageMax(imageName, *targetImage, logio);
 		}
 		else if (stats=="all")
 		{
