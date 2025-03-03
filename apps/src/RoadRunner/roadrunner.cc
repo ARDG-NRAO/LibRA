@@ -29,10 +29,10 @@
 //================================================================================
 //
 #define ROADRUNNER_USE_HPG
-#include <rWeightor.h>
+#include <libracore/rWeightor.h>
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
-#include <MakeComponents.h>
+#include <libracore/MakeComponents.h>
 #include <roadrunner.h>
 #include <librautils/utils.h>
 
@@ -274,7 +274,7 @@ makeMNdx(const string& fileName,
     }
   conj_mndx.assign(mndx);
 
-  // Make the equivalent conj MNdx.  Is this general enough to make conj_mndx from mndx?
+  // Make the equivalent conj MCMAKE_CURRENT_SOURCE_DIRNdx.  Is this general enough to make conj_mndx from mndx?
   for(int i=nGridPlanes-1,  ii=0;
       (i>=0) && (ii<(int)nGridPlanes);
       i--,ii++)

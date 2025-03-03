@@ -173,9 +173,9 @@ set (ROADRUNNER_SOURCES
   RoadRunner/roadrunner.h
   # RoadRunner/DataBase.h
   # RoadRunner/DataIterations.h
-  RoadRunner/MakeComponents.h
-  RoadRunner/rWeightor.h
-  RoadRunner/ThreadCoordinator.h
+  # RoadRunner/MakeComponents.h
+  # RoadRunner/rWeightor.h
+  # RoadRunner/ThreadCoordinator.h
 )
 
 set (SUBMS_SOURCES
@@ -188,11 +188,9 @@ set (TABLEINFO_SOURCES
   TableInfo/tableinfo.h
 )
 
-# set(UTILITIES_SOURCES
-  # Utilities/utils.cc
-  # Utilities/utils.h
-  # Utilities/DataBase.h
-  # Utilities/DataIterations.h
+# set(UTILITIES_SOURCES 
+  # Utilities/backup.cc
+  # Utilities/backup.h
 # )
 
 set (LIBRA_SOURCES

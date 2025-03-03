@@ -18,9 +18,9 @@ build-job:
   stage: build
   rules:
     - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
+      - README.md
+      - scripts/**/*
+      - doc/**/*
       when: never
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
       when: never
@@ -78,14 +78,15 @@ test-job:
     - base_path=$PWD
     - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="report.xml"
-    - python -m pytest --junitxml=pytest_report.xml
+    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml"
+    - python -m pytest --junitxml=${PWD}/pytest_report.xml
 
   artifacts:
     when: always
     reports:
-      junit: ./report.xml
-      junit: ./pytest_report.xml
+      junit:
+        - ./report.xml
+        - ./pytest_report.xml
 
 production-job:
   stage: production
