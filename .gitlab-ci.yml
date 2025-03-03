@@ -78,7 +78,7 @@ test-job:
     - base_path=$PWD
     - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml"
+    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml" --gtest_color=yes --gtest_repeat=1
     - python -m pytest --junitxml=${PWD}/pytest_report.xml
 
   artifacts:
