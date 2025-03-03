@@ -1,44 +1,35 @@
-stages:
-  - build
-  - test
-  - production
-
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: $CI_PROJECT_DIR/ccache
   GIT_CLEAN_FLAGS: none
 
 cache:
-  key: ccache_main
+  key: $CI_COMMIT_REF_SLUG
   paths:
     - $CCACHE_DIR
 
+stages:
+  - build
+  - test
+  - production
+
+before_script:
+  - export CCACHE_BASEDIR="$PWD"
+  - export CCACHE_DIR="$PWD/ccache"
+  - export CCACHE_COMPILERCHECK=content
+  - ccache --zero-stats || true
+  - ccache --show-stats || true
+  - git clean -ffdx
+
+after_script:
+  - ccache --show-stats || true
+  - tar -cf ccache.tar $CCACHE_DIR
+  - mkdir -p $CI_PROJECT_DIR/ccache
+  - tar -xf ccache.tar -C $CI_PROJECT_DIR/ccache
+  - rm ccache.tar
 
 build-job:
   stage: build
-  rules:
-    - changes:
-      - README.md
-      - scripts/**/*
-      - doc/**/*
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/' 
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
-
-  before_script:
-    - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_DIR="$PWD/ccache"
-    - export CCACHE_COMPILERCHECK=content
-    - ccache --zero-stats || true
-    - ccache --show-stats || true
-    - git clean -ffdx
-
   script:
     - echo "Compiling the code..."
     - echo $PATH
@@ -49,30 +40,9 @@ build-job:
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
     - echo "Compile complete."
-    
-  after_script:
-    - export CCACHE_DIR="$PWD/ccache"
-    - ccache --show-stats || true
 
 test-job:
   stage: test
-  rules:
-    - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/'
-      when: always
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/'
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/) && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
-
   script:
     - echo $PWD
     - base_path=$PWD
@@ -81,17 +51,18 @@ test-job:
     - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml" --gtest_color=yes --gtest_repeat=1
     - python -m pytest --junitxml=${PWD}/pytest_report.xml
 
+test-job:
+  stage: test
+  script:
+    - echo $PWD
+    - base_path=$PWD
+    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
+    - cd ${base_path}/apps/src/tests
+    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml" --gtest_color=yes --gtest_repeat=1
+    - python -m pytest --junitxml=${PWD}/pytest_report.xml
   artifacts:
     when: always
     reports:
       junit:
-        - ./report.xml
-        - ./pytest_report.xml
-
-production-job:
-  stage: production
-  only:
-    - manual
-  script:
-    - echo "Deploying to production..."
-    # Add your deployment commands here
+        - ${base_path}/apps/src/tests/report.xml
+        - ${base_path}/apps/src/tests/pytest_report.xml
