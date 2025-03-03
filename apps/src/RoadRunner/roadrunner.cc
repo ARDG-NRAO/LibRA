@@ -86,7 +86,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 }
 
 
-void CFServer(ThreadCoordinator& thcoord,
+void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
 	      bool& WBAwp, int& nW,
 	      casacore::ImageInterface<casacore::Float>& skyImage,
@@ -653,7 +653,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // cooridinate with the CFServer thread.
 	  //
 	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
-	  ThreadCoordinator thcoord;
+	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
 	  // Start the CFServer thread.
