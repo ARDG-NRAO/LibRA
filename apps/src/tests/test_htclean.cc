@@ -1,6 +1,5 @@
 #include <filesystem>
 #include "gtest/gtest.h"
-//#include "test_utils.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -22,7 +21,7 @@ std::string run_shell_script(const std::string& imagename) {
     system("chmod +x ./libra_htclean.sh");
     system("chmod +x ./runapp.sh");
 
-    std::string command = "./libra_htclean.sh -i " + imagename + " -n 3 -p libra_htclean.def -L /home/nemo2/nemo2/mhsieh/libra_ardg/LibRA/install/bin/ -l LOGS";
+    std::string command = "./libra_htclean.sh -i " + imagename + " -n 3 -p libra_htclean.def -L ../../../../install/bin/ -l LOGS";
     char buffer[128];
     std::string result = "";
     FILE* fp = popen(command.c_str(), "r");
