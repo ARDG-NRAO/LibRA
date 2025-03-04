@@ -44,6 +44,7 @@ build-job:
     - export CCACHE_DIR="$PWD/ccache"
     - ccache --show-stats || true
     - tar -czf ${CCACHE_DIR}/ccache.tar.gz $CCACHE_DIR
+    - mv ${CCACHE_DIR}/ccache.tar.gz $CI_PROJECT_DIR/
 
   artifacts:
     paths:
@@ -78,6 +79,6 @@ test-job:
   artifacts:
     when: always
     reports:
-      - ${base_path}/apps/src/tests/report.xml
-      - ${base_path}/apps/src/tests/pytest_report.xml
-
+      junit:
+        - ${base_path}/apps/src/tests/report.xml
+        - ${base_path}/apps/src/tests/pytest_report.xml
