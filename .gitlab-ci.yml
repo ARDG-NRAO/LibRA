@@ -24,8 +24,8 @@ build-job:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
+    - if [ -f "$CI_PROJECT_DIR/ccache.tar.gz" ]; then tar -xzf "$CI_PROJECT_DIR/ccache.tar.gz" -C $CCACHE_DIR; fi
     - mkdir -p $CCACHE_DIR
-    - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
     - ccache --zero-stats || true
     - ccache --show-stats || true
     - git clean -ffdx
