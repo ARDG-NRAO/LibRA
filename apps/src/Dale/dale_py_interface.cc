@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "dale.h"
+#include <dale.h>
 
 using namespace Dale;
 

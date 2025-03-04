@@ -1,6 +1,6 @@
 #include <filesystem>
-#include "MSSplit/mssplit.h"
-#include "gtest/gtest.h"
+#include <MSSplit/mssplit.h>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace std::filesystem;

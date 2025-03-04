@@ -27,7 +27,7 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-#include "dataiter.h"
+#include <dataiter.h>
 
 // The interface function that to setup the parameters of the
 // application.  Can be replaced with whatever may be the appropriate,

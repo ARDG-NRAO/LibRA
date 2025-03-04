@@ -24,8 +24,8 @@
 //#
 //# $Id$
 
-#ifndef ROADRUNNER_MAKECOMPONENTS_H
-#define ROADRUNNER_MAKECOMPONENTS_H
+#ifndef LIBRACORE_MAKECOMPONENTS_H
+#define LIBRACORE_MAKECOMPONENTS_H
 #include <casacore/measures/Measures/Stokes.h>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/images/Images/ImageInterface.h>

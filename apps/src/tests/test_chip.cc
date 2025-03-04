@@ -1,6 +1,6 @@
 #include <filesystem>
-#include "Chip/chip.h"
-#include "gtest/gtest.h"
+#include <Chip/chip.h>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace std::filesystem;

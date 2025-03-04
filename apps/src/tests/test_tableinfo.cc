@@ -1,6 +1,6 @@
 #include <filesystem>
-#include "TableInfo/tableinfo.h"
-#include "gtest/gtest.h"
+#include <TableInfo/tableinfo.h>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace std::filesystem;

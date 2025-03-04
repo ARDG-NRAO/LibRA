@@ -47,7 +47,9 @@
 //#include <synthesis/TransformMachines2/PointingOffsets.h>
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
-#include "ThreadCoordinator.h"
+
+#include <libracore/ThreadCoordinator.h>
+
 #ifdef ROADRUNNER_USE_HPG
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
@@ -58,6 +60,7 @@
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
+using namespace libracore;
 
 enum {
       IMAGING_TIME=0,
@@ -213,7 +216,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
  * @param spwRefFreqList A reference to the list of reference frequencies for the spectral windows.
  * @param nDataPol The number of data polarizations.
  */
-void CFServer(ThreadCoordinator& thcoord,
+void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
 	      bool& WBAwp, int& nW,
 	      casacore::ImageInterface<casacore::Float>& skyImage,

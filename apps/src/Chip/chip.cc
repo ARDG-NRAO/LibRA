@@ -24,7 +24,7 @@
 
 
 #include <chip.h>
-
+#include <librautils/utils.h>
 #include <iostream>
 #include <sstream>
 #include <sys/types.h>
@@ -36,66 +36,10 @@
 
 //
 //-------------------------------------------------------------------------
-
+using namespace librautils;
+using namespace std;
 namespace Chip
 {
-  bool imageExists(const string& imagename)
-  {
-    Directory image(imagename);
-    return image.exists();
-  }
-
-  void printImageMax(const string& name,
-		     const ImageInterface<Float>& target,
-		     LogIO& logio)
-  {
-    float mim = max(target.get());
- 
-    {
-      stringstream os;
-      os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	 << "Image stats: "
-	 << " max(" << name << ") = " << mim;
-      logio << os.str() << LogIO::POST;
-    }
-  }
-
-  void printImageMax(const vector<string>& nameList,
-		     LogIO& logio)
-  {
-    for (auto name : nameList)
-      {
-	PagedImage<float> target(name);
-	printImageMax(name, target, logio);
-      }
-  }
-
-
-  template <class T>
-  void resetImage(ImageInterface<T>& target)
-  {
-    target.set(0.0);
-  }
-
-  template <class T>
-  void addImages(ImageInterface<T>& target,
-		 const vector<string>& partImageNames,
-		 const string& imExt,
-		 const bool& reset_target,
-		 LogIO& logio)
-  {
-    if (reset_target)
-      resetImage(target);
-
-    for (auto partName : partImageNames)
-      {
-	if (imageExists(partName + imExt))
-	  target += PagedImage<T>(partName + imExt);
-	else
-	  logio << "Image " << partName + imExt << " does not exist." << LogIO::EXCEPTION;
-      }
-  }
-
   void chip(std::vector<std::string>& imageName, std::string& outputImage,
 	    const bool overWrite,
 	    const bool resetOutputImage,
@@ -123,7 +67,7 @@ namespace Chip
     //
     try
       {
-	if (imageExists(outputImage) &&  (!overWrite))
+	if (librautils::imageExists(outputImage) &&  (!overWrite))
 	  logio << "Output image exists.  Won't overwrite it." << LogIO::EXCEPTION;
 
 	// Cost of this loop scales as imageName.size().  Can this become a performance bottl%eneck?
@@ -163,7 +107,7 @@ namespace Chip
 	vector<string> inputImageNames=imageName;
 	string imageExt("");
 	vector<string> subVec={imageName[0]};
-	Chip::addImages(*targetImage,
+	librautils::addImages(*targetImage,
 			     subVec,
 			     imageExt,
 			     reset_target,
@@ -173,19 +117,19 @@ namespace Chip
 	// image.
 	reset_target=false;
 	imageName.erase(imageName.begin());
-	Chip::addImages(*targetImage,
+	librautils::addImages(*targetImage,
 			     imageName,
 			     imageExt,
 			     reset_target,
 			     logio);
 	if (stats=="outputonly")
-	  printImageMax(outputImage, *targetImage, logio);
+	  librautils::printImageMax(outputImage, *targetImage, logio);
 	else if (stats=="inputonly")
-	  printImageMax(inputImageNames, logio);
+	  librautils::printImageMax(inputImageNames, logio);
 	else if (stats=="all")
 	  {
-	    printImageMax(inputImageNames, logio);
-	    printImageMax(outputImage, *targetImage, logio);
+	    librautils::printImageMax(inputImageNames, logio);
+	    librautils::printImageMax(outputImage, *targetImage, logio);
 	  }
       }
     catch(AipsError& e)
