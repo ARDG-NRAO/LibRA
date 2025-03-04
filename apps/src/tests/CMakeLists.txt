@@ -23,6 +23,7 @@ set(TEST_SOURCES
   test_dale.cc
   test_restore.cc
   test_dale.cc
+  test_htclean.cc
 )
 
 add_executable(LibRATests ${TEST_SOURCES})
