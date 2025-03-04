@@ -48,6 +48,8 @@ build-job:
       - build/
       - install/
       - ${CCACHE_DIR}/
+    expire_in: 1 week
+    when: always
 
 test-job:
   stage: test
@@ -85,3 +87,5 @@ test-job:
       - ${CCACHE_DIR}/
       - ${base_path}/apps/src/tests/report.xml
       - ${base_path}/apps/src/tests/pytest_report.xml
+    expire_in: 1 week
+    when: always
