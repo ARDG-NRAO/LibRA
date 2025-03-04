@@ -15,6 +15,8 @@ cache:
 build-job:
   stage: build
   rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
@@ -24,9 +26,10 @@ build-job:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
-    - if [ -f "$CI_PROJECT_DIR/ccache.tar.gz" ]; then tar -xzf "$CI_PROJECT_DIR/ccache.tar.gz" -C $CCACHE_DIR; fi
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+    # - if [ -f "$CI_PROJECT_DIR/ccache.tar.gz" ]; then tar -xzf "$CI_PROJECT_DIR/ccache.tar.gz" -C $CCACHE_DIR; fi
     - mkdir -p $CCACHE_DIR
-    - ccache --zero-stats || true
+    # - ccache --zero-stats || true
     - ccache --show-stats || true
     - git clean -ffdx
 
@@ -43,17 +46,21 @@ build-job:
   after_script:
     - export CCACHE_DIR="$PWD/ccache"
     - ccache --show-stats || true
-    - tar -czf ${CCACHE_DIR}/ccache.tar.gz $CCACHE_DIR
-    - mv ${CCACHE_DIR}/ccache.tar.gz $CI_PROJECT_DIR/
+    # - tar -czf ${CCACHE_DIR}/ccache.tar.gz $CCACHE_DIR
+    # - mv ${CCACHE_DIR}/ccache.tar.gz $CI_PROJECT_DIR/
 
   artifacts:
     paths:
       - build
-      - ${CCACHE_DIR}/ccache.tar.gz
+      - install
+      - ${CCACHE_DIR}
+      # - ${CCACHE_DIR}/ccache.tar.gz
 
 test-job:
   stage: test
   rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
@@ -66,7 +73,7 @@ test-job:
   before_script:
     - export CCACHE_DIR="$PWD/ccache"
     - mkdir -p $CCACHE_DIR
-    - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
+    # - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
 
   script:
     - echo $PWD
@@ -82,3 +89,7 @@ test-job:
       junit:
         - ${base_path}/apps/src/tests/report.xml
         - ${base_path}/apps/src/tests/pytest_report.xml
+    paths:
+      - ${CCACHE_DIR}
+      - ${base_path}/apps/src/tests/report.xml
+      - ${base_path}/apps/src/tests/pytest_report.xml
