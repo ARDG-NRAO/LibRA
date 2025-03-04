@@ -42,3 +42,8 @@ if(Apps_BUILD_TESTS_PYTHON)
       COMMAND ${PYTHON_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}
   )
 endif()
+
+# Install the test executable
+install(TARGETS LibRATests
+  RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/tests"
+)

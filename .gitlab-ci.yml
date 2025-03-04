@@ -1,68 +1,83 @@
+stages:
+  - build
+  - test
+
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: $CI_PROJECT_DIR/ccache
   GIT_CLEAN_FLAGS: none
 
 cache:
-  key: $CI_COMMIT_REF_SLUG
+  key: ccache
   paths:
     - $CCACHE_DIR
 
-stages:
-  - build
-  - test
-  - production
-
-before_script:
-  - export CCACHE_BASEDIR="$PWD"
-  - export CCACHE_DIR="$PWD/ccache"
-  - export CCACHE_COMPILERCHECK=content
-  - ccache --zero-stats || true
-  - ccache --show-stats || true
-  - git clean -ffdx
-
-after_script:
-  - ccache --show-stats || true
-  - tar -cf ccache.tar $CCACHE_DIR
-  - mkdir -p $CI_PROJECT_DIR/ccache
-  - tar -xf ccache.tar -C $CI_PROJECT_DIR/ccache
-  - rm ccache.tar
-
 build-job:
   stage: build
+  rules:
+    - changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
+
+  before_script:
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_DIR="$PWD/ccache"
+    - export CCACHE_COMPILERCHECK=content
+    - mkdir -p $CCACHE_DIR
+    - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
+    - ccache --zero-stats || true
+    - ccache --show-stats || true
+    - git clean -ffdx
+
   script:
     - echo "Compiling the code..."
     - echo $PATH
     - nvidia-smi
     - which nvcc
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
-    - echo "Compile complete."
+
+  after_script:
+    - export CCACHE_DIR="$PWD/ccache"
+    - ccache --show-stats || true
+    - tar -czf ${CCACHE_DIR}/ccache.tar.gz $CCACHE_DIR
+
+  artifacts:
+    paths:
+      - build
+      - ${CCACHE_DIR}/ccache.tar.gz
 
 test-job:
   stage: test
+  rules:
+    - changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
+      when: never
+
+  dependencies:
+    - build-job
+
+  before_script:
+    - export CCACHE_DIR="$PWD/ccache"
+    - mkdir -p $CCACHE_DIR
+    - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
+
   script:
     - echo $PWD
     - base_path=$PWD
     - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml" --gtest_color=yes --gtest_repeat=1
-    - python -m pytest --junitxml=${PWD}/pytest_report.xml
+    - ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/report.xml"
+    - python -m pytest --junitxml=${base_path}/apps/src/tests/pytest_report.xml
 
-test-job:
-  stage: test
-  script:
-    - echo $PWD
-    - base_path=$PWD
-    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
-    - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:${PWD}/report.xml" --gtest_color=yes --gtest_repeat=1
-    - python -m pytest --junitxml=${PWD}/pytest_report.xml
   artifacts:
     when: always
     reports:
-      junit:
-        - ${base_path}/apps/src/tests/report.xml
-        - ${base_path}/apps/src/tests/pytest_report.xml
+      - ${base_path}/apps/src/tests/report.xml
+      - ${base_path}/apps/src/tests/pytest_report.xml
+
