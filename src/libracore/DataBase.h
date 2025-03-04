@@ -24,8 +24,8 @@
 //#
 //# $Id$
 
-#ifndef ROADRUNNER_DATABASE_H
-#define ROADRUNNER_DATABASE_H
+#ifndef LIBRACORE_DATABASE_H
+#define LIBRACORE_DATABASE_H
 
 #include <casacore/ms/MSSel/MSSelection.h>
 #include <msvis/MSVis/VisibilityIterator2.h>

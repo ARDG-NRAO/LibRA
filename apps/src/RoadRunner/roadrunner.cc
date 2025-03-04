@@ -29,31 +29,17 @@
 //================================================================================
 //
 #define ROADRUNNER_USE_HPG
-#include <rWeightor.h>
-#include <DataIterations.h>
-#include <DataBase.h>
-#include <MakeComponents.h>
+#include <libracore/rWeightor.h>
+#include <libracore/DataIterations.h>
+#include <libracore/DataBase.h>
+#include <libracore/MakeComponents.h>
 #include <roadrunner.h>
-//#include <Utilities/LibRA_Utils.h>
+#include <librautils/utils.h>
 
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
 std::shared_ptr<hpg::RWDeviceCFArray> dcfa_sptr_g;
 bool isRoot=true;
-
-
-std::string removeExtension(const std::string& path) {
-  if (path == "." || path == "..")
-    return path;
-
-  size_t pos = path.find_last_of("\\/.");
-  if (pos != std::string::npos && path[pos] == '.')
-    return path.substr(0, pos);
-
-  return path;
-}
-
-
 
 std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>>
 prepCFEngine(casa::refim::MakeCFArray& mkCF,
@@ -100,7 +86,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 }
 
 
-void CFServer(ThreadCoordinator& thcoord,
+void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
 	      bool& WBAwp, int& nW,
 	      casacore::ImageInterface<casacore::Float>& skyImage,
@@ -288,7 +274,7 @@ makeMNdx(const string& fileName,
     }
   conj_mndx.assign(mndx);
 
-  // Make the equivalent conj MNdx.  Is this general enough to make conj_mndx from mndx?
+  // Make the equivalent conj MCMAKE_CURRENT_SOURCE_DIRNdx.  Is this general enough to make conj_mndx from mndx?
   for(int i=nGridPlanes-1,  ii=0;
       (i>=0) && (ii<(int)nGridPlanes);
       i--,ii++)
@@ -667,7 +653,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // cooridinate with the CFServer thread.
 	  //
 	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
-	  ThreadCoordinator thcoord;
+	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
 	  // Start the CFServer thread.
@@ -864,7 +850,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	      // Split any extension in imageName to construct a name with
 	      // same base name and extension given by sowImageExt
 	      std::string baseName=imageName;
-	      baseName=removeExtension(imageName);
+	      baseName=librautils::removeExtension(imageName);
 
 	      PagedImage<float> sowImage(sow.shape(),cgrid.coordinates(), baseName+"."+sowImageExt);
 

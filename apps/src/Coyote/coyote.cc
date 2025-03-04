@@ -25,9 +25,9 @@
 // # $Id$
 
 
-#include <rWeightor.h>
-#include <DataBase.h>
-#include <MakeComponents.h>
+#include <libracore/rWeightor.h>
+#include <libracore/DataBase.h>
+#include <libracore/MakeComponents.h>
 
 #include <coyote.h>
 

@@ -1,7 +1,6 @@
 stages:
   - build
   - test
-  - production
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
@@ -9,32 +8,24 @@ variables:
   GIT_CLEAN_FLAGS: none
 
 cache:
-  key: ccache_main
+  key: ccache
   paths:
     - $CCACHE_DIR
-
 
 build-job:
   stage: build
   rules:
     - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/' 
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
 
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
+    - if [ -f "$CI_PROJECT_DIR/ccache.tar.gz" ]; then tar -xzf "$CI_PROJECT_DIR/ccache.tar.gz" -C $CCACHE_DIR; fi
+    - mkdir -p $CCACHE_DIR
     - ccache --zero-stats || true
     - ccache --show-stats || true
     - git clean -ffdx
@@ -44,53 +35,50 @@ build-job:
     - echo $PATH
     - nvidia-smi
     - which nvcc
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
-    - echo "Compile complete."
-    
+
   after_script:
     - export CCACHE_DIR="$PWD/ccache"
     - ccache --show-stats || true
+    - tar -czf ${CCACHE_DIR}/ccache.tar.gz $CCACHE_DIR
+    - mv ${CCACHE_DIR}/ccache.tar.gz $CI_PROJECT_DIR/
+
+  artifacts:
+    paths:
+      - build
+      - ${CCACHE_DIR}/ccache.tar.gz
 
 test-job:
   stage: test
   rules:
     - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
       when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/'
-      when: always
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/'
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/) && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
+
+  dependencies:
+    - build-job
+
+  before_script:
+    - export CCACHE_DIR="$PWD/ccache"
+    - mkdir -p $CCACHE_DIR
+    - tar -xzf ${CCACHE_DIR}/ccache.tar.gz -C $CCACHE_DIR || true
 
   script:
     - echo $PWD
     - base_path=$PWD
     - echo "Entering $PWD/apps/src/tests to run apps unit tests"
     - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="report.xml"
-    - python -m pytest --junitxml=pytest_report.xml
+    - ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/report.xml"
+    - python -m pytest --junitxml=${base_path}/apps/src/tests/pytest_report.xml
 
   artifacts:
     when: always
     reports:
-      junit: ./report.xml
-      junit: ./pytest_report.xml
-
-production-job:
-  stage: production
-  only:
-    - manual
-  script:
-    - echo "Deploying to production..."
-    # Add your deployment commands here
+      junit:
+        - ${base_path}/apps/src/tests/report.xml
+        - ${base_path}/apps/src/tests/pytest_report.xml

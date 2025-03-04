@@ -25,8 +25,8 @@
 //#
 //# $Id$
 
-#ifndef ROADRUNNER_RWEIGHTOR_H
-#define ROADRUNNER_RWEIGHTOR_H
+#ifndef LIBRACORE_RWEIGHTOR_H
+#define LIBRACORE_RWEIGHTOR_H
 
 //
 // Embedded code in roadrunner.cc put in this file to minimize visual
