@@ -51,6 +51,7 @@ does not required RA-specific software stack and dependencies.
 
 A containerized means of building the LibRA project is available
 [here](https://gitlab.nrao.edu/ardg/libra-containers).  This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
+Please create a ticket on github to interact with us.
 
 
 The `main` branch of this project is also mirrored [here](https://github.com/ARDG-NRAO/LibRA).

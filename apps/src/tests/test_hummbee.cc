@@ -1,7 +1,7 @@
 // #include <filesystem>
-#include "Hummbee/hummbee.h"
-#include "gtest/gtest.h"
-#include "test_utils.h"
+#include <Hummbee/hummbee.h>
+#include <gtest/gtest.h>
+#include <tests/test_utils.h>
 using namespace std;
 using namespace std::filesystem;
 

@@ -136,6 +136,7 @@ if (CMAKE_LIBIMAGING_ONLY)
     components
     imageanalysis
     libracore
+    librautils
     mstransform
     msvis
     nrao
@@ -157,6 +158,7 @@ else()
     flagging
     graphics
     libracore
+    librautils
     miriad
     mstransform
     msvis

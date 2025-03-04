@@ -30,7 +30,7 @@ link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 add_library(${PROJECT_NAME} SHARED "${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc")
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER 
-	"imageInterface.h")
+	"${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.h;${CMAKE_CURRENT_SOURCE_DIR}/DataBase.h;${CMAKE_CURRENT_SOURCE_DIR}/DataIterations.h;${CMAKE_CURRENT_SOURCE_DIR}/rWeightor.h;${CMAKE_CURRENT_SOURCE_DIR}/ThreadCoordinator.h")
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}
