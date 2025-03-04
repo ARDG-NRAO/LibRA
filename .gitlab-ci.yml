@@ -43,14 +43,6 @@ build-job:
   after_script:
     - ccache --show-stats || true
 
-  artifacts:
-    paths:
-      - build/
-      - install/
-      - ${CCACHE_DIR}/
-    expire_in: 1 week
-    when: always
-
 test-job:
   stage: test
   rules:
@@ -83,9 +75,5 @@ test-job:
       junit:
         - ${base_path}/apps/src/tests/report.xml
         - ${base_path}/apps/src/tests/pytest_report.xml
-    paths:
-      - ${CCACHE_DIR}/
-      - ${base_path}/apps/src/tests/report.xml
-      - ${base_path}/apps/src/tests/pytest_report.xml
     expire_in: 1 week
     when: always
