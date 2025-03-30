@@ -79,11 +79,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 	LogIO log_l(LogOrigin("AWConvFunc", "AWConvFunc"));
 	log_l << "Both, psterm and aterm cannot be set to NoOp. " << LogIO::EXCEPTION;
       }
-    if (wbAWP && aTerm->isNoOp())
-      {
-	//log_l << "wbawp=True is ineffective when aterm is OFF.  Setting wbawp to False." << LogIO::NORMAL1;
-	wbAWP_p=false;
-      }
+    if (wbAWP && aTerm->isNoOp()) wbAWP_p=false;
 
     pixFieldGrad_p.resize(2);pixFieldGrad_p(0)=0.0; pixFieldGrad_p(1)=0.0;
   }
@@ -2088,6 +2084,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			    if (miscInfoRec.isDefined("psTermOn")) miscInfoRec.get("psTermOn", psTermOn_l);
 			    if (miscInfoRec.isDefined("wTermOn"))  miscInfoRec.get("wTermOn",  wTermOn_l);
 			    if (miscInfoRec.isDefined("conjBeams"))  miscInfoRec.get("conjBeams",  conjBeams_l);
+			    float s;
+			    miscInfoRec.get("Sampling",s);
+			    convSampling = s;
 			  }
 			  CountedPtr<ConvolutionFunction> awCF = AWProjectFT::makeCFObject(miscInfo.telescopeName,
 											   aTermOn_l,
@@ -2095,7 +2094,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 											   wTermOn_l,
 											   True,
 											   wbAWP,
-											   conjBeams_l);
+											   conjBeams_l,
+											   xSupport,
+											   convSampling);
 			  if (aTermOn_l==false)
 			    {
 			      (static_cast<AWConvFunc &>(*awCF)).aTerm_p->setOpCode(CFTerms::NOOP);
@@ -2108,7 +2109,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 
 			  String bandName;
 			  cfb_p->getParams(cs_l, sampling, xSupport, ySupport,bandName,iNu,iW,iPol);
-			  convSampling=miscInfo.sampling;
+			  //convSampling=miscInfo.sampling;
 
 			  //convSize=miscInfo.shape[0];
 			  // This method loads "empty CFs".  Those have
@@ -2203,9 +2204,21 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   Int AWConvFunc::getOversampling(PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm)
   {
     Int os;
-    if (!aTerm.isNoOp()) os=aTerm.getOversampling();
-    else if (!wTerm.isNoOp()) os=wTerm.getOversampling();
-    else os=psTerm.getOversampling();
+    if (!aTerm.isNoOp())
+      {
+	os=aTerm.getOversampling();
+	//	cerr << "ATerm.OS: " << os << endl;
+      }
+    else if (!wTerm.isNoOp())
+      {
+	os=wTerm.getOversampling();
+	//	cerr << "WTerm.OS: " << os << endl;
+      }
+    else
+      {
+	os=psTerm.getOversampling();
+	//	cerr << "PSTerm.OS: " << os << endl;
+      }
     return os;
   }
   //

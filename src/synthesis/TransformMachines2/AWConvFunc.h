@@ -153,7 +153,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     int getOversampling(){return getOversampling(*psTerm_p, *wTerm_p, *aTerm_p);}
 
     virtual casacore::CountedPtr<CFTerms> getTerm(const casacore::String& name)
-    {if (name=="ATerm") return aTerm_p; else return NULL;}
+    {
+      if (name=="ATerm") return aTerm_p;
+      if (name=="WTerm") return wTerm_p;
+      if (name=="PSTerm") return psTerm_p;
+
+      else return NULL;
+    }
 
     virtual bool isWBAWP() {return wbAWP_p;};
     

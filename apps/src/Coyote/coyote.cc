@@ -221,23 +221,31 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       //-------------------------------------------------------------------------------------------------
       // Instantiate AWCF object for making the CFs later.
       //
-      CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
+      // CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
 
-      CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
-      CountedPtr<refim::WTerm> WTerm_l = new WTerm();
+      // CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
+      // CountedPtr<refim::WTerm> WTerm_l = new WTerm();
 
-      ATerm_l->setConvSize(cfBufferSize);
-      ATerm_l->setConvOversampling(cfOversampling);
+      // ATerm_l->setConvSize(cfBufferSize);
+      // WTerm_l->setConvSize(cfBufferSize);
+      // PSTerm_l->setConvSize(cfBufferSize);
 
-      if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
-      if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
-      if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
+      // ATerm_l->setConvOversampling(cfOversampling);
+      // WTerm_l->setConvOversampling(cfOversampling);
+      // PSTerm_l->setConvOversampling(cfOversampling);
 
-      cerr << "coyote: " << conjBeams << endl;
-      CountedPtr<refim::ConvolutionFunction> awcf_l
-	= new AWConvFunc(ATerm_l, PSTerm_l ,WTerm_l ,WBAwp, conjBeams);
+      // if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
+      // if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
+      // if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
 
-      //AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
+      // CountedPtr<refim::ConvolutionFunction> awcf_l
+      // 	= new AWConvFunc(ATerm_l, PSTerm_l ,WTerm_l ,WBAwp, conjBeams);
+
+      CountedPtr<refim::ConvolutionFunction> awcf_l =
+	AWProjectFT::makeCFObject(telescopeName,
+				  aTerm, psTerm, (nW>1),
+				  true, WBAwp, conjBeams,
+				  cfBufferSize,cfOversampling);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------

@@ -136,9 +136,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 							    const Bool wTermOn,
 							    const Bool,// mTermOn,
 							    const Bool wbAWP,
-							    const Bool conjBeams)
+							    const Bool conjBeams,
+							    const int cfBufferSize,
+							    const int cfOversampling)
   {
-    (void)wTermOn;//Unused
     CountedPtr<ATerm> apertureFunction = AWProjectFT::createTelescopeATerm(telescopeName, aTermOn);
     CountedPtr<PSTerm> psTerm = new PSTerm();
     CountedPtr<WTerm> wTerm = new WTerm();
@@ -148,7 +149,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //
     if (aTermOn == false) {apertureFunction->setOpCode(CFTerms::NOOP);}
     if (psTermOn == false) psTerm->setOpCode(CFTerms::NOOP);
-    if (wTermOn == False) wTerm->setOpCode(CFTerms::NOOP);
+    if (wTermOn == false) wTerm->setOpCode(CFTerms::NOOP);
+
+    apertureFunction->setConvSize(cfBufferSize);
+    wTerm->setConvSize(cfBufferSize);
+    psTerm->setConvSize(cfBufferSize);
+
+    apertureFunction->setConvOversampling(cfOversampling);
+    wTerm->setConvOversampling(cfOversampling);
+    psTerm->setConvOversampling(cfOversampling);
+
     //
     // Construct the CF object with appropriate CFTerms.
     //
