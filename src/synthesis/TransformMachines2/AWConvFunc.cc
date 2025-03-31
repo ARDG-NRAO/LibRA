@@ -1926,8 +1926,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     }
   }
 
-    //    extern casacore::Double casa::EVLABandMinFreqDefaults[EVLABeamCalc_NumBandCodes];
-
   //
   //----------------------------------------------------------------------
   //
@@ -2089,14 +2087,8 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 			    convSampling = s;
 			  }
 			  CountedPtr<ConvolutionFunction> awCF = AWProjectFT::makeCFObject(miscInfo.telescopeName,
-											   aTermOn_l,
-											   psTermOn_l,
-											   wTermOn_l,
-											   True,
-											   wbAWP,
-											   conjBeams_l,
-											   xSupport,
-											   convSampling);
+											   aTermOn_l, psTermOn_l, wTermOn_l,true,
+											   wbAWP, conjBeams_l, xSupport, convSampling);
 			  if (aTermOn_l==false)
 			    {
 			      (static_cast<AWConvFunc &>(*awCF)).aTerm_p->setOpCode(CFTerms::NOOP);

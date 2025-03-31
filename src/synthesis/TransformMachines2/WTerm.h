@@ -110,10 +110,6 @@ namespace casa{
 
     casacore::Bool rotationallySymmetric() {return true;};
 
-    int getConvSize()  {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedConvSize_p;};
-    int getOversampling() {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedOverSampling_p;}
-    virtual void setConvSize(const int convSize) {cachedConvSize_p=convSize;}
-    virtual void setConvOversampling(const int os) {cachedOverSampling_p=os;}
     casacore::Float getConvWeightSizeFactor() {return 1.0;};
   };
   };
