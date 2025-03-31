@@ -123,7 +123,6 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
   Vector<Int> visPol(vb2.correlationTypes());
   polMat = pop_l->makePolMat(visPol,polMap);
-  //cerr << visPol << " " << polMap << endl;
   polIndexMat = pop_l->makePol2CFMat(visPol,polMap);
   
   conjPolMat = pop_l->makeConjPolMat(visPol,polMap);
@@ -415,7 +414,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // CFStore on the disk.
 	  //
 	  // [07Jan2024] In the dryrun mode, only the meta info is
-	  // written as casacore::Records conerted to
+	  // written as casacore::Records converted to
 	  // casacore::Tables.  Writing these with multi-threadings
 	  // seems to be work.  The bool parameter is therefore set to
 	  // true (it is false in the default interface).
@@ -429,20 +428,17 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  //
 	  // mode="fillcf" case.  The list of CFs in the CFC are
 	  // expected to be "blank CFs" with all the necessary meta
-	  // information to fill them. Nothing else other than the CFC
-	  // is necessary.
+	  // information to fill them.  Nothing else other than the
+	  // CFC and the list of CFs is necessary.  An already filled
+	  // CF (the IsFilled=1 entry in CFS*/miscInfo.rec) will be
+	  // left untouched.
 	  //
 	  Vector<Double> dummyUVScale;
 	  Matrix<Double> dummyvbFreqSel;
 	  AWConvFunc::makeConvFunction2(cfCacheName,
-					dummyUVScale,
-					uvOffset,
-					dummyvbFreqSel,
-					*cfs2_l,
-					*cfswt2_l,
-					psTerm,
-					aTerm,
-					conjBeams);
+					dummyUVScale, uvOffset,	dummyvbFreqSel,
+					*cfs2_l,*cfswt2_l,
+					psTerm,	aTerm, conjBeams);
 	}
 
       // Report some stats.

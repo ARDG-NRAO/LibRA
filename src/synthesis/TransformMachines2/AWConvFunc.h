@@ -175,10 +175,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   protected:
     void normalizeAvgPB(casacore::ImageInterface<casacore::Complex>& inImage,
 			casacore::ImageInterface<casacore::Float>& outImage);
-    casacore::Bool makeAverageResponse_org(const VisBuffer2& vb, 
-				 const casacore::ImageInterface<casacore::Complex>& image,
-				 casacore::ImageInterface<casacore::Float>& theavgPB,
-				 casacore::Bool reset=true);
     void makePBSq(casacore::ImageInterface<casacore::Complex>& inImage);
 
 
