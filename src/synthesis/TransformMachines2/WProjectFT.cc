@@ -263,13 +263,15 @@ void WProjectFT::init() {
   
   
 
-  if(gridder) delete gridder; gridder=0;
+  if(gridder) delete gridder;
+  gridder=0;
   gridder = new ConvolveGridder<Double, Complex>(IPosition(2, nx, ny),
 						 uvScale, uvOffset,
 						 "SF");
 
   // Set up image cache needed for gridding. 
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
   
   // The tile size should be large enough that the
   // extended convolution function can fit easily
@@ -291,10 +293,13 @@ void WProjectFT::init() {
 
 // This is nasty, we should use CountedPointers here.
 WProjectFT::~WProjectFT() {
-  if(imageCache) delete imageCache; imageCache=0;
-  if(gridder) delete gridder; gridder=0;
+  if(imageCache) delete imageCache;
+  imageCache=0;
+  if(gridder) delete gridder;
+  gridder=0;
   /*
-  if(arrayLattice) delete arrayLattice; arrayLattice=0;
+  if(arrayLattice) delete arrayLattice; 
+  arrayLattice=0;
   
   Int numofmodels=convFunctions_p.nelements();
   for (Int k=0; k< numofmodels; ++k){
@@ -390,7 +395,8 @@ void WProjectFT::prepGridForDegrid(){
   IPosition start(4, 0);
   griddedData(blc, trc) = image->getSlice(start, image->shape());
   
-  //if(arrayLattice) delete arrayLattice; arrayLattice=0;
+  //if(arrayLattice) delete arrayLattice;
+  //arrayLattice=0;
   arrayLattice = new ArrayLattice<Complex>(griddedData);
   lattice=arrayLattice;
 
@@ -521,7 +527,8 @@ void WProjectFT::initializeToSky(ImageInterface<Complex>& iimage,
       griddedData2.resize(gridShape);
       griddedData2=DComplex(0.0);
     }
-    //if(arrayLattice) delete arrayLattice; arrayLattice=0;
+    //if(arrayLattice) delete arrayLattice;
+    //arrayLattice=0;
    
   }
   //AlwaysAssert(lattice, AipsError);
@@ -1363,7 +1370,8 @@ ImageInterface<Complex>& WProjectFT::getImage(Matrix<Float>& weights,
       
       // Do the copy
       image->put(griddedData(blc, trc));
-      //if(arrayLattice) delete arrayLattice; arrayLattice=0;
+      //if(arrayLattice) delete arrayLattice;
+      //arrayLattice=0;
       griddedData.resize(IPosition(1,0));
     }
   }

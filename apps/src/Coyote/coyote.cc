@@ -123,15 +123,10 @@ CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
   PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
   Vector<Int> visPol(vb2.correlationTypes());
   polMat = pop_l->makePolMat(visPol,polMap);
-  //cerr << visPol << " " << polMap << endl;
   polIndexMat = pop_l->makePol2CFMat(visPol,polMap);
   
   conjPolMat = pop_l->makeConjPolMat(visPol,polMap);
   conjPolIndexMat = pop_l->makeConjPol2CFMat(visPol,polMap);
-  
-  // cerr << "polMap: "; cerr << polMap << endl;
-  // cerr << "visPolMap: "; cerr << visPolMap << endl;
-  //------------------------a mess----------------------------------------------------
   
   return pop_l;
 }
@@ -216,28 +211,16 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       gethostname(hostname, HOST_NAME_MAX);
       string imageName=cfCacheName + "/uvgrid.im_" +
 	to_string(getppid()) + "_"+string(hostname);
-      bool wTerm = (nW > 1)? true : false;
+      bool wTerm = (nW > 1);
 
       //-------------------------------------------------------------------------------------------------
       // Instantiate AWCF object for making the CFs later.
       //
-      CountedPtr<refim::PSTerm> PSTerm_l = new PSTerm();
-
-      CountedPtr<refim::ATerm> ATerm_l = AWProjectFT::createTelescopeATerm(telescopeName, aTerm);
-      CountedPtr<refim::WTerm> WTerm_l = new WTerm();
-
-      ATerm_l->setConvSize(cfBufferSize);
-      ATerm_l->setConvOversampling(cfOversampling);
-
-      if (nW==1) WTerm_l->setOpCode(CFTerms::NOOP);
-      if (aTerm == false) ATerm_l->setOpCode(CFTerms::NOOP);
-      if (psTerm == false) PSTerm_l->setOpCode(CFTerms::NOOP);
-
-      cerr << "coyote: " << conjBeams << endl;
-      CountedPtr<refim::ConvolutionFunction> awcf_l
-	= new AWConvFunc(ATerm_l, PSTerm_l ,WTerm_l ,WBAwp, conjBeams);
-
-      //AWProjectFT::makeCFObject(telescopeName, ATerm_l, PSTerm_l, WTerm_l, true, WBAwp, conjBeams);
+      CountedPtr<refim::ConvolutionFunction> awcf_l =
+	AWProjectFT::makeCFObject(telescopeName,
+				  aTerm, psTerm, wTerm, true,
+				  WBAwp, conjBeams,
+				  cfBufferSize,cfOversampling);
       //-------------------------------------------------------------------------------------------------
 
       //-------------------------------------------------------------------------------------------------
@@ -261,15 +244,12 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	      // or not.
 	      //
 	      cfCacheObj_l->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
-	      //	      cfCacheObj_l->setWtImagePrefix(imageNamePrefix.c_str());
 	      try
 		{
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
-					   //casacore::String(imageNamePrefix)+casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
-					   casacore::String("CFS*")); // This would load CFs based on imageNamePrefix
+					   casacore::String("CFS*")); // This would load CFs
 		  cfCacheObj_l->initCache2(false, dpa, -1.0,
-					   //casacore::String(imageNamePrefix)+casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
-					   casacore::String("WTCFS*")); // This would load WTCFs based on imageNamePrefix
+					   casacore::String("WTCFS*")); // This would load WTCFs
 		}
 	      catch (CFCIsEmpty& e)
 		{
@@ -374,18 +354,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  //	  String targetName=String(cfCacheName);
 	  ImageInformation<Complex> imInfo(cgrid,casacore::String(cfCacheName));
 	  imInfo.save();
-	  // {
-	  //   String csysFileName=cfCacheName+"/uvgrid_csys.rec";
-	  //   String csysKey="uvgrid.csys";
-	  //   IPosition imShape = cgrid.shape();
-	  //   SynthesisUtils::saveAsRecord(cgrid.coordinates(),
-	  // 				 imShape,
-	  // 				 csysFileName, csysKey);
-	  //   // Just a test for now to read the coorsys back into memory.
-	  //   CoordinateSystem tt;
-	  //   SynthesisUtils::readFromRecord(tt,imShape,csysFileName, csysKey);
-	  //   cerr << "Imshape = " << imShape << endl;
-	  // }
 	  cgrid.table().markForDelete();
 	  
 	  //-------------------------------------------------------------------------------------------------
@@ -420,26 +388,6 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  mssFreqSel.assign(filterByFirstColumn(mssFreqSel,db.spwidList.tovector()));
 	  awcf_l->setSpwFreqSelection(mssFreqSel);
 
-	  // cerr << mssFreqSel << endl << "++++++++++++++++++++++++++++++" << endl;
-	  // cerr << db.spwidList << endl << "++++++++++++++++++++++++++++++" << endl;
-	  // std::vector<int> vec=db.spwidList.tovector();
-	  // std::vector<std::vector<double>> tt=filterByFirstColumn(mssFreqSel,vec);
-	  // // for(auto r:tt)
-	  // //   {
-	  // //     for(auto c : r)
-	  // // 	cerr << c << " ";
-	  // //     cerr << endl;
-	  // //   }
-	  // Matrix<double> mssFreqSelVB;
-	  // mssFreqSelVB.resize(tt.size(),4);
-	  // for(int i=0;i<tt.size();i++)
-	  //   {
-	  //     mssFreqSelVB.row(i)=casacore::Vector<double>(tt[i]);
-	  //   }
-	  // cerr << mssFreqSelVB << endl;
-
-	  //-------------------------------------------------------------------------------------------------
-	  // cerr << "CF Oversampling inside AWCF is : " << awcf_l->getOversampling() <<endl;
 	  // Get the PA from the MS/VB if UI setting is outside the valid
 	  // range for PA [-180, +180].
 	  if (abs(pa) > 180.0) pa=getPA(*(db.vb_l));
@@ -466,7 +414,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // CFStore on the disk.
 	  //
 	  // [07Jan2024] In the dryrun mode, only the meta info is
-	  // written as casacore::Records conerted to
+	  // written as casacore::Records converted to
 	  // casacore::Tables.  Writing these with multi-threadings
 	  // seems to be work.  The bool parameter is therefore set to
 	  // true (it is false in the default interface).
@@ -480,24 +428,18 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  //
 	  // mode="fillcf" case.  The list of CFs in the CFC are
 	  // expected to be "blank CFs" with all the necessary meta
-	  // information to fill them. Nothing else other than the CFC
-	  // is necessary.
+	  // information to fill them.  Nothing else other than the
+	  // CFC and the list of CFs is necessary.  An already filled
+	  // CF (the IsFilled=1 entry in CFS*/miscInfo.rec) will be
+	  // left untouched.
 	  //
 	  Vector<Double> dummyUVScale;
 	  Matrix<Double> dummyvbFreqSel;
 	  AWConvFunc::makeConvFunction2(cfCacheName,
-					dummyUVScale,
-					uvOffset,
-					dummyvbFreqSel,
-					*cfs2_l,
-					*cfswt2_l,
-					psTerm,
-					aTerm,
-					conjBeams);
+					dummyUVScale, uvOffset,	dummyvbFreqSel,
+					*cfs2_l,*cfswt2_l,
+					psTerm,	aTerm, conjBeams);
 	}
-      //      cerr << "CFS shapes: " << cfs2_l->getStorage()[0,0].shape() << " " << cfswt2_l->getStorage()[0,0].shape() << endl;
-      //      cfs2_l->show("CFStore",cerr,true);
-
 
       // Report some stats.
       Double memUsed=cfs2_l->memUsage();

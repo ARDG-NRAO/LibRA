@@ -138,10 +138,6 @@ namespace casa{
     virtual void getPolMap(casacore::Vector<casacore::Int>& polMap) {polMap.resize(0); polMap = polMap_p_base;};
     virtual casacore::Vector<casacore::Int> getAntTypeList() {casacore::Vector<casacore::Int> tt(1);tt(0)=0;return tt;};
 
-    virtual void setConvSize(const int convSize) {cachedConvSize_p=convSize;}
-    virtual void setConvOversampling(const int os) {cachedOverSampling_p=os;}
-    virtual casacore::Int getConvSize()  {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedConvSize_p;};
-    virtual casacore::Int getOversampling() {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedOverSampling_p;}
 
     virtual casacore::Float getConvWeightSizeFactor() {return CONVWTSIZEFACTOR;};
     virtual casacore::Float getSupportThreshold() {return THRESHOLD;};

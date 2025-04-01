@@ -137,10 +137,10 @@ namespace casa{
 				 const casacore::Int& skyNx, const casacore::Int& skyNy,
 				 casacore::CoordinateSystem& feedCoord) = 0;
 
-    virtual casacore::Int getConvSize() = 0;
-    virtual void setConvSize(const casacore::Int val) = 0;
-    virtual void setConvOversampling(const casacore::Int val) = 0;
-    virtual casacore::Int getOversampling() = 0;
+    virtual void setConvSize(const int convSize) {cachedConvSize_p=convSize;}
+    virtual void setConvOversampling(const int os) {cachedOverSampling_p=os;}
+    virtual casacore::Int getConvSize()  {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedConvSize_p;};
+    virtual casacore::Int getOversampling() {setConvSizeAndOversampling(cachedConvSize_p, cachedOverSampling_p);return cachedOverSampling_p;}
 
     virtual casacore::Float getConvWeightSizeFactor() = 0;
     virtual casacore::Float getSupportThreshold() = 0;
