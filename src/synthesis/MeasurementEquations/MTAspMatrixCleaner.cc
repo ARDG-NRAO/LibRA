@@ -1,4 +1,4 @@
-//# Copyright (C) 1997-2010
+//# Copyright (C) 1995-2010
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -124,12 +124,12 @@ Int MTAspMatrixCleaner::mtaspclean()
 #endif
 
   // Start the iteration
-  Float totalFlux=0.0;
+  //Float totalFlux=0.0;
   Int converged=0;
   Float tmpMaximumResidual = 0.0;
   Float minMaximumResidual = 1000.0;
   Float initRMSResidual = 1000.0;
-  float initModelFlux = 0.0;
+  float initModelFlux = -1.0;
 
   os << "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
@@ -1056,7 +1056,7 @@ void MTAspMatrixCleaner::updatePeakResidual()
   IPosition maxrespos;
 
   findMaxAbsMask((matR_p[IND2(0,0)]), itsInitScaleMasks[0], maxres, maxrespos);
-  Float norma = (1.0/(matA_p[0])(0,0));
+  //Float norma = (1.0/(matA_p[0])(0,0));
   //rmaxval = fabs(maxres * norma);
   rmaxval = fabs(maxres); //genie, I probably don't need norma. In mtmfs, norma is always 1.
   itsPeakResidual = fabs(rmaxval);

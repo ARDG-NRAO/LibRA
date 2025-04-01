@@ -1488,8 +1488,6 @@ void MosaicFT::gridImgWeights(const vi::VisBuffer2& vb){
   Int csamp=convSampling;
   Bool uvwcopy; 
   const Double *uvwstor=uvw.getStorage(uvwcopy);
-  Bool gridcopy;
-  Bool convcopy;
   Bool wconvcopy;
   const Complex *wconvstor=weightConvFunc_p.getStorage(wconvcopy);
   Int nPolConv=convFunc.shape()[2];
