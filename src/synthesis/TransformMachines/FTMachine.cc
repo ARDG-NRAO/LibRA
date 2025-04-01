@@ -1266,16 +1266,16 @@ void  FTMachine::girarUVW(Matrix<Double>& uvw, Vector<Double>& dphase,
 	  Bool isExistant=File(theposs).exists();
 	  if(isExistant) 
 	    theDiskImage=theposs;
-	    for (uInt i=nw-2 ; i>0; --i){
-	      theposs=subPathname[i]+"/"+theposs;
-	      File newEldir(theposs);
-	      if(newEldir.exists()){
-		isExistant=true;
-		theDiskImage=theposs;
-	      }
+	  for (uInt i=nw-2 ; i>0; --i){
+	    theposs=subPathname[i]+"/"+theposs;
+	    File newEldir(theposs);
+	    if(newEldir.exists()){
+	      isExistant=true;
+	      theDiskImage=theposs;
 	    }
-	    if(!isExistant)
-	      throw(AipsError("Could not locate mage"));
+	  }
+	  if(!isExistant)
+	    throw(AipsError("Could not locate mage"));
 	}
 	cmplxImage_p=new PagedImage<Complex> (theDiskImage);
 	image=&(*cmplxImage_p);

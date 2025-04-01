@@ -139,10 +139,14 @@ GridBoth& GridBoth::operator=(const GridBoth& other)
 }
 
 GridBoth::~GridBoth() {
-  if(synMachine_p) delete synMachine_p; synMachine_p=0;
-  if(sdMachine_p) delete sdMachine_p; sdMachine_p=0;
-  if(sdImage_p) delete sdImage_p; sdImage_p=0;
-  if(synImage_p) delete synImage_p; synImage_p=0;
+  if(synMachine_p) delete synMachine_p; 
+  synMachine_p=0;
+  if(sdMachine_p) delete sdMachine_p; 
+  sdMachine_p=0;
+  if(sdImage_p) delete sdImage_p; 
+  sdImage_p=0;
+  if(synImage_p) delete synImage_p; 
+  synImage_p=0;
 }
 
 //----------------------------------------------------------------------

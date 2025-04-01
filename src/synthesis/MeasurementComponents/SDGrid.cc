@@ -572,12 +572,18 @@ void SDGrid::collectPerfs(){
 // This is nasty, we should use CountedPointers here.
 SDGrid::~SDGrid() {
   //fclose(pfile);
-  if (imageCache) delete imageCache; imageCache = 0;
-  if (arrayLattice) delete arrayLattice; arrayLattice = 0;
-  if (wImage) delete wImage; wImage = 0;
-  if (wImageCache) delete wImageCache; wImageCache = 0;
-  if (wArrayLattice) delete wArrayLattice; wArrayLattice = 0;
-  if (interpolator) delete interpolator; interpolator = 0;
+  if (imageCache) delete imageCache; 
+  imageCache = 0;
+  if (arrayLattice) delete arrayLattice; 
+  arrayLattice = 0;
+  if (wImage) delete wImage; 
+  wImage = 0;
+  if (wImageCache) delete wImageCache; 
+  wImageCache = 0;
+  if (wArrayLattice) delete wArrayLattice; 
+  wArrayLattice = 0;
+  if (interpolator) delete interpolator; 
+  interpolator = 0;
 
   collectPerfs();
 }
@@ -797,10 +803,12 @@ void SDGrid::initializeToVis(ImageInterface<Complex>& iimage,
     wGriddedData.resize(gridShape);
     wGriddedData = 0.0;
 
-    if(arrayLattice) delete arrayLattice; arrayLattice=0;
+    if(arrayLattice) delete arrayLattice; 
+    arrayLattice=0;
     arrayLattice = new ArrayLattice<Complex>(griddedData);
 
-    if(wArrayLattice) delete wArrayLattice; wArrayLattice=0;
+    if(wArrayLattice) delete wArrayLattice; 
+    wArrayLattice=0;
     wArrayLattice = new ArrayLattice<Float>(wGriddedData);
     wArrayLattice->set(0.0);
     wLattice=wArrayLattice;
@@ -836,7 +844,8 @@ void SDGrid::finalizeToVis()
     imageCache->showCacheStatistics(o);
     logIO() << o.str() << LogIO::POST;
     }*/
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+  if(pointingToImage) delete pointingToImage; 
+  pointingToImage=0;
 }
 
 
@@ -1502,8 +1511,18 @@ void SDGrid::makeImage(FTMachine::Type inType,
     // Loop over the visibilities, putting VisBuffers
     for (vi.originChunks(); vi.moreChunks(); nextChunk(vi)) {
         abortOnPolFrameChange(imgPolRep,firstMsName,vi);
-        FTMachine::Type actualType;
-        Bool doPSF;
+
+	// THESE WERE LEFT UNINITIALIZED GENERATING A COMPLIER
+	// WARNING.  SO, CHECK THE INITIALIZATION NOW.  THE REASON FOR
+	// SETTING doPSF=false and actualType=FTMachine::OBSERVED IS
+	// THAT THE VALUE FOR THESE PARAMETERS IS SET IN
+	// getParamsForFTMachineType(), BUT IT IS GUARDED BY AN
+	// if(...) CLAUSE.  THE DEFAULT IN THIS CALL ARE THE DEFAULT
+	// SETTINGS BELOW.
+
+        FTMachine::Type actualType=FTMachine::OBSERVED;
+        Bool doPSF=false;
+
         if (vi.newMS()) { // Note: the first MS is a new MS
             getParamsForFTMachineType(vi, inType, doPSF, actualType);
             if (cacheIsEnabled) cache.newMS(vi.ms());

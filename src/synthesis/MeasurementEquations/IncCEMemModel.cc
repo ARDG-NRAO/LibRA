@@ -318,9 +318,11 @@ Bool IncCEMemModel::initStuff()
 
   //Create temporary images
 
-  if(itsStep_ptr) delete itsStep_ptr; itsStep_ptr=0;
+  if(itsStep_ptr) delete itsStep_ptr; 
+  itsStep_ptr=0;
   itsStep_ptr = new TempLattice<Float> (itsModel_ptr->shape(), 2);
-  if(itsResidual_ptr) delete itsResidual_ptr; itsResidual_ptr=0;
+  if(itsResidual_ptr) delete itsResidual_ptr; 
+  itsResidual_ptr=0;
   itsResidual_ptr = new TempLattice<Float> (itsModel_ptr->shape(), 2);
 
   if (itsStep_ptr &&  itsResidual_ptr) {

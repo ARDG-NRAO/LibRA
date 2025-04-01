@@ -365,7 +365,8 @@ Bool MFCEMemImageSkyModel::solve(SkyEquation& se) {
 		    iterations[model](pol, chan) : maxIterations;
 		  modified=true;
 		  
-		  if(memer) delete memer; memer=0;
+		  if(memer) delete memer; 
+		  memer=0;
 
 		  subImage.copyData((LatticeExpr<Float>)
 				    (subImage + subDeltaImage ) );

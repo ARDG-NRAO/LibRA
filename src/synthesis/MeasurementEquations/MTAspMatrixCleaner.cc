@@ -290,7 +290,8 @@ Int MTAspMatrixCleaner::mtaspclean()
       thres = 1e-8;
 
     if (!itsSwitchedToHogbom &&
-        (fabs(itsPeakResidual - itsPrevPeakResidual) < thres /*1e-8/*1e-4*/)) //peakres rarely changes. 
+        //(fabs(itsPeakResidual - itsPrevPeakResidual) < thres /*1e-8/*1e-4*/)) //peakres rarely changes. 
+        (fabs(itsPeakResidual - itsPrevPeakResidual) < thres )) //peakres rarely changes. 
       itsNumNoChange += 1;
 
     itsPrevPeakResidual = itsPeakResidual;
