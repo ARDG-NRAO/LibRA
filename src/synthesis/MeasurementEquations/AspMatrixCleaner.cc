@@ -1704,7 +1704,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
     // AlwaysAssert(itsAspScaleSizes.size() == itsAspCenter.size(), AipsError);
 
     // No longer needed. heuristiclly determine active set for speed up
-    /*Float resArea = 0.0;
+    //Float resArea = 0.0;
     Int nX = itsDirty->shape()(0);
     Int nY = itsDirty->shape()(1);
 
@@ -1837,13 +1837,13 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
   AlwaysAssert(itsGoodAspAmplitude.size() == itsGoodAspActiveSet.size(), AipsError);
 
   // debug info
-  /*for (unsigned int i = 0; i < itsAspAmplitude.size(); i++)
-  {
-    //cout << "After opt AspApm[" << i << "] = " << itsAspAmplitude[i] << endl;
-    //cout << "After opt AspScale[" << i << "] = " << itsAspScaleSizes[i] << endl;
-    //cout << "After opt AspCenter[" << i << "] = " << itsAspCenter[i] << endl;
-    cout << "AspScale[ " << i << " ] = " << itsAspScaleSizes[i] << " center " << itsAspCenter[i] << endl;
-  }* /
+  // for (unsigned int i = 0; i < itsAspAmplitude.size(); i++)
+  // {
+  //   //cout << "After opt AspApm[" << i << "] = " << itsAspAmplitude[i] << endl;
+  //   //cout << "After opt AspScale[" << i << "] = " << itsAspScaleSizes[i] << endl;
+  //   //cout << "After opt AspCenter[" << i << "] = " << itsAspCenter[i] << endl;
+  //   cout << "AspScale[ " << i << " ] = " << itsAspScaleSizes[i] << " center " << itsAspCenter[i] << endl;
+  // }
 
   return itsGoodAspActiveSet; // return optimized scale
 }*/
