@@ -15,7 +15,7 @@ cache:
 build-job:
   stage: build
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH == "main"'
       changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
@@ -46,7 +46,7 @@ test-job:
   needs:
     - job: build-job
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH == "main"'
       changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
