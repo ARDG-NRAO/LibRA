@@ -13,15 +13,13 @@ cache:
     - $CCACHE_DIR
 
 build-job:
+  stage: build
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
-    - changes:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+      changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
         - (exclude)doc/**/*
-
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
@@ -45,35 +43,30 @@ build-job:
 
 test-job:
   stage: test
+  needs:
+    - job: build-job
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
-    - changes:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+      changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
         - (exclude)doc/**/*
-      when: never
-
-  dependencies:
-    - build-job
-
   before_script:
     - mkdir -p $CCACHE_DIR
 
-  script:
-    - echo $PWD
-    - base_path=$PWD
-    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
-    - cd ${base_path}/apps/src/tests
-    - ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/report.xml"
-    - python -m pytest --junitxml=${base_path}/apps/src/tests/pytest_report.xml
+  script: |
+    echo "Current working directory: $PWD"
+    base_path=$PWD
+    echo "Entering $base_path/apps/src/tests to run apps unit tests"
+    cd ${base_path}/apps/src/tests
+    mkdir -p ${base_path}/apps/src/tests/reports
+    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
+    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
 
   artifacts:
     when: always
     reports:
       junit:
-        - ${base_path}/apps/src/tests/report.xml
-        - ${base_path}/apps/src/tests/pytest_report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
     expire_in: 1 week
-    when: always
