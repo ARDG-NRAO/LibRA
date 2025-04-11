@@ -94,3 +94,27 @@ manual-trigger:
   only:
     - branches
   allow_failure: false
+
+manual-test:
+  stage: test
+  script: |
+    echo "Manual test trigger initiated..."
+    base_path=$PWD
+    echo "Entering $base_path/apps/src/tests to run apps unit tests"
+    cd ${base_path}/apps/src/tests
+    mkdir -p ${base_path}/apps/src/tests/reports
+    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
+    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+  when: manual
+  only:
+    - main
+  allow_failure: false
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
+    expire_in: 1 week
+  needs: []  # decouple it from 'build-job'
+
