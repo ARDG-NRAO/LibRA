@@ -3584,7 +3584,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 	String deconvolver;
 	err += readVal( inrec, String("deconvolver"), deconvolver );
-	if( deconvolver== "mtmfs" || deconvolver== "asp" && nTaylorTerms > 1) 
+	if((deconvolver== "mtmfs" || deconvolver== "asp") && nTaylorTerms > 1) 
 	  { mType="multiterm"; }// Takes precedence over imagemosaic
 
 	// facets	
