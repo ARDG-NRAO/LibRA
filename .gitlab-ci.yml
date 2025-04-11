@@ -15,11 +15,15 @@ cache:
 build-job:
   stage: build
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
         - (exclude)doc/**/*
+    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+    - if: '$FORCE_CI == "true"'
+    - when: never
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
@@ -27,7 +31,6 @@ build-job:
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
-
   script:
     - echo "Compiling the code..."
     - echo $PATH
@@ -37,7 +40,6 @@ build-job:
     - cd build
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
-
   after_script:
     - ccache --show-stats || true
 
@@ -46,14 +48,17 @@ test-job:
   needs:
     - job: build-job
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_MESSAGE =~ /CI BUILD/ || $CI_COMMIT_BRANCH'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - (exclude)README.md
         - (exclude)scripts/**/*
         - (exclude)doc/**/*
+    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+    - if: '$FORCE_CI == "true"'
+    - when: never
   before_script:
     - mkdir -p $CCACHE_DIR
-
   script: |
     echo "Current working directory: $PWD"
     base_path=$PWD
@@ -62,7 +67,6 @@ test-job:
     mkdir -p ${base_path}/apps/src/tests/reports
     ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
     python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
-
   artifacts:
     when: always
     reports:
@@ -70,3 +74,23 @@ test-job:
         - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
         - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
     expire_in: 1 week
+
+manual-trigger:
+  stage: build
+  script:
+    - echo "Manual full build trigger initiated..."
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_COMPILERCHECK=content
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+    - mkdir -p $CCACHE_DIR
+    - ccache --show-stats || true
+    - git clean -ffdx
+    - mkdir -p build
+    - cd build
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+    - make
+    - ccache --show-stats || true
+  when: manual
+  only:
+    - branches
+  allow_failure: false
