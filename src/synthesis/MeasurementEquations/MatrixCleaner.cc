@@ -401,9 +401,9 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
       // a mask that does not allow for clean was sent
       if(noClean_p)
 	return 0;
-        os << LogIO::NORMAL
-           << "Cleaning pixels with mask values above " << itsMaskThreshold
-           << LogIO::POST;
+      os << LogIO::NORMAL
+	 << "Cleaning pixels with mask values above " << itsMaskThreshold
+	 << LogIO::POST;
     }
 
     

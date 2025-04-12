@@ -8144,9 +8144,8 @@ void SolvableVisJones::listCal(const Vector<Int> ufldids,
 
   //  return;
 
-  if (typeName().contains("BPOLY") ||
-      typeName().contains("GSPLINE"))
-    throw(AipsError(typeName()+" not yet supported."));
+    if (typeName().contains("BPOLY") || typeName().contains("GSPLINE"))
+      throw(AipsError(typeName()+" not yet supported."));
 
     char cfill = cout.fill(' '); // Set fill character for terminal output
     

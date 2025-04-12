@@ -920,7 +920,8 @@ itsTooLongForFname = false;
 					 Int& niter, Int& cycleniter, 
 					 String& threshold, String& cyclethreshold)
   {
-    Int ret;
+    // Not sure what the initialization should be -- it's not set in the code below, but returned!
+    Int ret=0; 
     // Int niter=1000, ncycles=100;
     // String thresh="0.001mJy";
     String imageName = imstore->getName()+".residual"+(imstore->getNTaylorTerms()>1?".tt0":"");

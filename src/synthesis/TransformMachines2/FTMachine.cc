@@ -72,6 +72,7 @@
 #include <casacore/scimath/Mathematics/NNGridder.h>
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <casacore/measures/Measures/UVWMachine.h>
+#include <casacore/tables/Tables/TableUtil.h>
 
 #include <casacore/casa/System/ProgressMeter.h>
 
@@ -419,7 +420,9 @@ using namespace casa::vi;
       }
 
       // Set up the UVWMachine.
-      if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+      if(uvwMachine_p) 
+	      delete uvwMachine_p; 
+      uvwMachine_p=0;
       String observatory;
       if(vb.isAttached())
 	observatory=(vb.subtableColumns().observation()).telescopeName()(0);
@@ -594,7 +597,8 @@ using namespace casa::vi;
 
   FTMachine::~FTMachine() 
   {
-    if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+    if(uvwMachine_p) delete uvwMachine_p; 
+    uvwMachine_p=0;
   }
   
 
@@ -1178,7 +1182,8 @@ using namespace casa::vi;
       if(doUVWRotation_p || fixMovingSource_p) {
 	
 	String observatory=(vb.subtableColumns().observation()).telescopeName()(0);
-	if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+	if(uvwMachine_p) delete uvwMachine_p; 
+	uvwMachine_p=0;
 	if(observatory.contains("ATCA") || observatory.contains("WSRT")){
 		//Tangent specified is being wrongly used...it should be for a
 	    	//Use the safest way  for now.
@@ -1302,7 +1307,8 @@ using namespace casa::vi;
         if(doUVWRotation_p || fixMovingSource_p) {
 
 	  String observatory=(vb.subtableColumns().observation()).telescopeName()(0);
-  	if(uvwMachine_p) delete uvwMachine_p; uvwMachine_p=0;
+  	if(uvwMachine_p) delete uvwMachine_p; 
+	uvwMachine_p=0;
   	if(observatory.contains("ATCA") || observatory.contains("WSRT")){
   		//Tangent specified is being wrongly used...it should be for a
   	    	//Use the safest way  for now.
@@ -2064,7 +2070,7 @@ using namespace casa::vi;
       if(Table::isReadable(tempFileNames_p[k])){
 	if(mess.size()==0){
 	  try{
-	    Table::deleteTable(tempFileNames_p[k]);
+	    TableUtil::deleteTable(tempFileNames_p[k]);
 	  }
 	  catch(AipsError &x){
 	    logIO() << LogOrigin("FTMachine", "cleanupTempFiles") << LogIO::NORMAL;

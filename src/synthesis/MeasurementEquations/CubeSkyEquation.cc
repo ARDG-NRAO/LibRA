@@ -595,14 +595,13 @@ void CubeSkyEquation::makeSimplePSF(PtrBlock<ImageInterface<Float> * >& psfs) {
             for (vi.origin(); vi.more(); vi++) {
 	      if(myStopSig.gotStopSignal())
 		throw(AipsError("Terminating...."));
-                if(noModelCol_p) {
-                    //This here forces the modelVisCube shape and prevents reading model column
-                    vb->setModelVisCube(Complex(0.0,0.0));
-                }
-                putSlice(* vb, doPSF, FTMachine::MODEL, cubeSlice, nCubeSlice);
-                cohDone+=vb->nRow();
-                pm.update(Double(cohDone));
-
+	      if(noModelCol_p) {
+		//This here forces the modelVisCube shape and prevents reading model column
+		vb->setModelVisCube(Complex(0.0,0.0));
+	      }
+	      putSlice(* vb, doPSF, FTMachine::MODEL, cubeSlice, nCubeSlice);
+	      cohDone+=vb->nRow();
+	      pm.update(Double(cohDone));
             }
         }
         finalizePutSlice(* vb, doPSF, cubeSlice, nCubeSlice);

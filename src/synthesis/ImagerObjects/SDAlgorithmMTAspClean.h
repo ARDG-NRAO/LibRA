@@ -78,11 +78,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Vector< casacore::Array<casacore::Float> >itsMatPsfs, itsMatResiduals, itsMatModels;
     casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
 
-    MTAspMatrixCleaner itsCleaner;
     std::vector<casacore::Float> itsScaleSizes;
     casacore::Int itsStopPointMode;
     casacore::Float itsFusedThreshold;
     casacore::uInt itsNTerms;
+    MTAspMatrixCleaner itsCleaner;
     casacore::Int itsUserLargestScale;
 
     private:

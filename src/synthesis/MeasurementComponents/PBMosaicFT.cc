@@ -1252,7 +1252,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	logIO() << o.str() << LogIO::POST;
       }
 
-    if(pointingToImage) delete pointingToImage; pointingToImage=0;
+    if(pointingToImage) delete pointingToImage; 
+    pointingToImage=0;
     PAIndex = -1;
 
     paChangeDetector.reset();

@@ -642,7 +642,7 @@ void EPowerCurve::specify(const Record& specify) {
     ArrayColumn<Float> gainCol(itab, "GAIN");
     ArrayColumn<Float> sensCol(itab, "SENSITIVITY");
 
-    for (Int irow=0; irow<itab.nrow(); irow++) {
+    for (uint irow=0; irow<itab.nrow(); irow++) {
       Int iant=antCol(irow);
       currSpw()=ispw;
 

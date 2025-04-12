@@ -134,8 +134,10 @@ UVMod::UVMod(VisSet& vs) :
 UVMod::~UVMod() {
  
   // We are only responsible for the ComponentList and VisSet
-  if (cl_) delete cl_;  cl_=NULL;
-  if (vs_) delete vs_;  vs_=NULL;
+  if (cl_) delete cl_;  
+  cl_=NULL;
+  if (vs_) delete vs_;  
+  vs_=NULL;
 
 }
 void UVMod::setModel(const ComponentType::Shape type, 

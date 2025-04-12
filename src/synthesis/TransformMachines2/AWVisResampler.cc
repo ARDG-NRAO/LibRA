@@ -328,7 +328,8 @@ namespace casa{
 		  if((targetIMChan>=0) && (targetIMChan<nGridChan)) 
 		    {
 
-		      Double dataWVal = (UVW.nelements() > 0) ? dataWVal = UVW(2,irow) : 0.0;
+		      //		      Double dataWVal = (UVW.nelements() > 0) ? dataWVal = UVW(2,irow) : 0.0;
+		      Double dataWVal = (UVW.nelements() > 0) ? UVW(2,irow) : 0.0;
 		      Int wndx = cfb->nearestWNdx(dataWVal*freq[ichan]/C::c);
 		      Int cfFreqNdx = cfb->nearestFreqNdx(vbSpw,ichan,vbs.conjBeams_p);
 		      Float s;

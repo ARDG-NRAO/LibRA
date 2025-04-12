@@ -259,13 +259,17 @@ void WProjectFT::init() {
   
   
 
-  if(gridder) delete gridder; gridder=0;
+  if(gridder) 
+    delete gridder; 
+  gridder=0;
   gridder = new ConvolveGridder<Double, Complex>(IPosition(2, nx, ny),
 						 uvScale, uvOffset,
 						 "SF");
 
   // Set up image cache needed for gridding. 
-  if(imageCache) delete imageCache; imageCache=0;
+  if(imageCache)
+    delete imageCache;
+  imageCache=0;
   
   // The tile size should be large enough that the
   // extended convolution function can fit easily
@@ -287,8 +291,12 @@ void WProjectFT::init() {
 
 // This is nasty, we should use CountedPointers here.
 WProjectFT::~WProjectFT() {
-  if(imageCache) delete imageCache; imageCache=0;
-  if(gridder) delete gridder; gridder=0;
+  if(imageCache) 
+    delete imageCache; 
+  imageCache=0;
+  if(gridder) 
+    delete gridder; 
+  gridder=0;
   /*
   if(arrayLattice) delete arrayLattice; arrayLattice=0;
   

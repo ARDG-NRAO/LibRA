@@ -59,7 +59,7 @@ class SpectralCollapser {
 	// <synopsis>
 	// Helper class to collapse an image along the spectral axis. The spectral
 	// range to combine is provided interactively from the profiler. The class
-	// transforms the range to the channels to be combined. The actual image\
+	// transforms the range to the channels to be combined. The actual image
 	// combination is then done with the class "ImageCollapser".
 	// </synopsis>
 

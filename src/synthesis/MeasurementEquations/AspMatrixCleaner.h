@@ -176,8 +176,8 @@ protected:
   const casacore::Int itsDefaultNorm = 1;
   casacore::Int itsNormMethod;
   casacore::Float itsFusedThreshold;
-  casacore::Int itsBinSizeForSumFlux ;   // number of bins for histogram of the sum of Flux
   unsigned int itsNumNoChange; // number of times peakres rarely changes
+  casacore::Int itsBinSizeForSumFlux ;   // number of bins for histogram of the sum of Flux
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;

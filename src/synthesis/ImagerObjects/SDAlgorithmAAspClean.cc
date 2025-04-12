@@ -66,11 +66,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
     itsStopPointMode(stoppointmode),
-    itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
+    itsMCsetup(true),
+    itsUserLargestScale(largestScale),
     itsPrevPsfWidth(0),
-    itsIsSingle(isSingle),
-    itsUserLargestScale(largestScale)
+    itsIsSingle(isSingle)
   {
     itsAlgorithmName = String("asp");
   }

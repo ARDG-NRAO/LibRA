@@ -5035,7 +5035,8 @@ Record Imager::setjy(const Vector<Int>& /*fieldid*/,
       if(tempCLs[i] != "")
         TableUtil::deleteTable(tempCLs[i]);
     }
-    if (tmodimage) delete tmodimage; tmodimage=NULL;
+    if (tmodimage) delete tmodimage; 
+    tmodimage=NULL;
     os << LogIO::SEVERE << "Exception: " << x.getMesg() << LogIO::POST;
     //return false;
   } 

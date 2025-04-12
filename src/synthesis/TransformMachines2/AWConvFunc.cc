@@ -1706,7 +1706,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		    {
 		      CFCStruct miscInfo;
 		      CoordinateSystem cs_l;
-		      Int xSupport, ySupport;
 		      Float sampling;
 
 		      CountedPtr<CFCell>& tt=(*cfb_p).getCFCellPtr(iNu, iW, iPol);
@@ -1716,6 +1715,9 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
 		      if ((tt->isFilled_p==false) && (tt->shape_p.nelements() != 0))
 			{
 			  tt->getAsStruct(miscInfo); // Get misc. info. for this CFCell
+
+			  int xSupport=miscInfo.xSupport;
+			  int ySupport=miscInfo.ySupport;
 
 			  if (miscInfo.shape[0] == miscInfo.xSupport*2*miscInfo.sampling + 4*miscInfo.sampling+1)
 			    break;

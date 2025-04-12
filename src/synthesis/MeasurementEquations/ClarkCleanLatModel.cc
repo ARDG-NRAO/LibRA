@@ -1057,7 +1057,8 @@ Float ClarkCleanLatModel::getPsfPatch(Matrix<Float> & psfPatch,
 
       }
   }
-  if(psf_p) delete psf_p; psf_p=0;
+  if(psf_p) delete psf_p;
+  psf_p=0;
   // set the max external psf Value to what is actually used. 
   // So the user can find out.
   itsMaxExtPsf = maxExtPsf;

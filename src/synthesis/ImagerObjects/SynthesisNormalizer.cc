@@ -138,7 +138,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if( normpars.isDefined("deconvolver") )  // A single string
       { 
         String dec = normpars.asString( RecordFieldId("deconvolver"));
-        if (dec == "mtmfs" || dec == "asp" && itsNTaylorTerms > 1) 
+        if ((dec == "mtmfs" || dec == "asp") && itsNTaylorTerms > 1) 
           itsMapperType="multiterm";
         else 
           itsMapperType="default";

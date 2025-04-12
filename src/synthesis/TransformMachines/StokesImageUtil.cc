@@ -720,7 +720,6 @@ void StokesImageUtil::ResamplePSF(Matrix<Float>& psf, Int& oversampling, Matrix<
     Interpolate2D resampleInterp(method);
 //Interpolate2D resampleInterp(Interpolate2D::CUBIC);
     
-    Bool ok;
     Float result;
     
     for (Int i=0; i < nxRe ; ++i){
@@ -728,7 +727,8 @@ void StokesImageUtil::ResamplePSF(Matrix<Float>& psf, Int& oversampling, Matrix<
             pos(0) = (Float) i/(Float) oversampling;
             pos(1) = (Float) j/(Float) oversampling;
             
-            ok = resampleInterp.interp(result, pos, psf);
+	    //            bool ok =
+	    resampleInterp.interp(result, pos, psf);
 //cout << "pos is" << pos << " result " << result << " psf " << psf(i,j)<< endl;
             resampledPsf(i,j) = result;
         }

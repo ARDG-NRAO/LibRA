@@ -578,7 +578,8 @@ template<class T> void CalSet<T>::store (const casacore::String& file,
   //  SolvableVisJonesTable *tab;
   
   // Open the output file if it already exists and is being appended to.
-  if (calTab_) delete calTab_; calTab_=NULL;
+  if (calTab_) delete calTab_; 
+  calTab_=NULL;
 
   if (append && casacore::Table::isWritable (file)) {
     //    tab  = new SolvableVisJonesTable (file, casacore::Table::Update);

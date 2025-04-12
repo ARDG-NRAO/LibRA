@@ -3309,7 +3309,8 @@ void Imager::destroySkyEquation()
   if(gvp_p) delete gvp_p;
   gvp_p=0;
   
-  if(componentList_p) delete componentList_p; componentList_p=0;
+  if(componentList_p) delete componentList_p; 
+  componentList_p=0;
  
   
   for (Int model=0;model<Int(nmodels_p); ++model) {

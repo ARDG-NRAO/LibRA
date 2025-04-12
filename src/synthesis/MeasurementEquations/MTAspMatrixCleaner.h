@@ -153,13 +153,13 @@ private:
 
   // for multi-term
   casacore::IPosition gip;
-  casacore::Int nx_p;
-  casacore::Int ny_p;
+  casacore::Int nscales_p; // Number of scales. It's always 2 for asp-clean (i.e. 0 scale and the opt scale)
   casacore::Int ntaylor_p; // Number of terms in the Taylor expansion to use.
   casacore::Int psfntaylor_p; // Number of terms in the Taylor expansion for PSF.
+  casacore::Int nx_p;
+  casacore::Int ny_p;
   casacore::IPosition psfsupport_p;
   casacore::IPosition psfpeak_p;
-  casacore::Int nscales_p; // Number of scales. It's always 2 for asp-clean (i.e. 0 scale and the opt scale)
   casacore::Vector<casacore::Float> totalTaylorFlux_p; // casacore::Vector of total flux in each taylor term.
   casacore::Matrix<casacore::Complex> cWork_p; // Temporary work-holder
   casacore::Block<casacore::Matrix<casacore::Float> > vecWork_p; // Temporary work-holder

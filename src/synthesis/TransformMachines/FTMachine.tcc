@@ -71,7 +71,7 @@
 
       tmpFloat.set(0.0);
       shp=tmpFloat.shape();
-      Int end_indx = 0;
+      //Int end_indx = 0;
       //cerr << "getgrid "  << sum(griddedData) << endl;
       casacore::IPosition in(4, 0, 0, 0, 0);
       casacore::IPosition out(4, 0,0,0,0);

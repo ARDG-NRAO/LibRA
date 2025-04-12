@@ -99,13 +99,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     SDAlgorithmBase(),
     itsMatPsfs(), itsMatResiduals(), itsMatModels(),
     itsNTerms(nTaylorTerms),
-    itsCleaner(),
     itsStopPointMode(stoppointmode),
-    itsMCsetup(true),
+    itsCleaner(),
     itsFusedThreshold(fusedThreshold),
+    itsMCsetup(true),
+    itsUserLargestScale(largestScale),
     itsPrevPsfWidth(0),
-    itsIsSingle(isSingle),
-    itsUserLargestScale(largestScale)
+    itsIsSingle(isSingle)
   {
     itsAlgorithmName = String("asp");
   }
