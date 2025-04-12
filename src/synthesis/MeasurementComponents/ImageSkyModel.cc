@@ -195,7 +195,8 @@ Bool ImageSkyModel::addResidual(Int thismodel, ImageInterface<Float>& residual)
 };
 
 ImageSkyModel::~ImageSkyModel() {
-  if(componentList_p) delete componentList_p; componentList_p=0;
+  if(componentList_p) delete componentList_p; 
+  componentList_p=0;
   for (Int thismodel=0;thismodel<nmodels_p;thismodel++) {
     if(residualImage_p[thismodel]) {    
       //(residualImage_p[thismodel])->clearCache();
@@ -214,14 +215,22 @@ ImageSkyModel::~ImageSkyModel() {
         delete cxfr_p[thismodel*maxNumXFR_p+numXFR];
       cxfr_p[thismodel*maxNumXFR_p+numXFR]=0;
     }
-    if(gS_p[thismodel]) delete gS_p[thismodel]; gS_p[thismodel]=0;
-    if(psf_p[thismodel]) delete psf_p[thismodel]; psf_p[thismodel]=0;
-    if(ggS_p[thismodel]) delete ggS_p[thismodel]; ggS_p[thismodel]=0;
-    if(fluxScale_p[thismodel]) delete fluxScale_p[thismodel]; fluxScale_p[thismodel]=0;
-    if(work_p[thismodel]) delete work_p[thismodel]; work_p[thismodel]=0;
-    if(deltaimage_p[thismodel]) delete deltaimage_p[thismodel]; deltaimage_p[thismodel]=0;
-    if(weight_p[thismodel]) delete weight_p[thismodel]; weight_p[thismodel]=0;
-    if(beam_p[thismodel]) delete beam_p[thismodel]; beam_p[thismodel]=0;
+    if(gS_p[thismodel]) delete gS_p[thismodel]; 
+    gS_p[thismodel]=0;
+    if(psf_p[thismodel]) delete psf_p[thismodel]; 
+    psf_p[thismodel]=0;
+    if(ggS_p[thismodel]) delete ggS_p[thismodel]; 
+    ggS_p[thismodel]=0;
+    if(fluxScale_p[thismodel]) delete fluxScale_p[thismodel]; 
+    fluxScale_p[thismodel]=0;
+    if(work_p[thismodel]) delete work_p[thismodel]; 
+    work_p[thismodel]=0;
+    if(deltaimage_p[thismodel]) delete deltaimage_p[thismodel]; 
+    deltaimage_p[thismodel]=0;
+    if(weight_p[thismodel]) delete weight_p[thismodel]; 
+    weight_p[thismodel]=0;
+    if(beam_p[thismodel]) delete beam_p[thismodel]; 
+    beam_p[thismodel]=0;
   }
 };
 

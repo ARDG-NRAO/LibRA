@@ -1642,7 +1642,8 @@ least_squares_inner_driver (const size_t maxiter,
   }
   /* check if max iterations reached */
   if (iter >= maxiter && status != GSL_SUCCESS)
-      status = GSL_EMAXITER;  return status;
+      status = GSL_EMAXITER;  
+  return status;
 } /* gsl_multilarge_nlinear_driver() */
 
 
