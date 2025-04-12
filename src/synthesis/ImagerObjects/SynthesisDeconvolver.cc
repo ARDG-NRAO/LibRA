@@ -969,8 +969,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
     std::shared_ptr<SIImageStore> imstore;
 
-    if (itsDeconvolver->getAlgorithmName() == "mtmfs" ||
-        itsDeconvolver->getAlgorithmName() == "asp" && itsDeconvolver->getNTaylorTerms() > 1)
+    if ((itsDeconvolver->getAlgorithmName() == "mtmfs" ||
+        itsDeconvolver->getAlgorithmName() == "asp") && itsDeconvolver->getNTaylorTerms() > 1)
     {
       //std::cout << "The " << itsDeconvolver->getAlgorithmName() << " is calling SIImageStoreMultiTerm to makeImageStore" << std::endl;
       imstore.reset( new SIImageStoreMultiTerm( imagename, itsDeconvolver->getNTaylorTerms(), true ) );

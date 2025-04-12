@@ -275,12 +275,18 @@ void CalSolVi2Organizer::appendFactory(ViiLayerFactory* f) {
 
 void CalSolVi2Organizer::cleanUp() {
 
-  if (vi_) delete vi_; vi_=NULL;
-  if (data_) delete data_; data_=NULL;
-  if (cal_) delete cal_;  cal_=NULL;
-  if (chanave_) delete chanave_;  chanave_=NULL;
-  if (timeave_) delete timeave_;  timeave_=NULL;
-  if (calfilter_) delete calfilter_; calfilter_=NULL;
+  if (vi_) delete vi_; 
+  vi_=NULL;
+  if (data_) delete data_; 
+  data_=NULL;
+  if (cal_) delete cal_;  
+  cal_=NULL;
+  if (chanave_) delete chanave_;  
+  chanave_=NULL;
+  if (timeave_) delete timeave_;  
+  timeave_=NULL;
+  if (calfilter_) delete calfilter_; 
+  calfilter_=NULL;
   factories_.resize(0);
 
 }

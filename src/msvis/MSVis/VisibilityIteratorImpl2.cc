@@ -3544,7 +3544,7 @@ VisibilityIteratorImpl2::visibilityCorrected(Cube<Complex> & vis) const
 {
   if(columns_p.corrVis_p.isNull())
     throw AipsError("Requesting visibilityCorrected but column is null");
-    getColumnRows(columns_p.corrVis_p, vis);
+  getColumnRows(columns_p.corrVis_p, vis);
 }
 
 void
@@ -3552,7 +3552,7 @@ VisibilityIteratorImpl2::visibilityCorrected(Vector<Cube<Complex>> & vis) const
 {
   if(columns_p.corrVis_p.isNull())
     throw AipsError("Requesting visibilityCorrected but column is null");
-    getColumnRows(columns_p.corrVis_p, vis);
+  getColumnRows(columns_p.corrVis_p, vis);
 }
 
 void
@@ -3595,7 +3595,7 @@ VisibilityIteratorImpl2::visibilityObserved(Cube<Complex> & vis) const
     else {
       if(columns_p.vis_p.isNull())
         throw AipsError("Requesting visibilityObserved but column is null");
-        getColumnRows(columns_p.vis_p, vis);
+      getColumnRows(columns_p.vis_p, vis);
     }
 }
 
@@ -3624,7 +3624,7 @@ VisibilityIteratorImpl2::visibilityObserved(Vector<Cube<Complex>> & vis) const
     else {
       if(columns_p.vis_p.isNull())
         throw AipsError("Requesting visibilityObserved but column is null");
-        getColumnRows(columns_p.vis_p, vis);
+      getColumnRows(columns_p.vis_p, vis);
     }
 }
 

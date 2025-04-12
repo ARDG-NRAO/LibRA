@@ -3339,7 +3339,8 @@ void SIImageStore::regridToModelImage( ImageInterface<Float> &inputimage, Int te
 
     //IPosition itsImageShape;
     outFile << "itsImageShape: " << itsImageShape.nelements() << " ";
-    for (uInt i=0;i<itsImageShape.nelements(); i++) outFile << itsImageShape(i) << " "; outFile << endl;
+    for (uInt i=0;i<itsImageShape.nelements(); i++) outFile << itsImageShape(i) << " "; 
+    outFile << endl;
 
     // Don't know what to do with this.  Looks like this gets
     // filled-in from one of the images.  So load this from one of the

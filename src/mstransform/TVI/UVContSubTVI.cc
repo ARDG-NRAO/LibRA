@@ -811,7 +811,7 @@ template<class T> void UVContSubTVI::transformDataCube(	const Cube<T> &inputVis,
     }
 
     // Get polynomial model for this SPW (depends on number of channels and gridding)
-    const auto freqIter = inputFrequencyMap_p.find(spwId);
+    //const auto freqIter = inputFrequencyMap_p.find(spwId);
     const Vector<Double> &inputFrequencies = vb->getFrequencies(0);
     // Could perhaps have a per field-spw pair map to avoid re-allocations - But can be big
     // (n_fields X n_spws X n_chans) for many fields, many SPWs MSs

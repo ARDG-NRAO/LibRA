@@ -1,4 +1,4 @@
-//# Copyright (C) 1997-2010
+//# Copyright (C) 1996-2010
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -253,7 +253,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   Float tmpMaximumResidual = 0.0;
   Float minMaximumResidual = 1000.0;
   Float initRMSResidual = 1000.0;
-  float initModelFlux = 0.0;
+  float initModelFlux = -1.0;
 
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
@@ -1584,7 +1584,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 	  minlbfgsreport rep;
 	  alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
 	  minlbfgsresults(state, x, rep);
-	  double *x1 = x.getcontent();
+	  //double *x1 = x.getcontent();
 	  //cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
 
 	  // end alglib bfgs optimization
@@ -1704,7 +1704,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
     // AlwaysAssert(itsAspScaleSizes.size() == itsAspCenter.size(), AipsError);
 
     // No longer needed. heuristiclly determine active set for speed up
-    /*Float resArea = 0.0;
+    //Float resArea = 0.0;
     Int nX = itsDirty->shape()(0);
     Int nY = itsDirty->shape()(1);
 
@@ -1837,13 +1837,13 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
   AlwaysAssert(itsGoodAspAmplitude.size() == itsGoodAspActiveSet.size(), AipsError);
 
   // debug info
-  /*for (unsigned int i = 0; i < itsAspAmplitude.size(); i++)
-  {
-    //cout << "After opt AspApm[" << i << "] = " << itsAspAmplitude[i] << endl;
-    //cout << "After opt AspScale[" << i << "] = " << itsAspScaleSizes[i] << endl;
-    //cout << "After opt AspCenter[" << i << "] = " << itsAspCenter[i] << endl;
-    cout << "AspScale[ " << i << " ] = " << itsAspScaleSizes[i] << " center " << itsAspCenter[i] << endl;
-  }* /
+  // for (unsigned int i = 0; i < itsAspAmplitude.size(); i++)
+  // {
+  //   //cout << "After opt AspApm[" << i << "] = " << itsAspAmplitude[i] << endl;
+  //   //cout << "After opt AspScale[" << i << "] = " << itsAspScaleSizes[i] << endl;
+  //   //cout << "After opt AspCenter[" << i << "] = " << itsAspCenter[i] << endl;
+  //   cout << "AspScale[ " << i << " ] = " << itsAspScaleSizes[i] << " center " << itsAspCenter[i] << endl;
+  // }
 
   return itsGoodAspActiveSet; // return optimized scale
 }*/
