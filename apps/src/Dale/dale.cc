@@ -24,7 +24,6 @@
 
 
 #include <dale.h>
-
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -33,7 +32,7 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/Path.h>
-//#include <Utilities/LibRA_Utils.h>
+#include <librautils/utils.h>
 
 //
 //-------------------------------------------------------------------------
@@ -41,78 +40,6 @@
 
 namespace Dale
 {
-  std::string removeExtension(const std::string& path) {
-    if (path == "." || path == "..")
-      return path;
-    
-    size_t pos = path.find_last_of("\\/.");
-    if (pos != std::string::npos && path[pos] == '.')
-      return path.substr(0, pos);
-    
-    return path;
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  inline std::string getExtension(const std::string& path)
-  {
-    string ext("");
-    size_t pos = path.find_last_of("\\/.");
-    if (pos != std::string::npos)
-      {
-	string ss=path.substr(pos);
-	if ((pos=ss.find_last_of("."))!=std::string::npos)
-	  ext=ss.substr(pos + 1);
-      }
-
-    return ext;
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  bool imageExists(const string& imagename)
-  {
-    Directory image(imagename);
-    return image.exists();
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  template <class T>
-  void getImageType(PagedImage<T>& im,
-		    std::string& type, std::string& subType)
-  {
-    type    = im.table().tableInfo().type();
-    subType = im.table().tableInfo().subType();
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  template <class T>
-  bool isNormalized(PagedImage<T>& im)
-  {
-    // Regular expression to match the token "normalized" as a word.
-    std::regex rx(R"(\bnormalized\b)");
-    string type, subType;
-    getImageType(im, type,subType);
-
-    std::smatch m;
-    return std::regex_search(subType, m, rx);
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
-  template <class T>
-  void setNormalized(PagedImage<T>& im)
-  {
-    string type, subType;
-    getImageType(im, type,subType);
-    im.table().tableInfo().setSubType(subType+" normalized");
-    im.table().flushTableInfo();
-  }
-  //
-  //-------------------------------------------------------------------------
-  //
   void printImageMax(const string& imType,
 		     const ImageInterface<Float>& target,
 		     const ImageInterface<Float>& weight,
@@ -239,7 +166,7 @@ namespace Dale
       {
 	LatticeExpr<T> newIM(target), normWt(weight);
 
-	if (!isNormalized(weight)) normWt = weight / SoW;
+	if (! librautils::isNormalized(weight)) normWt = weight / SoW;
 	
 	double itsPBScaleFactor = sqrt(max(normWt.get()));
 	if (imType == "residual") newIM = target / SoW;
@@ -291,7 +218,7 @@ namespace Dale
   template <class T>
   PagedImage<T>* checkAndOpen(const string& name)
   {
-    if (!imageExists(name))
+    if (! librautils::imageExists(name))
       throw(AipsError("Image " + name + " does not exist."));
     
     LatticeBase *imPtr;
@@ -327,15 +254,15 @@ namespace Dale
 	if ((imType == "residual") || (imType == "psf") || (imType == "model"))
 	  {
 	    // Use name extension conventions only if targetName did not have an extension
-	    if (getExtension(targetName)=="") targetName += "." + imType;
+	    if ( librautils::getExtension(targetName)=="") targetName += "." + imType;
 	    logio << "Running normalization for " << targetName << LogIO::POST;
 	  }
 	else
 	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf and residual."));
 	
 	// Use a convention for image names only if the names aren't provided.
-	if (weightName == "") weightName   = removeExtension(imageName) + ".weight";
-	if (sumwtName  == "") sumwtName    = removeExtension(imageName) + ".sumwt";
+	if (weightName == "") weightName   = librautils::removeExtension(imageName) + ".weight";
+	if (sumwtName  == "") sumwtName    = librautils::removeExtension(imageName) + ".sumwt";
 	
 	{
 	  Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
@@ -346,14 +273,14 @@ namespace Dale
 	}
 	// checking if all necessary images exist before opening
 	PagedImage<Float>* targetImage = checkAndOpen<float>(targetName);
-	if (!isNormalized<float>(*targetImage))
+	if (! librautils::isNormalized<float>(*targetImage))
 	  {
 	    PagedImage<Float>* wImage = checkAndOpen<float>(weightName);
 	    PagedImage<Float>* swImage = checkAndOpen<float>(sumwtName);
 	
 	    //PagedImage<float> pw(*wImage);
 	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
-	    getImageType<float>(*targetImage, type, subType);
+	    librautils::getImageType<float>(*targetImage, type, subType);
 	    logio << "Target image type: "
 		  << type << " "
 		  << "subType: " << subType << " "
@@ -364,8 +291,8 @@ namespace Dale
 	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
-	    setNormalized<float>(*targetImage);
-	    getImageType<float>(*targetImage, type, subType);
+	    librautils::setNormalized<float>(*targetImage);
+	    librautils::getImageType<float>(*targetImage, type, subType);
 	    // cerr << "Target image type: "
 	    // 	 << type << " "
 	    // 	 << subType << " "

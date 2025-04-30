@@ -216,6 +216,9 @@ do
     # run hummbee for updateModel deconvolution iterations
     ${runApp} ${deconvolutionAPP} deconvolve ${imagename} ${input_file} ${logdir} -c ${i}
 
+    # Work around to fix the NOOP in dale. This should be removed when the real code fix is in.
+    sed -i 's/SubType =  normalized/SubType =/' ${imagename}.model/table.info
+
     # run dale to divide model by weights
     ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t model -c ${i}
 

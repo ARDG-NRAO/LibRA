@@ -442,7 +442,9 @@ void MosaicFT::finalizeToVis()
     logIO() << o.str() << LogIO::POST;
   }
   */
-  if(pointingToImage) delete pointingToImage; pointingToImage=0;
+  if(pointingToImage) 
+	  delete pointingToImage; 
+  pointingToImage=0;
 }
 
 

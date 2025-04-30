@@ -1,9 +1,8 @@
 #include <filesystem>
-#include "Restore/restore.h"
-#include "translation/casacore_restore.h"
-
-#include "Restore_mdspan/restore_mdspan.h"
-#include "gtest/gtest.h"
+#include <Restore/restore.h>
+#include <translation/casacore_restore.h>
+#include <Restore_mdspan/restore_mdspan.h>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace std::filesystem;

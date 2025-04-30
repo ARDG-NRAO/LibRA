@@ -236,8 +236,10 @@ Bool CEMemImageSkyModel::solve(SkyEquation& se) {
       }
     }
   }
-  if (priorImagePtr) delete priorImagePtr; priorImagePtr=0;
-  if (mask_sl_p)  delete mask_sl_p; mask_sl_p=0;
+  if (priorImagePtr) delete priorImagePtr; 
+  priorImagePtr=0;
+  if (mask_sl_p)  delete mask_sl_p; 
+  mask_sl_p=0;
   return(true);
 };
 

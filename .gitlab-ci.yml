@@ -1,7 +1,6 @@
 stages:
   - build
   - test
-  - production
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
@@ -9,88 +8,113 @@ variables:
   GIT_CLEAN_FLAGS: none
 
 cache:
-  key: ccache_main
+  key: ccache
   paths:
     - $CCACHE_DIR
-
 
 build-job:
   stage: build
   rules:
-    - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/' 
-      when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
-
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
+    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+    - if: '$FORCE_CI == "true"'
+    - when: never
   before_script:
     - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_DIR="$PWD/ccache"
     - export CCACHE_COMPILERCHECK=content
-    - ccache --zero-stats || true
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+    - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
-
   script:
     - echo "Compiling the code..."
     - echo $PATH
     - nvidia-smi
     - which nvcc
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
-    - echo "Compile complete."
-    
   after_script:
-    - export CCACHE_DIR="$PWD/ccache"
     - ccache --show-stats || true
 
 test-job:
   stage: test
+  needs:
+    - job: build-job
   rules:
-    - changes:
-      - (exclude)README.md
-      - (exclude)scripts/**/*
-      - (exclude)doc/**/*
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci.skip\]/'
-      when: never
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/'
-      when: always
-    - if: '$CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/'
-      when: always
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: always
-    - if: '$CI_COMMIT_REF_NAME == "main" && ($CI_COMMIT_MESSAGE =~ /\[ci test\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.test\]/) && ($CI_COMMIT_MESSAGE =~ /\[ci build\]/ || $CI_COMMIT_MESSAGE =~ /\[ci.build\]/) && $CI_COMMIT_MESSAGE !~ /\[ci.skip\]/'
-      when: always
-
-  script:
-    - echo $PWD
-    - base_path=$PWD
-    - echo "Entering $PWD/apps/src/tests to run apps unit tests"
-    - cd ${base_path}/apps/src/tests
-    - ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="report.xml"
-    - python -m pytest --junitxml=pytest_report.xml
-
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - (exclude)README.md
+        - (exclude)scripts/**/*
+        - (exclude)doc/**/*
+    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+    - if: '$FORCE_CI == "true"'
+    - when: never
+  before_script:
+    - mkdir -p $CCACHE_DIR
+  script: |
+    echo "Current working directory: $PWD"
+    base_path=$PWD
+    echo "Entering $base_path/apps/src/tests to run apps unit tests"
+    cd ${base_path}/apps/src/tests
+    mkdir -p ${base_path}/apps/src/tests/reports
+    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
+    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
   artifacts:
     when: always
     reports:
-      junit: ${base_path}/build/Libra/apps/src/tests/report.xml
-      junit: ${base_path}/build/Libra/apps/src/tests/pytest_report.xml
+      junit:
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
+    expire_in: 1 week
 
-production-job:
-  stage: production
-  only:
-    - manual
+manual-trigger:
+  stage: build
   script:
-    - echo "Deploying to production..."
-    # Add your deployment commands here
+    - echo "Manual full build trigger initiated..."
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_COMPILERCHECK=content
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+    - mkdir -p $CCACHE_DIR
+    - ccache --show-stats || true
+    - git clean -ffdx
+    - mkdir -p build
+    - cd build
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+    - make
+    - ccache --show-stats || true
+  when: manual
+  only:
+    - branches
+  allow_failure: false
+
+manual-test:
+  stage: test
+  script: |
+    echo "Manual test trigger initiated..."
+    base_path=$PWD
+    echo "Entering $base_path/apps/src/tests to run apps unit tests"
+    cd ${base_path}/apps/src/tests
+    mkdir -p ${base_path}/apps/src/tests/reports
+    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
+    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+  when: manual
+  only:
+    - main
+  allow_failure: false
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
+    expire_in: 1 week
+  needs: []  # decouple it from 'build-job'
+

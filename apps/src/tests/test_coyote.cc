@@ -29,8 +29,8 @@
 //================================================================================
 //
 #include <filesystem>
-#include "Coyote/coyote.h"
-#include "gtest/gtest.h"
+#include <Coyote/coyote.h>
+#include <gtest/gtest.h>
 #include <casacore/images/Images/PagedImage.h>
 #include <casacore/ms/MSSel/MSSelection.h>
 #include <msvis/MSVis/VisibilityIterator2.h>

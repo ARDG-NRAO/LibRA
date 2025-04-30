@@ -70,6 +70,8 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
 set(APP_LINK_LIBRARIES
   casacpp_synthesis
   casacpp_msvis
+  librautils
+  libracore
   hpg
   kokkoscore
   casa_msfits
@@ -114,15 +116,99 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner Dale Chip MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Acme)
+set(APP_LIST Coyote Hummbee RoadRunner Chip Dale Acme MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Utilities)
 
-foreach(APP IN LISTS APP_LIST)
-   set(APP_DIR ${APP})
-   string(TOLOWER ${APP_DIR} APP_NAME)
-   list(APPEND APP_SOURCES "${APP_DIR}/${APP_NAME}.cc")
-   file(GLOB APP_SOURCE "${APP_DIR}/*.h")
-   list(APPEND APP_SOURCES)
-endforeach()
+set (ACME_SOURCES
+  Acme/acme.cc
+  Acme/acme.h
+)
+
+set (ASP_SOURCES
+  Asp/asp.cc
+  Asp/asp.h
+)
+
+set (ASP_MDSPAN_SOURCES
+  Asp_mdspan/asp_mdspan.cc
+  Asp_mdspan/asp_mdspan.h
+)
+
+set (CHIP_SOURCES
+  Chip/chip.cc
+  Chip/chip.h
+)
+
+set (COYOTE_SOURCES
+  Coyote/coyote.cc
+  Coyote/coyote.h
+)
+
+set (DALE_SOURCES
+  Dale/dale.cc
+  Dale/dale.h
+)
+
+set (HUMMBEE_SOURCES
+  Hummbee/hummbee.cc
+  Hummbee/hummbee.h
+)
+
+set (MSSPLIT_SOURCES
+  MSSplit/mssplit.cc
+  MSSplit/mssplit.h
+)
+
+set (RESTORE_SOURCES
+  Restore/restore.cc
+  Restore/restore.h
+)
+
+set (RESTORE_MDSPAN_SOURCES
+  Restore_mdspan/restore_mdspan.cc
+  Restore_mdspan/restore_mdspan.h
+)
+
+set (ROADRUNNER_SOURCES
+  RoadRunner/roadrunner.cc
+  RoadRunner/roadrunner.h
+  # RoadRunner/DataBase.h
+  # RoadRunner/DataIterations.h
+  # RoadRunner/MakeComponents.h
+  # RoadRunner/rWeightor.h
+  # RoadRunner/ThreadCoordinator.h
+)
+
+set (SUBMS_SOURCES
+  SubMS/subms.cc
+  SubMS/subms.h
+)
+
+set (TABLEINFO_SOURCES
+  TableInfo/tableinfo.cc
+  TableInfo/tableinfo.h
+)
+
+# set(UTILITIES_SOURCES 
+  # Utilities/backup.cc
+  # Utilities/backup.h
+# )
+
+set (LIBRA_SOURCES
+  ${ACME_SOURCES}
+  ${ASP_SOURCES}
+  ${ASP_MDSPAN_SOURCES}
+  ${CHIP_SOURCES}
+  ${COYOTE_SOURCES}
+  ${HUMMBEE_SOURCES}
+  ${MSSPLIT_SOURCES}
+  ${RESTORE_SOURCES}
+  ${RESTORE_MDSPAN_SOURCES}
+  ${ROADRUNNER_SOURCES}
+  ${SUBMS_SOURCES}
+  ${TABLEINFO_SOURCES}
+  # ${UTILITIES_SOURCES}
+  ${DALE_SOURCES}
+)
 
 # add and build googletest
 if(Apps_BUILD_TESTS)
@@ -133,4 +219,5 @@ endif()
 add_subdirectory(src/translation)
 
 add_subdirectory(src)
+
 

@@ -32,6 +32,7 @@
 #include <casacore/casa/OS/DirectoryIterator.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/Path.h>
+#include <librautils/utils.h>
 
 
 //
@@ -39,31 +40,6 @@
 
 namespace Acme
 {
-  bool imageExists(const string& imagename)
-  {
-    Directory image(imagename);
-    return image.exists();
-  }
-
-  void checkImageMax(const string& name,
-		     const ImageInterface<Float>& target,
-		     LogIO& logio)
-  {
-    float mim = max(target.get());
- 
-    {
-      stringstream os;
-      os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	 << "Image stats: "
-	 << " max(" << name << ") = " << mim;
-      logio << os.str() << LogIO::POST;
-    }
-	
-	float threshold = 1e20;
-	if (mim >= threshold)
-		throw(AipsError("Image amplitude is out of range."));
-  }
-
 
   void acme(std::string& imageName, const string& stats)
   {
@@ -95,7 +71,7 @@ namespace Acme
 		LatticeBase *targetPtr;
 		ImageInterface<Float> *targetImage;
 
-	    if (! imageExists(imageName))
+	    if (! librautils::imageExists(imageName))
         	throw(AipsError(string("Image ") + imageName + string(" does not exist.")));
 
 		targetPtr = ImageOpener::openImage (imageName);
@@ -103,7 +79,7 @@ namespace Acme
 
 		if (stats=="checkamp")
 		{
-			checkImageMax(imageName, *targetImage, logio);
+			librautils::checkImageMax(imageName, *targetImage, logio);
 		}
 		else if (stats=="all")
 		{
