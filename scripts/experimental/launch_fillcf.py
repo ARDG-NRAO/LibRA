@@ -111,6 +111,7 @@ class FillCFLauncher:
         parser.add_argument("-C", "--CASAPATH", help="CASAPATH or the path to data directory")
         parser.add_argument("-e", "--email", help="User email")
         parser.add_argument("-u", "--username", help="User name")
+        parser.add_argument("-m", "--mem", help="RAM requirement (default: 4G)", default="4G")
         parser.add_argument(
             "-s", "--submit", type=bool, default=False, help="Submit the job (default: False)"
         )
