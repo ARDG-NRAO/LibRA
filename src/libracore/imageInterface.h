@@ -30,15 +30,26 @@
 #include <casacore/scimath/Functionals/Gaussian2D.h>
 #include <synthesis/TransformMachines/StokesImageUtil.h>
 
+#include "LibracoreTypes.h"
+
 namespace libracore {
 
-using extents_type = Kokkos::dextents<size_t, 2>;
+/*using extents_type = Kokkos::dextents<size_t, 2>;
 
 template <typename T>
 using row_major_mdspan = Kokkos::mdspan<T, extents_type, Kokkos::layout_right>;
 // p.s. casa matrix is col major
 template <typename T>
 using col_major_mdspan = Kokkos::mdspan<T, extents_type, Kokkos::layout_left>;
+
+// Define mdspan types for 3D arrays, both row-major and column-major
+using extents_type_3d = Kokkos::dextents<size_t, 3>;
+
+template <typename T>
+using row_major_mdspan_3d = Kokkos::mdspan<T, extents_type_3d, Kokkos::layout_right>;
+
+template <typename T>
+using col_major_mdspan_3d = Kokkos::mdspan<T, extents_type_3d, Kokkos::layout_left>;*/
 
 
 template <typename T>
@@ -91,6 +102,71 @@ int casamatrix2mdspan(casacore::Matrix<T>& matrix,
     return(0);
 
 }
+
+
+template <typename T>
+int mdspan2casacube(
+  col_major_mdspan_3d<T> md, 
+  casacore::Cube<T>& cube)
+{
+    size_t nx = md.extent(0); 
+    size_t ny = md.extent(1); 
+    size_t nz = md.extent(2);
+
+    // Check if the size matches with the Cube's dimensions
+    if (size_t(cube.shape()(0)) != nx || size_t(cube.shape()(1)) != ny || size_t(cube.shape()(2)) != nz)
+    {
+        std::cerr << "Sizes of mdspan and casa cube do not match.\n";
+        return EXIT_FAILURE;
+    }
+
+    // Copy data from mdspan to the Cube
+    for (std::size_t z = 0; z < nz; ++z) {
+        for (std::size_t y = 0; y < ny; ++y) {
+            for (std::size_t x = 0; x < nx; ++x) {
+                #if MDSPAN_USE_BRACKET_OPERATOR
+                    cube(x, y, z) = md(x, y, z); // Access elements using bracket operator
+                #else
+                    cube(x, y, z) = md(x, y, z); // Access elements using function call operator
+                #endif
+            }
+        }
+    }
+
+    return 0;
+}
+
+template <typename T>
+int casacube2mdspan(const casacore::Cube<T>& cube,
+                    col_major_mdspan_3d<T> md)
+                    //Kokkos::mdspan<T, extents_type_3d, Kokkos::layout_left> md)
+{
+    const size_t nx = size_t(cube.shape()(0)); 
+    const size_t ny = size_t(cube.shape()(1)); 
+    const size_t nz = size_t(cube.shape()(2)); 
+
+    if (md.extent(0) != nx || md.extent(1) != ny || md.extent(2) != nz)
+    {
+        std::cerr << "Sizes of mdspan and casa cube do not match.\n";
+        return EXIT_FAILURE;
+    }
+
+    // Copy data from the casa Cube to the mdspan 
+    for (std::size_t z = 0; z < nz; ++z) {
+        for (std::size_t y = 0; y < ny; ++y) {
+            for (std::size_t x = 0; x < nx; ++x) {
+                #if MDSPAN_USE_BRACKET_OPERATOR
+                    md[x, y, z] = cube(x, y, z);
+                #else
+                    md(x, y, z) = cube(x, y, z);
+                #endif
+            }
+        }
+    }
+
+    return 0;
+}
+
 
 
 inline void locatePeakPSFMatrix(Matrix<float>& lpsf, int& xpos, int& ypos, float& amp){

@@ -28,9 +28,22 @@ include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/inclu
 )
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
-add_library(${PROJECT_NAME} SHARED "${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc")
+add_library(${PROJECT_NAME} SHARED 
+	${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc)
+	
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER 
-	"${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.h;${CMAKE_CURRENT_SOURCE_DIR}/DataBase.h;${CMAKE_CURRENT_SOURCE_DIR}/DataIterations.h;${CMAKE_CURRENT_SOURCE_DIR}/rWeightor.h;${CMAKE_CURRENT_SOURCE_DIR}/ThreadCoordinator.h")
+	"${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/DataBase.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/DataIterations.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/rWeightor.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/ThreadCoordinator.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/LibracoreTypes.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/ArrayBase.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/Cube.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/Matrix.h;
+	${CMAKE_CURRENT_SOURCE_DIR}/Vector.h
+	")
+
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -47,29 +60,20 @@ install(TARGETS ${PROJECT_NAME}
 #install(FILES ${MDSPAN_HEADER} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/mdspan")
 
 # for testing
-#link_directories("${CMAKE_INSTALL_PREFIX}/lib")
-#add_executable(testmdspan "${CMAKE_CURRENT_SOURCE_DIR}/testmdspan.cc")
-#target_link_libraries(testmdspan PRIVATE libracore
-	#  casacpp_synthesis
-	#casacpp_msvis
-	#hpg
-	#kokkoscore
-	#casa_msfits
-	#casa_ms
-	#casa_images
-	#casa_coordinates
-	#casa_lattices
-	#casa_fits
-	#casa_measures
-	#casa_tables
-	#casa_scimath
-	#casa_scimath_f
-	#casa_casa
-	#pthread
-	#parafeed
-	#readline
-	#history
-	#termcap
-	#m
-	#c
-	#"-Wl,--disable-new-dtags")
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+add_executable(testmdspan "${CMAKE_CURRENT_SOURCE_DIR}/testmdspan.cc")
+target_link_libraries(testmdspan PRIVATE libracore
+casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images
+casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath
+casa_scimath_f casa_casa pthread parafeed readline history termcap m c
+"-Wl,--disable-new-dtags")
+
+# for tesing
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+add_executable(testLibracoreTypes "${CMAKE_CURRENT_SOURCE_DIR}/testLibracoreTypes.cc")
+target_link_libraries(testLibracoreTypes PRIVATE libracore
+casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images
+casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath
+casa_scimath_f casa_casa pthread parafeed readline history termcap m c
+"-Wl,--disable-new-dtags")
+

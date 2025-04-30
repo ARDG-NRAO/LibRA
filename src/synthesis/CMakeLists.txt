@@ -57,12 +57,12 @@ target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
 
 # Internal dependencies.  Include protobuf only if using GRPC
 if (CMAKE_USE_GRPC)
-  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
+  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform libracore)
   add_dependencies(${LIB_NAME} casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_protobuf casacpp_imageanalysis casacpp_mstransform)
   # the generated protobuf headers
   target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_BINARY_DIR}/protobuf_generated)
 else()
-  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
+  target_link_libraries(${LIB_NAME} PUBLIC casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform libracore)
   add_dependencies(${LIB_NAME} casacpp_casatools casacpp_msvis casacpp_stdcasa casacpp_atmosphere casacpp_imageanalysis casacpp_mstransform)
 endif()
 
