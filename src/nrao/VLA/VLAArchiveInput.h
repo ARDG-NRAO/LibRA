@@ -35,6 +35,8 @@
 #include <casacore/casa/OS/ModcompDataConversion.h>
 
 #include <casacore/casa/namespace.h>
+
+#include<memory>
 namespace casacore{
 
 class ByteSource;
@@ -207,11 +209,11 @@ protected:
   //# These objects contains the current logical record. The memory IO object
   //# is used to put the data. It is taken out using the casacore::ByteSinkSource which
   //# will apply any numeric conversions.
-  casacore::MemoryIO itsMemIO;
+  std::shared_ptr<casacore::MemoryIO> itsMemIO;
 
 private:
-  casacore::ModcompDataConversion itsModComp;
-  casacore::ConversionIO itsCtrIO;
+  std::shared_ptr<casacore::ModcompDataConversion> itsModComp;
+  std::shared_ptr<casacore::ConversionIO> itsCtrIO;
 
 protected: 
   casacore::ByteSinkSource itsRecord;

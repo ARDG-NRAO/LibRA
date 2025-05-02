@@ -102,7 +102,7 @@ MTAspMatrixCleaner::~MTAspMatrixCleaner()
   destroyAspScales();
   destroyInitMasks();
   destroyInitScales();
-  if(!itsMask.null())
+  if(!itsMask)
     itsMask=0;
 }
 
@@ -300,7 +300,7 @@ Int MTAspMatrixCleaner::mtaspclean()
     {
       tmpMaximumResidual = itsPeakResidual;
       os << "Initial maximum residual is " << itsPeakResidual;
-      if( !itsMask.null() )
+      if( !itsMask )
         os << " within the mask ";
 
       os << LogIO::POST;
@@ -710,7 +710,7 @@ Int MTAspMatrixCleaner::allocateMemory(casacore::Int nx,casacore::Int ny)
   blcDirty=IPosition(2/*itsDirty->shape().nelements()*/, 0);
   trcDirty=IPosition(2, nx -1, ny -1/*itsDirty->shape() - 1*/);
 
-  if(!itsMask.null())
+  if(!itsMask)
   {
     AlwaysAssert(itsMask->shape()(0) == nx, AipsError);
     AlwaysAssert(itsMask->shape()(1) == ny, AipsError);
@@ -776,7 +776,7 @@ bool MTAspMatrixCleaner::setMTPsf(int order, Matrix<Float> & psf)
 
   if (order == 0)
   {
-    itsXfr = new Matrix<Complex>();
+    itsXfr = std::make_unique<Matrix<Complex>>();
     itsXfr->assign(vecPsfFT_p[0]);
   }
 
@@ -790,7 +790,7 @@ Bool MTAspMatrixCleaner::setResidual(int order, Matrix<Float> & dirty)
 
   if (order == 0)
   {
-    itsDirty=new Matrix<Float>(psfShape_p);
+    itsDirty = std::make_unique<Matrix<Float>>(psfShape_p);
     itsDirty->assign(vecDirty_p[0]); 
     //cout << "setResidual: vecDirty_p[0](256,231) " << (vecDirty_p[0])(256,231) << endl;
   }
@@ -1074,7 +1074,7 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
   if(/*!itsSwitchedToHogbom &&*/ fabs(itsPeakResidual) < threshold())
   {
     os << "Reached stopping threshold " << threshold()<< ". Peak residual " << itsPeakResidual ;
-    if( ! itsMask.null() ) {os << " (within mask) " ;}
+    if( ! itsMask ) {os << " (within mask) " ;}
     os << LogIO::POST;
     converged = 1;
 

@@ -260,7 +260,7 @@ CalTable CalTable::select (const String& calSelect)
     return *this;
   } else {
     String parseString = "select from $1 where " + calSelect;
-    Table result = tableCommand (parseString, *itsMainTable);
+    Table result = tableCommand (parseString, *itsMainTable).table();
     return CalTable (result);
   };
 };
@@ -282,7 +282,7 @@ void CalTable::select2 (const String& calSelect)
   Int nspace = calSelect.freq (' ');
   if (!calSelect.empty() && nspace!=len) {
     String parseString = "select from $1 where " + calSelect;
-    Table *selected = new Table(tableCommand (parseString, *itsMainTable));
+    Table *selected = new Table(tableCommand (parseString, *itsMainTable).table());
     delete itsMainTable;
     itsMainTable=selected;
   };

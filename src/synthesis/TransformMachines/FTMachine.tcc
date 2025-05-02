@@ -32,7 +32,7 @@
     casacore::Array<casacore::Double> tmpDouble;
     casacore::IPosition shp;
     bool del;
-    if((whatType(&thegrid)==casacore::TpArrayComplex)){
+    if((whatType<Array<T>>()==casacore::TpArrayComplex)){
 	if(useDoubleGrid_p){
 	  griddedData.resize(griddedData2.shape());
 	  convertArray(griddedData, griddedData2);
@@ -42,7 +42,7 @@
 	 ptr=griddedData.getStorage(del);
 	 shp=griddedData.shape();
     }
-    else if(whatType(&thegrid)==casacore::TpArrayDComplex){
+    else if(whatType<Array<T>>()==casacore::TpArrayDComplex){
       if(!useDoubleGrid_p){
 	griddedData2.resize(griddedData.shape());
 	convertArray(griddedData2, griddedData);
@@ -54,7 +54,7 @@
 	
 
     }
-    else if(((whatType(&thegrid)==casacore::TpArrayFloat))){
+    else if(((whatType<Array<T>>()==casacore::TpArrayFloat))){
       if(!useDoubleGrid_p){
 	tmpFloat.resize(griddedData.shape());
 	
@@ -71,7 +71,7 @@
 
       tmpFloat.set(0.0);
       shp=tmpFloat.shape();
-      //Int end_indx = 0;
+      Int end_indx = 0;
       //cerr << "getgrid "  << sum(griddedData) << endl;
       casacore::IPosition in(4, 0, 0, 0, 0);
       casacore::IPosition out(4, 0,0,0,0);
@@ -108,7 +108,7 @@
       ptr=tmpFloat.getStorage(del);
       //ptr=griddedData.getStorage(del);
     }
-    else if(((whatType(&thegrid)==casacore::TpArrayDouble))){
+    else if(((whatType<Array<T>>()==casacore::TpArrayDouble))){
        if(useDoubleGrid_p){
 	 tmpDouble.resize(griddedData2.shape());	
        }

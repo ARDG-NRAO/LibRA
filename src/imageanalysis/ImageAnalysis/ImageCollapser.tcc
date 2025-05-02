@@ -540,7 +540,7 @@ template<class T> LatticeStatsBase::StatisticsTypes ImageCollapser<T>::_getStats
 
 template<class T> void ImageCollapser<T>::_zeroNegatives(Array<T>& arr) {
     auto iter = arr.begin();
-    if (isComplex(whatType(&(*iter))) || allGE(arr, (T)0)) {
+    if (isComplex(whatType<T>()) || allGE(arr, (T)0)) {
         return;
     }
     auto end = arr.end();

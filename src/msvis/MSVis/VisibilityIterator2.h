@@ -28,6 +28,7 @@
 #ifndef MSVIS_VISIBILITYITERATOR2_H
 #define MSVIS_VISIBILITYITERATOR2_H
 
+#include <memory>
 #include <casacore/casa/aips.h>
 
 #include <casacore/ms/MeasurementSets/MSIter.h>
@@ -35,6 +36,7 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisBufferComponents2.h>
 #include <msvis/MSVis/ViiLayerFactory.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #include <map>
 #include <set>
@@ -236,26 +238,26 @@ public:
 
     // Constructor from a list of (column Ids, comparison function)
     // The column Ids are actually MSMainEnums enums.
-    explicit SortColumns (const std::vector<std::pair<casacore::MS::PredefinedColumns, casacore::CountedPtr<casacore::BaseCompare>>> sortingDefinition);
+    explicit SortColumns (const std::vector<std::pair<casacore::MS::PredefinedColumns, std::shared_ptr<casacore::BaseCompare>>> sortingDefinition);
 
     // Constructor from a list of (column names, comparison function)
     // The column names could in principle be any column name which must
     // of course exist in the MS.
-    explicit SortColumns (const std::vector<std::pair<casacore::String, casacore::CountedPtr<casacore::BaseCompare>>> sortingDefinition);
+    explicit SortColumns (const std::vector<std::pair<casacore::String, std::shared_ptr<casacore::BaseCompare>>> sortingDefinition);
 
     // Add a sorting column to the existing definitions.
     // It will be added at the end, i. e., it will be "running" faster
     // If sortingFunction = nullptr then a unique sorting function
     // for the type of the column will be used (ObjCompare<T>)
     void addSortingColumn(casacore::MS::PredefinedColumns colId,
-        casacore::CountedPtr<casacore::BaseCompare> sortingFunction = nullptr);
+        std::shared_ptr<casacore::BaseCompare> sortingFunction = nullptr);
 
     // Add a sorting column to the existing definitions.
     // It will be added at the end, i. e., it will be "running" faster
     // If sortingFunction = nullptr then a unique sorting function
     // for the type of the column will be used (ObjCompare<T>)
     void addSortingColumn(casacore::String colName,
-        casacore::CountedPtr<casacore::BaseCompare> sortingFunction = nullptr);
+        std::shared_ptr<casacore::BaseCompare> sortingFunction = nullptr);
 
     bool usingDefaultSortingFunctions () const;
 
@@ -264,13 +266,13 @@ public:
     const casacore::Block<casacore::Int> & getColumnIds () const;
 
     // Get the sorting definitions, including the comparison functions
-    const std::vector<std::pair<casacore::String, casacore::CountedPtr<casacore::BaseCompare>>> & sortingDefinition() const;
+    const std::vector<std::pair<casacore::String, std::shared_ptr<casacore::BaseCompare>>> & sortingDefinition() const;
 
 private:
 
     casacore::Bool addDefaultColumns_p;
     casacore::Block<casacore::Int> columnIds_p;
-    std::vector<std::pair<casacore::String, casacore::CountedPtr<casacore::BaseCompare>>> sortingDefinition_p;
+    std::vector<std::pair<casacore::String, std::shared_ptr<casacore::BaseCompare>>> sortingDefinition_p;
     bool usingDefaultSortingFunctions_p;
 };
 

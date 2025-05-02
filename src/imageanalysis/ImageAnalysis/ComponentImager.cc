@@ -405,7 +405,7 @@ void ComponentImager::project(ImageInterface<Float>& image, const ComponentList&
 	if (doMask) {
 		pixelMaskPtr = &image.pixelMask();
 	}
-	PtrHolder<Array<Bool> > maskPtr;
+	std::unique_ptr<Array<Bool> > maskPtr;
 	for (chunkIter.reset(); !chunkIter.atEnd(); chunkIter++) {
 		// Iterate through sky plane of cursor and do coordinate conversions
 
@@ -444,7 +444,7 @@ void ComponentImager::project(ImageInterface<Float>& image, const ComponentList&
 
 		// Get input mask values if available
 		if (doMask) {
-			maskPtr.set(
+			maskPtr.reset(
 				new Array<Bool>(
 					image.getMaskSlice(chunkIter.position(),
 					chunkIter.cursorShape(), false)

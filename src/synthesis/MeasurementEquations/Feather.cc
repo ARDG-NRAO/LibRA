@@ -69,7 +69,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   Feather::Feather(): dishDiam_p(-1.0), cweightCalced_p(false), cweightApplied_p(false), sdScale_p(1.0){
     highIm_p=NULL;
     lowIm_p=NULL;
-    lowImOrig_p=NULL;
+    lowImOrig_p = std::make_unique<TempImage<Float>>();
     cwImage_p=NULL;
     cwHighIm_p=NULL;
   }
@@ -91,7 +91,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   
   void Feather::setSDImage(const ImageInterface<Float>& SDImage){
     LogIO os(LogOrigin("Feather", "setSDImage()", WHERE));
-    if(highIm_p.null())
+    if(!highIm_p)
       throw(AipsError("High res image has to be defined before SD image"));
     ImageInfo lowInfo=SDImage.imageInfo();
     lBeam_p=lowInfo.restoringBeam();
@@ -104,29 +104,29 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     ImageUtilities::copyMiscellaneous(*sdcopy, SDImage);
     if(SDImage.getDefaultMask() != "")
       Imager::copyMask(*sdcopy, SDImage,  SDImage.getDefaultMask());
-    PtrHolder<ImageInterface<Float> > copyPtr;
-    PtrHolder<ImageInterface<Float> > copyPtr2;
+    std::unique_ptr<ImageInterface<Float>> copyPtr;
+    std::unique_ptr<ImageInterface<Float>> copyPtr2;
     
       
     Vector<Stokes::StokesTypes> stokesvec;
     if(CoordinateUtil::findStokesAxis(stokesvec, csyslow) <0){
       CoordinateUtil::addIAxis(csyslow);
       
-      ImageUtilities::addDegenerateAxes (os, copyPtr, *sdcopy, "",
-					 false, false,"I", false, false,
-					 true);
-      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr.ptr(), false);
+      ImageUtilities::addDegenerateAxes(os, copyPtr, *sdcopy, "",
+                                        false, false, "I", false, false,
+                                        true, false);
+      sdcopy = CountedPtr<ImageInterface<Float>>(copyPtr.release());
       
     }
     if(CoordinateUtil::findSpectralAxis(csyslow) <0){
       CoordinateUtil::addFreqAxis(csyslow);
-      ImageUtilities::addDegenerateAxes (os, copyPtr2, *sdcopy, "",
-					 false, true,
-					 "", false, false,
-					 true);
-      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.ptr(), false);
+      ImageUtilities::addDegenerateAxes(os, copyPtr2, *sdcopy, "",
+                                        false, true,
+                                        "", false, false,
+                                        true, false);
+      sdcopy = casacore::CountedPtr<casacore::ImageInterface<float>>(copyPtr2.release());
     }
-    lowIm_p=new TempImage<Float>(highIm_p->shape(), csysHigh_p);
+    lowIm_p = std::make_unique<TempImage<Float>>(highIm_p->shape(), csysHigh_p);
     // regrid the single dish image
     {
       Vector<Int> dirAxes=CoordinateUtil::findDirectionAxes(csysHigh_p);
@@ -148,8 +148,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     */
     
-    if(lowImOrig_p.null()){
-      lowImOrig_p=new TempImage<Float>(lowIm_p->shape(), lowIm_p->coordinates(),0);
+    if(!lowImOrig_p){
+      lowImOrig_p = std::make_unique<TempImage<Float>>(lowIm_p->shape(), lowIm_p->coordinates());
       lowImOrig_p->copyData(*lowIm_p);
       lBeamOrig_p=lBeam_p;
     }   
@@ -189,35 +189,35 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if(hBeam_p.isNull())
       throw(AipsError("No high-resolution restoring beam info in image"));
     csysHigh_p=INTImage.coordinates();
-    CountedPtr<ImageInterface<Float> > intcopy=new TempImage<Float>(INTImage.shape(), csysHigh_p);
+    std::unique_ptr<ImageInterface<Float>> intcopy = std::make_unique<TempImage<Float>>(INTImage.shape(), csysHigh_p);
     (*intcopy).copyData(INTImage);
     ImageUtilities::copyMiscellaneous(*intcopy, INTImage);
     if(INTImage.getDefaultMask() != "")
       Imager::copyMask(*intcopy, INTImage,  INTImage.getDefaultMask());
-    PtrHolder<ImageInterface<Float> > copyPtr;
-    PtrHolder<ImageInterface<Float> > copyPtr2;
+    std::unique_ptr<ImageInterface<Float>> copyPtr;
+    std::unique_ptr<ImageInterface<Float>> copyPtr2;
     
       
     Vector<Stokes::StokesTypes> stokesvec;
     if(CoordinateUtil::findStokesAxis(stokesvec, csysHigh_p) <0){
       CoordinateUtil::addIAxis(csysHigh_p);
-      ImageUtilities::addDegenerateAxes (os, copyPtr, *intcopy, "",
-					 false, false,"I", false, false,
-					 true);
-      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr.ptr(), false);
+      ImageUtilities::addDegenerateAxes(os, copyPtr, *intcopy, "",
+                                        false, false, "I", false, false,
+                                        true);
+      intcopy = std::move(copyPtr);
       
     }
     if(CoordinateUtil::findSpectralAxis(csysHigh_p) <0){
       CoordinateUtil::addFreqAxis(csysHigh_p);
-      ImageUtilities::addDegenerateAxes (os, copyPtr2, *intcopy, "",
-					 false, true,
-					 "", false, false,
-					 true);
-      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.ptr(), false);
+      ImageUtilities::addDegenerateAxes(os, copyPtr2, *intcopy, "",
+                                        false, true,
+                                        "", false, false,
+                                        true);
+      intcopy = std::move(copyPtr2);
     }
 
 
-    highIm_p=new TempImage<Float>(intcopy->shape(), csysHigh_p);
+    highIm_p = std::make_unique<TempImage<Float>>(intcopy->shape(), csysHigh_p);
     
     highIm_p->copyData(*intcopy);
     ImageUtilities::copyMiscellaneous(*highIm_p, *intcopy);
@@ -374,9 +374,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     if(cweightApplied_p)
       return;
     calcCWeightImage();
-    if(highIm_p.null())
+    if(!highIm_p)
       throw(AipsError("No high resolution image set"));
-    cwHighIm_p=new TempImage<Complex>(highIm_p->shape(), highIm_p->coordinates() );
+    cwHighIm_p = std::make_unique<TempImage<Complex>>(highIm_p->shape(), highIm_p->coordinates());
     StokesImageUtil::From(*cwHighIm_p, *highIm_p);
     LatticeFFT::cfft2d( *cwHighIm_p );
     Vector<Int> extraAxes(cwHighIm_p->shape().nelements()-2);
@@ -412,7 +412,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void Feather::calcCWeightImage(){
     if(cweightCalced_p)
       return;
-    if(highIm_p.null())
+    if(!highIm_p)
       throw(AipsError("No Interferometer image was defined"));
     IPosition myshap(highIm_p->shape());
     Vector<Int> dirAxes;
@@ -422,7 +422,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	myshap(k)=1;
     }
       
-    cwImage_p=new TempImage<Complex>(myshap, highIm_p->coordinates());
+    cwImage_p = std::make_unique<TempImage<Complex>>(myshap, highIm_p->coordinates());
     {
       TempImage<Float> lowpsf(myshap, cwImage_p->coordinates());
       lowpsf.set(0.0);

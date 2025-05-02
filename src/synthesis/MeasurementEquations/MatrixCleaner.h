@@ -291,7 +291,7 @@ protected:
   casacore::Float itsGain;
   casacore::Int itsMaxNiter;      // maximum possible number of iterations
   casacore::Quantum<casacore::Double> itsThreshold;
-  casacore::CountedPtr<casacore::Matrix<casacore::Float> > itsMask;
+  std::unique_ptr<casacore::Matrix<casacore::Float> > itsMask;
   casacore::IPosition itsPositionPeakPsf;
   casacore::Float itsSmallScaleBias;
   casacore::Block<casacore::Matrix<casacore::Float> > itsScaleMasks;
@@ -307,8 +307,8 @@ protected:
   //# because all information must be supplied in the input arguments
 
 
-  casacore::CountedPtr<casacore::Matrix<casacore::Float> > itsDirty;
-  casacore::CountedPtr<casacore::Matrix<casacore::Complex> >itsXfr;
+  std::unique_ptr<casacore::Matrix<casacore::Float> > itsDirty;
+  std::unique_ptr<casacore::Matrix<casacore::Complex> >itsXfr;
 
   casacore::Vector<casacore::Float> itsScaleSizes;
 

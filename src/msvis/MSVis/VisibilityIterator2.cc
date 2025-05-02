@@ -65,7 +65,7 @@ SortColumns::SortColumns (Bool usingDefaultSortingFunctions)
 {
 }
 
-SortColumns::SortColumns (const std::vector<std::pair<casacore::MS::PredefinedColumns, casacore::CountedPtr<casacore::BaseCompare>>> sortingDefinition)
+SortColumns::SortColumns (const std::vector<std::pair<casacore::MS::PredefinedColumns, std::shared_ptr<casacore::BaseCompare>>> sortingDefinition)
 : addDefaultColumns_p (false),
   usingDefaultSortingFunctions_p (false)
 {
@@ -74,7 +74,7 @@ SortColumns::SortColumns (const std::vector<std::pair<casacore::MS::PredefinedCo
             std::make_pair(MS::columnName(pair.first), pair.second));
 }
 
-SortColumns::SortColumns (const std::vector<std::pair<casacore::String, casacore::CountedPtr<casacore::BaseCompare>>> sortingDefinition)
+SortColumns::SortColumns (const std::vector<std::pair<casacore::String, std::shared_ptr<casacore::BaseCompare>>> sortingDefinition)
 : addDefaultColumns_p (false),
   sortingDefinition_p(sortingDefinition),
   usingDefaultSortingFunctions_p (false)
@@ -82,7 +82,7 @@ SortColumns::SortColumns (const std::vector<std::pair<casacore::String, casacore
 }
 
 void SortColumns::addSortingColumn(casacore::MS::PredefinedColumns colId,
-    casacore::CountedPtr<casacore::BaseCompare> sortingFunction)
+    std::shared_ptr<casacore::BaseCompare> sortingFunction)
 {
     if (usingDefaultSortingFunctions_p)
         throw AipsError("SortColumns invalid construction. "
@@ -93,7 +93,7 @@ void SortColumns::addSortingColumn(casacore::MS::PredefinedColumns colId,
 }
 
 void SortColumns::addSortingColumn(casacore::String colName,
-    casacore::CountedPtr<casacore::BaseCompare> sortingFunction)
+    std::shared_ptr<casacore::BaseCompare> sortingFunction)
 {
     if (usingDefaultSortingFunctions_p)
         throw AipsError("SortColumns invalid construction. "
@@ -121,7 +121,7 @@ SortColumns::getColumnIds () const
     return columnIds_p;
 }
 
-const std::vector<std::pair<casacore::String, casacore::CountedPtr<casacore::BaseCompare>>> &
+const std::vector<std::pair<casacore::String, std::shared_ptr<casacore::BaseCompare>>> &
 SortColumns::sortingDefinition() const
 {
     return sortingDefinition_p;
