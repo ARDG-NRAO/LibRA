@@ -776,7 +776,8 @@ bool MTAspMatrixCleaner::setMTPsf(int order, Matrix<Float> & psf)
 
   if (order == 0)
   {
-    itsXfr = std::make_unique<Matrix<Complex>>();
+    itsXfr=new Matrix<Complex>();
+    // itsXfr = std::make_unique<Matrix<Complex>>();
     itsXfr->assign(vecPsfFT_p[0]);
   }
 
@@ -790,7 +791,8 @@ Bool MTAspMatrixCleaner::setResidual(int order, Matrix<Float> & dirty)
 
   if (order == 0)
   {
-    itsDirty = std::make_unique<Matrix<Float>>(psfShape_p);
+    // itsDirty = std::make_unique<Matrix<Float>>(psfShape_p);
+    itsDirty=new Matrix<float>();
     itsDirty->assign(vecDirty_p[0]); 
     //cout << "setResidual: vecDirty_p[0](256,231) " << (vecDirty_p[0])(256,231) << endl;
   }

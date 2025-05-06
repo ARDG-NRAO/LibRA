@@ -122,7 +122,7 @@ AspMatrixCleaner::~AspMatrixCleaner()
   destroyAspScales();
   destroyInitMasks();
   destroyInitScales();
-  if(itsMask != nullptr)
+  if(!itsMask.null())
     itsMask=0;
 }
 
@@ -253,7 +253,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   Float tmpMaximumResidual = 0.0;
   Float minMaximumResidual = 1000.0;
   Float initRMSResidual = 1000.0;
-  float initModelFlux = -1.0;
+  float initModelFlux = 0.0;
 
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
@@ -431,7 +431,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       itsMaximumResidual = abs(itsPeakResidual);
       tmpMaximumResidual = itsMaximumResidual;
       os <<LogIO::NORMAL3 << "Initial maximum residual is " << itsMaximumResidual;
-      if(itsMask != nullptr)
+      if( !itsMask.null() )
         os <<LogIO::NORMAL3 << " within the mask ";
 
       os <<LogIO::NORMAL3 << LogIO::POST;
@@ -1184,7 +1184,7 @@ Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float>
   itsMaskThreshold = maskThreshold;
   noClean_p=(max(*itsMask) < itsMaskThreshold) ? true : false;
 
-  if(!itsMask || noClean_p)
+  if(itsMask.null() || noClean_p)
     return false;
 
   // make scale masks
@@ -1261,7 +1261,7 @@ Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float>
   blcDirty = IPosition(itsInitScaleMasks[0].shape().nelements(), 0);
   trcDirty = IPosition(itsInitScaleMasks[0].shape() - 1);
 
-  if(!itsMask)
+  if(!itsMask.null())
   {
     os << LogIO::NORMAL3 << "Finding initial scales for Asp using given mask" << LogIO::POST;
     if (itsMaskThreshold < 0)
@@ -1422,7 +1422,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
 
       // Note, must find peak from the (blcDirty, trcDirty) subregion to ensure components are within mask
       // this is using patch already
-      if (!itsMask)
+      if (!itsMask.null())
       {
         findMaxAbsMask(vecWork_p[scale], itsInitScaleMasks[scale],
           maxima(scale), posMaximum[scale]);

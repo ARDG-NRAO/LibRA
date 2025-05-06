@@ -33,6 +33,7 @@
 #include <casacore/scimath/Mathematics/FFTServer.h>
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
 #include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 #include <deque>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
