@@ -35,6 +35,10 @@ public:
     auto operator-(const ArrayBase& other) const;
     auto operator*(const ArrayBase& other) const;
     auto operator/(const ArrayBase& other) const;
+    ArrayBase<T, N>&  operator+=(const ArrayBase& other);
+    ArrayBase<T, N>& operator-=(const ArrayBase& other);
+    ArrayBase<T, N>&  operator*=(const ArrayBase& other);
+    ArrayBase<T, N>&  operator/=(const ArrayBase& other);
     auto operator=(const ArrayBase& other); // copy assignment
     auto operator=(const ArrayBase&& other) noexcept; // move assignment
     bool operator==(const ArrayBase& other) const;
@@ -236,6 +240,131 @@ auto ArrayBase<T, N>::operator/(const ArrayBase<T, N>& other) const {
 
     return result;
 }
+
+
+template<typename T, size_t N>
+ArrayBase<T, N>& ArrayBase<T, N>::operator+=(const ArrayBase<T, N>& other) {
+    for (size_t i = 0; i < N; ++i) {
+        assert(m_shape[i] == other.m_shape[i]);
+    }
+
+    if constexpr (N == 1) {
+        for (size_t i = 0; i < m_shape[0]; ++i) {
+            m_mdspan(i) += other.m_mdspan(i);
+        }
+    } else if constexpr (N == 2) {
+        for (size_t j = 0; j < m_shape[1]; ++j) {
+            for (size_t i = 0; i < m_shape[0]; ++i) {
+                m_mdspan(i, j) += other.m_mdspan(i, j);
+            }
+        }
+    } else if constexpr (N == 3) {
+        for (size_t k = 0; k < m_shape[2]; ++k) {
+            for (size_t j = 0; j < m_shape[1]; ++j) {
+                for (size_t i = 0; i < m_shape[0]; ++i) {
+                    m_mdspan(i, j, k) += other.m_mdspan(i, j, k);
+                }
+            }
+        }
+    }
+    return *this;
+}
+
+template<typename T, size_t N>
+ArrayBase<T, N>& ArrayBase<T, N>::operator-=(const ArrayBase<T, N>& other) {
+    for (size_t i = 0; i < N; ++i) {
+        assert(m_shape[i] == other.m_shape[i]);
+    }
+
+    if constexpr (N == 1) {
+        for (size_t i = 0; i < m_shape[0]; ++i) {
+            m_mdspan(i) -= other.m_mdspan(i);
+        }
+    } else if constexpr (N == 2) {
+        for (size_t j = 0; j < m_shape[1]; ++j) {
+            for (size_t i = 0; i < m_shape[0]; ++i) {
+                m_mdspan(i, j) -= other.m_mdspan(i, j);
+            }
+        }
+    } else if constexpr (N == 3) {
+        for (size_t k = 0; k < m_shape[2]; ++k) {
+            for (size_t j = 0; j < m_shape[1]; ++j) {
+                for (size_t i = 0; i < m_shape[0]; ++i) {
+                    m_mdspan(i, j, k) -= other.m_mdspan(i, j, k);
+                }
+            }
+        }
+    }
+    return *this;
+}
+
+template<typename T, size_t N>
+ArrayBase<T, N>& ArrayBase<T, N>::operator*=(const ArrayBase<T, N>& other) {
+    for (size_t i = 0; i < N; ++i) {
+        assert(m_shape[i] == other.m_shape[i]);
+    }
+
+    if constexpr (N == 1) {
+        for (size_t i = 0; i < m_shape[0]; ++i) {
+            m_mdspan(i) *= other.m_mdspan(i);
+        }
+    } else if constexpr (N == 2) {
+        for (size_t j = 0; j < m_shape[1]; ++j) {
+            for (size_t i = 0; i < m_shape[0]; ++i) {
+                m_mdspan(i, j) *= other.m_mdspan(i, j);
+            }
+        }
+    } else if constexpr (N == 3) {
+        for (size_t k = 0; k < m_shape[2]; ++k) {
+            for (size_t j = 0; j < m_shape[1]; ++j) {
+                for (size_t i = 0; i < m_shape[0]; ++i) {
+                    m_mdspan(i, j, k) *= other.m_mdspan(i, j, k);
+                }
+            }
+        }
+    }
+    return *this;
+}
+
+template<typename T, size_t N>
+ArrayBase<T, N>& ArrayBase<T, N>::operator/=(const ArrayBase<T, N>& other) {
+    for (size_t i = 0; i < N; ++i) {
+        assert(m_shape[i] == other.m_shape[i]); 
+    }
+
+    if constexpr (N == 1) {
+        for (size_t i = 0; i < m_shape[0]; ++i) {
+            if (other.m_mdspan(i) == T(0)) {
+                m_mdspan(i) = 0;    
+            }
+            m_mdspan(i) /= other.m_mdspan(i);
+        }
+    } else if constexpr (N == 2) {
+        for (size_t j = 0; j < m_shape[1]; ++j) {
+            for (size_t i = 0; i < m_shape[0]; ++i) {
+                if (other.m_mdspan(i, j) == T(0)) {
+                    m_mdspan(i, j) = 0;    
+                }
+                m_mdspan(i, j) /= other.m_mdspan(i, j);
+            }
+        }
+    } else if constexpr (N == 3) {
+        for (size_t k = 0; k < m_shape[2]; ++k) {
+            for (size_t j = 0; j < m_shape[1]; ++j) {
+                for (size_t i = 0; i < m_shape[0]; ++i) {
+                    if (other.m_mdspan(i, j, k) == T(0)) {
+                        m_mdspan(i, j, k) = 0;    
+                    }
+                    m_mdspan(i, j, k) /= other.m_mdspan(i, j, k);
+                }
+            }
+        }
+    }
+
+    return *this;
+}
+
+
 
 // Generalized operator== 
 template<typename T, size_t N>
