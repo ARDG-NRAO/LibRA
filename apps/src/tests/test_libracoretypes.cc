@@ -98,6 +98,18 @@ namespace test{
       }
   }
 
+  TEST_F(LibracoreTypesTest, CubeOpPlusEq) {
+      cube2 += cube1;
+      
+      for (size_t z = 0; z < 3; ++z) {
+          for (size_t y = 0; y < 3; ++y) {
+              for (size_t x = 0; x < 3; ++x) {
+                  EXPECT_EQ(cube2.getMdspan()(x, y, z), static_cast<float>((x + y + z) + (x + y + z)));
+              }
+          }
+      }
+  }
+
   TEST_F(LibracoreTypesTest, CubeOpAssign) {
     libracore::Cube<float> cubeAssign = cube1;
 
