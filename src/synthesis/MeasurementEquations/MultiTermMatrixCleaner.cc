@@ -275,8 +275,8 @@ Bool MultiTermMatrixCleaner::setmodel(int order, Matrix<Float> & model)
 
 Bool MultiTermMatrixCleaner::setmask(Matrix<Float> & mask)
 {
-  if(itsMask) 
-       itsMask.reset(new Matrix<Float>(mask));  // it's a counted ptr
+  if(itsMask.null()) 
+       itsMask = new Matrix<Float>(mask);  // it's a counted ptr
   else
     {
       AlwaysAssert(itsMask->shape()==mask.shape(), AipsError);
@@ -655,7 +655,7 @@ Int MultiTermMatrixCleaner::allocateMemory()
 /* At the end, force a scale-dependent border */
 Int MultiTermMatrixCleaner::setupUserMask()
 {
-    if(itsMask)
+    if(itsMask.null())
     {
            /* Make a mask the full size, for all scales */
            for(Int scale=0;scale<nscales_p;scale++)
@@ -1371,7 +1371,7 @@ Int MultiTermMatrixCleaner::checkConvergence(Int /*criterion*/, Float &fluxlimit
     {
       LogIO os(LogOrigin("MultiTermMatrixCleaner", "mtclean()", WHERE));
       os << "Reached stopping threshold at iteration " << totalIters_p << ". Peak residual " << fabs(rmaxval) ;
-      if( ! itsMask){os << " (within mask) " ;}
+      if( ! itsMask.null()){os << " (within mask) " ;}
 	os << LogIO::POST;
        convergedflag=1; 
     }
@@ -1440,7 +1440,7 @@ Int MultiTermMatrixCleaner::checkConvergence(Int /*criterion*/, Float &fluxlimit
 	 //        os << "Peak convolved residual : " << rmaxval << "    Minor cycle stopping threshold : " << itsThreshold.getValue("Jy")  << LogIO::POST;
 	 LogIO os(LogOrigin("MultiTermMatrixCleaner", "mtclean()", WHERE));
 	 os << "Peak convolved residual" ;
-	 if( ! itsMask ){os << " (within mask) ";}
+	 if( ! itsMask.null() ){os << " (within mask) ";}
 	 os << " : " << rmaxval;
 	 if( fluxlimit > 0.0 ){ os << "  : Minor cycle stopping threshold : " << fluxlimit;}
 	 os << LogIO::POST;

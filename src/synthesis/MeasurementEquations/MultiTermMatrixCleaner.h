@@ -30,6 +30,7 @@
 
 #include <casacore/scimath/Mathematics/FFTServer.h>
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

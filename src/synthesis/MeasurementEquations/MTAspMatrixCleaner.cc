@@ -102,7 +102,7 @@ MTAspMatrixCleaner::~MTAspMatrixCleaner()
   destroyAspScales();
   destroyInitMasks();
   destroyInitScales();
-  if(!itsMask)
+  if(!itsMask.null())
     itsMask=0;
 }
 
@@ -300,7 +300,7 @@ Int MTAspMatrixCleaner::mtaspclean()
     {
       tmpMaximumResidual = itsPeakResidual;
       os << "Initial maximum residual is " << itsPeakResidual;
-      if( !itsMask )
+      if( !itsMask.null() )
         os << " within the mask ";
 
       os << LogIO::POST;
@@ -710,7 +710,8 @@ Int MTAspMatrixCleaner::allocateMemory(casacore::Int nx,casacore::Int ny)
   blcDirty=IPosition(2/*itsDirty->shape().nelements()*/, 0);
   trcDirty=IPosition(2, nx -1, ny -1/*itsDirty->shape() - 1*/);
 
-  if(!itsMask)
+  if(!itsMask.null())
+  
   {
     AlwaysAssert(itsMask->shape()(0) == nx, AipsError);
     AlwaysAssert(itsMask->shape()(1) == ny, AipsError);
@@ -1076,7 +1077,7 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
   if(/*!itsSwitchedToHogbom &&*/ fabs(itsPeakResidual) < threshold())
   {
     os << "Reached stopping threshold " << threshold()<< ". Peak residual " << itsPeakResidual ;
-    if( ! itsMask ) {os << " (within mask) " ;}
+    if( ! itsMask.null() ) {os << " (within mask) " ;}
     os << LogIO::POST;
     converged = 1;
 

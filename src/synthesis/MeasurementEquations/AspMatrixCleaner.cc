@@ -1179,7 +1179,7 @@ Bool AspMatrixCleaner::setInitScaleMasks(const casacore::Matrix<casacore::Float>
   destroyMasks();
 
   //Matrix<Float> mask(arrmask); // casa6 version
-  itsMask.reset(new Matrix<Float>(mask.shape()));
+  itsMask = new Matrix<Float>(mask.shape());
   itsMask->assign(mask);
   itsMaskThreshold = maskThreshold;
   noClean_p=(max(*itsMask) < itsMaskThreshold) ? true : false;

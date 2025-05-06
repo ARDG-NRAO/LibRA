@@ -34,6 +34,7 @@
 #include <casacore/scimath/Mathematics/GaussianBeam.h>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casacore{
 
@@ -111,11 +112,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     
   
-    std::unique_ptr<casacore::ImageInterface<casacore::Float> > lowIm_p;
-    std::unique_ptr<casacore::ImageInterface<casacore::Float> > lowImOrig_p;
-    std::unique_ptr<casacore::ImageInterface<casacore::Float> > highIm_p;
-    std::unique_ptr<casacore::ImageInterface<casacore::Complex> > cwImage_p;
-    std::unique_ptr<casacore::ImageInterface<casacore::Complex> > cwHighIm_p;
+    casacore::CountedPtr<casacore::ImageInterface<casacore::Float> > lowIm_p;
+    casacore::CountedPtr<casacore::ImageInterface<casacore::Float> > lowImOrig_p;
+    casacore::CountedPtr<casacore::ImageInterface<casacore::Float> > highIm_p;
+    casacore::CountedPtr<casacore::ImageInterface<casacore::Complex> > cwImage_p;
+    casacore::CountedPtr<casacore::ImageInterface<casacore::Complex> > cwHighIm_p;
     static void getCutXY(casacore::Vector<casacore::Float>& ux, casacore::Vector<casacore::Float>& xamp, 
 		  casacore::Vector<casacore::Float>& uy, casacore::Vector<casacore::Float>& yamp, casacore::ImageInterface<casacore::Complex>& ftimage);
     static void getRadialCut(casacore::Vector<casacore::Float>& radialAmp, casacore::ImageInterface<casacore::Complex>& ftimage);
