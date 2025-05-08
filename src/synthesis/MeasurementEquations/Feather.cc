@@ -59,6 +59,7 @@
 #include <casacore/coordinates/Coordinates/CoordinateUtil.h>
 #include <casacore/coordinates/Coordinates/Projection.h>
 #include <casacore/coordinates/Coordinates/ObsInfo.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #include <components/ComponentModels/GaussianDeconvolver.h>
 
@@ -104,8 +105,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     ImageUtilities::copyMiscellaneous(*sdcopy, SDImage);
     if(SDImage.getDefaultMask() != "")
       Imager::copyMask(*sdcopy, SDImage,  SDImage.getDefaultMask());
-    PtrHolder<ImageInterface<Float> > copyPtr;
-    PtrHolder<ImageInterface<Float> > copyPtr2;
+    std::unique_ptr<ImageInterface<Float> > copyPtr;
+    std::unique_ptr<ImageInterface<Float> > copyPtr2;
     
       
     Vector<Stokes::StokesTypes> stokesvec;
@@ -115,7 +116,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       ImageUtilities::addDegenerateAxes (os, copyPtr, *sdcopy, "",
 					 false, false,"I", false, false,
 					 true);
-      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr.ptr(), false);
+      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr.get(), false);
       
     }
     if(CoordinateUtil::findSpectralAxis(csyslow) <0){
@@ -124,7 +125,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 					 false, true,
 					 "", false, false,
 					 true);
-      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.ptr(), false);
+      sdcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.get(), false);
     }
     lowIm_p=new TempImage<Float>(highIm_p->shape(), csysHigh_p);
     // regrid the single dish image
@@ -194,8 +195,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     ImageUtilities::copyMiscellaneous(*intcopy, INTImage);
     if(INTImage.getDefaultMask() != "")
       Imager::copyMask(*intcopy, INTImage,  INTImage.getDefaultMask());
-    PtrHolder<ImageInterface<Float> > copyPtr;
-    PtrHolder<ImageInterface<Float> > copyPtr2;
+    std::unique_ptr<ImageInterface<Float> > copyPtr;
+    std::unique_ptr<ImageInterface<Float> > copyPtr2;
     
       
     Vector<Stokes::StokesTypes> stokesvec;
@@ -204,7 +205,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       ImageUtilities::addDegenerateAxes (os, copyPtr, *intcopy, "",
 					 false, false,"I", false, false,
 					 true);
-      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr.ptr(), false);
+      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr.get(), false);
       
     }
     if(CoordinateUtil::findSpectralAxis(csysHigh_p) <0){
@@ -213,7 +214,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 					 false, true,
 					 "", false, false,
 					 true);
-      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.ptr(), false);
+      intcopy=CountedPtr<ImageInterface<Float> >(copyPtr2.get(), false);
     }
 
 

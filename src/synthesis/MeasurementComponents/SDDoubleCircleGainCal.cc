@@ -95,7 +95,7 @@ casacore::MeasurementSet const &ms) {
   debuglog << "selectOnSource" << debugpost;
   casacore::String taqlForState(
       "SELECT FLAG_ROW FROM $1 WHERE UPPER(OBS_MODE) ~ m/^OBSERVE_TARGET#ON_SOURCE/");
-  casacore::Table stateSel = casacore::tableCommand(taqlForState, ms.state());
+  casacore::Table stateSel = casacore::tableCommand(taqlForState, ms.state()).table();
   auto stateIdList = stateSel.rowNumbers();
   debuglog << "stateIdList = " << stateIdList << debugpost;
   std::ostringstream oss;
@@ -400,7 +400,7 @@ void SDDoubleCircleGainCal::selfGatherAndSolve(VisSet& vs,
       << debugpost;
   auto const taql = selectOnSourceAutoCorr(msSel);
   debuglog << "taql = \"" << taql << "\"" << debugpost;
-  MeasurementSet msOnSource(tableCommand(taql, msSel));
+  MeasurementSet msOnSource(tableCommand(taql, msSel).table());
   logSink() << LogIO::DEBUGGING << "msSel.nrow()=" << msSel.nrow()
       << " msOnSource.nrow()=" << msOnSource.nrow() << LogIO::POST;
   if (msOnSource.nrow() == 0) {

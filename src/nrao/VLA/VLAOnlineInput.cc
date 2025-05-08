@@ -102,11 +102,11 @@ VLAOnlineInput::~VLAOnlineInput() {
 
 Bool VLAOnlineInput::read() {
 	Bool rstatus(true);
-  itsMemIO.clear();
+  itsMemIO->clear();
   Long logicalRecordSize(MAX_LOGICAL_RECORD_SIZE);
-  Char* recordPtr = (Char *)itsMemIO.setBuffer(logicalRecordSize);
+  Char* recordPtr = (Char *)itsMemIO->setBuffer(logicalRecordSize);
   logicalRecordSize = readVLALogRec(recordPtr);
-  itsMemIO.setUsed(logicalRecordSize);
+  itsMemIO->setUsed(logicalRecordSize);
   itsRecord.seek(0);
   if(!logicalRecordSize)
 	  rstatus = false;

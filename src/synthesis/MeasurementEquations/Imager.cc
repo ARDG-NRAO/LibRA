@@ -2654,7 +2654,7 @@ Bool Imager::uvrange(const Double& uvmin, const Double& uvmax)
      spwsel << "]";
 
      MSSpectralWindow msspw(tableCommand(spwsel.str(), 
-					 mssel_p->spectralWindow()));
+					 mssel_p->spectralWindow()).table());
      MSSpWindowColumns spwc(msspw);
 
      // This averaging scheme will work even if the spectral windows are
@@ -2695,7 +2695,7 @@ Bool Imager::uvrange(const Double& uvmin, const Double& uvmax)
      // Apply the TAQL selection string, to remake the selected MS
      String parseString="select from $1 where (SQUARE(UVW[1]) + SQUARE(UVW[2]))*" + (string) strInvLambda + " > " + strUVmin.str( ) + " &&  (SQUARE(UVW[1]) + SQUARE(UVW[2]))*" + (string) strInvLambda + " < " + strUVmax.str( );
 
-     mssel_p2=new MeasurementSet(tableCommand(parseString,*mssel_p));
+     mssel_p2=new MeasurementSet(tableCommand(parseString,*mssel_p).table());
      AlwaysAssert(mssel_p2, AipsError);
      // Rename the selected MS as */SELECTED_UVRANGE
      //mssel_p2->rename(msname_p+"/SELECTED_UVRANGE", Table::Scratch);

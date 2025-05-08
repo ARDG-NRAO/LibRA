@@ -171,7 +171,7 @@ template <class T> SPIIT ImageFactory::createImage(
         );
     }
     T *x = 0;
-    auto creationMsg = _imageCreationMessage(outfile, shape, whatType(x));
+    auto creationMsg = _imageCreationMessage(outfile, shape, whatType<T>());
     ImageHistory<T> hist(image);
     if (msgs) {
         hist.addHistory(*msgs);

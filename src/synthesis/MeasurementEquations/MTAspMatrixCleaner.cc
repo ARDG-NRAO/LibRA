@@ -711,6 +711,7 @@ Int MTAspMatrixCleaner::allocateMemory(casacore::Int nx,casacore::Int ny)
   trcDirty=IPosition(2, nx -1, ny -1/*itsDirty->shape() - 1*/);
 
   if(!itsMask.null())
+  
   {
     AlwaysAssert(itsMask->shape()(0) == nx, AipsError);
     AlwaysAssert(itsMask->shape()(1) == ny, AipsError);
@@ -776,7 +777,8 @@ bool MTAspMatrixCleaner::setMTPsf(int order, Matrix<Float> & psf)
 
   if (order == 0)
   {
-    itsXfr = new Matrix<Complex>();
+    itsXfr=new Matrix<Complex>();
+    // itsXfr = std::make_unique<Matrix<Complex>>();
     itsXfr->assign(vecPsfFT_p[0]);
   }
 
@@ -790,7 +792,8 @@ Bool MTAspMatrixCleaner::setResidual(int order, Matrix<Float> & dirty)
 
   if (order == 0)
   {
-    itsDirty=new Matrix<Float>(psfShape_p);
+    // itsDirty = std::make_unique<Matrix<Float>>(psfShape_p);
+    itsDirty=new Matrix<float>();
     itsDirty->assign(vecDirty_p[0]); 
     //cout << "setResidual: vecDirty_p[0](256,231) " << (vecDirty_p[0])(256,231) << endl;
   }

@@ -50,7 +50,7 @@ set(CMAKE_PYTHON_INTERFACE OFF) # Remove xml++ and xslt depdnency
 set(CMAKE_LIBIMAGING_ONLY ON)   # For future use (post code/synthesis refactoring)
 
 # Set C++ standard to c++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## Check for dependencies

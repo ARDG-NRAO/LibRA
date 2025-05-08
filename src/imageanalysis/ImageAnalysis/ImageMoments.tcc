@@ -52,8 +52,7 @@ ImageMoments<T>::~ImageMoments () {}
 
 template <class T> 
 Bool ImageMoments<T>::setNewImage(const casacore::ImageInterface<T>& image) {
-    T *dummy = nullptr;
-    DataType imageType = whatType(dummy);
+    DataType imageType = casacore::whatType<T>();
 
     ThrowIf(
         imageType != TpFloat && imageType != TpDouble,
