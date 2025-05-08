@@ -31,6 +31,7 @@
 #include <casacore/casa/aips.h>
 #include <imageanalysis/Annotations/AnnotationBase.h>
 #include <casacore/measures/Measures/Stokes.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa {
 

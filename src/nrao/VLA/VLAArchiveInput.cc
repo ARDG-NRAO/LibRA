@@ -45,15 +45,15 @@ const ByteSource& VLAArchiveInput::logicalRecord() const {
 }
 
 Bool VLAArchiveInput::hasData() const {
-  MemoryIO& nonconstmemio = const_cast<MemoryIO&>(itsMemIO);
-  return nonconstmemio.length() != 0 ? true: false;
+  MemoryIO *nonconstmemio = const_cast<MemoryIO *>(itsMemIO.get());
+  return nonconstmemio->length() != 0 ? true: false;
 }
 
 VLAArchiveInput::VLAArchiveInput()
-  :itsMemIO(VLAArchiveInput::BlockSize, VLAArchiveInput::BlockSize),
-   itsModComp(),
-   itsCtrIO(&itsModComp, &itsMemIO, VLAArchiveInput::BlockSize, false),
-   itsRecord(&itsCtrIO)
+  :itsMemIO(std::make_shared<MemoryIO> (VLAArchiveInput::BlockSize, VLAArchiveInput::BlockSize)),
+   itsModComp(std::make_shared<ModcompDataConversion>()),
+   itsCtrIO(std::make_shared<ConversionIO>(itsModComp, itsMemIO, VLAArchiveInput::BlockSize)),
+   itsRecord(itsCtrIO)
 {
 }
 // Local Variables: 

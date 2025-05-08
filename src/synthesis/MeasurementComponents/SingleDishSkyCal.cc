@@ -107,7 +107,7 @@ struct CommaSeparatedThousands : std::numpunct<char> {
 namespace {
 inline Vector<rownr_t> getOffStateIdList(MeasurementSet const &ms) {
   String taql("SELECT FLAG_ROW FROM $1 WHERE UPPER(OBS_MODE) ~ m/^OBSERVE_TARGET#OFF_SOURCE/");
-  Table stateSel = tableCommand(taql, ms.state());
+  Table stateSel = tableCommand(taql, ms.state()).table();
   Vector<rownr_t> stateIdList = stateSel.rowNumbers();
   debuglog << "stateIdList[" << stateIdList.nelements() << "]=";
   for (size_t i = 0; i < stateIdList.nelements(); ++i) {
@@ -217,7 +217,7 @@ inline  casacore::Int nominalDataDesc(casacore::MeasurementSet const &ms, casaco
       oss << "SELECT FROM $1 WHERE ANTENNA1 == " << ant
 	  << " && ANTENNA2 == " << ant << " && DATA_DESC_ID == " << spwMap[ispw]
 	  << " ORDER BY STATE_ID";
-      casacore::MeasurementSet msSel(casacore::tableCommand(oss.str(), ms));
+      casacore::MeasurementSet msSel(casacore::tableCommand(oss.str(), ms).table());
       col.attach(msSel, "STATE_ID");
       casacore::Vector<casacore::Int> stateIdList = col.getColumn();
       casacore::Int previousStateId = -1;
@@ -345,7 +345,7 @@ inline casacore::Vector<casacore::String> detectRaster(casacore::MeasurementSet 
       << " && DATA_DESC_ID == " << dataDesc
       << " ORDER BY TIME";
   debuglog << "detectRaster: taql=" << oss.str() << debugpost;
-  casacore::MeasurementSet msSel(casacore::tableCommand(oss.str(), ms));
+  casacore::MeasurementSet msSel(casacore::tableCommand(oss.str(), ms).table());
   casacore::ScalarColumn<casacore::Double> timeCol(msSel, "TIME");
   casacore::ScalarColumn<casacore::Double> intervalCol(msSel, "INTERVAL");
   casacore::Vector<casacore::Double> timeList = timeCol.getColumn();
@@ -1267,7 +1267,7 @@ MeasurementSet SingleDishPositionSwitchCal::selectReferenceData(MeasurementSet c
         << "     )" << eol;
     debuglog << "SingleDishPositionSwitchCal::selectReferenceData(): taql query:" << eol
              << qry.str() << debugpost;
-    return MeasurementSet(tableCommand(qry.str(), user_selection));
+    return MeasurementSet(tableCommand(qry.str(), user_selection).table());
 }
 
 void SingleDishPositionSwitchCal::fillCalibrationTable(casacore::MeasurementSet const &reference_data){
@@ -1485,7 +1485,7 @@ MeasurementSet SingleDishRasterCal::selectReferenceData(MeasurementSet const &ms
   
   oss //<< ")"
       << " ORDER BY FIELD_ID, ANTENNA1, FEED1, DATA_DESC_ID, TIME";
-  return MeasurementSet(tableCommand(oss.str(), ms));
+  return MeasurementSet(tableCommand(oss.str(), ms).table());
 }
 
 //

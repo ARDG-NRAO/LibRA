@@ -48,7 +48,7 @@
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/HostInfo.h>
-#include <casacore/casa/OS/Memory.h>              // Can be commented out along with
+// #include <casacore/casa/OS/Memory.h>              // Can be commented out along with
 //                                         // Memory:: calls.
 
 //#ifdef COPYTIMER
@@ -1259,10 +1259,6 @@ Bool Partition::doTimeAver(const Vector<MS::PredefinedColumns>& dataColNames)
 {
 	LogIO os(LogOrigin("Partition", "doTimeAver()"));
 
-	os << LogIO::DEBUG1 // helpdesk ticket from Oleg Smirnov (ODU-232630)
-			<< "Before msOut_p.addRow(): "
-			<< Memory::allocatedMemoryInBytes() / (1024.0 * 1024.0) << " MB"
-			<< LogIO::POST;
 
 	Vector<MS::PredefinedColumns> cmplxColLabels;
 	const Bool doFloat = SubMS::sepFloat(dataColNames, cmplxColLabels);
@@ -1427,11 +1423,6 @@ Bool Partition::doTimeAver(const Vector<MS::PredefinedColumns>& dataColNames)
 	//const ColumnDesc& cdesc = cds[MS::columnName(MS::DATA)];
 	//ROTiledStManAccessor tacc(mssel_p, cdesc.dataManagerGroup());
 	//tacc.showCacheStatistics(cerr);  // A 99.x% hit rate is good.  0% is bad.
-
-	os << LogIO::DEBUG1 // helpdesk ticket in from Oleg Smirnov (ODU-232630)
-			<< "Post binning memory: "
-			<< Memory::allocatedMemoryInBytes() / (1024.0 * 1024.0) << " MB"
-			<< LogIO::POST;
 
 	if(rowsdone < 1){
 		os << LogIO::WARN

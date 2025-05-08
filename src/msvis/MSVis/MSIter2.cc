@@ -46,6 +46,7 @@
 #include <casacore/tables/Tables/TableRecord.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/iostream.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 using namespace casacore;
 
@@ -282,7 +283,7 @@ void MSIter2::construct2(const Block<Int>& sortColumns,
   }
   
   // now find the time column and set the compare function
-  Block<CountedPtr<BaseCompare> > objComp(columns.nelements());
+  Block<std::shared_ptr<BaseCompare> > objComp(columns.nelements());
   Block<Int> sortOrd(columns.nelements());
   timeComp_p = 0;
   Bool fieldBounded(false);
@@ -299,7 +300,7 @@ void MSIter2::construct2(const Block<Int>& sortColumns,
       //this->discernEnforcedTimeBounds(timebounds,scanBounded,fieldBounded);
       this->discernEnforcedTimeBounds(timebounds,scanBounded,fieldBounded,interval_p);
 
-      timeComp_p = new MSSmartInterval(interval_p,timebounds);
+      timeComp_p = std::make_shared<MSSmartInterval>(interval_p,timebounds);
       //timeComp_p = new MSInterval(interval_p);
       objComp[i] = timeComp_p;
     }

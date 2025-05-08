@@ -285,7 +285,7 @@ template <class T> template <class U> void ImageFFT<T>::_fft(
     const Vector<Bool>& axes
 ) {
     static const U dummy(0.0);
-    static const auto myType = casacore::whatType(&dummy);
+    static const auto myType = casacore::whatType<U>();
     ThrowIf(
         ! (myType == casacore::TpDComplex || myType == casacore::TpComplex),
         "Logic error. ImageFFT<T>::_fft called with "

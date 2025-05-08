@@ -36,6 +36,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Containers/Block.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -199,11 +200,11 @@ private:
   //# about the current state and implicit side-effects are not possible
   //# because all information must be supplied in the input arguments
 
-  std::shared_ptr<casacore::Matrix<casacore::Float> > itsMask;
-  std::shared_ptr<casacore::Matrix<casacore::Float> > itsDirty;
-  std::shared_ptr<casacore::Matrix<casacore::Float> > itsPsf;
-  std::shared_ptr<casacore::Matrix<casacore::Float> >itsResidual;
-  std::shared_ptr<casacore::Matrix<casacore::Bool> > itsBitPix;
+  casacore::CountedPtr<casacore::Matrix<casacore::Float> > itsMask;
+  casacore::CountedPtr<casacore::Matrix<casacore::Float> > itsDirty;
+  casacore::CountedPtr<casacore::Matrix<casacore::Float> > itsPsf;
+  casacore::CountedPtr<casacore::Matrix<casacore::Float> >itsResidual;
+  casacore::CountedPtr<casacore::Matrix<casacore::Bool> > itsBitPix;
 
   casacore::Float amnesiac(const casacore::Float& val);
   casacore::Float weak(const casacore::Float& v);

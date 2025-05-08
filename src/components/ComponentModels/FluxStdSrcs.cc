@@ -182,7 +182,7 @@ FluxStdSrcs::Source FluxStdSrcs::srcNameToEnum(const String& srcName, const MDir
       os << LogIO::NORMAL
 	 << "Trying to determine source match by position..."
 	 << LogIO::POST;
-      Table tmpsubtab = tableCommand(taql);
+      Table tmpsubtab = tableCommand(taql).table();
       if(tmpsubtab.nrow()) {
 	  ScalarColumn<String> srcNameCol(tmpsubtab,"Name");
 	  String srcNameInTable = srcNameCol.getColumnCells(RefRows(0,0))[0];

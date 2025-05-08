@@ -204,7 +204,7 @@ namespace casa { //# name space casa begins
       return rstat;
     }
     auto im1=itsImPol->imageInterface();
-    PtrHolder<ImageInterface<Float> > im2;
+    std::unique_ptr<ImageInterface<Float> > im2;
     ImageUtilities::openImage(im2, infile);
     ImageExpr<Float> tmpim=itsImPol->depolarizationRatio(*im1, *im2, 
 							 debias, 

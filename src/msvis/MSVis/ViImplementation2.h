@@ -37,6 +37,7 @@
 #include <casacore/casa/Arrays/ArrayFwd.h>
 #include <casacore/scimath/Mathematics/RigidVector.h>
 #include <casacore/tables/Tables/RowNumbers.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 #include <map>
 #include <vector>

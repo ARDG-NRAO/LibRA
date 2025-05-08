@@ -486,8 +486,7 @@ void ImageFit1D<T>::checkType() const
 // at the moment.  Later X<T> and Y<T> can be separated
  //
 {
-   FitterType* p=0;
-   casacore::DataType tp = whatType(p);
+   casacore::DataType tp = casacore::whatType<FitterType>();
    AlwaysAssert(tp==casacore::TpDouble, casacore::AipsError);
 }
 

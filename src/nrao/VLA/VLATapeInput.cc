@@ -109,7 +109,7 @@ Bool VLATapeInput::findFirstRecord(Short& m) {
     itsRecord >> m;
   }
   if (bytesSearched > maxBytesToSearch) {
-    itsMemIO.clear();
+    itsMemIO->clear();
     return false;
   }
   // OK so we have found the beginning of the first record. Copy the rest of
@@ -144,7 +144,7 @@ Bool VLATapeInput::fillBuffer(uInt& bytesToRead) {
 //        << " Length: " << itsInputPtr->length() 
 //        << endl;
   if ((bytesRead <= 0) || (bytesRead%VLAArchiveInput::BlockSize != 0)) {
-    itsMemIO.clear();
+    itsMemIO->clear();
     return false;
   }
   bytesToRead = bytesRead;
@@ -181,8 +181,8 @@ Bool VLATapeInput::nextFile() {
 Bool VLATapeInput::nextRecord() {
   // Clear the internal buffers and reset the flags as we will try to read some
   // more data.
-  const Bool gotDataPrev = itsMemIO.length() > 0 ? true : false;
-  itsMemIO.clear();
+  const Bool gotDataPrev = itsMemIO->length() > 0 ? true : false;
+  itsMemIO->clear();
   // Find an initial record. 
   Short n = 1, m;
   if (findFirstRecord(m) == false) {
@@ -195,7 +195,7 @@ Bool VLATapeInput::nextRecord() {
 		    "* you have a corrupted tape."));
 
   }
-  uInt thisReadSize = itsMemIO.length();
+  uInt thisReadSize = itsMemIO->length();
   DebugAssert(thisReadSize >= VLAArchiveInput::HeaderSize, AipsError);
   // We have the first physical record in Memory. Now decode how long this
   // logical record is.
@@ -229,7 +229,7 @@ Bool VLATapeInput::nextRecord() {
 //       cerr << "Sequence numbers: Found m = " << newm << " n = " << newn;
 //       cerr << "   Expected m = " << m << " n = " << n+1 << endl;
       if (newm != m || ++n != newn) {
-	itsMemIO.clear();
+	itsMemIO->clear();
 	return false;
       }
       itsRecord.seek(-static_cast<Int64>(VLAArchiveInput::HeaderSize), 

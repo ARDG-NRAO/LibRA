@@ -698,7 +698,7 @@ itsTooLongForFname = false;
       SubImage<Float> chanMask(outImageMask, sl, true);
       ImageRegrid<Float> imregrid;
       TempImage<Float> tempInImageMask(chanMask.shape(), chanMask.coordinates(),memoryToUse());
-      PtrHolder<ImageInterface<Float> > outmaskim_ptr;
+      std::unique_ptr<ImageInterface<Float> > outmaskim_ptr;
       if ( chanMask.shape().nelements() >  inImageMask.shape().nelements() ) {
         String stokesStr;
         if (inNpol==1) {
@@ -797,7 +797,7 @@ itsTooLongForFname = false;
       SubImage<Float> stokesMask(outImageMask, slStokes, true);
       ImageRegrid<Float> imregrid2;
       TempImage<Float> tempInStokesImageMask(stokesMask.shape(), stokesMask.coordinates(),memoryToUse());
-      PtrHolder<ImageInterface<Float> > outstokesmaskim_ptr;
+      std::unique_ptr<ImageInterface<Float> > outstokesmaskim_ptr;
       Vector<Stokes::StokesTypes> outWhichPols;
       if ( stokesMask.shape().nelements() >  inImageMask.shape().nelements() ) {
         casacore::ImageUtilities::addDegenerateAxes(os, outstokesmaskim_ptr, inImageMask,"",False, addSpecAxis, "I", False, False, True); 

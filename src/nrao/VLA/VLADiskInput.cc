@@ -250,11 +250,11 @@ Bool VLADiskInput::read() {
 
 Bool VLADiskInput::read() {
    Bool rstatus(true);
-   itsMemIO.clear();
+   itsMemIO->clear();
    Long logicalRecordSize(MAX_LOGICAL_RECORD_SIZE);
-   Char* recordPtr = (Char *)itsMemIO.setBuffer(logicalRecordSize);
+   Char* recordPtr = (Char *)itsMemIO->setBuffer(logicalRecordSize);
    logicalRecordSize = readVLALogRec(recordPtr);
-   itsMemIO.setUsed(logicalRecordSize);
+   itsMemIO->setUsed(logicalRecordSize);
    itsRecord.seek(0);
    if(!logicalRecordSize)
       rstatus = false;
@@ -281,7 +281,7 @@ Bool VLADiskInput::findFirstRecord(Short& m) {
     // Search for the correct sequence number or give up after a while.
     Bool maybe(false);
     uInt logicalRecordSize;
-    uChar* recordPtr = itsMemIO.setBuffer(VLAArchiveInput::HeaderSize);
+    uChar* recordPtr = itsMemIO->setBuffer(VLAArchiveInput::HeaderSize);
     while (!maybe && (bytesSearched <= maxBytesToSearch)) {
       //std::cerr << n << " " << m << std::endl;
       if (bytesSearched > 0) {
@@ -298,7 +298,7 @@ Bool VLADiskInput::findFirstRecord(Short& m) {
 	itsFile->read(VLAArchiveInput::HeaderSize, recordPtr, false);
       cerr << "BB File position is " << itsFile->seek(0, ByteIO::Current) << " " << endl;
       if (bytesRead < static_cast<Int>(VLAArchiveInput::HeaderSize)) {
-	itsMemIO.clear();
+	itsMemIO->clear();
 	return false;
       }
       // Find out what the sequence numbers are.
@@ -321,7 +321,7 @@ Bool VLADiskInput::findFirstRecord(Short& m) {
     }
     //cerr << n << " " << m << endl;
     if (bytesSearched > maxBytesToSearch) {
-      itsMemIO.clear();
+      itsMemIO->clear();
       return false;
     }
   }
@@ -337,12 +337,12 @@ Bool VLADiskInput::findFirstRecord(Short& m) {
     itsRecord.seek(0);
     const Int bytesToRead =
       VLAArchiveInput::BlockSize - VLAArchiveInput::HeaderSize;
-    uChar* recordPtr = itsMemIO.setBuffer(bytesToRead);
+    uChar* recordPtr = itsMemIO->setBuffer(bytesToRead);
     // cerr << "Bytes to read " << bytesToRead << endl;
     const Int bytesRead = itsFile->read(bytesToRead, recordPtr, false);
     cerr << "CC File position is " << itsFile->seek(0, ByteIO::Current) << " " << endl;
     if (bytesRead < bytesToRead) {
-      itsMemIO.clear();
+      itsMemIO->clear();
       return false;
     }
     itsRecord.seek(0);
@@ -355,12 +355,12 @@ Bool VLADiskInput::findFirstRecord(Short& m) {
     offset = bytesToRead;
   }
   if (bytesToCopy > 0) {
-    uChar* recordPtr = itsMemIO.setBuffer(bytesToCopy+offset);
+    uChar* recordPtr = itsMemIO->setBuffer(bytesToCopy+offset);
     // cerr << "Bytes to copy " << bytesToCopy << endl;
     Int bytesRead = itsFile->read(bytesToCopy, recordPtr+offset, false);
     cerr << "DD File position is " << itsFile->seek(0, ByteIO::Current) << " " << endl;
     if (bytesRead < bytesToCopy) {
-      itsMemIO.clear();
+      itsMemIO->clear();
       return false;
     }
   }

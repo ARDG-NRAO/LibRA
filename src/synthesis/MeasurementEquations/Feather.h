@@ -34,6 +34,7 @@
 #include <casacore/scimath/Mathematics/GaussianBeam.h>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/casa/Arrays/ArrayFwd.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casacore{
 

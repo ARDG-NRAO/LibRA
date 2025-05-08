@@ -35,6 +35,7 @@
 #include <deque>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 

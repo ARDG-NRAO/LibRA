@@ -1371,7 +1371,7 @@ Int MultiTermMatrixCleaner::checkConvergence(Int /*criterion*/, Float &fluxlimit
     {
       LogIO os(LogOrigin("MultiTermMatrixCleaner", "mtclean()", WHERE));
       os << "Reached stopping threshold at iteration " << totalIters_p << ". Peak residual " << fabs(rmaxval) ;
-      if( ! itsMask.null() ){os << " (within mask) " ;}
+      if( ! itsMask.null()){os << " (within mask) " ;}
 	os << LogIO::POST;
        convergedflag=1; 
     }

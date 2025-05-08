@@ -2762,7 +2762,7 @@ Int MSTransformDataHandler::getProcessorId(Int dataDescriptionId, String msname)
     taql << " WHERE DATA_DESC_ID ==" << dataDescriptionId;
     taql << " LIMIT 1";
 
-    casacore::TableProxy *firstSelectedRow = new TableProxy(tableCommand(taql.str()));
+    casacore::TableProxy *firstSelectedRow = new TableProxy(tableCommand(taql.str()).table());
     Record colWrapper = firstSelectedRow->getVarColumn(String("PROCESSOR_ID"),0,1,1);
     casacore::Vector<Int> processorId = colWrapper.asArrayInt("r1");
 

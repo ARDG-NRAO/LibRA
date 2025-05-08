@@ -36,6 +36,7 @@
 #include <images/Images/ImageOpener.h>
 #include <images/Images/ImageSummary.h>
 #include <casa/Containers/Record.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 #include <lattices/Lattices/PagedArray.h>
 #include <fstream>
 

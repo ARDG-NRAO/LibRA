@@ -23,6 +23,7 @@
 #include <casacore/images/Regions/ImageRegion.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/measures/Measures/MFrequency.h>
+#include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa {
 
