@@ -11,7 +11,7 @@ project("LibRA Apps"
   LANGUAGES CXX Fortran C)
 
 set(LIBRA_ID "LibRA INFO: ")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(BUILD_TYPE "RelWithDebInfo")
 set(CASA_BUILD_TYPE "RelWithDebInfo")
 
@@ -110,7 +110,7 @@ set(CMAKE_INSTALL_INCLUDEDIR include)
 set(CMAKE_INSTALL_BINDIR bin)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-# set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
+# set(CMAKE_C_FLAGS "${OPT} -std=c++17 -DUseCasacoreNamespace -Wno-deprecated \
 #            ${DEFS64}                                        \
 #            -DHAVE_QT4                                       \
 #            -DAIPS_NEEDS_RETHROW                             \
@@ -214,13 +214,13 @@ ExternalProject_Add(
                  -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/
 	         -DHpg_ENABLE_MIXED_PRECISION=OFF
 		 -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF
-	         -DHpg_API=11
+	         -DHpg_API=17
 	         -DHpg_BUILD_TESTS=OFF
 	         -DBUILD_SHARED_LIBS=ON
 	         -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                  -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
-                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/Hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=11 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
+                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/Hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=17 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
