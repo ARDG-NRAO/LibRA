@@ -40,7 +40,7 @@ set(LIBRA_CASACORE_GIT_TAG	  "v3.7.1")
 
 
 set(LIBRA_PARAFEED_GIT_REPOSITORY "https://github.com/sanbee/parafeed.git")
-set(LIBRA_PARAFEED_GIT_TAG        "v1.1.3")
+set(LIBRA_PARAFEED_GIT_TAG        "v1.1.4")
 
 set(LIBRA_SAKURA_GIT_REPOSITORY   "https://github.com/tnakazato/sakura.git")
 set(LIBRA_SAKURA_GIT_TAG          "libsakura-5.1.3")
