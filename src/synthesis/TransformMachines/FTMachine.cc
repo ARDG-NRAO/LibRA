@@ -1025,7 +1025,7 @@ void  FTMachine::girarUVW(Matrix<Double>& uvw, Vector<Double>& dphase,
 	off[(rowoff+f)*nel+k]=std::lround((Double(loc[(rowoff+f)*nel+k])-pos)*Double(sampling));
 	//off[(rowoff+f)*2+k]=(loc[(rowoff+f)*2+k]-pos(k))*sampling;	
       }
-      phase=-Double(2.0)*C::pi*dphase[row]*(freq[f])/C::c;
+      phase=-Double(2.0)*M_PI*dphase[row]*(freq[f])/C::c;
       phasor[rowoff+f]=Complex(cos(phase), sin(phase));
      
       ///This is for W-Projection

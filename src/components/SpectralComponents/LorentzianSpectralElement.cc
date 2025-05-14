@@ -33,8 +33,10 @@
 #include <casacore/scimath/Functionals/Lorentzian1D.h>
 
 #include <iostream>
+#include <cmath> // Add this for M_PI
 
 using namespace casacore;
+using namespace std;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 LorentzianSpectralElement::LorentzianSpectralElement()
@@ -96,7 +98,7 @@ LorentzianSpectralElement& LorentzianSpectralElement::operator=(
 }
 
 Double LorentzianSpectralElement::getIntegral() const {
-	return getAmpl()*getFWHM()*C::pi_2;
+	return getAmpl() * getFWHM() * (M_PI / 2);
 }
 
 ostream &operator<<(ostream &os, const LorentzianSpectralElement &elem) {

@@ -64,21 +64,21 @@ Bool SingleDishBeamUtil::getMapPointings(Matrix<Double> &pointingList) {
         // and stddev of longitude array be around pi.
         Double longitudeMean = mean(longitude);
         Double longitudeStddev = stddev(longitude);
-        if (longitudeStddev > 2.0 / 3.0 * C::pi) {
+        if (longitudeStddev > 2.0 / 3.0 * M_PI) {
             // likely to be the case
-            if (abs(longitudeMean) < 0.5 * C::pi) {
+            if (abs(longitudeMean) < 0.5 * M_PI) {
                 // periodic boundary surface would be +-pi
                 for (size_t i = 0; i < longitude.nelements(); ++i) {
                     if (longitude[i] < 0.0) {
-                        longitude[i] += C::_2pi;
+                        longitude[i] +=  2*M_PI;
                     }
                 }
             }
-            else if (abs(longitudeMean - C::pi) < 0.5 * C::pi ) {
+            else if (abs(longitudeMean - M_PI) < 0.5 * M_PI ) {
                 // periodic boundary surface would be 0,2pi
                 for (size_t i = 0; i < longitude.nelements(); ++i) {
-                    if (longitude[i] < C::pi) {
-                        longitude[i] += C::_2pi;
+                    if (longitude[i] < M_PI) {
+                        longitude[i] += 2*M_PI;
                     }
                 }
             }
@@ -186,7 +186,7 @@ Bool SingleDishBeamUtil::getMapPointings(Matrix<Double> &pointingList) {
 	Vector<Double> delta_tan(delta_lon.size());
 	delta_tan = delta_lat/delta_lon;
 	Double positionAngleVal = atan(median(delta_tan));
-	positionAngleVal = std::isfinite(positionAngleVal) ? positionAngleVal: 0.5*C::pi;
+	positionAngleVal = std::isfinite(positionAngleVal) ? positionAngleVal: 0.5*M_PI;
 	positionAngle = Quantity(positionAngleVal, "rad");
 	os << LogIO::DEBUG1 << "position angle of scan direction: " << positionAngle << LogIO::POST;
       }
@@ -228,8 +228,8 @@ Bool SingleDishBeamUtil::getMapPointings(Matrix<Double> &pointingList) {
 	//os << LogIO::DEBUGGING << "gap idx = " << Vector<uInt>(gap_idx) << LogIO::POST;
 	// a unit vector of orthogonal direction
 	Vector<Double> orth_vec(2);
-	orth_vec(0) = cos(positionAngle.getValue("rad")+0.5*C::pi);
-	orth_vec(1) = sin(positionAngle.getValue("rad")+0.5*C::pi);
+	orth_vec(0) = cos(positionAngle.getValue("rad")+0.5*M_PI);
+	orth_vec(1) = sin(positionAngle.getValue("rad")+0.5*M_PI);
 	os << LogIO::DEBUG1 << "orthogonal vector = " << orth_vec << LogIO::POST;
 	// median lon, lat in each raster row
 	Vector<Double> typical_lon(gap_idx.size());

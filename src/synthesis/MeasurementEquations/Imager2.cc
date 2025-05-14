@@ -373,8 +373,8 @@ Bool Imager::imagecoordinates2(CoordinateSystem& coordInfo, const Bool verbose)
   // For mfs band we set the window to include all spectral windows
   Int nspw=spectralwindowids_p.nelements();
   if (imageMode_p=="MFS") {
-    Double fmin=C::dbl_max;
-    Double fmax=-(C::dbl_max);
+    Double fmin=DBL_MAX;
+    Double fmax=-(DBL_MAX);
     Double fmean=0.0;
     /*
     Int nms = freqrange_p.shape()(0);
@@ -941,8 +941,8 @@ Bool Imager::imagecoordinates(CoordinateSystem& coordInfo, const Bool verbose)
   // For mfs band we set the window to include all spectral windows
   Int nspw=spectralwindowids_p.nelements();
   if (imageMode_p=="MFS") {
-    Double fmin=C::dbl_max;
-    Double fmax=-(C::dbl_max);
+    Double fmin=DBL_MAX;
+    Double fmax=-(DBL_MAX);
     Double fmean=0.0;
     for (Int i=0;i<nspw;++i) {
       Int spw=spectralwindowids_p(i);
@@ -4600,24 +4600,24 @@ Bool Imager::getMapExtent(const MeasurementSet &ms, const String &referenceFrame
         Double longitudeMean = mean(longitude);
         Double longitudeStddev = stddev(longitude);
         //cout << "mean " << longitudeMean << " stddev " << longitudeStddev << endl;
-        if (longitudeStddev > 2.0 / 3.0 * C::pi) {
+        if (longitudeStddev > 2.0 / 3.0 * M_PI) {
             // likely to be the case
             //cout << "likely to be the case" << endl;
-            if (abs(longitudeMean) < 0.5 * C::pi) {
+            if (abs(longitudeMean) < 0.5 * M_PI) {
                 // periodic boundary surface would be +-pi
                 //cout << "periodic boundary surface would be +-pi" << endl;
                 for (size_t i = 0; i < longitude.nelements(); ++i) {
                     if (longitude[i] < 0.0) {
-                        longitude[i] += C::_2pi;
+                        longitude[i] += 2*M_PI;
                     }
                 }
             }
-            else if (abs(longitudeMean - C::pi) < 0.5 * C::pi ) {
+            else if (abs(longitudeMean - M_PI) < 0.5 * M_PI ) {
                 // periodic boundary surface would be 0,2pi
                 //cout << "periodic boundary surface would be 0,2pi" << endl;
                 for (size_t i = 0; i < longitude.nelements(); ++i) {
-                    if (longitude[i] < C::pi) {
-                        longitude[i] += C::_2pi;
+                    if (longitude[i] < M_PI) {
+                        longitude[i] += 2*M_PI;
                     }
                 }
             }

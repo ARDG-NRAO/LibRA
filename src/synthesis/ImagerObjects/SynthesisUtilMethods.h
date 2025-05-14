@@ -206,8 +206,7 @@ class SynthesisParams
 public:
   SynthesisParams(){};
   virtual ~SynthesisParams(){};
-  ///As there is no state to copy
-  virtual SynthesisParams& operator= (const SynthesisParams& /*other*/){ return *this;};
+  virtual SynthesisParams& operator=(const SynthesisParams& /*other*/) { return *this; };
   virtual void fromRecord(const casacore::Record &inrec)=0;
   virtual void setDefaults()=0;
   virtual casacore::String verify()const =0 ;
@@ -234,6 +233,7 @@ protected:
   class SynthesisParamsSelect : public SynthesisParams
 {
 public:
+  using SynthesisParams::operator=; // Make base class operator= accessible
 
   SynthesisParamsSelect();
   SynthesisParamsSelect(const SynthesisParamsSelect& other);
@@ -260,6 +260,7 @@ public:
   class SynthesisParamsImage: public SynthesisParams
 {
 public:
+  using SynthesisParams::operator=; // Make base class operator= accessible
 
   SynthesisParamsImage();
   ~SynthesisParamsImage();
@@ -358,6 +359,7 @@ public:
   class SynthesisParamsGrid: public SynthesisParams
 {
 public:
+  using SynthesisParams::operator=; // Make base class operator= accessible
 
   SynthesisParamsGrid();
   ~SynthesisParamsGrid();
@@ -417,6 +419,7 @@ public:
   class SynthesisParamsDeconv: public SynthesisParams
 {
 public:
+  using SynthesisParams::operator=; // Make base class operator= accessible
 
   SynthesisParamsDeconv();
   ~SynthesisParamsDeconv();

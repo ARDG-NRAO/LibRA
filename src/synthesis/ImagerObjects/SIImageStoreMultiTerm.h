@@ -136,13 +136,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   void addImages( std::shared_ptr<SIImageStore> imagestoadd, 
 		  casacore::Bool addpsf, casacore::Bool addresidual, casacore::Bool addweight, casacore::Bool adddensity);
 
-  void dividePSFByWeight(const casacore::Float pblimit=casacore::C::minfloat);
-  void normalizePrimaryBeam(const float pblimit=casacore::C::minfloat);
+  void dividePSFByWeight(const casacore::Float pblimit=FLT_MIN);
+  void normalizePrimaryBeam(const float pblimit=FLT_MIN);
 
-  void divideResidualByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
+  void divideResidualByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
   //  void divideSensitivityPatternByWeight();
-  void divideModelByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
-  void multiplyModelByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
+  void divideModelByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
+  void multiplyModelByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
 
   /*
   casacore::Bool checkValidity(const casacore::Bool ipsf, const casacore::Bool iresidual, const casacore::Bool iweight, 

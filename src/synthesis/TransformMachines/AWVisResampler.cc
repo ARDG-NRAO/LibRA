@@ -319,12 +319,12 @@ namespace casa{
      IPosition phaseGradOrigin_l; 
      phaseGradOrigin_l = cached_phaseGrad_p.shape()/2;
 
-// #pragma omp parallel default(none) \
-//   shared(gridStore) \
-//   firstprivate(scaledSupport_ptr,scaledSampling_ptr,off_ptr,loc_ptr,cfArea,iGrdPosPtr, \
-// 	       convFuncV_l, convOrigin_ptr, nvalue_l, wVal_l, finitePointingOffset_l, doPSFOnly_l, \
-// 	       iloc_ptr, norm,igrdpos_ptr) num_threads(Nth)
-     {
+// #pragma omp parallel default(none)
+// shared(gridStore)
+// firstprivate(scaledSupport_ptr,scaledSampling_ptr,off_ptr,loc_ptr,cfArea,iGrdPosPtr,
+//              convFuncV_l, convOrigin_ptr, nvalue_l, wVal_l, finitePointingOffset_l, doPSFOnly_l,
+//              iloc_ptr, norm, igrdpos_ptr) num_threads(Nth)
+	 {
 // #pragma omp for
     for(Int iy=-scaledSupport[1]; iy <= scaledSupport[1]; iy++) 
       {
@@ -919,7 +919,7 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
   
   if (dphase != 0.0)
     {
-      phase=-2.0*C::pi*dphase*freq/C::c;
+      phase=-2.0*M_PI*dphase*freq/C::c;
       Double sp,cp;
       SINCOS(phase,sp,cp);
       //      phasor=Complex(cos(phase), sin(phase));

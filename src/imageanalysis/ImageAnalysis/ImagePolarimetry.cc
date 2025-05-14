@@ -429,7 +429,7 @@ ImageExpr<Float> ImagePolarimetry::linPolPosAng(Bool radians) const {
     );
     _checkQUBeams(false);
     // Make expression. LEL function "pa" returns degrees
-    Float fac = radians ? C::pi / 180.0 : 1.0;
+    Float fac = radians ? M_PI / 180.0 : 1.0;
     LatticeExprNode node(
         fac*pa(*_stokes[ImagePolarimetry::U], *_stokes[ImagePolarimetry::Q])
     );
@@ -456,7 +456,7 @@ ImageExpr<Float> ImagePolarimetry::sigmaLinPolPosAng(
     Float sigma2 = sigma > 0 ? sigma : this->sigma(clip);
     Float fac = 0.5 * sigma2;
     if (! radians) {
-        fac *= 180 / C::pi;
+        fac *= 180 / M_PI;
     }
     LatticeExprNode node(
         fac / amp(*_stokes[ImagePolarimetry::U], *_stokes[ImagePolarimetry::Q])
@@ -723,7 +723,7 @@ void ImagePolarimetry::rotationMeasure(
     RO_MaskedLatticeIterator<Float> it(pa, ts);
     Float rm, rmErr, pa0, pa0Err, rChiSq, nTurns;
     uInt j, k, l, m;
-    static const Double degPerRad = 180/C::pi;
+    static const Double degPerRad = 180/M_PI;
     maxPaErr /= degPerRad;
     maxPaErr = abs(maxPaErr);
     Bool doRM = whereRM.size() > 0;
@@ -1191,7 +1191,7 @@ void ImagePolarimetry::_fiddleTimeCoordinate(
     auto inc = pC->increment();
     const auto ff = f.getValue(Unit("Hz"));
     const auto lambda = QC::c( ).getValue(Unit("m/s")) / ff;
-    const auto fac = -C::pi * ff / 2.0 / lambda / lambda;
+    const auto fac = -M_PI * ff / 2.0 / lambda / lambda;
     inc *= fac;
     Vector<String> axisNames(1);
     axisNames = String("RotationMeasure");
@@ -1387,25 +1387,25 @@ Bool ImagePolarimetry::_rmPrimaryFit(
     Float ppa = abs(rmMax)*dwsq + pa(0);
     Float diff = ppa - pa(n-1);
     Float t = diff >= 0 ? 0.5 : -0.5;
-    Int maxnpi = Int(diff/C::pi + t);
+    Int maxnpi = Int(diff/M_PI + t);
     ppa = -abs(rmMax)*dwsq + pa(0);
     diff = ppa - pa(n-1);
     t = diff >= 0 ? 0.5 : -0.5;
-    Int minnpi = Int(diff/C::pi + t);
+    Int minnpi = Int(diff/M_PI + t);
     // Loop over range of n*pi ambiguity
     Vector<Float> fitpa(n);
     Vector<Float> pars;
     Float chiSq = 1e30;
     for (Int h=minnpi; h<=maxnpi; ++h) {
-        fitpa[n-1] = pa[n-1] + C::pi*h;
+        fitpa[n-1] = pa[n-1] + M_PI*h;
         Float rm0 = (fitpa(n-1) - pa(0))/dwsq;
         // Assign position angles to remaining wavelengths
         for (uInt k=1; k<n-1; ++k) {
             ppa = pa[0] + rm0*(wsq[k]-wsq[0]);
             diff = ppa - pa[k];
             t = diff >= 0 ? 0.5 : -0.5;
-            Int npi = Int(diff/C::pi + t);
-            fitpa[k] = pa[k] + npi*C::pi;
+            Int npi = Int(diff/M_PI + t);
+            fitpa[k] = pa[k] + npi*M_PI;
         }
         fitpa[0] = pa[0];
         // Do least squares fit
@@ -1439,7 +1439,7 @@ Bool ImagePolarimetry::_rmSupplementaryFit(
     Vector<Float> fitpa(pa.copy());
     Vector<Float> pars;
     for (Int i=-2; i<3; ++i) {
-        fitpa[n-1] = pa[n-1] + C::pi*i;
+        fitpa[n-1] = pa[n-1] + M_PI*i;
         // Do least squares fit
         if (! _rmLsqFit (pars, wsq, fitpa, paerr)) {
             return false;

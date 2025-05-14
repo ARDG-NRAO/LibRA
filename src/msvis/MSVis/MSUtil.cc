@@ -99,7 +99,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double freqStartMin=freqStart;
     if(freqframe != obsMFreqType){
       freqEndMax=0.0;
-      freqStartMin=C::dbl_max;
+      freqStartMin=DBL_MAX;
     }
     for (uInt j=0; j< nTimes; ++j){
       if(fldId(uniqIndx[j]) ==fieldId){
@@ -191,7 +191,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     MDoppler toSource;
     setupSourceObsVelSystem(ephemtab, ms, fieldId, toSource, toObs,frame);
     Double  freqEndMax=0.0;
-    Double freqStartMin=C::dbl_max;
+    Double freqStartMin=DBL_MAX;
     
     for (uInt j=0; j< nTimes; ++j){
       if(fldId(uniqIndx[j]) ==fieldId){
@@ -446,7 +446,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double freqStartMin=freqStart-0.5*fabs(freqStep);
     if(freqframe != obsMFreqType){
       freqEndMax=0.0;
-      freqStartMin=C::dbl_max;
+      freqStartMin=DBL_MAX;
     }
     for (uInt j=0; j< nTimes; ++j) {
         if(anyEQ(dataDescSel, ddId(elindx[uniqIndx[j]]))){
@@ -520,7 +520,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				  const Vector<Int>&  fieldIds, const Bool fromEdge, const Bool useFieldsInMS){
     
     Bool retval=False;
-    freqStart=C::dbl_max;
+    freqStart=DBL_MAX;
     freqEnd=0.0;
     Vector<Double> t;
     ScalarColumn<Double> (ms,MS::columnName(MS::TIME)).getColumn(t);
@@ -574,7 +574,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 						
     for (uInt ispw =0 ; ispw < spw.nelements() ; ++ispw){
 		if(nchan[ispw]>0 && start[ispw] >-1){
-      Double freqStartObs=C::dbl_max;
+      Double freqStartObs=DBL_MAX;
       Double freqEndObs=0.0;
       Vector<Double> chanfreq=spwCol.chanFreq()(spw[ispw]);
       Vector<Double> chanwid=spwCol.chanWidth()(spw[ispw]);
@@ -691,7 +691,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     
     Bool retval=False;
-    freqStart=C::dbl_max;
+    freqStart=DBL_MAX;
     freqEnd=0.0;
     Vector<Double> t;
     ScalarColumn<Double> (ms,MS::columnName(MS::TIME)).getColumn(t);
@@ -756,7 +756,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     
     for (uInt ispw =0 ; ispw < spw.nelements() ; ++ispw){
       if(nchan[ispw]>0 && start[ispw] >-1){
-	Double freqStartObs=C::dbl_max;
+	Double freqStartObs=DBL_MAX;
 	Double freqEndObs=0.0;
 	Vector<Double> chanfreq=spwCol.chanFreq()(spw[ispw]);
 	Vector<Double> chanwid=spwCol.chanWidth()(spw[ispw]);

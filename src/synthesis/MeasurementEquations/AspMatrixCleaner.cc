@@ -253,7 +253,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   Float tmpMaximumResidual = 0.0;
   Float minMaximumResidual = 1000.0;
   Float initRMSResidual = 1000.0;
-  float initModelFlux = 0.0;
+  // float initModelFlux = 0.0;
 
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
@@ -300,7 +300,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   initRMSResidual = rms;
   //os << LogIO::NORMAL3 << "initial rms residual " << initRMSResidual << LogIO::POST;
 
-  initModelFlux = sum(model); 
+  // initModelFlux = sum(model); 
   //os << LogIO::NORMAL3 << "initial model flux " << initModelFlux << LogIO::POST; 
 
   for (Int ii = itsStartingIter; ii < itsMaxNiter; ii++)

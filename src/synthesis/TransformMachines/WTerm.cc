@@ -41,7 +41,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		       const Int inner)
   {
     Int convSize = screen.shape()(0);
-    Double twoPiW=2.0*C::pi*Double(wValue);
+    Double twoPiW=2.0*M_PI*Double(wValue);
 #ifdef _OPENMP
     Int Nth=max(omp_get_max_threads()-2,1);
 #endif

@@ -60,7 +60,7 @@
 #include <casacore/scimath/Mathematics/FFTPack.h>
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <wcslib/wcsconfig.h>  /** HAVE_SINCOS **/
-#include <math.h>
+#include <cmath> // Ensure M_PI is available
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -72,7 +72,7 @@
      c = cos(a)
 #endif
 
-
+// #define speedOfLight 2.99792458e8
 typedef unsigned long long ooLong;
 
 using namespace casacore;
@@ -559,9 +559,9 @@ Bool MSUVBin::fillSmallOutputMS(){
 	Double reffreq=SpectralImageUtil::worldFreq(csys_p, Double(nchan_p/2));
 	Int nrrows=makeUVW(reffreq, incr, cent, uvw);
 	Cube<Complex> grid(npol_p, nchan_p, nrrows);
-	Matrix<Float> wght(npol_p, nrrows);
-	Cube<Float> wghtSpec(npol_p, nchan_p, nrrows);
-	Cube<Bool> flag(npol_p, nchan_p, nrrows);
+	Matrix<Float> wght(npol_p,nrrows);
+	Cube<Float> wghtSpec(npol_p,nchan_p,nrrows);
+	Cube<Bool> flag(npol_p, nchan_p,nrrows);
 	Vector<Bool> rowFlag(nrrows);
 	Vector<Int> ant1(nrrows);
 	Vector<Int> ant2(nrrows);
@@ -1244,8 +1244,8 @@ void MSUVBin::gridData(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 		//		  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << endl;
 		    //Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 		    //Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
-		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*C::pi*refFreq/C::c;
+		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
+		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*M_PI*refFreq/C::c;
 		    //cerr << "fracbw " << fracbw << " pixel u " << Double(locu-nx_p/2)/refFreq/scale(0) << " data u" << vb.uvw()(0,k) <<
 		    //				  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << " phase " << phaseCorr << endl;
 		  for(Int chan=0; chan < vb.nChannels(); ++chan ){
@@ -1276,7 +1276,7 @@ void MSUVBin::gridData(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 				    if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) && (vb.weight()(pol,k)>0.0)){
 				  //  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				 //   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				      Complex toB=hasCorrected ? vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k):
 					vb.visCube()(pol,chan,k)*vb.weight()(pol,k);
 				    //  Double s, c;
@@ -1350,8 +1350,8 @@ void MSUVBin::gridData(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 		//		  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << endl;
 		    //Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 		    //Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
-		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*C::pi*refFreq/C::c;
+		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
+		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*M_PI*refFreq/C::c;
 		    //cerr << "fracbw " << fracbw << " pixel u " << Double(locu-nx_p/2)/refFreq/scale(0) << " data u" << vb.uvw()(0,k) <<
 		    //				  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << " phase " << phaseCorr << endl;
 		  for(Int chan=0; chan < vb.nChannels(); ++chan ){
@@ -1382,7 +1382,7 @@ void MSUVBin::gridData(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 				    if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) && (vb.weight()(pol,k)>0.0)){
 				  //  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				 //   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				      Complex toB=hasCorrected ? vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k):
 					vb.visCube()(pol,chan,k)*vb.weight()(pol,k);
 				    //  Double s, c;
@@ -1437,7 +1437,7 @@ void MSUVBin::gridDataConv(const vi::VisBuffer2& vb, Cube<Complex>& grid,
   //Dang i thought the new vb will return Data or FloatData if correctedData was
   //not there
   Bool hasCorrected=!(MSMainColumns(vb.ms()).correctedData().isNull());
-  //locateuvw(locu v, vb.uvw());
+  //locateuvw(locuv, vb.uvw());
   Vector<Double> visFreq=vb.getFrequencies(0, MFrequency::LSRK);
   //cerr << "support " << convSupport << endl;
   Vector<Double> phasor;
@@ -1464,8 +1464,8 @@ void MSUVBin::gridDataConv(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 		//		  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << endl;
 		    //Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 		    //Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
-		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*C::pi*refFreq/C::c;
+		    //Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
+		    //Double phaseCorr=((newU-vb.uvw()(0,k))+(newV-vb.uvw()(1,k)))*2.0*M_PI*refFreq/C::c;
 		    //cerr << "fracbw " << fracbw << " pixel u " << Double(locu-nx_p/2)/refFreq/scale(0) << " data u" << vb.uvw()(0,k) <<
 		    //				  " pixel v "<< Double(locv-ny_p/2)/refFreq/scale(1) << " data v "<< vb.uvw()(1,k) << " phase " << phaseCorr << endl;
 		  Vector<Int> newrow((2*supp+1)*(2*supp+1), -1);
@@ -1531,7 +1531,7 @@ void MSUVBin::gridDataConv(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 				if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) && (vb.weight()(pol,k)>0.0) && (fabs(cwt) > 0.0)){
 				  //  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				  //   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				  //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				  //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				  Complex toB=hasCorrected ? 
 				    vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k)*cwt: 
 				    vb.visCube()(pol,chan,k)*vb.weight()(pol,k)*cwt;
@@ -1705,8 +1705,8 @@ void MSUVBin::gridDataConvThr(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 			      rowFlag(newrow[jj])=false;
 			      uvw(2,newrow[jj])=0;
 			      ant1(newrow[jj])=vb.antenna1()(k);
-			      ant2(newrow[jj])=vb.antenna2()(k);
-			      timeCen(newrow[jj])=vb.time()(k);
+			      ant2[newrow[jj])=vb.antenna2()(k);
+			      timeCen[newrow[jj])=vb.time()(k);
 			      
 			    }
 			    Int lechan=chanMap_p(chan)-startchan;
@@ -1714,7 +1714,7 @@ void MSUVBin::gridDataConvThr(const vi::VisBuffer2& vb, Cube<Complex>& grid,
 			      if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) && (vb.weight()(pol,k)>0.0) && (fabs(cwt) > 0.0)){
 				//  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				//   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				//   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				//   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				Complex toB=hasCorrected ? vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k)*cwt:
 				  vb.visCube()(pol,chan,k)*vb.weight()(pol,k)*cwt;
 				if(needRot)
@@ -1858,7 +1858,7 @@ void MSUVBin::multiThrLoop(const Int outchan, const vi::VisBuffer2& vb, Double r
 			      if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) /*&& (vb.weight()(pol,k)>0.0) && fabs(cwt) > 0.0//// (fracconv > 5e-2)*/){
 				//  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				//   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				//   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				//   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				Complex toB=hasCorrected ? 
 				  vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k)*cwt :
 				  vb.visCube()(pol,chan,k)*vb.weight()(pol,k)*cwt;
@@ -1968,7 +1968,7 @@ void MSUVBin::multiThrLoop(const Int outchan, const vi::VisBuffer2& vb, Double r
 				    if((!vb.flagCube()(pol,chan, k)) && (polMap_p(pol)>=0) && (vb.weight()(pol,k)>0.0)){
 				  //  Double newU=	Double(locu-nx_p/2)/refFreq/scale(0);
 				 //   Double newV= Double(locv-ny_p/2)/refFreq/scale(1);
-				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*C::pi*refFreq/C::c;
+				 //   Double phaseCorr=((newU/vb.uvw()(0,k)-1)+(newV/vb.uvw()(1,k)-1))*vb.uvw()(2,k)*2.0*M_PI*refFreq/C::c;
 				      // Complex toB=hasCorrected ? vb.visCubeCorrected()(pol,chan,k)*vb.weight()(pol,k):
 				      //	vb.visCube()(pol,chan,k)*vb.weight()(pol,k);
 				    //  Double s, c;
@@ -2510,6 +2510,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
    Int cpWConvSize=wConvSize;
    Double cpWscale=wScale;
    Int cpConvSamp=convSampling;
+   Double twoPi = 2.0 * M_PI; // Precompute 2.0 * M_PI
   
    ///////////////
   
@@ -2521,10 +2522,9 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
   Int* suppstor=pcsupp.getStorage(delsupstor);
   ////////////
 
-   //Float max0=1.0;
-#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, maxptr, cpWscale,inner, cor, maxConvSize, cpConvSamp, suppstor, C::pi )
+#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, maxptr, cpWscale, inner, cor, maxConvSize, cpConvSamp, suppstor, twoPi)
 
-  for (Int iw=0; iw< cpWConvSize;iw++) {
+  for (Int iw = 0; iw < cpWConvSize; iw++) {
     // First the w term
     Matrix<Complex> screen(cpConvSize, cpConvSize);
     Matrix<Complex> screen2(cpConvSize, cpConvSize);
@@ -2534,7 +2534,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
     Bool cpscr2;
     Complex *scr=screen.getStorage(cpscr);
     Complex *scr2=screen2.getStorage(cpscr2);
-    Double twoPiW=2.0*C::pi*Double(iw*iw)/cpWscale;
+    Double twoPiW = twoPi * Double(iw * iw) / cpWscale; // Use precomputed twoPi
     for (Int iy=-inner/2;iy<inner/2;iy++) {
       Double m=s1*Double(iy);
       Double msq=m*m;
@@ -2610,7 +2610,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
   */
   
 #pragma omp parallel for default(none) firstprivate(suppstor, cpConvSize, cpWConvSize, cpConvSamp, convFuncPtr, maxConvSize, maxes)  
-  for (Int iw=0;iw<cpWConvSize;iw++) {
+  for (Int iw=0; iw<cpWConvSize;iw++) {
     Bool found=false;
     Int trial=0;
     ooLong ploffset=ooLong(cpConvSize/2-1)*ooLong(cpConvSize/2-1)*ooLong(iw);
@@ -2707,6 +2707,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
 
 
   //////////////////////TESTING
+
   //convFunc*=Complex(1.0/5.4, 0.0);
 
   ////////////////////////////
@@ -2749,7 +2750,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
     Int npixCorr= max(nx_p,ny_p);
     Vector<Float> sincConv(npixCorr);
     for (Int ix=0;ix<npixCorr;ix++) {
-      Float x=C::pi*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
+      Float x=M_PI*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
       if(ix==npixCorr/2) {
 	sincConv(ix)=1.0;
       }
@@ -2781,7 +2782,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
       AlwaysAssert(directionIndex>=0, AipsError);
       dc=coords.directionCoordinate(directionIndex);
       Vector<Bool> axes(2); axes(0)=true;axes(1)=true;
-      Vector<Int> shape(2); shape(0)=convSize;shape(1)=convSize;
+      Vector<Int> shape(2); shape(0)=convSize;shape(1)=convSize);
       Coordinate* ftdc=dc.makeFourierCoordinate(axes,shape);
       ftCoords.replaceCoordinate(*ftdc, directionIndex);
       delete ftdc; ftdc=0;

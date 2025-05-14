@@ -135,8 +135,8 @@ void AnnEllipse::_init(
 		_inputSemiMajorAxis.getUnit() == "pix"
 		&& ! getCsys().directionCoordinate().hasSquarePixels()
 		&& (
-			! casacore::near(fmod(_inputPositionAngle.getValue("rad"), C::pi), 0.0)
-			&& ! casacore::near(fmod(fabs(_inputPositionAngle.getValue("rad")), C::pi), C::pi_2)
+			! casacore::near(fmod(_inputPositionAngle.getValue("rad"), M_PI), 0.0)
+			&& ! casacore::near(fmod(fabs(_inputPositionAngle.getValue("rad")), M_PI), M_PI_2)
 		),
 		"When pixels are not square and units are expressed in "
 		"pixels, position angle must be zero"
@@ -161,8 +161,8 @@ void AnnEllipse::_init(
 		std::swap(_convertedSemiMajorAxis, _convertedSemiMinorAxis);
 		_convertedPositionAngle = Quantity(
 			std::fmod(
-				(_inputPositionAngle + Quantity(C::pi_2, "rad")).getValue("rad"),
-				C::pi),
+				(_inputPositionAngle + Quantity(M_PI_2, "rad")).getValue("rad"),
+				M_PI),
 			"rad"
 		);
 		_convertedPositionAngle.convert(_inputPositionAngle);

@@ -506,8 +506,8 @@ void HetArrayConvFunc::findConvFunction(const ImageInterface<Complex>& iimage,
     pixFieldDir(0)=pixFieldDir(0)- Double(nx / 2);
     pixFieldDir(1)=pixFieldDir(1)- Double(ny / 2);
     //phase gradient per pixel to apply
-    pixFieldDir(0)=-pixFieldDir(0)*2.0*C::pi/Double(nx)/Double(convSamp);
-    pixFieldDir(1)=-pixFieldDir(1)*2.0*C::pi/Double(ny)/Double(convSamp);
+    pixFieldDir(0)=-pixFieldDir(0)*2.0*M_PI/Double(nx)/Double(convSamp);
+    pixFieldDir(1)=-pixFieldDir(1)*2.0*M_PI/Double(ny)/Double(convSamp);
 
   
     if(!doneMainConv_p[actualConvIndex_p]) {
@@ -1606,7 +1606,7 @@ Float HetArrayConvFunc::sinc(const Float x)  {
     if (x == 0) {
         return 1;
     }
-    return sin(C::pi * x) / (C::pi * x);
+    return sin(M_PI * x) / (M_PI * x);
 }
 Float HetArrayConvFunc::interpLanczos( const Double& x , const Double& y, const Double& nx, const Double& ny,   const Float* data, const Float a) {
     Double floorx = floor(x);

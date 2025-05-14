@@ -400,7 +400,7 @@ void FFT2D::c2cFFTInDouble(Lattice<Complex>& inout, Bool toFreq){
       //Will need to seperate the plan from the execute if we want to run this in multiple threads
       Int dim[2]={Int(y), Int(x)};
       if(toFreq){
-	if(!planC2C_forw_p){
+	      if(!planC2C_forw_p){
           planC2C_forw_p=fftwf_plan_dft(2, dim,  reinterpret_cast<fftwf_complex *>(out),  reinterpret_cast<fftwf_complex *>(out), FFTW_FORWARD, FFTW_ESTIMATE);
           fftwf_execute(planC2C_forw_p);
           nx_p=x;
@@ -417,7 +417,7 @@ void FFT2D::c2cFFTInDouble(Lattice<Complex>& inout, Bool toFreq){
       }
       else{
         if(!planC2C_back_p){
-	planC2C_back_p=fftwf_plan_dft(2, dim,  reinterpret_cast<fftwf_complex *>(out),  reinterpret_cast<fftwf_complex *>(out), FFTW_BACKWARD, FFTW_ESTIMATE);
+	      planC2C_back_p=fftwf_plan_dft(2, dim,  reinterpret_cast<fftwf_complex *>(out),  reinterpret_cast<fftwf_complex *>(out), FFTW_BACKWARD, FFTW_ESTIMATE);
         fftwf_execute(planC2C_back_p);
         nx_p=x;
         ny_p=y;
@@ -434,24 +434,27 @@ void FFT2D::c2cFFTInDouble(Lattice<Complex>& inout, Bool toFreq){
       
     }
     else{
-      Int ier;
-      Int x1=Int(x);
-      Int y1=Int(y);
-      if(wsave_p.size()==0){
-	wsave_p.resize(2*x1*y1+15);
-	lsav_p=2*x1*y1+15;
-	Float *wsaveptr=wsave_p.data();
-	FFTPack::cfft2i(x1, y1, wsaveptr, lsav_p, ier);
-      }
-      std::vector<Float> work(2*x1*y1);
-      Int lenwrk=2*x1*y1;
-      Float* workptr=work.data();
-      Float* wsaveptr=wsave_p.data();
-      if(toFreq)
-	FFTPack::cfft2f(x1, x1, y1, out, wsaveptr, lsav_p, workptr, lenwrk, ier);
-      else
-	FFTPack::cfft2b(x1, x1, y1, out, wsaveptr, lsav_p, workptr, lenwrk, ier);
+      throw(AipsError("FFTPack has been deprecated. Please revert to using FFTW by setting useFFTW_p=true"));
     }
+    // else{
+      // Int ier;
+      // Int x1=Int(x);
+      // Int y1=Int(y);
+      // if(wsave_p.size()==0){
+	// wsave_p.resize(2*x1*y1+15);
+	// lsav_p=2*x1*y1+15;
+	// Float *wsaveptr=wsave_p.data();
+	// FFTPack::cfft2i(x1, y1, wsaveptr, lsav_p, ier);
+      // }
+      // std::vector<Float> work(2*x1*y1);
+      // Int lenwrk=2*x1*y1;
+      // Float* workptr=work.data();
+      // Float* wsaveptr=wsave_p.data();
+      // if(toFreq)
+	// FFTPack::cfft2f(x1, x1, y1, out, wsaveptr, lsav_p, workptr, lenwrk, ier);
+      // else
+	// FFTPack::cfft2b(x1, x1, y1, out, wsaveptr, lsav_p, workptr, lenwrk, ier);
+    // }
   }
   void FFT2D::doFFT(Complex*& out, Float*& in, Long x, Long y){
     if(useFFTW_p){
