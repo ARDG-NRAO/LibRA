@@ -256,17 +256,17 @@ SPIIF PVGenerator::generate() const {
     auto end = *_end;
     Double paInRad = start[1] == end[1] ?
         start[0] < end[0]
-            ? 0 : C::pi
+            ? 0 : M_PI
         : atan2(
             end[0] - start[0], end[1] - start[1]
-        ) - C::pi_2;
+        ) - M_PI_2;
     Double halfwidth = (_width - 1)/2;
     if (_width > 1) {
         // check already done when setting the points if _width == 1
         _checkWidthSanity(paInRad, halfwidth, start, end, subImage, xAxis, yAxis);
     }
     SPCIIF rotated = subImage;
-    auto paInDeg = paInRad*180/C::pi;
+    auto paInDeg = paInRad*180/M_PI;
     auto mustRotate = abs(fmod(paInDeg, 360)) > 0.001;
     if (mustRotate) {
         _moveRefPixel(subImage, subCoords, start, end, paInDeg, xAxis, yAxis);
@@ -570,7 +570,7 @@ void PVGenerator::_checkWidthSanity(
     Double paInRad, Double halfwidth, const vector<Double>& start,
     const vector<Double>& end, SPCIIF subImage, Int xAxis, Int yAxis
 ) const {
-    Double angle1 = paInRad + C::pi/2;
+    Double angle1 = paInRad + M_PI/2;
     Double halfx = halfwidth*cos(angle1);
     Double halfy = halfwidth*sin(angle1);
     Vector<Double> xs(4);
@@ -614,7 +614,7 @@ void PVGenerator::_checkWidth(const Int64 xShape, const Int64 yShape) const {
     vector<Double> end = *_end;
 
     Double angle = (start[0] == end[0])
-        ? 0 : atan2((end[1] - start[1]),(end[0] - start[0])) + C::pi_2;
+        ? 0 : atan2((end[1] - start[1]),(end[0] - start[0])) + M_PI_2;
     Double halfwidth = (_width - 1)/2;
 
     Double delX = halfwidth * cos(angle);

@@ -629,7 +629,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -755,7 +755,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -1443,7 +1443,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Float centerX=nx/2;
     for (Int ix=0;ix<nx;ix++) 
       {
-	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+	Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	if(ix==centerX) sincConv(ix)=1.0;
 	else            sincConv(ix)=sin(x)/x;
       }
@@ -3036,7 +3036,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   //   Float centerX=nx/2;
   //   for (Int ix=0;ix<nx;ix++) 
   //     {
-  // 	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+  // 	Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
   // 	if(ix==centerX) sincConv(ix)=1.0;
   // 	else 	    sincConv(ix)=sin(x)/x;
   //     }
@@ -3116,7 +3116,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   //   Float centerX=nx/2;
   //   for (Int ix=0;ix<nx;ix++) 
   //     {
-  // 	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+  // 	Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
   // 	if(ix==centerX) sincConv(ix)=1.0;
   // 	else 	    sincConv(ix)=sin(x)/x;
   //     }

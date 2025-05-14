@@ -424,7 +424,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     screen.set(0.0);
      Bool cpscr;
      Complex *scr=screen.getStorage(cpscr);
-      Double twoPiW=2.0*C::pi*Double(iw*iw)/cpWscale;
+      Double twoPiW=2.0*M_PI*Double(iw*iw)/cpWscale;
 	 for (Int iy=-inner/2;iy<inner/2;iy++) {
 	   Double m=s1*Double(iy);
 	   Double msq=m*m;

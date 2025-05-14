@@ -201,14 +201,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     );
     wFreqs_p *=1e6;
     //Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-    feedConf_p["L"] = (-185.9)*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
-    feedConf_p["S"] = (-11.61)*C::pi/180.0;
-    feedConf_p["C"]=(-104.8)*C::pi/180.0;
-    feedConf_p["X"]=(-113.7)*C::pi/180.0;
-    feedConf_p["U"]=(42.4)*C::pi/180.0;
-    feedConf_p["K"]=(64.4)*C::pi/180.0;
-    feedConf_p["A"]=(106.9)*C::pi/180.0;
-    feedConf_p["Q"]=(85.5)*C::pi/180.0;
+    feedConf_p["L"] = (-185.9)*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
+    feedConf_p["S"] = (-11.61)*M_PI/180.0;
+    feedConf_p["C"]=(-104.8)*M_PI/180.0;
+    feedConf_p["X"]=(-113.7)*M_PI/180.0;
+    feedConf_p["U"]=(42.4)*M_PI/180.0;
+    feedConf_p["K"]=(64.4)*M_PI/180.0;
+    feedConf_p["A"]=(106.9)*M_PI/180.0;
+    feedConf_p["Q"]=(85.5)*M_PI/180.0;
 
     squint_p=BeamSquint( MDirection( Quantity(1.25, "arcmin"), Quantity(90.0, "deg"),
 				       MDirection::Ref(MDirection::AZEL)), Quantity(1.0, "GHz"));

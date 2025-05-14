@@ -80,7 +80,7 @@ void SimpleComponentFTMachine::get(VisBuffer& vb, SkyComponent& component,
       uvw(2, n) = uvwValue(2);
     }
     rotateUVW(uvw, dphase, vb, component.shape().refDirection());
-    dphase *= -C::_2pi;
+    dphase *= -2*M_PI;
   }
   uInt npol=vb.modelVisCube().shape()(0);
   uInt nChan=vb.modelVisCube().shape()(1);
@@ -295,7 +295,7 @@ void SimpleComponentFTMachine::get(VisBuffer& vb, const ComponentList& compList,
     uvwcomp[k]=uvw;
     dphasecomp[k].resize(nRow);
     rotateUVW(uvwcomp[k], dphasecomp[k],  vb, compList.component(k).shape().refDirection());
-    dphasecomp[k] *= -C::_2pi;
+    dphasecomp[k] *= -(2*M_PI);
     Int sumrow=0;
     for (uInt jj=0; jj < npart; ++jj){
       dphasecomps[jj][k]=dphasecomp[k](IPosition(1,sumrow), IPosition(1, sumrow+nRowp(jj)-1));

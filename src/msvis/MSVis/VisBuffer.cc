@@ -1454,7 +1454,7 @@ void VisBuffer::phaseCenterShift(const Vector<Double>& phase)
 
   for (Int irow = 0; irow < nRow(); ++irow){
 
-    udx = phase(irow) * -2.0 * C::pi/C::c; // in radian/Hz
+    udx = phase(irow) * -2.0 * M_PI/C::c; // in radian/Hz
 
     for (Int ichn = 0; ichn < nChannel(); ++ichn) {
       // Calculate the Complex factor for this row and channel
@@ -1492,8 +1492,8 @@ void VisBuffer::phaseCenterShift(Double dx, Double dy)
   }
 
   // Offsets in radians (input is arcsec)
-  dx *= (C::pi / 180.0 / 3600.0);
-  dy *= (C::pi / 180.0 / 3600.0);
+  dx *= (M_PI / 180.0 / 3600.0);
+  dy *= (M_PI / 180.0 / 3600.0);
 
   // Extra path as fraction of U and V
   Vector<Double> udx;

@@ -1429,10 +1429,10 @@ void Importmiriad::fillFeedTable()
   Vector<Double> ra(2);
   ra = 0.0;
   if (array_p == "ATCA") {
-    ra(0)=C::pi/4;
+    ra(0)=M_PI/4;
     // 7mm feed is different; assumes all spectral windows are in same band for now...
-    if (win[freqSet_p].sfreq[0]>30. && win[freqSet_p].sfreq[0]<50.) ra(0)+=C::pi/2;
-    ra(1)=ra(0)+C::pi/2;
+    if (win[freqSet_p].sfreq[0]>30. && win[freqSet_p].sfreq[0]<50.) ra(0)+=M_PI/2;
+    ra(1)=ra(0)+M_PI/2;
   }
 
   // fill the feed table

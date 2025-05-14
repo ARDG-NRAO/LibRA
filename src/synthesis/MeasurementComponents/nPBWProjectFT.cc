@@ -614,7 +614,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -738,7 +738,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -1397,7 +1397,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Int NNN=0;
     logIO() << LogOrigin("nPBWProjectFT", "makeConvFunction") 
 	    << "Making a new convolution function for PA="
-	    << pa*(180/C::pi) << "deg"
+	    << pa*(180/M_PI) << "deg"
 	    << LogIO::NORMAL 
 	    << LogIO::POST;
 
@@ -1582,7 +1582,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    logIO() << LogOrigin("nPBWProjectFT", "")
 		    << "Computing WPlane " << iw  << LogIO::POST;
 	    
-	    Double twoPiW=2.0*C::pi*Double(iw*iw)/uvScale(2);
+	    Double twoPiW=2.0*M_PI*Double(iw*iw)/uvScale(2);
 	    
 	    for (Int iy=-inner/2;iy<inner/2;iy++) 
 	      {
@@ -2041,7 +2041,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Float centerX=nx/2;
     for (Int ix=0;ix<nx;ix++) 
       {
-	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+	Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	if(ix==centerX) sincConv(ix)=1.0;
 	else            sincConv(ix)=sin(x)/x;
       }
@@ -3703,7 +3703,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  Float centerX=nx/2;
 	  for (Int ix=0;ix<nx;ix++) 
 	    {
-	      Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+	      Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	      if(ix==centerX) sincConv(ix)=1.0;
 	      else 	    sincConv(ix)=sin(x)/x;
 	    }

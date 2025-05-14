@@ -50,7 +50,7 @@
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
-
+// constexpr Double speedOfLight = 299792458.0; // Speed of light in m/s 
 DiskShape::DiskShape()
   :TwoSidedShape(),
    _majorAxis(Quantity(1,"'").getValue("rad")),
@@ -212,7 +212,7 @@ DComplex DiskShape::visibility(const Vector<Double>& uvw,
   if (!nearAbs(_pa, 0.0)) {
     _rotateVis(u, v, cos(_pa), sin(_pa));
   }
-  return DComplex(_calcVis(u, v, C::pi * frequency/C::c), 0.0);
+  return DComplex(_calcVis(u, v, M_PI * frequency / C::c), 0.0);
 }
 
 void DiskShape::visibility(Matrix<DComplex>& scale,
@@ -245,7 +245,7 @@ void DiskShape::visibility(Vector<DComplex>& scale,
     spa = sin(_pa);
   }
 
-  const Double factor = C::pi * frequency/C::c;
+  const Double factor = M_PI * frequency / C::c;
   Double u, v;
   for (uInt i = 0; i < nSamples; i++) {
     u = uvw(0, i);
@@ -295,7 +295,7 @@ Bool DiskShape::ok() const {
            << LogIO::POST;
     return false;
   }
-  if (!near(_recipArea, 1.0/_area(), 2*C::dbl_epsilon)) {
+  if (!near(_recipArea, 1.0/_area(), 2*DBL_EPSILON)) {
     LogIO logErr(LogOrigin("DiskCompRep", "ok()"));
     logErr << LogIO::SEVERE << "The disk shape does not have"
        << " unit area"
@@ -324,7 +324,7 @@ void DiskShape::_rotateVis(Double& u, Double& v,
 }
 
 Double DiskShape::_area() const {
-    return C::pi_4 * _majorAxis * _minorAxis; 
+    return M_PI_4 * _majorAxis * _minorAxis;
 }
 
 Double DiskShape::_calcSample(const MDirection::MVType& compDirValue, 

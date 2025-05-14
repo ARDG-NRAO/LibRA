@@ -97,15 +97,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   SDAlgorithmMTAspClean::SDAlgorithmMTAspClean(uInt nTaylorTerms, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode):
     SDAlgorithmBase(),
-    itsMatPsfs(), itsMatResiduals(), itsMatModels(),
-    itsNTerms(nTaylorTerms),
     itsStopPointMode(stoppointmode),
-    itsCleaner(),
+    itsNTerms(nTaylorTerms),
     itsFusedThreshold(fusedThreshold),
-    itsMCsetup(true),
+    itsCleaner(),
     itsUserLargestScale(largestScale),
+    itsMCsetup(true),
     itsPrevPsfWidth(0),
-    itsIsSingle(isSingle)
+    itsIsSingle(isSingle),
+    itsMatPsfs(), itsMatResiduals(), itsMatModels()
   {
     itsAlgorithmName = String("asp");
   }

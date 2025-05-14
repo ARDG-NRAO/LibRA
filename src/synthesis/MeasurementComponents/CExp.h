@@ -42,7 +42,7 @@ namespace casa{
 #define HASH(A) {(int)(myhash((A)/PI2)/Step)}
 #define MYHASH(A)   {((int)((((A)<0)?(((A)+1-(int)(A))*PI2):(((A)-(int)(A))*PI2))/Step))}
 
-inline double myhash(register double arg)
+inline double myhash(double arg)
 {
   if (arg < 0) return (arg+1-(int)arg)*PI2;
   return (arg-(int)arg)*PI2;
@@ -73,7 +73,7 @@ public:
       }
   }
 
-  inline double f(register T arg)
+  inline double f(T arg)
   {
     if (arg < 0) return (arg+1-(int)arg)*PI2;
     return (arg-(int)arg)*PI2;
@@ -82,7 +82,7 @@ public:
   inline int hashFunction(T arg)   {return (int)(std::fmod(abs(arg+PI2),PI2)/Step);}
 //{return (int)(myhash(arg/PI2)/Step);}
 
-  inline int myhash2(register double arg)
+  inline int myhash2(double arg)
   { /* Steps must be double here, otherwise compiler will keep converting
        from int to double everytime, because Steps is a variable.
     */

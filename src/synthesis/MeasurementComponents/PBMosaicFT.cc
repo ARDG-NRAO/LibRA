@@ -450,7 +450,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  Float centerX=nx/2+1;
 	  for (Int ix=0;ix<nx;ix++) 
 	    {
-	      Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+	      Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	      if(ix==centerX) sincConv(ix)=1.0;
 	      else 	    sincConv(ix)=sin(x)/x;
 	    }

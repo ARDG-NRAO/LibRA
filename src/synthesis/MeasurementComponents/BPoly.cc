@@ -745,9 +745,9 @@ void BJonesPoly::selfSolveOne(VisBuffGroupAcc& vbga)
 
     os << LogIO::NORMAL 
        << "Per baseline RMS phase (deg) statistics: (min/mean/max) = "
-       << min(rmsPhaseFit2)*180.0/C::pi << "/" 
-       << mean(rmsPhaseFit2)*180.0/C::pi << "/" 
-       << max(rmsPhaseFit2)*180.0/C::pi
+       << min(rmsPhaseFit2)*180.0/M_PI << "/" 
+       << mean(rmsPhaseFit2)*180.0/M_PI << "/" 
+       << max(rmsPhaseFit2)*180.0/M_PI
        << LogIO::POST;
     
     // Expand solutions into full antenna list
@@ -841,7 +841,7 @@ void BJonesPoly::selfSolveOne(VisBuffGroupAcc& vbga)
 	  meanPha/=Complex(nChAve);
 	  meanAmp/=Double(nChAve);
 
-	  //	  cout << "mean B = " << meanAmp << " " << arg(meanPha)*180.0/C::pi << endl;
+	  //	  cout << "mean B = " << meanAmp << " " << arg(meanPha)*180.0/M_PI << endl;
 	  
 	  Ca(0)-=2.0*log(meanAmp);
 	  Cp(0)-=2.0*arg(meanPha);
@@ -1453,8 +1453,8 @@ void BJonesPoly::plotsolve2(const Vector<Double>& x,
 	amp1(num_valid_points)=exp(ampdata.column(ibl)(k));
 	amperr1(num_valid_points)=Float(amperr(ibl))*amp1(num_valid_points);
 
-	pha1(num_valid_points)=remainder(phadata.column(ibl)(k), 2*C::pi)/C::pi*180.0;
-	phaerr1(num_valid_points)=Float(phaerr(ibl))/C::pi*180.0;
+	pha1(num_valid_points)=remainder(phadata.column(ibl)(k), 2*M_PI)/M_PI*180.0;
+	phaerr1(num_valid_points)=Float(phaerr(ibl))/M_PI*180.0;
 	  
 	num_valid_points+=1;
       }
@@ -1486,9 +1486,9 @@ void BJonesPoly::plotsolve2(const Vector<Double>& x,
 	pha2b(k)=getChebVal(ant2phacoeff,x(0),x(ndatapts-1), xval[k]);
 	pha2(k)=pha2b(k)-pha2a(k);
 	          
-	pha2a(k)=remainder(pha2a(k),2*C::pi)*180.0/C::pi;
-	pha2b(k)=remainder(pha2b(k),2*C::pi)*180.0/C::pi;
-	pha2(k)=remainder(pha2(k),2*C::pi)*180.0/C::pi;
+	pha2a(k)=remainder(pha2a(k),2*M_PI)*180.0/M_PI;
+	pha2b(k)=remainder(pha2b(k),2*M_PI)*180.0/M_PI;
+	pha2(k)=remainder(pha2(k),2*M_PI)*180.0/M_PI;
 
 
 	amp2a(k)=getChebVal(ant1ampcoeff,x(0),x(ndatapts-1), xval(k));

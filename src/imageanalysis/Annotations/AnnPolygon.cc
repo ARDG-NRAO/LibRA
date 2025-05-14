@@ -297,8 +297,8 @@ void AnnPolygon::_initCenterRectCorners(
 		widthx.getUnit() == "pix"
 		&& ! getCsys().directionCoordinate().hasSquarePixels()
 		&& (
-			! casacore::near(fmod(positionAngle.getValue("rad"), C::pi), 0.0)
-			&& ! casacore::near(fmod(fabs(positionAngle.getValue("rad")), C::pi), C::pi_2)
+			! casacore::near(fmod(positionAngle.getValue("rad"), M_PI), 0.0)
+			&& ! casacore::near(fmod(fabs(positionAngle.getValue("rad")), M_PI), M_PI_2)
 		),
 		"When pixels are not square and units are expressed in "
 		"pixels, position angle must be zero"

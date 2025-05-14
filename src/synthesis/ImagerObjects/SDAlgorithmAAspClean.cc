@@ -67,8 +67,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsCleaner(),
     itsStopPointMode(stoppointmode),
     itsFusedThreshold(fusedThreshold),
-    itsMCsetup(true),
     itsUserLargestScale(largestScale),
+    itsMCsetup(true),
     itsPrevPsfWidth(0),
     itsIsSingle(isSingle)
   {
