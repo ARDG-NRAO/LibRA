@@ -170,7 +170,7 @@ template <class T> SPIIT ImageFactory::createImage(
             "Failed to create PagedImage"
         );
     }
-    T *x = 0;
+    // T *x = 0;
     auto creationMsg = _imageCreationMessage(outfile, shape, whatType<T>());
     ImageHistory<T> hist(image);
     if (msgs) {

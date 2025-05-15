@@ -60,7 +60,7 @@ SkyComponent SkyComponentFactory::encodeSkyComponent(
         pars(1) = tmp;
 
         Double pa0 = pars(5);
-        MVAngle pa(pa0 + C::pi_2);
+        MVAngle pa(pa0 + M_PI_2);
         pa();                         // +/- pi
         pars(5) = pa.radian();
     }
@@ -201,7 +201,7 @@ Vector<Double> SkyComponentFactory::decodeSkyComponent (
       pars(0) = pars(1);
       pars(1) = tmp;
 //
-      MVAngle pa(pa0 - C::pi_2);
+      MVAngle pa(pa0 - M_PI_2);
       pa();                         // +/- pi
       pa0 = pa.radian();
    }

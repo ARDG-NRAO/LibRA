@@ -44,16 +44,16 @@ void Projector::rotateRA(Vector<Double> &v) {
   Vector<Double> work(len);
 
   for (uInt i = 0; i < len; i++) {
-    work[i] = fmod(v[i], C::_2pi);
+    work[i] = fmod(v[i], 2*M_PI);
     if (work[i] < 0.0) {
-      work[i] += C::_2pi;
+      work[i] += 2*M_PI;
     }
   }
 
   Vector<uInt> quad(len);
   Vector<uInt> nquad(4, 0);
   for (uInt i = 0; i < len; i++) {
-    uInt q = uInt(work[i] / C::pi_2);
+    uInt q = uInt(work[i] / M_PI_2);
     nquad[q]++;
     quad[i] = q;
   }
@@ -67,7 +67,7 @@ void Projector::rotateRA(Vector<Double> &v) {
 
   for (uInt i = 0; i < len; i++) {
     if (rot[quad[i]]) {
-      v[i] = work[i] - C::_2pi;
+      v[i] = work[i] - 2*M_PI;
     } else {
       v[i] = work[i];
     }

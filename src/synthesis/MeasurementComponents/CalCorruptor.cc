@@ -700,7 +700,7 @@ void AtmosCorruptor::initialize(const Int rxtype) {
     //    amp() = 4 * C::sqrt2 * 1.38062e-16 * 1e23 * 1e-4 /
     amp() = 8 * 1.38062e-16 * 1e23 * 1e-4 /
       ( simpar.asFloat("antefficiency") *
-	simpar.asFloat("correfficiency") * C::pi );
+	simpar.asFloat("correfficiency") * M_PI );
     // or divided by D for a T
     os << LogIO::DEBUG1 << " noise ~ " << amp()*1000 << "*Tsys/D^2/sqrt(dnu dt)/Nant" << LogIO::POST;
   }

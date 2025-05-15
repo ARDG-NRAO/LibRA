@@ -31,10 +31,11 @@
 #include <casacore/scimath/Mathematics/RigidVector.h>
 
 #include <map>
-
+// #include <numbers> // require -std=20 to compile
 #include <casacore/casa/Logging/LogIO.h>
 
 using namespace casacore;
+using namespace std;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 Bool FluxCalcLogFreqPolynomial::operator()(Flux<Double>& value,
@@ -76,8 +77,8 @@ Bool FluxCalcLogFreqPolynomial::operator()(Flux<Double>& value,
   }
 
   Double fluxDensity = pow(10.0, fluxCoeff);
-  Double fluxError = coeffErr > 0.0 ? C::ln10 * fluxDensity * sqrt(coeffErr) : 0.0;
-
+  // Double fluxError = coeffErr > 0.0 ? C::ln10 * fluxDensity * sqrt(coeffErr) : 0.0;
+  Double fluxError = coeffErr > 0.0 ? M_LN10 * fluxDensity * sqrt(coeffErr) : 0.0;
   //cerr<<"FluxDensity=="<<fluxDensity<<endl;
   value.setValue(fluxDensity);
   error.setValue(fluxError);
@@ -158,7 +159,7 @@ Bool FluxCalcLogFreqPolynomialSH :: operator()( Flux<Double>& value,
       for ( uInt order = coeffs_p( 1 ).nelements() - 1; order >= 1; --order)
         dS2 = ( dS2 + square( coeffs_p( 1 )[ order ] ) ) * square( logF );
       dS2 = square( S * coeffs_p( 1 )[ 0 ] / coeffs_p( 0 )[ 0 ] ) +
-            square( C::ln10 * S ) * dS2;
+            square( M_LN10 * S ) * dS2;
     }
   }
 

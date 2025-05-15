@@ -237,7 +237,7 @@ void XMueller::newselfSolve(VisSet& vs, VisEquation& ve) {
 	logSink() << "Position angle offset solution for " 
 		  << msmc().fieldName(currField())
 		  << " (spw = " << currSpw() << ") = "
-		  << arg(solveCPar()(0,0,0))*180.0/C::pi/2.0
+		  << arg(solveCPar()(0,0,0))*180.0/M_PI/2.0
 		  << " deg."
 		  << LogIO::POST;
       else
@@ -350,8 +350,8 @@ void XMueller::solveOneVB(const VisBuffer& vb) {
   
 /*
   cout << "spw = " << currSpw() << endl;
-  cout << " rl = " << rl << " " << arg(rl)*180.0/C::pi << endl;
-  cout << " lr = " << lr << " " << arg(lr)*180.0/C::pi << endl;
+  cout << " rl = " << rl << " " << arg(rl)*180.0/M_PI << endl;
+  cout << " lr = " << lr << " " << arg(lr)*180.0/M_PI << endl;
 */
 
     // combine lr with rl
@@ -543,7 +543,7 @@ void XJones::newselfSolve(VisSet& vs, VisEquation& ve) {
       solveOneVB(svb);
 
       if (ntrue(solveParOK())>0) {
-	Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+	Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
 
 
 	logSink() << "Mean CROSS-HAND PHASE solution for " 
@@ -677,8 +677,8 @@ void XJones::solveOneVB(const VisBuffer& vb) {
   
 
   //  cout << "spw = " << currSpw() << endl;
-  //  cout << " rl = " << rl << " " << phase(rl)*180.0/C::pi << endl;
-  //  cout << " lr = " << lr << " " << phase(lr)*180.0/C::pi << endl;
+  //  cout << " rl = " << rl << " " << phase(rl)*180.0/M_PI << endl;
+  //  cout << " lr = " << lr << " " << phase(lr)*180.0/M_PI << endl;
 
   // Record results
   solveCPar()=Complex(1.0);
@@ -703,7 +703,7 @@ void XJones::solveOneVB(const VisBuffer& vb) {
 
   
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
     
     
     logSink() << "Mean CROSS-HAND PHASE solution for " 
@@ -785,8 +785,8 @@ void XJones::solveOneSDB(SolveDataBuffer& sdb) {
   
 
   //  cout << "spw = " << currSpw() << endl;
-  //  cout << " rl = " << rl << " " << phase(rl)*180.0/C::pi << endl;
-  //  cout << " lr = " << lr << " " << phase(lr)*180.0/C::pi << endl;
+  //  cout << " rl = " << rl << " " << phase(rl)*180.0/M_PI << endl;
+  //  cout << " lr = " << lr << " " << phase(lr)*180.0/M_PI << endl;
 
   // Record results
   solveCPar()=Complex(1.0);
@@ -811,7 +811,7 @@ void XJones::solveOneSDB(SolveDataBuffer& sdb) {
 
   
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
     
     
     logSink() << "Mean CROSS-HAND PHASE solution for " 
@@ -900,8 +900,8 @@ void XJones::solveOne(SDBList& sdbs) {
   } // isdb
 
   //  cout << "spw = " << currSpw() << endl;
-  //  cout << " rl = " << rl << " " << phase(rl)*180.0/C::pi << endl;
-  //  cout << " lr = " << lr << " " << phase(lr)*180.0/C::pi << endl;
+  //  cout << " rl = " << rl << " " << phase(rl)*180.0/M_PI << endl;
+  //  cout << " lr = " << lr << " " << phase(lr)*180.0/M_PI << endl;
 
   // Record results
   solveCPar()=Complex(1.0);
@@ -926,7 +926,7 @@ void XJones::solveOne(SDBList& sdbs) {
 
   
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
     
     
     logSink() << "Mean CROSS-HAND PHASE solution for " 
@@ -1306,7 +1306,7 @@ void XparangJones::solveOneVB(const VisBuffer& vb) {
       if (ich>0) {
 	// If Xph changes by more than pi/2, probably a ambig jump...
 	Float dang=abs(arg(Cph(ich)/Cph(ich-1)));
-	if (dang > (C::pi/2.)) {
+	if (dang > (M_PI/2.)) {
 	  Cph(ich)*=-1.0;   // fix this one
 	  currAmb*=-1.0;    // reverse currAmb, so curr amb is carried forward
 	  //	  cout << "  Found XY phase ambiguity jump at chan=" << ich << " in spw=" << currSpw();
@@ -1331,7 +1331,7 @@ void XparangJones::solveOneVB(const VisBuffer& vb) {
     cout << endl 
 	 << "Spw = " << thisSpw
 	 << " (ich=" << nChan/2 << "/" << nChan << "): " << endl
-	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/C::pi << " deg." << endl;
+	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/M_PI << " deg." << endl;
       
 
   // Now fit for the source polarization
@@ -1399,7 +1399,7 @@ void XparangJones::solveOneVB(const VisBuffer& vb) {
 	 << "Q = " << QU_(0,thisSpw) << ", "
 	 << "U = " << QU_(1,thisSpw) << "; "
 	 << "P = " << sqrt(soln(0)*soln(0)+soln(1)*soln(1)) << ", "
-	 << "X = " << atan2(soln(1),soln(0))*90.0/C::pi << "deg."
+	 << "X = " << atan2(soln(1),soln(0))*90.0/M_PI << "deg."
 	 << endl;
     cout << " Net (over baselines) instrumental polarization: " 
 	 << soln(2) << endl;
@@ -1546,7 +1546,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
       if (ich>0) {
 	// If Xph changes by more than pi/2, probably a ambig jump...
 	Float dang=abs(arg(Cph(ich)/Cph(ich-1)));
-	if (dang > (C::pi/2.)) {
+	if (dang > (M_PI/2.)) {
 	  Cph(ich)*=-1.0;   // fix this one
 	  currAmb*=-1.0;    // reverse currAmb, so curr amb is carried forward
 	  //cout << "  Found XY phase ambiguity jump at chan=" << ich << " in spw=" << currSpw() << endl;
@@ -1630,12 +1630,12 @@ void XparangJones::solveOne(SDBList& sdbs) {
 
 
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
 
     logSink() << " Fld = " << msmc().fieldName(currField())
 	      << ", Spw = " << thisSpw
 	      << " (ich=" << nChan/2 << "/" << nChan << "): " //<< endl
-	      << " CROSS-HAND PHASE = " << arg(Cph[nChan/2])*180.0/C::pi << " deg."
+	      << " CROSS-HAND PHASE = " << arg(Cph[nChan/2])*180.0/M_PI << " deg."
 	      << " (Mean = " << ang << ")"
 	      << LogIO::POST;
   }
@@ -1650,7 +1650,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
     cout << endl 
 	 << "Spw = " << thisSpw
 	 << " (ich=" << nChan/2 << "/" << nChan << "): " // << endl
-	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/C::pi << " deg." << endl;
+	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/M_PI << " deg." << endl;
       
 
 
@@ -1729,7 +1729,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
 	      << "Q = " << Q << ", "
 	      << "U = " << U << "; "
 	      << "P = " << sqrt(Q*Q+U*U) << ", "
-	      << "X = " << atan2(U,Q)*90.0/C::pi << "deg."
+	      << "X = " << atan2(U,Q)*90.0/M_PI << "deg."
 	      << LogIO::POST;
     logSink() << "  Net (over baselines) instrumental polarization (real part): " 
 	      << soln(2) << LogIO::POST;
@@ -1820,7 +1820,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
       else
 	throw(AipsError("Source polarization solution is singular; try solving for D-terms only."));
 
-      //cout << "ich=" << ich << "  sol = " << sol[0] << "," << sol[1] << "   P=" << abs(sol[1]) << "   X=" << arg(sol[1])*180/C::pi << endl;
+      //cout << "ich=" << ich << "  sol = " << sol[0] << "," << sol[1] << "   P=" << abs(sol[1]) << "   X=" << arg(sol[1])*180/M_PI << endl;
 
       Cph[ich]=sol[1]/abs(sol[1]);   // phase-only as complex number
 
@@ -1836,12 +1836,12 @@ void XparangJones::solveOne(SDBList& sdbs) {
   }  // ICH
 
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/C::pi;
+    Float ang=arg(sum(solveCPar()(solveParOK()))/Float(ntrue(solveParOK())))*180.0/M_PI;
 
     logSink() << " Fld = " << msmc().fieldName(currField())
 	      << ", Spw = " << thisSpw
 	      << " (ich=" << nChan/2 << "/" << nChan << "): "  // << endl
-	      << " CROSS-HAND PHASE = " << arg(Cph[nChan/2])*180.0/C::pi << " deg."
+	      << " CROSS-HAND PHASE = " << arg(Cph[nChan/2])*180.0/M_PI << " deg."
 	      << " (Mean = " << ang << ")"
 	      << LogIO::POST;
   }
@@ -1856,7 +1856,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
     cout << endl 
 	 << "Spw = " << thisSpw
 	 << " (ich=" << nChan/2 << "/" << nChan << "): " // << endl
-	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/C::pi << " deg." << endl;
+	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/M_PI << " deg." << endl;
       
 
 
@@ -1896,7 +1896,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
     else
       throw(AipsError("Source polarization solution is singular; try solving for D-terms only."));
 
-    //cout << "sol = " << sol[0] << "," << sol[1] << "   P=" << abs(sol[1]) << "   X=" << arg(sol[1])*90.0/C::pi << endl;
+    //cout << "sol = " << sol[0] << "," << sol[1] << "   P=" << abs(sol[1]) << "   X=" << arg(sol[1])*90.0/M_PI << endl;
 
     srcPolPar().resize(2);
     srcPolPar()(0)=real(sol[1]);
@@ -1911,7 +1911,7 @@ void XparangJones::solveOne(SDBList& sdbs) {
 	      << "Q = " << Q << ", "
 	      << "U = " << U << "; "
 	      << "P = " << sqrt(Q*Q+U*U) << ", "
-	      << "X = " << atan2(U,Q)*90.0/C::pi << "deg."
+	      << "X = " << atan2(U,Q)*90.0/M_PI << "deg."
 	      << LogIO::POST;
     logSink() << " Net (over baselines) instrumental polarization: " 
 	      << abs(sol[0]) << LogIO::POST;
@@ -2332,7 +2332,7 @@ void PosAngJones::solveOne(SDBList& sdbs) {
   }
 
   if (ntrue(solveParOK())>0) {
-    Float ang=arg(sum(RL))*90.0/C::pi;
+    Float ang=arg(sum(RL))*90.0/M_PI;
     logSink() << "Mean POSITION ANGLE OFFSET solution for " 
 	      << msmc().fieldName(currField())
 	      << " (spw = " << currSpw() << ") = "
@@ -2659,7 +2659,7 @@ void GlinXphJones::solveOneVB(const VisBuffer& vb) {
       if (ich>0) {
 	// If Xph changes by more than pi/2, probably a ambig jump...
 	Float dang=abs(arg(Cph(ich)/Cph(ich-1)));
-	if (dang > (C::pi/2.)) {
+	if (dang > (M_PI/2.)) {
 	  Cph(ich)*=-1.0;   // fix this one
 	  currAmb*=-1.0;    // reverse currAmb, so curr amb is carried forward
 	  //	  cout << "  Found XY phase ambiguity jump at chan=" << ich << " in spw=" << currSpw();
@@ -2684,7 +2684,7 @@ void GlinXphJones::solveOneVB(const VisBuffer& vb) {
     cout << endl 
 	 << "Spw = " << thisSpw
 	 << " (ich=" << nChan/2 << "/" << nChan << "): " << endl
-	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/C::pi << " deg." << endl;
+	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/M_PI << " deg." << endl;
       
 
   // Now fit for the source polarization
@@ -2752,7 +2752,7 @@ void GlinXphJones::solveOneVB(const VisBuffer& vb) {
 	 << "Q = " << QU_(0,thisSpw) << ", "
 	 << "U = " << QU_(1,thisSpw) << "; "
 	 << "P = " << sqrt(soln(0)*soln(0)+soln(1)*soln(1)) << ", "
-	 << "X = " << atan2(soln(1),soln(0))*90.0/C::pi << "deg."
+	 << "X = " << atan2(soln(1),soln(0))*90.0/M_PI << "deg."
 	 << endl;
     cout << " Net (over baselines) instrumental polarization: " 
 	 << soln(2) << endl;
@@ -2876,7 +2876,7 @@ void GlinXphJones::solveOne(SDBList& sdbs) {
       if (ich>0) {
 	// If Xph changes by more than pi/2, probably a ambig jump...
 	Float dang=abs(arg(Cph(ich)/Cph(ich-1)));
-	if (dang > (C::pi/2.)) {
+	if (dang > (M_PI/2.)) {
 	  Cph(ich)*=-1.0;   // fix this one
 	  currAmb*=-1.0;    // reverse currAmb, so curr amb is carried forward
 	  //	  cout << "  Found XY phase ambiguity jump at chan=" << ich << " in spw=" << currSpw();
@@ -2901,7 +2901,7 @@ void GlinXphJones::solveOne(SDBList& sdbs) {
     cout << endl 
 	 << "Spw = " << thisSpw
 	 << " (ich=" << nChan/2 << "/" << nChan << "): " << endl
-	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/C::pi << " deg." << endl;
+	 << " X-Y phase = " << arg(Cph[nChan/2])*180.0/M_PI << " deg." << endl;
       
 
   // Now fit for the source polarization
@@ -2976,7 +2976,7 @@ void GlinXphJones::solveOne(SDBList& sdbs) {
 	 << "Q = " << QU_(0,thisSpw) << ", "
 	 << "U = " << QU_(1,thisSpw) << "; "
 	 << "P = " << sqrt(soln(0)*soln(0)+soln(1)*soln(1)) << ", "
-	 << "X = " << atan2(soln(1),soln(0))*90.0/C::pi << "deg."
+	 << "X = " << atan2(soln(1),soln(0))*90.0/M_PI << "deg."
 	 << endl;
     cout << " Net (over baselines) instrumental polarization: " 
 	 << soln(2) << endl;

@@ -272,7 +272,7 @@ namespace casa{
     if (bandID_p == -1) bandID_p=getVisParams(vb);
     
     log_l << "Making a new convolution function for PA="
-	  << pa*(180/C::pi) << "deg"
+	  << pa*(180/M_PI) << "deg"
 	  << LogIO::NORMAL << LogIO::POST;
     
     if(wConvSize>0) {
@@ -596,10 +596,13 @@ namespace casa{
 		cfwts.xSupport(iw)=cfwts.ySupport(iw)=Int(0.5+Float(R)*CONVWTSIZEFACTOR/
 							  cfwts.sampling(0))+1;
 
-		if (cfs.maxXSupport == -1)
-		  if (cfs.xSupport(iw) > maxConvSupport)
-		    maxConvSupport = cfs.xSupport(iw);
-		  maxConvWtSupport=cfwts.xSupport(iw);//HOW CAN THIS BE RIGHT!!!!
+		if (cfs.maxXSupport == -1) 
+		  if (cfs.xSupport(iw) > maxConvSupport) {
+			maxConvSupport = cfs.xSupport(iw);
+			maxConvWtSupport = cfwts.xSupport(iw); // HOW CAN THIS BE RIGHT!!!!
+
+		  }
+		
 	      }
 	  }
       }

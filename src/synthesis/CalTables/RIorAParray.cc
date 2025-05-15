@@ -243,9 +243,9 @@ void RIorAPArray::trackPhase(Array<Float>& ph) {
     ph1.reference(phiter.array());
     for (uInt j=1;j<ph1.nelements();++j) {
       if (ph1(j)>ph1(j-1)) 
-	while (ph1(j)>(ph1(j-1)+C::pi)) ph1(j)-=C::_2pi;
+	while (ph1(j)>(ph1(j-1)+M_PI)) ph1(j)-=2.0*M_PI;
       if (ph1(j)<ph1(j-1)) 
-	while (ph1(j)<(ph1(j-1)-C::pi)) ph1(j)+=C::_2pi;
+	while (ph1(j)<(ph1(j-1)-M_PI)) ph1(j)+=2.0*M_PI;
     }
     phiter.next();
   }

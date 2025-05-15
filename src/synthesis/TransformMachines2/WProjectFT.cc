@@ -405,7 +405,7 @@ void WProjectFT::prepGridForDegrid(){
   
 Vector<Float> sincConvX(nx);
   for (Int ix=0;ix<nx;ix++) {
-    Float x=C::pi*Float(ix-nx/2)/(Float(nx)*Float(convSampling));
+    Float x=M_PI*Float(ix-nx/2)/(Float(nx)*Float(convSampling));
     if(ix==nx/2) {
       sincConvX(ix)=1.0;
     }
@@ -415,7 +415,7 @@ Vector<Float> sincConvX(nx);
   }
   Vector<Float> sincConvY(ny);
   for (Int ix=0;ix<ny;ix++) {
-    Float x=C::pi*Float(ix-ny/2)/(Float(ny)*Float(convSampling));
+    Float x=M_PI*Float(ix-ny/2)/(Float(ny)*Float(convSampling));
     if(ix==ny/2) {
       sincConvY(ix)=1.0;
     }
@@ -1322,7 +1322,7 @@ ImageInterface<Complex>& WProjectFT::getImage(Matrix<Float>& weights,
       Int npixCorr= max(nx,ny);
       Vector<Float> sincConv(npixCorr);
       for (Int ix=0;ix<npixCorr;ix++) {
-	Float x=C::pi*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
+	Float x=M_PI*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
 	if(ix==npixCorr/2) {
 	  sincConv(ix)=1.0;
 	}

@@ -1197,7 +1197,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
     //
     {
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = -135.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = -135.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),
@@ -1210,7 +1210,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
   case VLA_C:
     {
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = 25.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = 25.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),
@@ -1224,7 +1224,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
     {
       // This is based on the OLD X feed position; upgrade in progress
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = 82.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = 82.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),
@@ -1249,7 +1249,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
   case VLA_U:
     {
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = -25.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = -25.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),
@@ -1263,7 +1263,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
     {
       // This is based on the OLD K feed position; upgrade in progress
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = -6.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = -6.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),
@@ -1277,7 +1277,7 @@ PBMathInterface* PBMath::pbMathInterfaceForCommonPB(const PBMath::CommonPB ipb, 
     {
       // This is based on an approximate feed position; awaiting new numbers
       Float mag = 1.21;  // half-squint magnitude in arcmin at 1 GHz)
-      Float ang = 0.0*C::pi/180.0;    // squint orientation, rads, North of +AZ axis
+      Float ang = 0.0*M_PI/180.0;    // squint orientation, rads, North of +AZ axis
       thepbMath = new PBMath1DAiry( Quantity(25.0,"m"), Quantity(2.36,"m"),
 				       Quantity(0.8564,"deg"), Quantity(1.0,"GHz"),
 				       BeamSquint(MDirection(Quantity((mag*cos(ang)), "'"),

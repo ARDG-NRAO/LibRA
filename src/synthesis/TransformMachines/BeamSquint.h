@@ -76,7 +76,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 // <srcblock>
 //    casacore::MDirection oldPointing;
 //    casacore::MDirection newPointing;
-//    casacore::Quantity parallacticAngle(C::pi/2, "rad");
+//    casacore::Quantity parallacticAngle(M_PI/2, "rad");
 //    casacore::Quantity observingFreq(1.4142, "GHz");
 //    BeamSquint oneBS( casacore::MDirection( casacore::Quantity(1.0, "'"), casacore::Quantity(1.0, "'"),
 //                                  casacore::MDirection::Ref(casacore::MDirection::AZEL)),

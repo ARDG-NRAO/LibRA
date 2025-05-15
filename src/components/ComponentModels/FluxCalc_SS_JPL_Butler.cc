@@ -408,7 +408,7 @@ Bool FluxCalc_SS_JPL_Butler::readEphem()
   has_illu_p = get_interpolated_value(illu_p, "illu", tab, rowbef, rowclosest,
                                       rowaft, f, dt, tp1mt0, t0mtm1, false);
   if(has_illu_p)
-    has_illu_p *= 0.01;  // Convert it to a fraction.
+    illu_p *= 0.01;  // Convert it to a fraction.
 
   // RA, in deg.
   has_ra_p = get_interpolated_value(ra_p, "RA", tab, rowbef, rowclosest,
@@ -629,7 +629,7 @@ void FluxCalc_SS_JPL_Butler::compute_BB(Vector<Flux<Double> >& values,
   rocd2 *= rocd2;
 
   // Frequency independent factor.
-  Quantum<Double> freq_ind_fac(2.0e26 * QC::h( ) * C::pi * rocd2);
+  Quantum<Double> freq_ind_fac(2.0e26 * QC::h( ) * M_PI * rocd2);
 
   LogIO os(LogOrigin("FluxCalc_SS_JPL_Butler", "compute_BB"));
   os << LogIO::DEBUG1
@@ -671,7 +671,7 @@ void FluxCalc_SS_JPL_Butler::compute_GB(Vector<Flux<Double> >& values,
   rocd2 *= rocd2;
 
   // Frequency independent factor.
-  Quantum<Double> freq_ind_fac(2.0e26 * QC::h( ) * C::pi * rocd2);
+  Quantum<Double> freq_ind_fac(2.0e26 * QC::h( ) * M_PI * rocd2);
 
   LogIO os(LogOrigin("FluxCalc_SS_JPL_Butler", "compute_GB"));
   os << LogIO::DEBUG1

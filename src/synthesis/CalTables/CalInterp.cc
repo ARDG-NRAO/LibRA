@@ -383,10 +383,10 @@ void CalInterp::updTimeCoeff() {
 	      // Slope
 	      Float pslope = arg(csPar()(hi)) - tPC()(ref);
 	      // Catch simple phase wraps
-	      if (pslope > C::pi)
-		pslope-=(2*C::pi);
-	      else if (pslope < -C::pi)
-		pslope+=(2*C::pi);
+	      if (pslope > M_PI)
+		pslope-=(2*M_PI);
+	      else if (pslope < -M_PI)
+		pslope+=(2*M_PI);
 	      tPC()(slope) = pslope;
 	      
 	    } else if (timeType()=="aipslin") {
@@ -660,10 +660,10 @@ void CalInterp::updFreqCoeff() {
 	      // Slope
 	      Float pslope = tP_(hi) - tP_(lo);
 	      // Catch/remove simple phase wraps
-	      if (pslope > C::pi)
-		pslope-=(2*C::pi);
-	      else if (pslope < -C::pi)
-		pslope+=(2*C::pi);
+	      if (pslope > M_PI)
+		pslope-=(2*M_PI);
+	      else if (pslope < -M_PI)
+		pslope+=(2*M_PI);
 	      fPC()(slope) = pslope;
 	      
 	    } else if (freqType()=="aipslin") {

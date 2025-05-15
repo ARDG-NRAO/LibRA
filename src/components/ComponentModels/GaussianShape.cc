@@ -245,14 +245,14 @@ Bool GaussianShape::ok() const {
   // performance reasons. Both function static and file static variables
   // where considered and rejected for this purpose.
   if (!TwoSidedShape::ok()) return false;
-  if (!near(itsShape.flux(), Double(1.0), 2*C::dbl_epsilon)) {
+  if (!near(itsShape.flux(), Double(1.0), 2*DBL_EPSILON)) {
     LogIO logErr(LogOrigin("GaussianCompRep", "ok()"));
     logErr << LogIO::SEVERE << "The internal Gaussian shape does not have"
 	   << " unit area"
            << LogIO::POST;
     return false;
   }
-  if (!near(itsFT.height(), 1.0, 2*C::dbl_epsilon)) {
+  if (!near(itsFT.height(), 1.0, 2*DBL_EPSILON)) {
     LogIO logErr(LogOrigin("GaussianCompRep", "ok()"));
     logErr << LogIO::SEVERE << "The cached Fourier Transform of"
 	   << " the internal Gaussian shape does not have"
@@ -271,17 +271,17 @@ Quantity GaussianShape::getArea() const {
 	Double majorAxis = itsShape.majorAxis();
 	Double minorAxis = itsShape.minorAxis();
 
-	Quantity area(C::pi/(4*C::ln2) * majorAxis * minorAxis, "sr");
+	Quantity area(M_PI/(4*M_LN2) * majorAxis * minorAxis, "sr");
 	return area;
 }
 
 void GaussianShape::updateFT() {
-  const Double factor = 4.0*C::ln2/C::pi;
+  const Double factor = 4.0*M_LN2/M_PI;
   Vector<Double> width(2);
   width(0) = factor/itsShape.minorAxis();
   width(1) = factor/itsShape.majorAxis();
   itsFT.setWidth(width);
-  itsFT.setPA(itsShape.PA() + C::pi_2);
+  itsFT.setPA(itsShape.PA() + M_PI_2);
 }
 
 String GaussianShape::sizeToString() const {

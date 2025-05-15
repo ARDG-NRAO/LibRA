@@ -46,6 +46,7 @@ using namespace casa::ms;
 
 namespace vi {
 
+constexpr double speedOfLight = 2.99792458e8; // m/s
 
 
 VisBufferCache::VisBufferCache (VisBufferImpl2 * vb)
@@ -936,7 +937,7 @@ VisBufferImpl2::phaseCenterShift(const Vector<Double>& phase)
 	Double ph, udx;
 	for (rownr_t row_idx = 0; row_idx < nRows(); ++row_idx)
 	{
-		udx = phase(row_idx) * -2.0 * C::pi / C::c; // in radian/Hz
+        udx = phase(row_idx) * -2.0 * M_PI / speedOfLight; // in radian/Hz
 
 		for (Int chan_idx = 0; chan_idx < nChannels(); ++chan_idx)
 		{
@@ -975,8 +976,8 @@ void
 VisBufferImpl2::phaseCenterShift(Double dx, Double dy)
 {
 	// Offsets in radians (input is arcsec)
-	dx *= (C::pi / 180.0 / 3600.0);
-	dy *= (C::pi / 180.0 / 3600.0);
+    dx *= (M_PI / 180.0 / 3600.0);
+	dy *= (M_PI / 180.0 / 3600.0);
 
 	// Extra path as fraction of U and V
 	Vector<Double> udx;

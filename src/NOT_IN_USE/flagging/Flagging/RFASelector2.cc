@@ -134,7 +134,7 @@ void RFASelector::addString( String &str,const String &s1,const char *sep )
 Bool RFASelector::parseMinMax( Float &vmin,Float &vmax,const RecordInterface &spec,uInt f0 )
 {
     
-  vmin = -C::flt_max; vmax=C::flt_max;
+  vmin = -FLT_MAX; vmax=FLT_MAX;
 // Option 1: fields named min/max exist... so use them
   Bool named = false;
   if( spec.isDefined(RF_MIN) )
@@ -262,7 +262,7 @@ void RFASelector::parseClipField( const RecordInterface &spec,Bool clip )
       for( uInt i=0; i<spec.nfields(); i++ )
       {
         Vector<String> expr(1,spec.name(i));
-        Float vmin=-C::flt_max,vmax=C::flt_max;
+        Float vmin=-FLT_MAX,vmax=FLT_MAX;
         if( spec.dataType(i) == TpRecord )
         {
           uInt f0=0;
@@ -321,10 +321,10 @@ void RFASelector::addClipInfoDesc ( const Block<ClipInfo> &clip)
       ss = "average=0 ";
     }
 
-    if( clip[i].vmin != -C::flt_max )
+    if( clip[i].vmin != -FLT_MAX )
       sprintf(s1,"%g",clip[i].vmin + clip[i].offset);
 
-    if( clip[i].vmax != C::flt_max )
+    if( clip[i].vmax != FLT_MAX )
       sprintf(s2,"%g",clip[i].vmax + clip[i].offset);
 
     if( clip[i].clip )

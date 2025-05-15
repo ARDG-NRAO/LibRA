@@ -104,7 +104,7 @@ double Length::sget(double value, Length::Units units)
     return value;
   } else if(units == Length::UnitMilliMeter) {
     return 1.0E+3 * value;
-  } else if(units == Length::UnitMicron || Length::UnitMicrons) {
+  } else if(units == Length::UnitMicron || units == Length::UnitMicrons) {
     return 1.0E+6 * value;
   } else if(units == Length::UnitNanoMeter) {
     return 1.0E+9 * value;

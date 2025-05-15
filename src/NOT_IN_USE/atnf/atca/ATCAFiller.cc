@@ -1766,7 +1766,7 @@ void ATCAFiller::storeSysCal()
             msc_p->weather().windSpeed().put(row,   
                 Double(sc_.sc_cal[scq*(i+scif*ant)+4])/3.6); // km/s to m/s
             msc_p->weather().windDirection().put(row,
-                Double(sc_.sc_cal[scq*(i+scif*ant)+5])*C::pi/180.0); // deg to rad
+                Double(sc_.sc_cal[scq*(i+scif*ant)+5])*M_PI/180.0); // deg to rad
             msc_p->weather().temperatureFlag().put(row,  Bool(sc_.sc_cal[scq*(i+scif*ant)+6]));
             msc_p->weather().pressureFlag().put(row,     Bool(sc_.sc_cal[scq*(i+scif*ant)+6]));
             msc_p->weather().relHumidityFlag().put(row,  Bool(sc_.sc_cal[scq*(i+scif*ant)+6]));

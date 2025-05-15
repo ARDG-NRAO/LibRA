@@ -54,7 +54,7 @@ LimbDarkenedDiskShape::LimbDarkenedDiskShape()
    itsMajValue(Quantity(1,"'").getValue("rad")),
    itsMinValue(Quantity(1,"'").getValue("rad")),
    itsPaValue(Quantity(0,"deg").getValue("rad")),
-   itsHeight(1.0/(C::pi*itsMajValue*itsMinValue)),
+   itsHeight(1.0/(M_PI*itsMajValue*itsMinValue)),
    itsAttnFactor(0.05)
 {
   DebugAssert(ok(), AipsError);
@@ -69,7 +69,7 @@ LimbDarkenedDiskShape::LimbDarkenedDiskShape(const MDirection& direction,
    itsMajValue(majorAxis.getValue("rad")),
    itsMinValue(minorAxis.getValue("rad")),
    itsPaValue(positionAngle.getValue("rad")),
-   itsHeight(1.0/(C::pi*itsMajValue*itsMinValue)),
+   itsHeight(1.0/(M_PI*itsMajValue*itsMinValue)),
    itsAttnFactor(n)
 {
   DebugAssert(ok(), AipsError);
@@ -86,7 +86,7 @@ LimbDarkenedDiskShape::LimbDarkenedDiskShape(const MDirection& direction,
    itsMajValue(width.getValue("rad")),
    itsMinValue(itsMajValue*axialRatio),
    itsPaValue(positionAngle.getValue("rad")),
-   itsHeight(1.0/(C::pi*itsMajValue*itsMinValue)),
+   itsHeight(1.0/(M_PI*itsMajValue*itsMinValue)),
    itsAttnFactor(n)
 {
   DebugAssert(ok(), AipsError);
@@ -139,7 +139,7 @@ void LimbDarkenedDiskShape::setWidthInRad(const Double majorAxis,
     itsPaValue = positionAngle;
     AlwaysAssert(itsMajValue > 0 && itsMinValue > 0 && itsMajValue >=itsMinValue,
                  AipsError);
-    itsHeight = 1.0/(C::pi*itsMajValue*itsMinValue);
+    itsHeight = 1.0/(M_PI*itsMajValue*itsMinValue);
     DebugAssert(ok(), AipsError);
 }
 //
@@ -249,7 +249,7 @@ DComplex LimbDarkenedDiskShape::visibility(const Vector<Double>& uvw,
   if (!nearAbs(itsPaValue, 0.0)) {
     rotateVis(u, v, cos(itsPaValue), sin(itsPaValue));
   }
-  return DComplex(calcVis(u, v, C::pi * frequency/C::c), 0.0);
+  return DComplex(calcVis(u, v, M_PI * frequency/C::c), 0.0);
 }
 
 void LimbDarkenedDiskShape::visibility(Matrix<DComplex>& scale,
@@ -282,7 +282,7 @@ void LimbDarkenedDiskShape::visibility(Vector<DComplex>& scale,
     spa = sin(itsPaValue);
   }
 
-  const Double factor = C::pi * frequency/C::c;
+  const Double factor = M_PI * frequency/C::c;
   Double u, v;
   for (uInt i = 0; i < nSamples; i++) {
     u = uvw(0, i);
@@ -333,7 +333,7 @@ Bool LimbDarkenedDiskShape::ok() const {
            << LogIO::POST;
     return false;
   }
-  if (!near(itsHeight, 1.0/(C::pi*itsMajValue*itsMinValue), 2*C::dbl_epsilon)) {
+  if (!near(itsHeight, 1.0/(M_PI*itsMajValue*itsMinValue), 2*DBL_EPSILON)) {
     LogIO logErr(LogOrigin("DiskCompRep", "ok()"));
     logErr << LogIO::SEVERE << "The disk shape does not have"
            << " unit area"
@@ -385,7 +385,7 @@ Double LimbDarkenedDiskShape::calcVis(Double u, Double v, const Double factor) c
   //return 2.0 * j1(r)/r;
   // Vi(u,v) for the limb-darkened disk from ALMA memo #594 
   // assume u, v are != 0.0 (in such case Vi(u,v)=Vo, handled in visibility())
-  return pow(C::e,lgamma(eta + 1))*pow(2.0/r,eta)*gsl_sf_bessel_Jnu(eta,r); 
+  return pow(M_E,lgamma(eta + 1))*pow(2.0/r,eta)*gsl_sf_bessel_Jnu(eta,r); 
 }
 
 

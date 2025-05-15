@@ -111,7 +111,7 @@ Bool VisCalSolver::solve(VisEquation& ve, SolvableVisCal& svc, VisBuffer& svb) {
   Vector<Float> steplist(maxIter_+2,0.0);
   Vector<Float> rsteplist(maxIter_+2,0.0);
 
-  //  cout << "svb.modelVisCube() = " << phase(svb.modelVisCube())*180.0/C::pi << endl;
+  //  cout << "svb.modelVisCube() = " << phase(svb.modelVisCube())*180.0/M_PI << endl;
   //  cout << "svb.modelVisCube() = " << amplitude(svb.modelVisCube()) << endl;
 
   // Verify VisBuffer validity for solving
@@ -1268,7 +1268,7 @@ void VisCalSolver::optStepSize() {
        << optfactor << " "
        << x2 << " "
        << "(" << min(amplitude(lastPar())) << ") "
-       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi << " ";
+       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI << " ";
   */
 
   par()=lastCalPar();
@@ -1279,7 +1279,7 @@ void VisCalSolver::optStepSize() {
     dpar()*=Complex(optfactor);
 
   /*
-  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi
+  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI
        << endl;
   */
 }
@@ -1361,7 +1361,7 @@ void VisCalSolver::optStepSize2() {
        << optfactor << " "
        << x2 << " "
        << "(" << min(amplitude(lastPar())) << ") "
-       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi << " ";
+       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI << " ";
   */
 
   par()=lastCalPar();
@@ -1372,7 +1372,7 @@ void VisCalSolver::optStepSize2() {
     dpar()*=Complex(optfactor);
 
   /*
-  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi
+  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI
        << endl;
   */
 }

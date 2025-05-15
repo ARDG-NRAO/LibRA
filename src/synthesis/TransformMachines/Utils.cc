@@ -151,9 +151,9 @@ namespace casa{
     last = toLAST(epoch);
     Double LST   = last.get(Day).getValue();
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
 
-    cout << "LST = " << LST << " " << LST/(2*C::pi) << endl;
+    cout << "LST = " << LST << " " << LST/(2*M_PI) << endl;
     
     HA = LST - RA;
   }

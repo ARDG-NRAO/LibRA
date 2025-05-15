@@ -395,7 +395,7 @@ namespace casa{
 
   //   if (dphase != 0.0)
   //     {
-  // 	phase=-2.0*C::pi*dphase*freq/C::c;
+  // 	phase=-2.0*M_PI*dphase*freq/C::c;
   // 	phasor=Complex(cos(phase), sin(phase));
   //     }
   //   else

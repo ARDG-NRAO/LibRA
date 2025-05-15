@@ -623,8 +623,8 @@ template <class T> GaussianBeam ImageFitter<T>::_getCurrentBeam() const {
 }
 
 template <class T> void ImageFitter<T>::_calculateErrors() {
-    static const Double f1 = sqrt(8*C::ln2);
-    static const Quantity fac(sqrt(C::pi)/f1, "");
+    static const Double f1 = sqrt(8*M_LN2);
+    static const Quantity fac(sqrt(M_PI)/f1, "");
     uInt ncomps = _curConvolvedList.nelements();
     _majorAxes.resize(ncomps);
     _majorAxisErrors.resize(ncomps);

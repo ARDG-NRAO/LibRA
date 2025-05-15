@@ -480,7 +480,8 @@ Imager::~Imager()
 
     }
     else{
-      throw(AipsError(x));
+      LogIO os(LogOrigin("Imager", "~Imager()", WHERE));
+      os << LogIO::SEVERE << "Caught exception in destructor: " << x.getMesg() << LogIO::POST;
 
     }
 
@@ -933,7 +934,7 @@ Bool Imager::defineImage(const Int nx, const Int ny,
     }
 
 
-    if((abs(Double(nx)*cellx.getValue("rad")) > C::pi) || (abs(Double(ny)*celly.getValue("rad")) > C::pi))
+    if((abs(Double(nx)*cellx.getValue("rad")) > M_PI) || (abs(Double(ny)*celly.getValue("rad")) > M_PI))
       throw(AipsError("Cannot image the extent requested for this image;  more that PI ialong one or both of the axes " ));
     
 
@@ -1152,7 +1153,7 @@ Bool Imager::advise(const Bool takeAdvice, const Float amplitudeLoss,
 	if(rmsW>0.0&&rmsUV>0.0&&amplitudeLoss>0.0) {
 	  worstCaseFacets =
 	    Int (pixels * (abs(cell.get("rad").getValue())*
-				  sqrt(C::pi*rmsW/(sqrt(32.0*amplitudeLoss)))));
+				  sqrt(M_PI*rmsW/(sqrt(32.0*amplitudeLoss)))));
 	}
 	else {
 	  os << LogIO::WARN << "Cannot calculate number of facets: using 1"
@@ -1174,7 +1175,7 @@ Bool Imager::advise(const Bool takeAdvice, const Float amplitudeLoss,
 	  os << "Dispersion in fitted w = " << rmsFittedW
 	     << " wavelengths" << endl;
 	  facets = Int (pixels * (abs(cell.get("rad").getValue())*
-				  sqrt(C::pi*rmsFittedW/(sqrt(32.0*amplitudeLoss)))));
+				  sqrt(M_PI*rmsFittedW/(sqrt(32.0*amplitudeLoss)))));
           if (facets<1) facets = 1;
 	}
 	else {

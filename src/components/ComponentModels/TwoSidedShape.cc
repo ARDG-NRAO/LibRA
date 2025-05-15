@@ -179,7 +179,7 @@ uInt TwoSidedShape::nParameters() const {
 void TwoSidedShape::setParameters(const Vector<Double>& newParms) {
   DebugAssert(newParms.nelements() == nParameters(), AipsError);
   DebugAssert(newParms(0) >= newParms(1), AipsError);
-  DebugAssert(abs(newParms(2)) <= C::_2pi, AipsError);
+  DebugAssert(abs(newParms(2)) <= (2*M_PI), AipsError);
   setWidthInRad(newParms(0), newParms(1), newParms(2));
   DebugAssert(ok(), AipsError);
 }
@@ -246,7 +246,7 @@ Bool TwoSidedShape::fromRecord(String& errorMessage,
 //   // near function was added here and in the setMinorAxis function to fix
 //   // defect AOCso00071
   if (majorAxisInRad < minorAxisInRad && 
-      !near(minorAxisInRad, minorAxisInRad, 2*C::dbl_epsilon)) {
+      !near(minorAxisInRad, minorAxisInRad, 2*DBL_EPSILON)) {
     errorMessage += "The major axis cannot be smaller than the minor axis\n";
     return false;
   }
@@ -498,7 +498,7 @@ Vector<Double> TwoSidedShape::toPixel (const DirectionCoordinate& dirCoord)  con
 // below could be much smarter/faster with a binary search.
 
    Quantum<Double> minorWorld = minorAxis();
-   Quantum<Double> paMinor = paMajor + Quantum<Double>(C::pi/2.0, Unit("rad"));
+   Quantum<Double> paMinor = paMajor + Quantum<Double>(M_PI/2.0, Unit("rad"));
    minorWorld.scale(0.5);
 //
    Double dX = sin(pa.radian());
@@ -561,10 +561,10 @@ Bool TwoSidedShape::fromPixel (const Vector<Double>& parameters,
    ComponentShape::fromPixel (pixelCen, dirCoord);
 // Shape.  First put x/y p.a. into +y -> -x system
 
-   Double pa0 = parameters(4) - C::pi_2; 
+   Double pa0 = parameters(4) - M_PI_2; 
    MDirection tipMajor = directionFromCartesian (parameters(2), pa0, dirCoord, pixelCen);
 //
-   pa0 += C::pi_2;                      // minor axis position angle
+   pa0 += M_PI_2;                      // minor axis position angle
    MDirection tipMinor = directionFromCartesian (parameters(3), pa0, dirCoord, pixelCen);
 
 // Find tip directions
@@ -575,8 +575,8 @@ Bool TwoSidedShape::fromPixel (const Vector<Double>& parameters,
 
 // Separations
 
-   Double tmp1 = 2 * mvdRef.separation(mvdMajor) * 3600 * 180.0 / C::pi;
-   Double tmp2 = 2 * mvdRef.separation(mvdMinor) * 3600 * 180.0 / C::pi;
+   Double tmp1 = 2 * mvdRef.separation(mvdMajor) * 3600 * 180.0 / M_PI;
+   Double tmp2 = 2 * mvdRef.separation(mvdMinor) * 3600 * 180.0 / M_PI;
 
    Quantity majorAxis(max(tmp1,tmp2), Unit("arcsec"));
    Quantity minorAxis(min(tmp1,tmp2), Unit("arcsec"));

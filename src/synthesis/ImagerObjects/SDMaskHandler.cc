@@ -2113,7 +2113,7 @@ itsTooLongForFname = false;
     Quantity qinc(incVal[0],incUnit[0]);
     if (resolution.get().getValue() ) {
       npix = Int(abs( resolution/(qinc.convert(resolution),qinc) ).getValue() );
-      beampix = Int( C::pi * npix * npix /(4.*C::ln2)); 
+      beampix = Int( M_PI * npix * npix /(4.*M_LN2)); 
       os << LogIO::NORMAL2 << "Use the input resolution:"<<resolution<<" for pruning "<< LogIO::POST;
       os << LogIO::DEBUG1 << "inc = "<<qinc.getValue(resolution.getUnit())<<LogIO::POST;
     }
@@ -2141,14 +2141,14 @@ itsTooLongForFname = false;
         if (resbybeam > 0.0 ) {
           npix = Int( Double(resbybeam) * abs( (bmaj/(qinc.convert(bmaj),qinc)).get().getValue() ) );
           npixmin = Int( Double(resbybeam) * abs( (bmin/(qinc.convert(bmin),qinc)).get().getValue() ) );
-          beampix = Int(C::pi * npix * npixmin / (4. * C::ln2));
+          beampix = Int(M_PI * npix * npixmin / (4. * M_LN2));
           
           os << LogIO::NORMAL2 << "Use "<< resbybeam <<" x  beam size(maj)="<< Double(resbybeam)*bmaj <<" for pruning."<< LogIO::POST;
         }
         else {
           npix = Int( abs( (bmaj/(qinc.convert(bmaj),qinc)).get().getValue() ) );
           npixmin = Int(  abs( (bmin/(qinc.convert(bmin),qinc)).get().getValue() ) );
-          beampix = Int(C::pi * npix * npixmin / (4. * C::ln2));
+          beampix = Int(M_PI * npix * npixmin / (4. * M_LN2));
           os << LogIO::NORMAL2 << "Use a beam size(maj):"<<bmaj<<" for pruning."<< LogIO::POST;
         } 
       }
@@ -3711,11 +3711,11 @@ itsTooLongForFname = false;
           Quantity qinc1(incVal[0],incUnit[0]);
           Quantity qinc2(incVal[1],incUnit[1]);
           Double pixAreaInRad = abs(qinc1.get(Unit("rad")).getValue() * qinc2.get(Unit("rad")).getValue());
-          Double regionInSR = C::pi * qax1.get(Unit("rad")).getValue()  * qax2.get(Unit("rad")).getValue() / (4. * C::ln2);
+          Double regionInSR = M_PI * qax1.get(Unit("rad")).getValue()  * qax2.get(Unit("rad")).getValue() / (4. * M_LN2);
           Double regpix = regionInSR/pixAreaInRad;
           //Double axpix1 = ceil(abs(qax1/(qinc1.convert(qax1),qinc1)).get().getValue()); 
           //Double axpix2 = ceil(abs(qax2/(qinc2.convert(qax2),qinc2)).get().getValue()); 
-          //Int regpix = Int(C::pi * axpix1 * axpix2 /(4. * C::ln2)); 
+          //Int regpix = Int(M_PI * axpix1 * axpix2 /(4. * M_LN2)); 
           if (debug) {
             cerr<<"regpix="<<regpix<<" prunesize="<<prunesize<<" xboxdim="<<xboxdim<<" yboxdim="<<yboxdim<<endl;
           }
@@ -3931,7 +3931,7 @@ itsTooLongForFname = false;
       Quantity qinc2(incVal[1],incUnit[1]);
       // should in rad but make sure...
       Double pixArea = abs(qinc1.get(Unit("rad")).getValue() * qinc2.get(Unit("rad")).getValue()); 
-      Double solidAngle = C::pi * bmaj.get(Unit("rad")).getValue() * bmin.get(Unit("rad")).getValue()/(4.* C::ln2);
+      Double solidAngle = M_PI * bmaj.get(Unit("rad")).getValue() * bmin.get(Unit("rad")).getValue()/(4.* M_LN2);
       return (Float) solidAngle/pixArea;
 
   }

@@ -516,7 +516,7 @@ Bool StokesImageUtil::FitGaussianPSF(ImageInterface<Float>& psf, ImageBeamSet& e
     ipos(0)=k;
   }
   Float maxMaj=0.0;
-  Float minMaj=C::flt_max;
+  Float minMaj=FLT_MAX;
   Int posMax=0;
   DirectionCoordinate directionCoord=psf.coordinates().directionCoordinate(psf.coordinates().findCoordinate(Coordinate::DIRECTION));
   String dirunit=directionCoord.worldAxisUnits()(0);

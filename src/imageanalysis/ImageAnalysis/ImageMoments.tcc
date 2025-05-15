@@ -576,7 +576,7 @@ void ImageMoments<T>::_whatIsTheNoise (
         }
         // Return values of fit
         if (! fail && fitter.converged()) {
-            sigma = T(abs(solution(2)) / C::sqrt2);
+            sigma = T(abs(solution(2)) / sqrt(2));
             os_p << casacore::LogIO::NORMAL
                     << "*** The fitted standard deviation of the noise is " << sigma
                     << endl << casacore::LogIO::POST;

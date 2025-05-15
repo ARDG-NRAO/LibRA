@@ -148,12 +148,12 @@ void smooth(CalSet<Complex>& cs,
 		Float phdif(0.0);
 		for (Int i=1;i<nidx;++i) {
 		  phdif=pha(idx(i))-pha(idx(i-1));
-		  if (phdif > C::pi) {
-		    pha(idx(i)) -= (2*C::pi);
+		  if (phdif > M_PI) {
+		    pha(idx(i)) -= (2*M_PI);
 		    //		    cout << " **************cycle+++++++++++" << endl;
 		  }
-		  else if (phdif < -C::pi) {
-		    pha(idx(i)) += (2*C::pi);
+		  else if (phdif < -M_PI) {
+		    pha(idx(i)) += (2*M_PI);
 		    //		    cout << " **************cycle-----------" << endl;
 		  }
 		}

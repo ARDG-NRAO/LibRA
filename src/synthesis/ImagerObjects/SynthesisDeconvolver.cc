@@ -1242,8 +1242,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	else
 	  tmp=itsRobustStats.asArrayDouble(*it);
 	*/
-	//	cerr << std::setprecision(12) << tmp[chanBeg] << " bool " <<(tmp[chanBeg]> (C::dbl_max-(C::dbl_max*1e-15))) << endl;
-	if(tmp(0,chanBeg)> (C::dbl_max-(C::dbl_max*1e-15)))
+	//	cerr << std::setprecision(12) << tmp[chanBeg] << " bool " <<(tmp[chanBeg]> (DBL_MAX-(DBL_MAX*1e-15))) << endl;
+	if(tmp(0,chanBeg)> (DBL_MAX-(DBL_MAX*1e-15)))
 	  return Record();
 	//cerr << "GETSUB blc "<< IPosition(2, 0, chanBeg)<<  " trc " << IPosition(2, tmp.shape()[0]-1, chanEnd) << " shape " << tmp.shape() << endl;
 	outRec.define(*it, tmp(IPosition(2, 0, chanBeg), IPosition(2, tmp.shape()[0]-1, chanEnd)));
@@ -1275,7 +1275,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	}
 	else{
 	  outvec.resize(itsImages->residual()->shape()[2], numchan);
-	  outvec.set(C::dbl_max);
+	  outvec.set(DBL_MAX);
 	}
 
 

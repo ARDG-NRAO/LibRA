@@ -28,7 +28,7 @@
 #ifndef SYNTHESIS_FFT2D_H
 #define SYNTHESIS_FFT2D_H
 #include <casacore/scimath/Mathematics/FFTW.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+// #include <casacore/scimath/Mathematics/FFTPack.h>
 #include <casacore/lattices/Lattices/Lattice.h>
 #include <fftw3.h>
 namespace casa{

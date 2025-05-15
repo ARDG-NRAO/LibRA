@@ -38,7 +38,7 @@
 #include <iomanip>
 
 VLAFrequencyFilter::VLAFrequencyFilter()
-  :itsTopEdge(C::dbl_max),
+  :itsTopEdge(DBL_MAX),
    itsBottomEdge(0.0)
 {
   DebugAssert(ok(), AipsError);

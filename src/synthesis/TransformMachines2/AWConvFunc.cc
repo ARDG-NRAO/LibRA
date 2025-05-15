@@ -676,7 +676,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     Vector<Double> skyIncr;
 
     log_l << "Making a new convolution function for PA="
-	  << pa*(180/C::pi) << "deg"
+	  << pa*(180/M_PI) << "deg"
 	  << " for field ID " << vb.fieldId()(0);
     // log_l << "TimeStamps(0-10) ";
     // for (Int i=0;i<10;i++)

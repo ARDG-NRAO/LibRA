@@ -47,7 +47,7 @@ SPIIF LinearPolarizationAngleCalculator::compute(Bool radians) {
     );
     _checkQUBeams(False);
     // Make expression. LEL function "pa" returns degrees
-    Float fac = radians ? C::pi / 180.0 : 1.0;
+    Float fac = radians ? M_PI / 180.0 : 1.0;
     LatticeExprNode node(fac*pa(*u, *q));
     LatticeExpr<Float> le(node);
     ImageExpr<Float> ie(le, String("LinearlyPolarizedPositionAngle"));

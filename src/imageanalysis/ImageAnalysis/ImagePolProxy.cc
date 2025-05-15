@@ -149,7 +149,7 @@ namespace casa { //# name space casa begins
       Double l1 = QC::c( ).getValue(Unit("m/s")) / f0;
       Double l2 = QC::c( ).getValue(Unit("m/s")) / (f0+df);
       rm2.resize(1);
-      rm2(0) = C::pi / 2 / (l1*l1 - l2*l2);
+      rm2(0) = M_PI / 2 / (l1*l1 - l2*l2);
     } else {
       for (uInt i = 0; i < rm.size(); i++) rm2[i] = rm[i];
     }
@@ -175,7 +175,7 @@ namespace casa { //# name space casa begins
     // Make image
     IPosition shape(4,nx,ny,4,nf);
     ImageInterface<Float>* pImOut = 0;
-    makeIQUVImage(pImOut, outFile, sigma, pa0*C::pi/180.0, rm2, shape, f0, df);
+    makeIQUVImage(pImOut, outFile, sigma, pa0*M_PI/180.0, rm2, shape, f0, df);
     try {
       itsImPol = new ImagePolarimetry(*pImOut);
       rstat = true;
@@ -844,7 +844,7 @@ void ImagePol::rotationMeasure(
       Float fac = 1.0;
       String units = pp.units().getName();
       if (units.contains(String("deg"))) {
-	fac = C::pi / 180.0;
+	fac = M_PI / 180.0;
       } else if (units.contains(String("rad"))) {
       } else {
 	*itsLog << LogIO::WARN

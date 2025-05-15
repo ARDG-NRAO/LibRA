@@ -349,7 +349,7 @@ Bool SpectralFitter::_prepareElems(const Bool fitGauss, const Bool fitPoly, cons
 		gSigma = (xVals(_startIndex+nQuart)-xVals(_endIndex-nQuart))/(2.0*GaussianSpectralElement::SigmaToFWHM);
 		if (gSigma<0.0)
 			gSigma *= -1.0;
-		gAmp = averDisp*(curveIntegral-polyIntegral)/(gSigma*sqrt(2.0*C::pi));
+		gAmp = averDisp*(curveIntegral-polyIntegral)/(gSigma*sqrt(2.0*M_PI));
 		gCentre = xVals(_startIndex) + (xVals(_endIndex) - xVals(_startIndex)) / 2.0;
 
 		// add the Gaussian element
@@ -414,12 +414,12 @@ String SpectralFitter::_report(LogIO &os, const SpectralList &list, const String
 			gaussCentV  = params(1);
 			gaussSigmaV = params(2);
 			gaussFWHMV  = gaussSigmaV * GaussianSpectralElement::SigmaToFWHM;
-			gaussAreaV  = gaussAmpV * gaussSigmaV * sqrt(2.0*C::pi);
+			gaussAreaV  = gaussAmpV * gaussSigmaV * sqrt(2.0*M_PI);
 			gaussAmpE   = errors(0);
 			gaussCentE  = errors(1);
 			gaussSigmaE = errors(2);
 			gaussFWHME  = gaussSigmaE * GaussianSpectralElement::SigmaToFWHM;
-			gaussAreaE  = sqrt(C::pi) * sqrt(gaussAmpV*gaussAmpV*gaussSigmaE*gaussSigmaE + gaussSigmaV*gaussSigmaV*gaussAmpE*gaussAmpE);
+			gaussAreaE  = sqrt(M_PI) * sqrt(gaussAmpV*gaussAmpV*gaussSigmaE*gaussSigmaE + gaussSigmaV*gaussSigmaV*gaussAmpE*gaussAmpE);
 
 			//os << LogIO::NORMAL << "  Amplitude: " << String::toString(gaussAmpV) << "+-" << gaussAmpE << yStreamUnit << " centre: " << String::toString(gaussCentV) << "+-" << gaussCentE << xStreamUnit << " FWHM: " << String::toString(gaussFWHMV) << "+-" << gaussFWHME << xStreamUnit << LogIO::POST;
 			os << LogIO::NORMAL << "  Gauss amplitude: " << String::toString(gaussAmpV) << "+-" << gaussAmpE << yStreamUnit << LogIO::POST;

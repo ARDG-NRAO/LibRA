@@ -1367,8 +1367,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		  DirectionCoordinate dirCoords(MDirection::AZELGEO,                  
 						Projection(Projection::SIN),        
 						0.0, 0.0,
-						-0.5*C::pi/180.0/3600.0 * 5E11/refFreqHz, 
-						0.5*C::pi/180.0/3600.0 * 5E11/refFreqHz,        
+						-0.5*M_PI/180.0/3600.0 * 5E11/refFreqHz, 
+						0.5*M_PI/180.0/3600.0 * 5E11/refFreqHz,        
 						xform,                              
 						128., 128.);  // 256/2.
 		  Vector<String> units(2); 

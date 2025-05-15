@@ -383,8 +383,8 @@ void SimplePBConvFunc::findConvFunction(const ImageInterface<Complex>& iimage,
     pixFieldDir(1) = pixFieldDir(1) - Double(ny / 2);
 
     //phase gradient per pixel to apply
-    pixFieldDir(0) = -pixFieldDir(0)*2.0*C::pi/Double(nx)/Double(convSampling);
-    pixFieldDir(1) = -pixFieldDir(1)*2.0*C::pi/Double(ny)/Double(convSampling);
+    pixFieldDir(0) = -pixFieldDir(0)*2.0*M_PI/Double(nx)/Double(convSampling);
+    pixFieldDir(1) = -pixFieldDir(1)*2.0*M_PI/Double(ny)/Double(convSampling);
 
     //cerr << "DonemainConv " << doneMainConv_p[actualConvIndex_p] << endl;
     if(!doneMainConv_p[actualConvIndex_p]){

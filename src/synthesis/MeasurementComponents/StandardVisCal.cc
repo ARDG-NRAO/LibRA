@@ -330,7 +330,7 @@ void TJones::guessPar(VisBuffer& vb) {
 	    
 	    ampave+=amp;
 	    namp++;
-	    //	cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/C::pi << endl;
+	    //	cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/M_PI << endl;
 	  }
 	}
       } // guessant in row
@@ -455,7 +455,7 @@ void TJones::guessPar(SDBList& sdbs,const Bool&) {
             
 	    ampave+=amp;
 	    namp++;
-	    //  cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/C::pi << endl;
+	    //  cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/M_PI << endl;
 	  }
 	}
       } // guessant in row
@@ -859,7 +859,7 @@ void GJones::guessPar(VisBuffer& vb) {
   /*
   cout << "Guess:" << endl;
   cout << "amplitude(solveCPar())   = " << amplitude(solveCPar()) << endl;
-  cout << "phases       = " << phase(solveCPar())*180.0/C::pi << endl;
+  cout << "phases       = " << phase(solveCPar())*180.0/M_PI << endl;
   cout << "solveParOK() = " << solveParOK() << endl;
   */
 }
@@ -997,7 +997,7 @@ void GJones::guessPar(SDBList& sdbs, const Bool& corrDepFlags) {
   /*
     cout << "Guess:" << endl;
     cout << "amplitude(solveCPar())   = " << amplitude(solveCPar()) << endl;
-    cout << "phases       = " << phase(solveCPar())*180.0/C::pi << endl;
+    cout << "phases       = " << phase(solveCPar())*180.0/M_PI << endl;
     cout << "solveParOK() = " << solveParOK() << endl;
   */
 }
@@ -1201,7 +1201,7 @@ void BJones::normalize() {
 		    << " time=" << MVTime(ctiter.thisTime()/C::day).string(MVTime::YMD,7)
 		    << " ant=" << ctiter.thisAntenna1() 
 		    << " pol " << ipol%2
-		    << " = " << abs(normfactor) << ", " << arg(normfactor)*180.0/C::pi << "deg"
+		    << " = " << abs(normfactor) << ", " << arg(normfactor)*180.0/M_PI << "deg"
 		    << LogIO::POST;
 	  soliter.next();
 	  fliter.next();
@@ -1334,8 +1334,8 @@ void BJones::fillChanGapArray(Array<Complex>& sol,
 	  da=abs(solv(ch2))-a0;
 	  p0=arg(solv(ch1));
 	  dp=arg(solv(ch2))-p0;
-	  if (dp>C::pi) dp-=(2*C::pi);
-	  if (dp<-C::pi) dp+=(2*C::pi);	
+	  if (dp>M_PI) dp-=(2*M_PI);
+	  if (dp<-M_PI) dp+=(2*M_PI);	
 
 	  //cout << a0 << " " << da << " " << p0 << " " << dp << endl;
 
@@ -1518,7 +1518,7 @@ void JJones::guessPar(VisBuffer& vb) {
 	solveCPar()(3*icorr,0,irow)=(conj(Vi)/amp);
 	ampave+=amp;
 	namp++;
-	//	cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/C::pi << endl;
+	//	cout << "          " << abs(Vi) << " " << arg(Vi)*180.0/M_PI << endl;
       }
     }
 
@@ -1532,7 +1532,7 @@ void JJones::guessPar(VisBuffer& vb) {
 
   //  cout << "post-guess:" << endl;
   //  cout << "solveCPar()   = " << solveCPar() << endl;
-  //  cout << "phases       = " << phase(solveCPar())*180.0/C::pi << endl;
+  //  cout << "phases       = " << phase(solveCPar())*180.0/M_PI << endl;
   //  cout << "solveParOK() = " << solveParOK() << endl;
 
 }
@@ -2086,7 +2086,7 @@ void TOpac::syncMeta(const VisBuffer& vb) {
   Vector<MDirection> antazel(vb.azel(currTime()));
   Double* a=za().data();
   for (Int iant=0;iant<nAnt();++iant,++a) 
-    (*a)=C::pi_2 - antazel(iant).getAngle().getValue()(1);
+    (*a)=M_PI_2 - antazel(iant).getAngle().getValue()(1);
 
 }
 
@@ -2101,7 +2101,7 @@ void TOpac::syncMeta2(const vi::VisBuffer2& vb) {
   Vector<MDirection> antazel(vb.azel(currTime()));
   Double* a=za().data();
   for (Int iant=0;iant<nAnt();++iant,++a) 
-    (*a)=C::pi_2 - antazel(iant).getAngle().getValue()(1);
+    (*a)=M_PI_2 - antazel(iant).getAngle().getValue()(1);
 
 }
 
@@ -2136,7 +2136,7 @@ void TOpac::calcAllJones() {
   Bool*   opok=currParOK().data();
   Double* a=za().data();
   for (Int iant=0; iant<nAnt(); ++iant,++J,++op,++opok,++a) {
-    if ((*opok) && (*a)<C::pi_2) 
+    if ((*opok) && (*a)<M_PI_2) 
       (*J) = Complex(sqrt(exp(-1.0 * Double(*op)/cos(*a))));
   }
 
@@ -2198,7 +2198,7 @@ void TfOpac::calcAllJones() {
   Double* a=za().data();
   for (Int iant=0; iant<nAnt(); ++iant,++a) {
     for (Int ich=0; ich<nChanMat(); ich++, J++, op++, opok++) {
-      if ((*opok) && (*a)<C::pi_2) 
+      if ((*opok) && (*a)<M_PI_2) 
         (*J) = Complex(sqrt(exp(-1.0 * Double(*op)/cos(*a))));
     }
   }

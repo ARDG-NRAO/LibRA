@@ -108,7 +108,7 @@ GaussianBeam CasaImageBeamSet::getCommonBeam() const {
 
 	Double tB1 = problemBeam.getPA("rad", true) - maxBeam.getPA("rad", true);
 
-	if (abs(tB1) == C::pi / 2) {
+	if (abs(tB1) == M_PI / 2) {
 		Bool maxHasMajor = maxBeam.getMajor("arcsec")
 				>= problemBeam.getMajor("arcsec");
 		// handle the situation of right angles explicitly because things blow up otherwise

@@ -92,14 +92,14 @@ MatrixCleaner::MatrixCleaner():
   itsStrengthOptimum(0.0),
   itsTotalFlux(0.0),
   itsChoose(true),
-  itsDoSpeedup(false),
   itsIgnoreCenterBox(false),
+  itsDoSpeedup(false),
   itsStopAtLargeScaleNegative(false),
   itsStopPointMode(-1),
   itsDidStopPointMode(false),
-  itsJustStarting(true),
+  noClean_p(false),
   psfShape_p(0),
-  noClean_p(false)
+  itsJustStarting(true)
 {
   itsMemoryMB=Double(HostInfo::memoryTotal()/1024)/16.0;
   itsScales.resize(0);
@@ -115,7 +115,7 @@ MatrixCleaner::MatrixCleaner():
  
 
 MatrixCleaner::MatrixCleaner(const Matrix<Float> & psf,
-				  const Matrix<Float> &dirty):
+          const Matrix<Float> &dirty):
   itsMask( ),
   itsSmallScaleBias(0.0),
   itsScaleSizes(0),
@@ -123,13 +123,13 @@ MatrixCleaner::MatrixCleaner(const Matrix<Float> & psf,
   itsStrengthOptimum(0.),
   itsTotalFlux(0.0),
   itsChoose(true),
-  itsDoSpeedup(false),
   itsIgnoreCenterBox(false),
+  itsDoSpeedup(false),
   itsStopAtLargeScaleNegative(false),
   itsStopPointMode(-1),
   itsDidStopPointMode(false),
-  itsJustStarting(true),
-  noClean_p(false)
+  noClean_p(false),
+  itsJustStarting(true)
 {
   AlwaysAssert(validatePsf(psf), AipsError);
   psfShape_p.resize(0, false);

@@ -238,7 +238,7 @@ convertPol(ComponentType::Polarisation pol) {
     setPol(pol);                     // New pol rep label
 
     if (!allNearAbs(itsErr, typename casacore::NumericTraits<T>::ConjugateType(0,0), 
-		    casacore::C::dbl_epsilon)) {
+    std::numeric_limits<double>::epsilon())) {
       casacore::LogIO logErr(casacore::LogOrigin("FluxRep", "convertPol()"));
       logErr << casacore::LogIO::WARN 
 	     << "The change in flux representation means the numerical values"

@@ -49,16 +49,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 // Ctor
 CTPatchedInterp::CTPatchedInterp(NewCalTable& ct,
-				 VisCalEnum::MatrixType mtype,
-				 Int nPar,
-				 const String& timetype,
-				 const String& freqtype,
-				 const String& fieldtype,
-				 Vector<Int> spwmap,
-				 Vector<Int> fldmap,
-				 const CTTIFactoryPtr cttifactoryptr) :
-  ct_(ct),
+         VisCalEnum::MatrixType mtype,
+         Int nPar,
+         const String& timetype,
+         const String& freqtype,
+         const String& fieldtype,
+         Vector<Int> spwmap,
+         Vector<Int> fldmap,
+         const CTTIFactoryPtr cttifactoryptr) :
   msmc_(NULL),
+  ct_(ct),
   mtype_(mtype),
   isCmplx_(false),
   nPar_(nPar),
@@ -244,8 +244,8 @@ CTPatchedInterp::CTPatchedInterp(NewCalTable& ct,
                  const MSMetaInfoForCal& msmc,
 				 Vector<Int> spwmap,
 				 const CTTIFactoryPtr cttifactoryptr) :
-  ct_(ct),
   msmc_(&msmc),
+  ct_(ct),
   mtype_(mtype),
   isCmplx_(false),
   nPar_(nPar),
@@ -427,8 +427,8 @@ CTPatchedInterp::CTPatchedInterp(NewCalTable& ct,
 				 const MSColumns& mscol,
 				 Vector<Int> spwmap,
 				 const CTTIFactoryPtr cttifactoryptr) :
-  ct_(ct),
   msmc_(NULL),
+  ct_(ct),
   mtype_(mtype),
   isCmplx_(false),
   nPar_(nPar),
@@ -561,8 +561,8 @@ CTPatchedInterp::CTPatchedInterp(NewCalTable& ct,
                  const MeasurementSet& ms,
                  Vector<Int> spwmap,
                  const CTTIFactoryPtr cttifactoryptr) :
-  ct_(ct),
   msmc_(NULL),
+  ct_(ct),
   mtype_(mtype),
   isCmplx_(false),
   nPar_(nPar),
@@ -1293,7 +1293,7 @@ void CTPatchedInterp::setFldMap(const MSFieldColumns& fcol) {
        /*
        cout << "    ord=" << ord << endl;
        cout << "   nsep=" << nsep << endl;
-       cout << "    sep=" << sep << " " << sep*(180.0/C::pi)<< endl;
+       cout << "    sep=" << sep << " " << sep*(180.0/M_PI)<< endl;
        */
 
        // Trap case of duplication of nearest separation
@@ -1304,7 +1304,7 @@ void CTPatchedInterp::setFldMap(const MSFieldColumns& fcol) {
        fldMap_(iMSFld)=ctFlds(ord(0));
      }   
    }
-   fseps*=(180.0/C::pi);
+   fseps*=(180.0/M_PI);
    LogIO log;
    ostringstream msg;
    msg << "Calibration field mapping for "
@@ -1481,8 +1481,8 @@ void CTPatchedInterp::resampleInFreq(Matrix<Float>& fres,Matrix<Bool>& fflg,cons
 
     if (ifpar%2==1 && unWrapPhase) {
       for (uInt i=1;i<mtresi.nelements();++i) {
-        while ( (mtresi(i)-mtresi(i-1))>C::pi ) mtresi(i)-=C::_2pi;
-        while ( (mtresi(i)-mtresi(i-1))<-C::pi ) mtresi(i)+=C::_2pi;
+        while ( (mtresi(i)-mtresi(i-1))>M_PI ) mtresi(i)-=2.0*M_PI;
+        while ( (mtresi(i)-mtresi(i-1))<-M_PI ) mtresi(i)+=2.0*M_PI;
       }
     }
 

@@ -190,7 +190,7 @@ void PhaseShiftingTVI::shiftUVWPhases()
 
 	// Obtain phase shift and new uvw coordinates
 	Vector<Double> dummy(3,0.0);
-	double phase2radPerHz = -2.0 * C::pi / C::c;
+	double phase2radPerHz = -2.0 * M_PI / C::c;
 	for (uInt row=0;row<vb->nRows();row++)
 	{
 		// Copy current uvw coordinates so that they are not modified
@@ -469,8 +469,8 @@ template<class T> PhaseShiftingTransformEngine<T>::PhaseShiftingTransformEngine(
 	frequencies_p = frequencies;
 
 	// Offsets in radians (input is arcsec)
-	dx_p = dx*(C::pi / 180.0 / 3600.0);
-	dy_p = dy*(C::pi / 180.0 / 3600.0);
+	dx_p = dx*(M_PI / 180.0 / 3600.0);
+	dy_p = dy*(M_PI / 180.0 / 3600.0);
 }
 
 // -----------------------------------------------------------------------
@@ -495,7 +495,7 @@ template<class T> void PhaseShiftingTransformEngine<T>::transformCore(	DataCubeM
 	Double phase = dx_p*(*uvw_p)(0,rowIndex_p) + dy_p*(*uvw_p)(1,rowIndex_p);
 
 	// In radian/Hz
-	phase *= -2.0 * C::pi / C::c;
+	phase *= -2.0 * M_PI / C::c;
 
 	// Main loop
 	Double phase_i;

@@ -134,7 +134,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 //     const GaussianShape shape(blob_dir,
 //                         casacore::Quantity(30, "arcmin"), 
 //                         casacore::Quantity(2000, "mas"), 
-//                         casacore::Quantity(C::pi_2, "rad"));
+//                         casacore::Quantity(M_PI_2, "rad"));
 //     const ConstantSpectrum spectrum;
 //     SkyComponent component(flux, shape, spectrum);
 //     printShape(shape);

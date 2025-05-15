@@ -288,7 +288,7 @@ void DelayFFT::shift(Double f) {
   //  ph-=Double(nPadChan_/2);                     // centered
   ph/=Double(nPadChan_);                       // cycles/sample
   ph*=shift;                                   // cycles
-  ph*=(C::_2pi);                               // rad
+  ph*=(2.0*M_PI);                               // rad
   Vector<Double> fsh(nPadChan_*2);
   fsh(Slice(0,nPadChan_,2))=cos(ph);
   fsh(Slice(1,nPadChan_,2))=sin(ph);
@@ -387,7 +387,7 @@ void DelayFFT::addWithDupAndShift(const DelayFFT& other) {
   Double shift=-(other.f0_-f0_);               // Shift _other_ to this at f0_
   shift/=other.df_;                            // Shift in samples (for INCOMING!)  
   ph*=shift;                                   // cycles
-  ph*=(C::_2pi);                               // rad
+  ph*=(2.0*M_PI);                               // rad
 
   Vector<Double> fsh(nPadChan_*2);
   fsh(Slice(0,nPadChan_,2))=cos(ph);
@@ -424,7 +424,7 @@ void DelayFFT::searchPeak() {
       continue;
     for (Int icorr=0;icorr<nCorr_;++icorr) {
       amp=amplitude(Vpad_(Slice(icorr,1,1),Slice(),Slice(ielem,1,1)));
-      //pha=    phase(Vpad_(Slice(icorr,1,1),Slice(),Slice(ielem,1,1)))*(180.0/C::pi);
+      //pha=    phase(Vpad_(Slice(icorr,1,1),Slice(),Slice(ielem,1,1)))*(180.0/M_PI);
       amax=-1.0;
       ipk=0;
       for (Int ich=0;ich<nPadChan_;++ich) {
@@ -823,7 +823,7 @@ void KJones::calcAllJones() {
 
       for (Int ipar=0;ipar<nPar();++ipar) {
 	if (onePOK(ipar)) { 
-	  phase=2.0*C::pi*onePar(ipar)*(currFreq()(ich)-KrefFreqs_(currSpw()));
+	  phase=2.0*M_PI*onePar(ipar)*(currFreq()(ich)-KrefFreqs_(currSpw()));
 	  oneJones(ipar)=Complex(cos(phase),sin(phase));
 	  oneJOK(ipar)=true;
 	}
@@ -1456,7 +1456,7 @@ void KcrossJones::solveOneVB(const VisBuffer& vb) {
   cout << "slsumvis.nelements() = " << slsumvis.nelements() << endl;
   cout << "sumwt = " << sumwt/sumwt(0) << endl;
   cout << "amp   = " << amplitude(slsumvis) << endl;
-  cout << "phase = " << phase(slsumvis)*180.0/C::pi << endl;
+  cout << "phase = " << phase(slsumvis)*180.0/M_PI << endl;
   */
 
   // Do the FFT
@@ -1548,7 +1548,7 @@ void KcrossJones::solveOneSDB(SolveDataBuffer& sdb) {
   /*  
   cout << "slsumvis.nelements() = " << slsumvis.nelements() << endl;
   cout << "amp   = " << amplitude(slsumvis) << endl;
-  cout << "phase = " << phase(slsumvis)*180.0/C::pi << endl;
+  cout << "phase = " << phase(slsumvis)*180.0/M_PI << endl;
   cout << "sumwt = " << sumwt/sumwt(0) << endl;
   */
 
@@ -1899,9 +1899,9 @@ void KAntPosJones::specify(const Record& specify) {
       MPosition vlaCenter;
       AlwaysAssert(MeasTable::Observatory(vlaCenter,"VLA"),AipsError);
       Double vlalong=vlaCenter.getValue().getLong();
-      //      vlalong=-107.617722*C::pi/180.0;
+      //      vlalong=-107.617722*M_PI/180.0;
       cout << "We will rotate specified offsets by VLA longitude = " 
-	   << vlalong*180.0/C::pi << endl;
+	   << vlalong*180.0/M_PI << endl;
       vlaRot=Rot3D(2,vlalong);
     }
   }
@@ -2094,7 +2094,7 @@ void KAntPosJones::calcAllJones() {
       for (Int ich=0; ich<nChanMat(); ++ich) {
         
 	// NB: currFreq() is in GHz
-	phase=2.0*C::pi*dw*currFreq()(ich);
+	phase=2.0*M_PI*dw*currFreq()(ich);
 	currJElem()(0,ich,iant)=Complex(cos(phase),sin(phase));
 	currJElemOK()(0,ich,iant)=true;
 	
@@ -2253,7 +2253,7 @@ void KAntPosJones::initTrDelCorr() {
   }
 
   // Handle units
-  armAz_*=(C::pi/180.0); // to rad
+  armAz_*=(M_PI/180.0); // to rad
   losDist_*=eterm_;   // to s (light travel time)
   losDist_*=C::c;     // to m (light travel distance)
 }
@@ -2271,7 +2271,7 @@ Double KAntPosJones::calcTrDelError(Int iant) {
   dgeo/=tan(el);
   dgeo/=sin(el);
 
-  //  if (iant==26) cout << az*180/C::pi << " " << el*180/C::pi << " " << dgeo << endl;
+  //  if (iant==26) cout << az*180/M_PI << " " << el*180/M_PI << " " << dgeo << endl;
 
   return dgeo*losDist_(iant);
 

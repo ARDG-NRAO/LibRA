@@ -61,8 +61,10 @@
 #include <casacore/casa/Utilities/DataType.h>
 #include <components/ComponentModels/SpectralModel.h>
 #include <iostream>
+// #include <numbers> // require -std=20
 
 using namespace casacore;
+using namespace std;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 SkyCompRep::SkyCompRep() 
@@ -698,9 +700,9 @@ Vector<Double> SkyCompRep::toPixel (const Unit& brightnessUnitOut,
 
       Double fac;
       if (type==ComponentType::GAUSSIAN) { 
-         fac = C::pi / 4.0 / log(2.0);
+         fac = M_PI / 4.0 / M_LN2;
       } else if (type==ComponentType::DISK) {
-         fac = C::pi;
+         fac = M_PI;
       } else {
          fac = 1.0;
       }
@@ -743,7 +745,7 @@ Unit SkyCompRep::defineBrightnessUnits (
 	if (brightnessUnitIn.getName().contains("beam")) {
 		if (! restoringBeam.isNull()) {
 			// GaussianBeam rB = restoringBeam;
-			// Double fac = C::pi / 4.0 / log(2.0) * rB.getMajor().getValue(Unit("rad")) * rB.getMinor().getValue(Unit("rad"));
+			// Double fac = std::numbers::pi / 4.0 / log(2.0) * rB.getMajor().getValue(Unit("rad")) * rB.getMinor().getValue(Unit("rad"));
 			Double fac = restoringBeam.getArea("rad2");
             UnitMap::putUser("beam", UnitVal(fac,String("rad2")));
 		}
@@ -812,10 +814,10 @@ Quantity SkyCompRep::peakToIntegralFlux (
 
 	Quantity tmp(peakFlux.getValue(), brightnessUnit);
 	if (componentShape==ComponentType::GAUSSIAN) {
-		tmp.scale(C::pi / 4.0 / log(2.0));
+		tmp.scale(M_PI / 4.0 / M_LN2);
 	}
 	else if (componentShape==ComponentType::DISK) {
-		tmp.scale(C::pi);
+		tmp.scale(M_PI);
 	}
 	else {
 		SkyCompRep::undefineBrightnessUnits();
@@ -883,10 +885,10 @@ Quantity SkyCompRep::integralToPeakFlux (
 	// Now scale
 
 	if (componentShape==ComponentType::GAUSSIAN) {
-		tmp.scale(4.0 * log(2.0) / C::pi);
+		tmp.scale(4.0 * M_1_PI * M_LN2 );
 	}
 	else if (componentShape==ComponentType::DISK) {
-		tmp.scale(1.0 / C::pi);
+		tmp.scale(M_1_PI);
 	}
 	else {
 		SkyCompRep::undefineBrightnessUnits();

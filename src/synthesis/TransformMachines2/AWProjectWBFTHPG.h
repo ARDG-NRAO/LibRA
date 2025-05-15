@@ -154,7 +154,7 @@ namespace casa
 	  Vector<Complex> correction(npixCorr);
 	  for (Int ix=0;ix<npixCorr;ix++)
 	    {
-	      Float x=C::pi*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
+	      Float x=M_PI*Float(ix-npixCorr/2)/(Float(npixCorr)*Float(convSampling));
 	      if(ix==npixCorr/2)  sincConv(ix)=1.0;
 	      else                sincConv(ix)=sin(x)/x;
 	    }

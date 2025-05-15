@@ -194,7 +194,7 @@ void GJonesSpline::setSolve(const Record& solvepar)
   if (solvepar.isDefined("numpoint"))   
     numpoint_p   = solvepar.asInt("numpoint");
   if (solvepar.isDefined("phasewrap"))    // deg->rad
-    phaseWrap_p  = solvepar.asDouble("phasewrap")*C::pi/180.0;
+    phaseWrap_p  = solvepar.asDouble("phasewrap")*M_PI/180.0;
 
   // Interpret mode for SPLINE case
   //  (apmode now set in SVC::setsolve)
@@ -507,11 +507,11 @@ void GJonesSpline::selfGatherAndSolve (VisSet& vs, VisEquation& ve)
 	  // Phase
 	  if(solvePhase_p){
 	    Double visPhase = arg(vis);
-	    visPhase = remainder(visPhase, 2*C::pi);
-	    if (visPhase > C::pi) {
-	      visPhase -= 2 * C::pi;
-	    } else if (visPhase < -C::pi) {
-	      visPhase += 2 * C::pi;
+	    visPhase = remainder(visPhase, 2*M_PI);
+	    if (visPhase > M_PI) {
+	      visPhase -= 2 * M_PI;
+	    } else if (visPhase < -M_PI) {
+	      visPhase += 2 * M_PI;
 	    };
 	    phase(t,baselineIndex,ip) = visPhase;
 	  }
@@ -654,10 +654,10 @@ void GJonesSpline::selfGatherAndSolve (VisSet& vs, VisEquation& ve)
 	  Double medB=median(vecBheadPh);
 	  if((medA- medB) >phaseWrap_p)
 	    for(Int k=k1; k< nTimes; ++k)
-	      phase(k, bsInd,ip) -= 2*C::pi;
+	      phase(k, bsInd,ip) -= 2*M_PI;
 	  if((medA-medB) < -phaseWrap_p)
 	    for(Int k=k1; k< nTimes; ++k)
-	      phase(k, bsInd,ip) += 2*C::pi;
+	      phase(k, bsInd,ip) += 2*M_PI;
 	  
 	}
 	
@@ -673,10 +673,10 @@ void GJonesSpline::selfGatherAndSolve (VisSet& vs, VisEquation& ve)
 	  Double medB=median(vecBheadPh);
 	  if((medA- medB) > phaseWrap_p)
 	    for(Int k=(nTimes-npoi); k< nTimes; ++k)
-	      phase(k, bsInd,ip) -= 2*C::pi;
+	      phase(k, bsInd,ip) -= 2*M_PI;
 	  if((medA-medB) < -phaseWrap_p)
 	    for(Int k=(nTimes-npoi); k< nTimes; ++k)
-	      phase(k, bsInd,ip) += 2*C::pi;
+	      phase(k, bsInd,ip) += 2*M_PI;
 	  
 	  // The first npoi points
 	  
@@ -688,10 +688,10 @@ void GJonesSpline::selfGatherAndSolve (VisSet& vs, VisEquation& ve)
 	  medB=median(vecBheadPh);
 	  if((medA- medB) > phaseWrap_p)
 	    for(Int k=0; k< npoi; ++k)
-	      phase(k, bsInd,ip) += 2*C::pi;
+	      phase(k, bsInd,ip) += 2*M_PI;
 	  if((medA-medB) < -phaseWrap_p)
 	    for(Int k=0; k< npoi; ++k)
-	      phase(k, bsInd,ip) -= 2*C::pi;
+	      phase(k, bsInd,ip) -= 2*M_PI;
 	  
 	}
       }
@@ -1220,9 +1220,9 @@ void GJonesSpline::plotsolve(const Vector<Double>& x,
 	  x1(num_valid_points)=x(k)-x(0);
 	  y1(num_valid_points)=y(k);
 	  if(phasesoln==true){
-	    y1(num_valid_points)=remainder(y1(num_valid_points), 2*C::pi);
-	    y1(num_valid_points)=y1(num_valid_points)/C::pi*180.0;
-	    errarray(num_valid_points)=Float(err)*180.0/C::pi;
+	    y1(num_valid_points)=remainder(y1(num_valid_points), 2*M_PI);
+	    y1(num_valid_points)=y1(num_valid_points)/M_PI*180.0;
+	    errarray(num_valid_points)=Float(err)*180.0/M_PI;
 	  } 
 	  else{
 	    y1(num_valid_points)=exp(y1(num_valid_points));
@@ -1249,13 +1249,13 @@ void GJonesSpline::plotsolve(const Vector<Double>& x,
 	  yy1=getSplineVal(xx, knots, ant1coeff);
 	  yy2=getSplineVal(xx, knots, ant2coeff);
 	  soly1(k)=yy2-yy1;
-	  while(soly1(k) > C::pi){
-	    soly1(k) -= 2.0*(C::pi);
+	  while(soly1(k) > M_PI){
+	    soly1(k) -= 2.0*(M_PI);
 	  }
-	  while(soly1(k) < (-(C::pi))){
-	    soly1(k) += 2.0*(C::pi);
+	  while(soly1(k) < (-(M_PI))){
+	    soly1(k) += 2.0*(M_PI);
 	  }
-	  soly1(k)=soly1(k)/(C::pi)*180.0;
+	  soly1(k)=soly1(k)/(M_PI)*180.0;
 		      
 	}
 	else{
@@ -1493,7 +1493,7 @@ Double GJonesSpline::getRawPhase(Int ant1, Int ant2, Double time){
   String timeKey = mvt.string(MVTime::TIME, 7);
   Int timeIndex=timeValueMap_p(timeKey);
   // if (ant1==0 && ant2==1) 
-  //   cout << "phase 1 2 " << rawPhase_p(timeIndex, baselineIndex)*180.0/C::pi << " Time " << timeKey << endl;
+  //   cout << "phase 1 2 " << rawPhase_p(timeIndex, baselineIndex)*180.0/M_PI << " Time " << timeKey << endl;
   //   cout << " Timekey " << timeKey << "Timeindex " << timeIndex << endl;
   if(flip){ 
     return -rawPhase_p(timeIndex, baselineIndex);

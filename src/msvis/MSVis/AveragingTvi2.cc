@@ -2610,7 +2610,7 @@ AveragingTvi2::produceSubchunk ()
 
         if (rowBlocking) {
             auto app = vbToFill->appendSize();
-            if (app <= block) {
+            if (app <= static_cast<decltype(app)>(block)) {
                 getVii()->next();
                 endBuffer_p++;
             } else {

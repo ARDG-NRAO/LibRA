@@ -389,7 +389,7 @@ Double ATAtmosphere::zenithOpacity(Double freq) const
        const Double nImag = 1e-6*std::imag(dryRefractivity(freq,itsTemperatures[layer],itsDryPressures[layer],
              itsVapourPressures[layer])+vapourRefractivity(freq,itsTemperatures[layer],itsDryPressures[layer],
              itsVapourPressures[layer]));
-       tau += dH*4.*casacore::C::pi/QC::c( ).get().getValue()*freq*nImag;
+       tau += dH*4.*M_PI/QC::c( ).get().getValue()*freq*nImag;
   }
   return tau;
 }
@@ -442,7 +442,7 @@ Double ATAtmosphere::opacity(Double freq, Double el) const
        const Double nReal = 1. + 1e-6*std::real(n);
        // length increment
        const Double dL = dH*nReal/sqrt(nReal*nReal+sineEl*sineEl-1.);
-       tau += dL*4.*casacore::C::pi/QC::c( ).get().getValue()*freq*nImag;
+       tau += dL*4.*M_PI/QC::c( ).get().getValue()*freq*nImag;
   }
   return tau;  
 }

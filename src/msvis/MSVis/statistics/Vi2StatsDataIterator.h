@@ -43,10 +43,15 @@ namespace casa {
 // example, visibility amplitudes during iteration over visibilities.
 //
 template<class Transformed, class Data>
-class Vi2StatsDataIterator
-	: public std::iterator<std::input_iterator_tag,Transformed> {
+class Vi2StatsDataIterator {
 
 public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = Transformed;
+    using difference_type = std::ptrdiff_t;
+    using pointer = Transformed*;
+    using reference = Transformed&;
+
 	typedef Transformed AccumType;
 	typedef Data DataType;
 

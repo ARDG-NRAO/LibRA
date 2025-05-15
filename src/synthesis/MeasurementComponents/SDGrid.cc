@@ -1660,7 +1660,7 @@ Int SDGrid::getIndex(const MSPointingColumns& mspc, const Double& time,
 		     const Double& interval, const Int& antid) {
   //Int start=lastIndex_p;
   Int start=lastIndexPerAnt_p[antid];
-  Double tol=interval < 0.0 ? time*C::dbl_epsilon : interval/2.0;
+  Double tol=interval < 0.0 ? time*DBL_EPSILON : interval/2.0;
   // Search forwards
   Int nrows=mspc.time().nrow();
   for (Int i=start;i<nrows;i++) {

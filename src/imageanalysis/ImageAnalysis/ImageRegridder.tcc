@@ -637,13 +637,13 @@ ImageRegridder<T>::_getDirectionCorners(
         }
         dc.toWorld(world, pixel);
         auto x = casacore::Quantity(world[0], units[0]).getValue("rad");
-        if (fabs(x) >= casacore::C::_2pi) {
+        if (fabs(x) >= 2*M_PI) {
             // resolve 2pi ambiguities for x (longitude) coordinate
-            x = fmod(x, C::_2pi);
+            x = fmod(x, 2*M_PI);
         }
         if (x < 0) {
             // ensure longitude is > 0
-            x += casacore::C::_2pi;
+            x += 2*M_PI;
         }
         corners[i].first = x;
         corners[i].second = casacore::Quantity(
@@ -651,12 +651,12 @@ ImageRegridder<T>::_getDirectionCorners(
         ).getValue("rad");
     }
     auto diff0 = abs(corners[1].first - corners[0].first);  
-    auto diff1 = abs(corners[1].first - C::_2pi - corners[0].first);
+    auto diff1 = abs(corners[1].first - 2*M_PI - corners[0].first);
     if (diff0 > diff1) {
         // image straddles longitude 0 and we have to rationalize the
         // longitude trc coordinate
-        corners[1].first -= casacore::C::_2pi;
-        corners[2].first -= casacore::C::_2pi;
+        corners[1].first -= 2*M_PI;
+        corners[2].first -= 2*M_PI;
     }
     return corners;
 }

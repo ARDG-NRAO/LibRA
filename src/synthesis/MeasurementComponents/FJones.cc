@@ -369,7 +369,7 @@ void FJones::specify(const Record&) {
 	Vector<MDirection> antazel(vb->azel(refTime()));
 	Double* a=za().data();
 	for (Int iant=0;iant<nAnt();++iant,++a) 
-	  (*a)=C::pi_2 - antazel(iant).getAngle().getValue()(1);
+	  (*a)=M_PI_2 - antazel(iant).getAngle().getValue()(1);
 
 	// This vb's direction measure...
 	md=vb->phaseCenter();
@@ -470,7 +470,7 @@ void FJones::specify(const Record&) {
 		 << " ant=" << antcol.name()(iant)+":"+antcol.station()(iant)
 		 << " long/lat=" << lng << "/" << lat
 	      //<< " pixel=" << cf << " " << c
-		 << " za=" << za()(iant)*180/C::pi
+		 << " za=" << za()(iant)*180/M_PI
 		 << " ztec=" // << teca << " " << tecb << " " 
 		 << ztec
 		 << " --> lostec=" << tec

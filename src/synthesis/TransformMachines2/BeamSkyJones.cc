@@ -109,7 +109,7 @@ void BeamSkyJones::showState(LogIO& os)
   os << "Telescope   = " << telescope_p << LogIO::POST;
   for (uInt i=0;i<lastParallacticAngles_p.nelements();++i) {
        os << "ParAngle[d] ("<<i<<" model) = " <<
-            lastParallacticAngles_p[i]/C::pi*180.<< LogIO::POST;
+            lastParallacticAngles_p[i]/M_PI*180.<< LogIO::POST;
        os << "Pointing direction ("<<i<<" model) = "<<
              lastDirections_p[i].getAngle().getValue("deg")(0) <<
     ", " <<  lastDirections_p[i].getAngle().getValue("deg")(1) << LogIO::POST;

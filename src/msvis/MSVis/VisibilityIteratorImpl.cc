@@ -55,6 +55,7 @@
 #include <cassert>
 #include <limits>
 #include <memory>
+#include <cmath>
 
 using std::make_pair;
 
@@ -2452,7 +2453,7 @@ VisibilityIteratorReadImpl::slicesToMatrices (Vector<Matrix<Int> > & matv,
 
 void VisibilityIteratorReadImpl::getFreqInSpwRange(Double& freqStart, Double& freqEnd, MFrequency::Types freqframe) const {
   Int nMS = msIter_p.numMS ();
-  freqStart=C::dbl_max;
+  freqStart=DBL_MAX;
   freqEnd = 0.0;
             
   for (Int msId=0; msId < nMS; ++msId){
@@ -2533,7 +2534,7 @@ VisibilityIteratorReadImpl::getSpwInFreqRange (Block<Vector<Int> > & spw,
         Double freqStartMin = freqStart;
         if (freqframe != obsMFreqType) {
             freqEndMax = 0.0;
-            freqStartMin = C::dbl_max;
+            freqStartMin = DBL_MAX;
         }
 
         for (uInt j = 0; j < nTimes; ++j) {

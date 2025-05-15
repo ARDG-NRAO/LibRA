@@ -197,8 +197,8 @@ int olopen_(int *unit_no, char *filename, int /*charCount*/)
          MJAD = lastMJAD;
       }
       gethostname(iAm, 81);
-      sprintf(logDataFile, "%s/connected/%s.%ld", visDataDir, iAm, 
-              static_cast<long>(getpid()));
+      snprintf(logDataFile, sizeof(logDataFile), "%s/connected/%s.%ld", visDataDir, iAm, 
+               static_cast<long>(getpid()));
       hostLog = fopen(logDataFile, "w");
       
    }else{

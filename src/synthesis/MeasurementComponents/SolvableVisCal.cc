@@ -2022,7 +2022,7 @@ void SolvableVisCal::specify(const Record& specify) {
 	  // Multiply ipar-th parameter onto the selecte slice
 	  if (apmode()=="P") {
 	    // Phases have been specified
-	    Double phase=parameters(ipar)*C::pi/180.0;
+	    Double phase=parameters(ipar)*M_PI/180.0;
 	    sl*=Complex(cos(phase),sin(phase));
 	  }
 	  else
@@ -4232,7 +4232,7 @@ void SolvableVisCal::reportSolvedQU() {
     Float Q=real(srcPolPar()(0));
     Float U=real(srcPolPar()(1));
     Float P=sqrt(Q*Q + U*U);
-    Float X=atan2(U,Q)/2.0*180.0/C::pi;
+    Float X=atan2(U,Q)/2.0*180.0/M_PI;
 
     logSink() << "Fractional polarization solution for " << fldname
 	      << " (spw = " << currSpw() << "): "
@@ -4245,7 +4245,7 @@ void SolvableVisCal::reportSolvedQU() {
   else if (solvePol()==1) {
     logSink() << "Position angle offset solution for " << fldname
 	      << " (spw = " << currSpw() << ") = "
-	      << real(srcPolPar()(0))*180.0/C::pi/2.0
+	      << real(srcPolPar()(0))*180.0/M_PI/2.0
 	      << " deg."
 	      << LogIO::POST;
   }
@@ -8427,7 +8427,7 @@ void SolvableVisJones::listCal(const Vector<Int> ufldids,
 	      Array<Complex> calGains;
 	      calGains.reference(cparam.reform(sh));
 	      v1.assign(amplitude(calGains));
-	      v2.assign(phase(calGains)*180.0/C::pi);
+	      v2.assign(phase(calGains)*180.0/M_PI);
 	      Cube<Bool> sok;
 	      sok=!ctiter.flag();
 	      Array<Bool> calGainOK;

@@ -1027,7 +1027,7 @@ void VisCalSolver2::optStepSize2() {
        << optfactor << " "
        << x2 << " "
        << "(" << min(amplitude(lastPar())) << ") "
-       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi << " ";
+       << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI << " ";
   */
 
 
@@ -1041,7 +1041,7 @@ void VisCalSolver2::optStepSize2() {
     dpar()*=Complex(optfactor);
 
   /*
-  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/C::pi
+  cout << max(amplitude(dpar())/amplitude(lastPar()))*180.0/M_PI
        << endl;
   */
 }

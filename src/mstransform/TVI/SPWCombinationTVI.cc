@@ -176,7 +176,7 @@ void SPWCombinationTVI::next()
 
 void SPWCombinationTVI::setUpCurrentSubchunkStructure()
 {
-    auto& innerNRowsPerShape = getVii()->nRowsPerShape();
+    // auto& innerNRowsPerShape = getVii()->nRowsPerShape();
     getVii()->polarizationIds(currentSubchunkInnerPolIds_p);
     std::set<casacore::Int> uniquePolIDs;
     std::copy(currentSubchunkInnerPolIds_p.begin(),currentSubchunkInnerPolIds_p.end(),

@@ -191,7 +191,7 @@ Bool MFCleanImageSkyModel::solve(SkyEquation& se) {
   os << LogIO::POST;
 	
   Float absmax=threshold();
-  Float oldabsmax=C::flt_max;
+  Float oldabsmax=FLT_MAX;
   Float cycleThreshold=0.0;
   Block< Vector<Int> > iterations(numberOfModels());
   Int maxIterations=0;

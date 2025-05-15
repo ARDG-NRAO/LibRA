@@ -94,8 +94,8 @@ inline void objfunc_alglib(const alglib::real_1d_array &x, double &func, alglib:
     func = 0;
     double amp = 1;
 
-    const int refi = nX/2;
-    const int refj = nY/2;
+    // const int refi = nX/2;
+    // const int refj = nY/2;
 
     int minX = nX - 1;
     int maxX = 0;
@@ -147,8 +147,8 @@ inline void objfunc_alglib(const alglib::real_1d_array &x, double &func, alglib:
       {
         for (int i = minI; i <= maxI; i++)
         {
-          const int px = i;
-          const int py = j;
+          // const int px = i;
+          // const int py = j;
 
           Asp(i,j) = (1.0/(sqrt(2*M_PI)*fabs(scale)))*exp(-(pow(i-center[k][0],2) + pow(j-center[k][1],2))*0.5/pow(scale,2));
           dAsp(i,j)= Asp(i,j) * (((pow(i-center[k][0],2) + pow(j-center[k][1],2)) / pow(scale,2) - 1) / fabs(scale)); // verified by python

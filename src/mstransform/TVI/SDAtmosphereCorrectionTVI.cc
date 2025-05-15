@@ -159,7 +159,7 @@ inline std::pair<Int, Int> findNearestIndex(Vector<Double> const &data, Double c
 
 // implementation of np.convolve(mode='same')
 inline Vector<Double> convolve1DTriangle(Vector<Double> const &in) {
-  constexpr unsigned int kNumKernel = 3u;
+  // constexpr unsigned int kNumKernel = 3u;
   constexpr Double kKernelTriangle[] = {0.25, 0.5, 0.25};
   unsigned int const n = in.nelements();
   assert(n >= kNumKernel);
@@ -967,10 +967,10 @@ Vector<Double> SDAtmosphereCorrectionTVI::updateCorrectionFactor(atm::SkyStatus 
 
   // opacity
   unsigned int const nchan = p.getNumChan();
-  Double const airMassOn = 1.0 / cos(C::pi_2 - elevationOn);
+  Double const airMassOn = 1.0 / cos(M_PI_2 - elevationOn);
   p.setAirMass(airMassOn);
   Vector<Double> trjSkySpecOn = getTrjSkySpec(&p, nchan);
-  Double const airMassOff = 1.0 / cos(C::pi_2 - elevationOff);
+  Double const airMassOff = 1.0 / cos(M_PI_2 - elevationOff);
   p.setAirMass(airMassOff);
   Vector<Double> trjSkySpecOff = getTrjSkySpec(&p, nchan);
   Vector<Double> tauSpecOff = getTauSpec(&p, nchan, airMassOff);

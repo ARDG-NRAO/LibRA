@@ -79,8 +79,8 @@ VisBuffer& SimACohCalc::apply(VisBuffer& vb)
     //    Int nAverage = 0;
 
     // In case you are confused, the 1e-4 converts the Diam from cm to m
-    Double fact = 4 * C::sqrt2 * 1.38062e-16 * 1e23 * 1e-4 /
-      ( antefficiency_p * correfficiency_p * C::pi );
+    Double fact = 4 * sqrt(2.0) * 1.38062e-16 * 1e23 * 1e-4 /
+      ( antefficiency_p * correfficiency_p * M_PI );
     
     Double lasttime = 0.0;
     Double time = 0.0;

@@ -428,8 +428,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	dataStep_p.resize(dataspectralwindowids_p.nelements());
 	dataStart_p.resize(dataspectralwindowids_p.nelements());
 	dataNchan_p.resize(dataspectralwindowids_p.nelements());
-	Double fmin=C::dbl_max;
-	Double fmax=-(C::dbl_max);
+	Double fmin=DBL_MAX;
+	Double fmax=-(DBL_MAX);
 	
 	Cube<Int> spwchansels_tmp=spwchansels_p;
 	for (uInt k =0 ; k < dataspectralwindowids_p.nelements(); ++k){

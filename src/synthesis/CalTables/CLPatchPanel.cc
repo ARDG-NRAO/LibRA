@@ -264,7 +264,7 @@ void FieldCalMap::setNearestFieldMap(const MSFieldColumns& msfc, const ROCTColum
       //cout << iMSFld << ":" << endl;
       //cout << "    ord=" << ord << endl;
       //cout << "   nsep=" << nsep << endl;
-      //cout << "    sep=" << sep << " " << sep*(180.0/C::pi)<< endl;
+      //cout << "    sep=" << sep << " " << sep*(180.0/M_PI)<< endl;
 
       // Trap case of duplication of nearest separation
       if (nsep>1 && sep(ord(1))==sep(ord(0)))
@@ -1602,8 +1602,8 @@ void CLPatchPanel::resampleInFreq(Matrix<Float>& fres,Matrix<Bool>& fflg,const V
 
     if (ifpar%2==1 && unWrapPhase) {
       for (uInt i=1;i<mtresi.nelements();++i) {
-        while ( (mtresi(i)-mtresi(i-1))>C::pi ) mtresi(i)-=C::_2pi;
-        while ( (mtresi(i)-mtresi(i-1))<-C::pi ) mtresi(i)+=C::_2pi;
+        while ( (mtresi(i)-mtresi(i-1))>M_PI ) mtresi(i)-=2.0*M_PI;
+        while ( (mtresi(i)-mtresi(i-1))<-M_PI ) mtresi(i)+=2.0*M_PI;
       }
     }
 

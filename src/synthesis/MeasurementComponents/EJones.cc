@@ -470,7 +470,7 @@ void EGainCurve::syncMeta(const VisBuffer& vb) {
   Vector<MDirection> antazel(vb.azel(currTime()));
   Double* a=za().data();
   for (Int iant=0;iant<nAnt();++iant,++a) 
-    (*a)=90.0 - antazel(iant).getAngle().getValue()(1)*180.0/C::pi;
+    (*a)=90.0 - antazel(iant).getAngle().getValue()(1)*180.0/M_PI;
 
 }
 
@@ -485,7 +485,7 @@ void EGainCurve::syncMeta2(const vi::VisBuffer2& vb) {
   Vector<MDirection> antazel(vb.azel(currTime()));
   Double* a=za().data();
   for (Int iant=0;iant<nAnt();++iant,++a) 
-    (*a)=90.0 - antazel(iant).getAngle().getValue()(1)*180.0/C::pi;
+    (*a)=90.0 - antazel(iant).getAngle().getValue()(1)*180.0/M_PI;
 
 }
 
