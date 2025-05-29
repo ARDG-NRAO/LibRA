@@ -314,6 +314,7 @@ void makeCASAVisBuffer(//const unsigned nVisRow, const unsigned nVisChan, const 
 		  // cerr << iPol << " " << iChan << " " << iRow << " " << hpgRow << " " << hpgVis.size()
 		  //      << " " << hpgVis[hpgRow].m_visibilities[hpgPol]
 		  //      << " " << hpgVis[hpgRow].m_weights[hpgPol]
+		  //      << " " << casaModelVisCube(iPol,iChan, iRow)
 		  //      << endl;
 		  hpgPol++;
 		}
