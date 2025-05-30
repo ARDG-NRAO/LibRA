@@ -1,6 +1,7 @@
-#include <filesystem>
+//#include <filesystem>
 #include <RoadRunner/roadrunner.h>
-#include <gtest/gtest.h>
+//#include <gtest/gtest.h>
+#include <tests/test_utils.h>
 
 using namespace std;
 using namespace std::filesystem;
@@ -19,7 +20,7 @@ TEST(RoadrunnerTest, InitializeTest) {
   EXPECT_TRUE(ret);
 }
 
-TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
+TEST(RoadrunnerTest, AppLevelSNRPSF_performance) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
@@ -89,7 +90,7 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
   EXPECT_NEAR(psfimage(IPosition(4,2000,2000,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(psfimage(IPosition(4,1885,1885,0,0)), goldValLoc1, tol);
 
-
+  // flag if runtime is abnormal
   auto gold_runtime = 4.3; //gpuhost003
   try {
     auto runtime = record.at(CUMULATIVE_GRIDDING_ENGINE_TIME);
@@ -100,6 +101,22 @@ TEST(RoadrunnerTest, AppLevelSNRPSF_timed) {
         std::cout << "Key CUMULATIVE_GRIDDING_ENGINE_TIME not found" << std::endl;
   }
 
+   if (!IsGpuHost003()) {
+     std::cout << "[  INFO ] Skipping vis processing rate check on non-gpuhost003 machine.\n" << std::endl;
+   } 
+   else {
+    // flag if Vis Processing rate is reduced by > 10%
+    auto gold_rate = 240000; //V100 in gpuhost003 for this setup only
+    try {
+      auto rate = record.at(NVIS) / record.at(IMAGING_TIME);  // Vis/sec
+      EXPECT_GT(rate, 0.9 * gold_rate) << "Vis Processing Rate is reduced by more than 10%. Check if any code change slows it down";
+    }
+    catch (const std::out_of_range&) {
+        std::cout << "Key IMAGING_TIME or NVIS not found" << std::endl;
+    }
+   }
+
+	
   //move to parent directory
   std::filesystem::current_path(testDir.parent_path());
 
