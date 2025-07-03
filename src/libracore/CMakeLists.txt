@@ -19,8 +19,26 @@ project(libracore)
 
 find_package(Kokkos REQUIRED)
 
+# Get Kokkos include directories and find mdspan
+get_target_property(KOKKOS_INCLUDE_DIRS Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
+set(MDSPAN_INCLUDE_DIR "")
+foreach(kokkos_dir ${KOKKOS_INCLUDE_DIRS})
+    if(EXISTS "${kokkos_dir}/mdspan/mdspan.hpp")
+        set(MDSPAN_INCLUDE_DIR "${kokkos_dir}")
+        break()
+    elseif(EXISTS "${kokkos_dir}/../tpls/mdspan/include/mdspan/mdspan.hpp")
+        set(MDSPAN_INCLUDE_DIR "${kokkos_dir}/../tpls/mdspan/include")
+        break()
+    endif()
+endforeach()
 
-include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
+if(NOT MDSPAN_INCLUDE_DIR)
+    message(FATAL_ERROR "Could not find mdspan headers in Kokkos installation")
+endif()
+
+message(STATUS "Found mdspan include directory: ${MDSPAN_INCLUDE_DIR}")
+
+include_directories(${MDSPAN_INCLUDE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}  
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
@@ -45,7 +63,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER
 	")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-  ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
+  ${MDSPAN_INCLUDE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore

@@ -100,14 +100,15 @@ class Hpg(CMakePackage):
     depends_on("cuda@11.0.2:", when="+cuda")
     depends_on("fftw@3.3.8: precision=float,double", when="+serial")
     depends_on("fftw@3.3.8: +openmp precision=float,double", when="+openmp")
-    depends_on("kokkos@3.2.00:", when="@:1.2.3")
-    depends_on("kokkos@4.6.01:", when="@2:")
-    depends_on("kokkos+cuda+cuda_lambda", when="+cuda")
+    depends_on("kokkos@3.2.00:3.99.99", when="@:1.2.3")
+    depends_on("kokkos@4.0.0:4.99.99", when="@2:")
+    depends_on("kokkos+cuda+cuda_lambda+wrapper", when="+cuda")
     depends_on("kokkos+openmp", when="+openmp")
     depends_on("kokkos+serial", when="+serial")
 
     conflicts("kokkos cxxstd=11")
     conflicts("kokkos cxxstd=14")
+    
 
     index_type_map = {
         "uint": "unsigned int",

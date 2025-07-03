@@ -5,6 +5,8 @@
 from spack.package import *
 from spack.build_systems.cmake import CMakePackage
 import os
+import spack.util.spack_yaml as syaml
+import llnl.util.tty as tty
 
 
 class Libra(CMakePackage):
@@ -20,7 +22,6 @@ class Libra(CMakePackage):
     version("main", branch="main")
 
     # Variants for optional features
-    variant("sakura", default=False, description="Enable libsakura support")
     variant("exodus", default=False, description="Enable exodus support")
     variant("openmp", default=True, description="Enable OpenMP support")
     variant("cuda", default=False, description="Enable CUDA support")
@@ -28,10 +29,11 @@ class Libra(CMakePackage):
     variant("tests", default=False, description="Build tests")
 
     # Core dependencies 
-    depends_on("kokkos@4.6.01: +openmp+serial+cuda+cuda_lambda", when="+all")
-    depends_on("kokkos@4.6.01: +cuda+cuda_lambda", when="+cuda ~all")
-    depends_on("kokkos@4.6.01: +openmp+serial", when="+openmp ~cuda ~all")
-    depends_on("kokkos@4.6.01: +serial", when="~openmp ~cuda ~all")
+    depends_on("kokkos@4.0.0:4.99.99 +openmp+serial+cuda+cuda_lambda+wrapper", when="+all")
+    depends_on("kokkos@4.0.0:4.99.99 +cuda+cuda_lambda+wrapper", when="+cuda ~all")
+    depends_on("kokkos@4.0.0:4.99.99 +openmp+serial", when="+openmp ~cuda ~all")
+    depends_on("kokkos@4.0.0:4.99.99 +serial", when="~openmp ~cuda ~all")
+    
     depends_on("fftw@3.3.10: +openmp", when="+openmp")
     depends_on("fftw@3.3.10: +openmp", when="+all")
     depends_on("fftw@3.3.10:", when="~openmp ~all")
@@ -46,7 +48,6 @@ class Libra(CMakePackage):
     depends_on("cuda", when="+all")
     
     # Optional dependencies
-    depends_on("libsakura@5.1.3:", when="+sakura")
     depends_on("googletest@1.14.0:", when="+tests")
     
     # Build dependencies
@@ -68,6 +69,24 @@ class Libra(CMakePackage):
     depends_on("fortran", type="build")
 
     def cmake_args(self):
+        # Copy CMakeLists.txt.spack from package directory to staged source
+        import shutil
+        package_dir = os.path.dirname(__file__)
+        source_spack_cmake = join_path(package_dir, "CMakeLists.txt.spack")
+        target_main_cmake = join_path(self.stage.source_path, "CMakeLists.txt")
+        
+        print("*** COPYING CMAKE FROM PACKAGE DIR ***")
+        print("Package dir:", package_dir)
+        print("Source spack cmake:", source_spack_cmake)
+        print("Target main cmake:", target_main_cmake)
+        
+        if os.path.exists(source_spack_cmake):
+            print("*** FOUND SPACK CMAKE IN PACKAGE DIR - COPYING ***")
+            shutil.copy2(source_spack_cmake, target_main_cmake)
+            print("*** COPY COMPLETE ***")
+        else:
+            print("*** SPACK CMAKE NOT FOUND IN PACKAGE DIR ***")
+        
         args = [
             # Set C++ standard and build type
             self.define("CMAKE_CXX_STANDARD", 17),
@@ -81,7 +100,7 @@ class Libra(CMakePackage):
             
             # Build options
             self.define("CMAKE_INTERPROCEDURAL_OPTIMIZATION", False),
-            self.define_from_variant("LIBRA_USE_LIBSAKURA", "sakura"),
+            self.define("LIBRA_USE_LIBSAKURA", False),
             self.define_from_variant("LIBRA_USE_EXODUS", "exodus"),
             self.define_from_variant("Apps_BUILD_TESTS", "tests"),
         ]
@@ -89,15 +108,7 @@ class Libra(CMakePackage):
         # Set number of cores for parallel builds
         import multiprocessing
         ncores = max(1, multiprocessing.cpu_count() - 2)
-        # Override with Spack's build_jobs if available
-        if hasattr(self, 'make_jobs') and self.make_jobs:
-            ncores = self.make_jobs
         args.append(self.define("NCORES", ncores))
-        
-        # CUDA-specific configurations
-        if "+cuda" in self.spec or "+all" in self.spec:
-            # Let CMake handle CUDA architecture detection
-            pass
         
         return args
 
@@ -109,18 +120,10 @@ class Libra(CMakePackage):
         if ("+cuda" in self.spec or "+all" in self.spec) and "cuda" in self.spec:
             env.prepend_path("PATH", self.spec["cuda"].prefix.bin)
 
-    @run_after("patch")
-    def setup_spack_cmake(self):
-        # Copy Spack-specific CMakeLists.txt to override the main one
-        import shutil
-        spack_cmake = join_path(self.stage.source_path, "CMakeLists.txt.spack")
-        main_cmake = join_path(self.stage.source_path, "CMakeLists.txt")
-        tty.msg("LibRA: Looking for Spack CMakeLists.txt at: {0}".format(spack_cmake))
-        if os.path.exists(spack_cmake):
-            tty.msg("LibRA: Copying Spack CMakeLists.txt to main CMakeLists.txt")
-            shutil.copy2(spack_cmake, main_cmake)
-        else:
-            tty.msg("LibRA: Spack CMakeLists.txt not found, using original")
+    # @run_after("patch")
+    # def setup_spack_cmake(self):
+    #     # COMMENTED OUT FOR DEBUGGING
+    #     pass
 
     @run_before("cmake")
     def setup_directories(self):
