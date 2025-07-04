@@ -278,7 +278,6 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
    // Using FFTW (replaces deprecated FFTPack)
    FFTW fftw_plan;
    IPosition fft_size(2, convSize, convSize);
@@ -450,14 +449,10 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 	   }
 	 }
 	 ////Por FFTPack
-	 Vector<Float>work(2*cpConvSize*cpConvSize);
-	 Int lenwrk=2*cpConvSize*cpConvSize;
-	 Bool worksave;
-	 Float *workptr=work.getStorage(worksave);
-	 Int ier;
 	 // Using FFTW for 2D complex FFT
+	 FFTW local_fftw_plan;
 	 IPosition fft_size_local(2, cpConvSize, cpConvSize);
-	 fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
+	 local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
        
        screen.putStorage(scr, cpscr);
 
