@@ -2518,7 +2518,7 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
   Int* suppstor=pcsupp.getStorage(delsupstor);
   ////////////
 
-#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, maxptr, cpWscale, inner, cor, maxConvSize, cpConvSamp, suppstor, twoPi)
+#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, fftw_plan, maxptr, cpWscale, inner, cor, maxConvSize, cpConvSamp, suppstor, twoPi)
 
   for (Int iw = 0; iw < cpWConvSize; iw++) {
     // First the w term
