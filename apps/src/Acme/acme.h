@@ -25,7 +25,7 @@
 #ifndef ACME_H
 #define ACME_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <ms/MSOper/MSSummary.h>
 #include <ms/MeasurementSets/MeasurementSet.h>
 #include <casa/Logging/LogIO.h>

@@ -25,7 +25,7 @@
 #ifndef CHIP_H
 #define CHIP_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <ms/MSOper/MSSummary.h>
 #include <ms/MeasurementSets/MeasurementSet.h>
 #include <casa/Logging/LogIO.h>

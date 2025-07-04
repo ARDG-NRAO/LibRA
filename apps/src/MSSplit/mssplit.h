@@ -25,7 +25,7 @@
 #ifndef MSSPLIT_H
 #define MSSPLIT_H
 
-#include <casa/aips.h>
+#include <casacore/casa/aips.h>
 #include <ms/MSSel/MSSelection.h>
 #include <ms/MSSel/MSSelectionError.h>
 #include <ms/MSSel/MSSelectionTools.h>
