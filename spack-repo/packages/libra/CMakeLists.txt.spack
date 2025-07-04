@@ -1,0 +1,341 @@
+cmake_minimum_required(VERSION 3.18)
+
+# Set policy for CMAKE_VERSION >= 3.24.0
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 OLD)
+endif()
+
+project("LibRA Apps"
+  VERSION 6.5.2.0
+  DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
+  HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
+  LANGUAGES CXX Fortran C)
+
+set(LIBRA_ID "LibRA INFO: ")
+set(CMAKE_CXX_STANDARD 17)
+set(BUILD_TYPE "RelWithDebInfo")
+set(CASA_BUILD_TYPE "RelWithDebInfo")
+
+# Include required modules
+include(FindPkgConfig)
+include(FindBISON)
+include(FindFLEX)
+include(CheckCXXCompilerFlag)
+include(GNUInstallDirs)
+include(CTest)
+
+# Add local cmake modules to path - this will be set properly in src/CMakeLists.txt
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
+
+# Set CMAKE environment variables
+set(CMAKE_INSTALL_LIBDIR lib)
+set(CMAKE_INSTALL_INCLUDEDIR include)
+set(CMAKE_INSTALL_BINDIR bin)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+# Find system information
+if (NOT DEFINED NCORES)
+    cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
+    cmake_host_system_information(RESULT NTHREADS QUERY NUMBER_OF_LOGICAL_CORES)
+    message("${LIBRA_ID} Number of physical cores: ${NCORES}")
+    message("${LIBRA_ID} Number of logical cores: ${NTHREADS}")
+    math(EXPR NCORES "${NCORES} - 2")
+endif()
+
+if (NCORES LESS 1)
+  set(NCORES 1)
+endif()
+message("${LIBRA_ID} Setting number of cores to ${NCORES}")
+
+# LibRA variant options
+if(NOT DEFINED LIBRA_USE_LIBSAKURA)
+  set(LIBRA_USE_LIBSAKURA OFF)
+endif()
+
+if(NOT DEFINED LIBRA_USE_EXODUS)
+  set(LIBRA_USE_EXODUS OFF)
+endif()
+
+if(NOT DEFINED Apps_BUILD_TESTS)
+  set(Apps_BUILD_TESTS OFF)
+endif()
+
+message("${LIBRA_ID} LIBRA_USE_LIBSAKURA: ${LIBRA_USE_LIBSAKURA}")
+message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")
+message("${LIBRA_ID} Apps_BUILD_TESTS: ${Apps_BUILD_TESTS}")
+
+# Find Spack-managed dependencies
+find_package(PkgConfig REQUIRED)
+
+# Find Kokkos
+find_package(Kokkos REQUIRED)
+message("${LIBRA_ID} Found Kokkos: ${Kokkos_DIR}")
+
+# Find HPG
+find_package(Hpg REQUIRED)
+message("${LIBRA_ID} Found HPG: ${Hpg_DIR}")
+
+# Find parafeed
+find_package(parafeed REQUIRED)
+message("${LIBRA_ID} Found parafeed: ${parafeed_DIR}")
+
+# Find casacore using CMake approach
+# Look for casacore in CMAKE_PREFIX_PATH
+find_path(CASACORE_INCLUDE_DIR 
+    NAMES casacore/casa/aips.h casa/aips.h
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES include
+    DOC "Casacore include directory")
+
+find_library(CASACORE_CASA_LIBRARY
+    NAMES casa_casa
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore casa library")
+
+find_library(CASACORE_TABLES_LIBRARY
+    NAMES casa_tables
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore tables library")
+
+find_library(CASACORE_MEASURES_LIBRARY
+    NAMES casa_measures
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore measures library")
+
+find_library(CASACORE_MS_LIBRARY
+    NAMES casa_ms
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore ms library")
+
+find_library(CASACORE_COORDINATES_LIBRARY
+    NAMES casa_coordinates
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore coordinates library")
+
+find_library(CASACORE_LATTICES_LIBRARY
+    NAMES casa_lattices
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore lattices library")
+
+find_library(CASACORE_FITS_LIBRARY
+    NAMES casa_fits
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore fits library")
+
+find_library(CASACORE_IMAGES_LIBRARY
+    NAMES casa_images
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore images library")
+
+find_library(CASACORE_MSFITS_LIBRARY
+    NAMES casa_msfits
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore msfits library")
+
+find_library(CASACORE_SCIMATH_LIBRARY
+    NAMES casa_scimath
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore scimath library")
+
+find_library(CASACORE_SCIMATH_F_LIBRARY
+    NAMES casa_scimath_f
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "Casacore scimath_f library")
+
+if(CASACORE_INCLUDE_DIR AND CASACORE_CASA_LIBRARY)
+    message("${LIBRA_ID} Found casacore include: ${CASACORE_INCLUDE_DIR}")
+    message("${LIBRA_ID} Found casacore casa library: ${CASACORE_CASA_LIBRARY}")
+    
+    # Collect all casacore libraries
+    set(CASACORE_LIBRARIES
+        ${CASACORE_CASA_LIBRARY}
+        ${CASACORE_TABLES_LIBRARY}
+        ${CASACORE_MEASURES_LIBRARY}
+        ${CASACORE_MS_LIBRARY}
+        ${CASACORE_COORDINATES_LIBRARY}
+        ${CASACORE_LATTICES_LIBRARY}
+        ${CASACORE_FITS_LIBRARY}
+        ${CASACORE_IMAGES_LIBRARY}
+        ${CASACORE_MSFITS_LIBRARY}
+        ${CASACORE_SCIMATH_LIBRARY}
+        ${CASACORE_SCIMATH_F_LIBRARY}
+    )
+    
+    # Create both targets for compatibility
+    # Keep PkgConfig::CASACORE for existing component CMakeLists.txt files
+    add_library(PkgConfig::CASACORE INTERFACE IMPORTED)
+    set_target_properties(PkgConfig::CASACORE PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${CASACORE_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${CASACORE_LIBRARIES}")
+    
+    # Also create a more appropriate CMake-style target
+    add_library(casacore::casacore INTERFACE IMPORTED)
+    set_target_properties(casacore::casacore PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${CASACORE_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${CASACORE_LIBRARIES}")
+    
+    message("${LIBRA_ID} Created both PkgConfig::CASACORE and casacore::casacore targets")
+else()
+    message(FATAL_ERROR "Casacore not found!")
+endif()
+
+# Find pybind11
+find_package(pybind11 REQUIRED)
+message("${LIBRA_ID} Found pybind11: ${pybind11_DIR}")
+
+# Find FFTW
+pkg_check_modules(FFTW REQUIRED fftw3)
+message("${LIBRA_ID} Found FFTW: ${FFTW_LIBDIR}")
+
+# Find system libraries
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
+# Find GSL and create GSL::gsl target
+find_path(GSL_INCLUDE_DIR 
+    NAMES gsl/gsl_version.h
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES include
+    DOC "GSL include directory")
+
+find_library(GSL_LIBRARY
+    NAMES gsl
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "GSL library")
+
+find_library(GSL_CBLAS_LIBRARY
+    NAMES gslcblas
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "GSL CBLAS library")
+
+if(GSL_INCLUDE_DIR AND GSL_LIBRARY)
+    message("${LIBRA_ID} Found GSL include: ${GSL_INCLUDE_DIR}")
+    message("${LIBRA_ID} Found GSL library: ${GSL_LIBRARY}")
+    
+    add_library(GSL::gsl INTERFACE IMPORTED)
+    set_target_properties(GSL::gsl PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${GSL_LIBRARY};${GSL_CBLAS_LIBRARY}")
+    
+    message("${LIBRA_ID} Created GSL::gsl target")
+endif()
+
+# Find CFITSIO and create PkgConfig::CFITSIO target
+find_path(CFITSIO_INCLUDE_DIR 
+    NAMES fitsio.h
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES include
+    DOC "CFITSIO include directory")
+
+find_library(CFITSIO_LIBRARY
+    NAMES cfitsio
+    HINTS ${CMAKE_PREFIX_PATH}
+    PATH_SUFFIXES lib
+    DOC "CFITSIO library")
+
+if(CFITSIO_INCLUDE_DIR AND CFITSIO_LIBRARY)
+    message("${LIBRA_ID} Found CFITSIO include: ${CFITSIO_INCLUDE_DIR}")
+    message("${LIBRA_ID} Found CFITSIO library: ${CFITSIO_LIBRARY}")
+    
+    add_library(PkgConfig::CFITSIO INTERFACE IMPORTED)
+    set_target_properties(PkgConfig::CFITSIO PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${CFITSIO_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${CFITSIO_LIBRARY}")
+    
+    message("${LIBRA_ID} Created PkgConfig::CFITSIO target")
+endif()
+
+# Find build tools
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
+
+# Find OpenMP
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+    message("${LIBRA_ID} Found OpenMP: ${OpenMP_CXX_FLAGS}")
+    message("${LIBRA_ID} OpenMP::OpenMP_CXX target available")
+else()
+    message(FATAL_ERROR "OpenMP not found!")
+endif()
+
+# Find optional dependencies
+if(LIBRA_USE_LIBSAKURA)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(SAKURA REQUIRED libsakura)
+  message("${LIBRA_ID} Found libsakura: ${SAKURA_LIBDIR}")
+endif()
+
+if(Apps_BUILD_TESTS)
+  find_package(GTest REQUIRED)
+  message("${LIBRA_ID} Found GTest: ${GTest_DIR}")
+endif()
+
+# Set up include directories
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/apps/src
+)
+
+# Add subdirectories for building LibRA components
+# Don't use add_subdirectory(src) - instead include src components directly
+add_subdirectory(apps)
+add_subdirectory(frameworks)
+add_subdirectory(scripts)
+
+# Handle src components manually to avoid path issues
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
+include(DeclareCasacppComponent)
+
+# List of src components to build
+set(LIBRA_COMPONENTS
+    asdmstman
+    atmosphere  
+    casatools
+    components
+    imageanalysis
+    libracore
+    librautils
+    mstransform
+    msvis
+    nrao
+    stdcasa
+    synthesis
+)
+
+# Add each component from src directory
+foreach(_component ${LIBRA_COMPONENTS})
+    set(component_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/${_component}")
+    if(EXISTS ${component_dir})
+        message("${LIBRA_ID} Adding component: ${_component}")
+        add_subdirectory("src/${_component}")
+    else()
+        message("${LIBRA_ID} Skipping missing component: ${_component}")
+    endif()
+endforeach()
+
+# Create installation directories
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY DESTINATION share)
+
+# Set up data directory for casacore if needed
+set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/casacore/data)
+install(DIRECTORY DESTINATION ${DATA_DIR})
+
+message("${LIBRA_ID} Installing libraries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+message("${LIBRA_ID} Installing headers to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+message("${LIBRA_ID} Installing binaries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
