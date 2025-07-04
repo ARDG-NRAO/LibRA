@@ -29,7 +29,7 @@
 #include <casacore/ms/MSSel/MSSelection.h>
 #include <casacore/ms/MSSel/MSSelectionError.h>
 #include <casacore/ms/MSSel/MSSelectionTools.h>
-#include <casacore/msvis/MSVis/SubMS.h>
+#include <msvis/MSVis/SubMS.h>
 
 using namespace std;
 using namespace casa;
