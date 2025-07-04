@@ -95,12 +95,18 @@ else()
     
     find_path(CASACORE_INCLUDE_DIR 
         NAMES casacore/casa/aips.h casa/aips.h
-        HINTS ${CMAKE_PREFIX_PATH} 
-              ${CMAKE_INSTALL_PREFIX}
-              /usr/local
-              /usr
-        PATH_SUFFIXES include include/casacore
+        HINTS ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH
         DOC "Casacore include directory")
+    
+    # If not found, try with default paths
+    if(NOT CASACORE_INCLUDE_DIR)
+        find_path(CASACORE_INCLUDE_DIR 
+            NAMES casacore/casa/aips.h casa/aips.h
+            PATH_SUFFIXES include
+            DOC "Casacore include directory")
+    endif()
     
     message("${LIBRA_ID} CASACORE_INCLUDE_DIR result: ${CASACORE_INCLUDE_DIR}")
     
@@ -108,65 +114,76 @@ else()
         NAMES casa_casa
         HINTS ${CMAKE_PREFIX_PATH}
         PATH_SUFFIXES lib
+        NO_DEFAULT_PATH
         DOC "Casacore casa library")
 
 find_library(CASACORE_TABLES_LIBRARY
     NAMES casa_tables
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore tables library")
 
 find_library(CASACORE_MEASURES_LIBRARY
     NAMES casa_measures
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore measures library")
 
 find_library(CASACORE_MS_LIBRARY
     NAMES casa_ms
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore ms library")
 
 find_library(CASACORE_COORDINATES_LIBRARY
     NAMES casa_coordinates
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore coordinates library")
 
 find_library(CASACORE_LATTICES_LIBRARY
     NAMES casa_lattices
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore lattices library")
 
 find_library(CASACORE_FITS_LIBRARY
     NAMES casa_fits
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore fits library")
 
 find_library(CASACORE_IMAGES_LIBRARY
     NAMES casa_images
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore images library")
 
 find_library(CASACORE_MSFITS_LIBRARY
     NAMES casa_msfits
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore msfits library")
 
 find_library(CASACORE_SCIMATH_LIBRARY
     NAMES casa_scimath
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore scimath library")
 
 find_library(CASACORE_SCIMATH_F_LIBRARY
     NAMES casa_scimath_f
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "Casacore scimath_f library")
 
@@ -224,18 +241,21 @@ find_package(LAPACK REQUIRED)
 find_path(GSL_INCLUDE_DIR 
     NAMES gsl/gsl_version.h
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES include
     DOC "GSL include directory")
 
 find_library(GSL_LIBRARY
     NAMES gsl
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "GSL library")
 
 find_library(GSL_CBLAS_LIBRARY
     NAMES gslcblas
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "GSL CBLAS library")
 
@@ -255,12 +275,14 @@ endif()
 find_path(CFITSIO_INCLUDE_DIR 
     NAMES fitsio.h
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES include
     DOC "CFITSIO include directory")
 
 find_library(CFITSIO_LIBRARY
     NAMES cfitsio
     HINTS ${CMAKE_PREFIX_PATH}
+    NO_DEFAULT_PATH
     PATH_SUFFIXES lib
     DOC "CFITSIO library")
 
