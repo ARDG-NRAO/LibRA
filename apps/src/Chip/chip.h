@@ -37,7 +37,7 @@
 #include <casacore/images/Images/ImageSummary.h>
 #include <casacore/casa/Containers/Record.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
-#include <lattices/Lattices/PagedArray.h>
+#include <casacore/lattices/Lattices/PagedArray.h>
 #include <fstream>
 
 using namespace std;
