@@ -1,7 +1,7 @@
 #ifndef LIBRACORE_ARRAYBASE_H
 #define LIBRACORE_ARRAYBASE_H
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <cassert>
 
 #include <libracore/LibracoreTypes.h>
