@@ -294,7 +294,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 #ifdef _OPENMP
      omp_set_nested(0);
 #endif
-#pragma omp parallel for default(none) firstprivate(/*cpWConvSize,*/ cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, cpWscale,  wstart, wend) 
+#pragma omp parallel for default(none) firstprivate(/*cpWConvSize,*/ cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, cpWscale,  wstart, wend) shared(fftw_plan) 
      for (Int iw=wstart; iw < (wend+1)  ; ++iw) {
        Matrix<Complex> screen1(cpConvSize, cpConvSize);
        makeGWplane(screen1, iw, s0, s1, wsaveptr, lsav, inner, cor, cpWscale);
@@ -438,10 +438,10 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 	 Int lenwrk=2*cpConvSize*cpConvSize;
 	 Bool worksave;
 	 Float *workptr=work.getStorage(worksave);
-	 Int ier;
 	 // Using FFTW for 2D complex FFT
+	 FFTW local_fftw_plan;
 	 IPosition fft_size_local(2, cpConvSize, cpConvSize);
-	 fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
+	 local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
        
        screen.putStorage(scr, cpscr);
 
@@ -659,7 +659,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int cpWConvSize=wConvSize;
    Double cpWscale=wScale;
    Double twopi = 2.0 * M_PI; // Define a local variable for 2π
-#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, cor, inner, maxptr, cpWscale, twopi)
+#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, maxptr, cpWscale, twopi) shared(fftw_plan)
 
   for (Int iw=0; iw< cpWConvSize;iw++) {
     // First the w term
@@ -729,8 +729,9 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     Bool worksave;
     Float *workptr=work.getStorage(worksave);
     // Using FFTW for 2D complex FFT
+    FFTW local_fftw_plan;
     IPosition fft_size_local(2, cpConvSize, cpConvSize);
-    fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
+    local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
    
     screen.putStorage(scr, cpscr);
     /////////////////////
