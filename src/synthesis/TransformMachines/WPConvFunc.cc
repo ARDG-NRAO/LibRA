@@ -56,7 +56,7 @@
 #include <casacore/lattices/Lattices/LatticeCache.h>
 #include <casacore/lattices/LatticeMath/LatticeFFT.h>
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+#include <casacore/scimath/Mathematics/FFTW.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <synthesis/TransformMachines/SimplePBConvFunc.h> //por SINCOS
