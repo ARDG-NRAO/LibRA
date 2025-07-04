@@ -79,19 +79,36 @@ message("${LIBRA_ID} Found HPG: ${Hpg_DIR}")
 find_package(parafeed REQUIRED)
 message("${LIBRA_ID} Found parafeed: ${parafeed_DIR}")
 
-# Find casacore using CMake approach
-# Look for casacore in CMAKE_PREFIX_PATH
-find_path(CASACORE_INCLUDE_DIR 
-    NAMES casacore/casa/aips.h casa/aips.h
-    HINTS ${CMAKE_PREFIX_PATH}
-    PATH_SUFFIXES include
-    DOC "Casacore include directory")
+# Try to find casacore using find_package first
+find_package(casacore QUIET)
 
-find_library(CASACORE_CASA_LIBRARY
-    NAMES casa_casa
-    HINTS ${CMAKE_PREFIX_PATH}
-    PATH_SUFFIXES lib
-    DOC "Casacore casa library")
+if(casacore_FOUND)
+    message("${LIBRA_ID} Found casacore via find_package")
+    # Use casacore target if available
+    if(TARGET casacore::casacore)
+        add_library(PkgConfig::CASACORE ALIAS casacore::casacore)
+    endif()
+else()
+    # Fall back to manual detection
+    message("${LIBRA_ID} find_package(casacore) failed, trying manual detection")
+    message("${LIBRA_ID} Looking for casacore with CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+    
+    find_path(CASACORE_INCLUDE_DIR 
+        NAMES casacore/casa/aips.h casa/aips.h
+        HINTS ${CMAKE_PREFIX_PATH} 
+              ${CMAKE_INSTALL_PREFIX}
+              /usr/local
+              /usr
+        PATH_SUFFIXES include include/casacore
+        DOC "Casacore include directory")
+    
+    message("${LIBRA_ID} CASACORE_INCLUDE_DIR result: ${CASACORE_INCLUDE_DIR}")
+    
+    find_library(CASACORE_CASA_LIBRARY
+        NAMES casa_casa
+        HINTS ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES lib
+        DOC "Casacore casa library")
 
 find_library(CASACORE_TABLES_LIBRARY
     NAMES casa_tables
@@ -153,7 +170,7 @@ find_library(CASACORE_SCIMATH_F_LIBRARY
     PATH_SUFFIXES lib
     DOC "Casacore scimath_f library")
 
-if(CASACORE_INCLUDE_DIR AND CASACORE_CASA_LIBRARY)
+    if(CASACORE_INCLUDE_DIR AND CASACORE_CASA_LIBRARY)
     message("${LIBRA_ID} Found casacore include: ${CASACORE_INCLUDE_DIR}")
     message("${LIBRA_ID} Found casacore casa library: ${CASACORE_CASA_LIBRARY}")
     
@@ -185,10 +202,11 @@ if(CASACORE_INCLUDE_DIR AND CASACORE_CASA_LIBRARY)
         INTERFACE_INCLUDE_DIRECTORIES "${CASACORE_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "${CASACORE_LIBRARIES}")
     
-    message("${LIBRA_ID} Created both PkgConfig::CASACORE and casacore::casacore targets")
-else()
-    message(FATAL_ERROR "Casacore not found!")
-endif()
+        message("${LIBRA_ID} Created both PkgConfig::CASACORE and casacore::casacore targets")
+    else()
+        message(FATAL_ERROR "Casacore not found!")
+    endif()
+endif()  # Close the casacore_FOUND else block
 
 # Find pybind11
 find_package(pybind11 REQUIRED)
