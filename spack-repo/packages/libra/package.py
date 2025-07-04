@@ -13,13 +13,13 @@ class Libra(CMakePackage):
     """LibRA (Library of Radio Astronomy) - A radio astronomy data processing library"""
 
     homepage = "https://github.com/ARDG-NRAO/LibRA"
-    git = "https://github.com/ARDG-NRAO/LibRA.git"
-
+    #git = "https://github.com/ARDG-NRAO/LibRA.git"
+    git = "gitlab@gitlab.nrao.edu:pjaganna/libra.git"
     maintainers("ardg-nrao", "pjaganna")
 
     license("GPL-3.0-or-later", checked_by="pjaganna")
 
-    version("main", branch="main")
+    version("main", branch="spack")
 
     # Variants for optional features
     variant("exodus", default=False, description="Enable exodus support")

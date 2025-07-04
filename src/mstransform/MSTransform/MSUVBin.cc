@@ -57,7 +57,7 @@
 #include <msvis/MSVis/VisBuffer2Adapter.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+#include <casacore/scimath/Mathematics/FFTW.h>
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <wcslib/wcsconfig.h>  /** HAVE_SINCOS **/
 #include <cmath> // Ensure M_PI is available
@@ -2494,13 +2494,9 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
    Complex *cor=corr.getStorage(cpcor);
   Double s1=sampling(1);
   Double s0=sampling(0);
-  ///////////Por FFTPack
-  Vector<Float> wsave(2*convSize*convSize+15);
-  Int lsav=2*convSize*convSize+15;
-  Bool wsavesave;
-  Float *wsaveptr=wsave.getStorage(wsavesave);
-  Int ier;
-  FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
+  ///////////Using FFTW (replaces deprecated FFTPack)
+  FFTW fftw_plan;
+  IPosition fft_size(2, convSize, convSize);
    //////////
 #ifdef _OPENMP
    omp_set_nested(0);
@@ -2561,13 +2557,11 @@ void MSUVBin::makeWConv(vi::VisibilityIterator2& iter, Cube<Complex>& convFunc, 
       
     }
     // Now FFT and get the result back
-    /////////Por FFTPack
-    Vector<Float>work(2*cpConvSize*cpConvSize);
-    Int lenwrk=2*cpConvSize*cpConvSize;
-    Bool worksave;
-    Float *workptr=work.getStorage(worksave);
-    FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
-    FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr2, wsaveptr, lsav, workptr, lenwrk, ier);
+    /////////Using FFTW (replaces deprecated FFTPack)
+    IPosition fft_size_local(2, cpConvSize, cpConvSize);
+    // Execute 2D complex-to-complex forward FFTs
+    fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
+    fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr2), true);
     screen.putStorage(scr, cpscr);
     screen2.putStorage(scr2, cpscr2);
     ooLong offset=uInt(iw*(cpConvSize/2-1)*(cpConvSize/2-1));
