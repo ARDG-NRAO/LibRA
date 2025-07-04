@@ -266,13 +266,14 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int* suppstor=pcsupp.getStorage(delsupstor);
    Double s1=sampling(1);
    Double s0=sampling(0);
-   ///////////Por FFTPack
+   ///////////Using FFTW (replaces deprecated FFTPack)
+   FFTW fftw_plan;
+   IPosition fft_size(2, convSize, convSize);
+   // Create dummy parameters for makeGWplane compatibility
    Vector<Float> wsave(2*convSize*convSize+15);
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
-   FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
    ////////// 
    Matrix<Complex> screen(convSize, convSize);
    makeGWplane(screen, 0, s0, s1, wsaveptr, lsav, inner, cor, wScale);
@@ -438,7 +439,9 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 	 Bool worksave;
 	 Float *workptr=work.getStorage(worksave);
 	 Int ier;
-	 FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
+	 // Using FFTW for 2D complex FFT
+	 IPosition fft_size_local(2, cpConvSize, cpConvSize);
+	 fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
        
        screen.putStorage(scr, cpscr);
 
@@ -639,13 +642,14 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Complex *cor=corr.getStorage(cpcor);
    Double s1=sampling(1);
    Double s0=sampling(0);
-   ///////////Por FFTPack
+   ///////////Using FFTW (replaces deprecated FFTPack)
+   FFTW fftw_plan;
+   IPosition fft_size(2, convSize, convSize);
+   // Create dummy parameters for compatibility
    Vector<Float> wsave(2*convSize*convSize+15);
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
-   FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
    //////////
 #ifdef _OPENMP
    omp_set_nested(0);
@@ -724,7 +728,9 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     Int lenwrk=2*cpConvSize*cpConvSize;
     Bool worksave;
     Float *workptr=work.getStorage(worksave);
-    FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
+    // Using FFTW for 2D complex FFT
+    IPosition fft_size_local(2, cpConvSize, cpConvSize);
+    fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
    
     screen.putStorage(scr, cpscr);
     /////////////////////
