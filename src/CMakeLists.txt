@@ -33,7 +33,11 @@ project(
 
 # Add directory with additional macros
 #set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake")
+if(NOT CMAKE_MODULE_PATH)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+else()
+  set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
+endif()
 include(DeclareCasacppComponent)
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)

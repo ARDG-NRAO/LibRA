@@ -369,6 +369,7 @@ ExternalProject_Add(
                   -DCMAKE_INSTALL_LIBDIR=lib
                   -DCMAKE_INSTALL_BINDIR=bin/casacpp
                   -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
+                  -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake
                   -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
 		              -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
                   -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
@@ -376,7 +377,7 @@ ExternalProject_Add(
                   -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/casacpp -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include 
-                                    -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                                    -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                                     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
 	BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
@@ -491,7 +492,6 @@ endif()
 
 include_directories(
   ${INSTALL_DIR}/include
-  ${INSTALL_DIR}/include/casacore
   ${INSTALL_DIR}/include/casacpp
   /usr/include/cfitsio
   ${CMAKE_SOURCE_DIR}/apps/src
