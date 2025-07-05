@@ -15,7 +15,7 @@ class Libra(CMakePackage):
     homepage = "https://github.com/ARDG-NRAO/LibRA"
     #git = "https://github.com/ARDG-NRAO/LibRA.git"
     git = "gitlab@gitlab.nrao.edu:pjaganna/libra.git"
-    maintainers("ardg-nrao", "pjaganna")
+    maintainers("ardg-nrao", "sanbw", "sanbee", "pjaganna")
 
     license("GPL-3.0-or-later", checked_by="pjaganna")
 
@@ -53,7 +53,6 @@ class Libra(CMakePackage):
     # Build dependencies
     depends_on("cmake@3.18:", type="build")
     depends_on("pkgconfig", type="build")
-    depends_on("curl", type="build")  # For downloading measures data
     
     # Runtime dependencies
     depends_on("python@3.6:", type=("build", "run"))
@@ -104,11 +103,7 @@ class Libra(CMakePackage):
             self.define_from_variant("LIBRA_USE_EXODUS", "exodus"),
             self.define_from_variant("Apps_BUILD_TESTS", "tests"),
         ]
-        
-        # Set number of cores for parallel builds
-        import multiprocessing
-        ncores = max(1, multiprocessing.cpu_count() - 2)
-        args.append(self.define("NCORES", ncores))
+
         
         return args
 
