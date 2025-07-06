@@ -73,6 +73,11 @@ build-job:
     # Ensure ccache is used by cmake
     - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
     - export CMAKE_C_COMPILER_LAUNCHER=ccache
+    # Add micromamba python to PATH and library paths
+    - export PATH="${CI_BUILDS_DIR}/micromamba/envs/py4ci/bin:$PATH"
+    - export LD_LIBRARY_PATH="${CI_BUILDS_DIR}/micromamba/envs/py4ci/lib:${LD_LIBRARY_PATH:-}"
+    - export PYTHONPATH="${CI_BUILDS_DIR}/micromamba/envs/py4ci/lib/python3.10/site-packages:${PYTHONPATH:-}"
+    - python3.10 --version || echo "micromamba python not found"
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
@@ -119,12 +124,8 @@ test-job:
     cd ${base_path}/apps/src/tests
     mkdir -p ${base_path}/apps/src/tests/reports
     timeout 30m ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
-    # Use explicit python3.11 if available
-    if command -v python3.11 >/dev/null 2>&1; then
-      timeout 30m python3.11 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
-    else
-      timeout 30m python3 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
-    fi
+    # Use micromamba python environment
+    timeout 30m ${CI_BUILDS_DIR}/micromamba/envs/py4ci/bin/python3.10 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
   artifacts:
     when: always
     reports:
