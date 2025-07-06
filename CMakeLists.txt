@@ -156,6 +156,7 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                    -DCMAKE_INSTALL_LIBDIR=lib
                    -DCMAKE_INSTALL_BINDIR=bin/kokkos
+                   -DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
   	           -DKokkos_ENABLE_CUDA=ON
   	           -D${Kokkos_CUDA_ARCH_NAME}=ON
@@ -176,6 +177,7 @@ else()
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                    -DCMAKE_INSTALL_LIBDIR=lib
                    -DCMAKE_INSTALL_BINDIR=bin/kokkos
+                   -DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
                    -DKokkos_ENABLE_CUDA=ON
                    -DKokkos_ENABLE_OPENMP=ON
@@ -209,21 +211,6 @@ ExternalProject_Add(
   DEPENDS        Kokkos FFTW
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/HPG
   BINARY_DIR     ${BUILD_DIR}/HPG
-  CMAKE_ARGS     PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig
-                 -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                 -DCMAKE_INSTALL_LIBDIR=lib
-                 -DCMAKE_INSTALL_BINDIR=bin/Hpg
-                 -DCMAKE_BUILD_TYPE=Release
-                 -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/
-	         -DHpg_ENABLE_MIXED_PRECISION=OFF
-		 -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF
-	         -DHpg_API=17
-	         -DHpg_BUILD_TESTS=OFF
-	         -DBUILD_SHARED_LIBS=ON
-	         -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-                 -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/Hpg -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=17 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
   BUILD_COMMAND   make -j ${NCORES};
@@ -380,18 +367,6 @@ ExternalProject_Add(
   BINARY_DIR      ${BUILD_DIR}/Libra/src
   DEPENDS         Casacore ${SAKURA_DEPENDENCE} Hpg Parafeed Pybind11
   #DEPENDS         Casacore Hpg Parafeed Pybind11
-  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                  -DCMAKE_INSTALL_LIBDIR=lib
-                  -DCMAKE_INSTALL_BINDIR=bin/casacpp
-                  -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
-                  -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                  -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                  -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake
-                  -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
-		              -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
-                  -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
-                  -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/casacpp -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include 
                                     -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
