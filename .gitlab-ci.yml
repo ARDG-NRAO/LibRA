@@ -73,18 +73,23 @@ build-job:
     # Ensure ccache is used by cmake
     - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
     - export CMAKE_C_COMPILER_LAUNCHER=ccache
-    # Add micromamba python to PATH and library paths
-    - export PATH="${CI_BUILDS_DIR}/../micromamba/envs/py4ci/bin:$PATH"
-    - export LD_LIBRARY_PATH="${CI_BUILDS_DIR}/../micromamba/envs/py4ci/lib:${LD_LIBRARY_PATH:-}"
-    - export PYTHONPATH="${CI_BUILDS_DIR}/../micromamba/envs/py4ci/lib/python3.10/site-packages:${PYTHONPATH:-}"
-    - python3.10 --version || echo "micromamba python not found"
+    # Create temporary Python virtual environment for building
+    - python3.11 --version
+    - python3.11 -m venv build_venv
+    - source build_venv/bin/activate
+    - pip install --upgrade pip setuptools wheel
+    - pip install pytest numpy
+    - python --version
+    - which python
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
   script:
     - echo "=== Compiling with ccache integration ==="
+    - source build_venv/bin/activate
     - echo $PATH
+    - python --version
     - nvidia-smi
     - which nvcc
     - mkdir -p build
@@ -100,6 +105,8 @@ build-job:
     - echo "=== ccache statistics ==="
     - ccache --show-stats || true
     - ccache --show-config || true
+    - echo "=== Cleaning up build venv ==="
+    - rm -rf build_venv
 
 test-job:
   stage: test
