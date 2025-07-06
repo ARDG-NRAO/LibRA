@@ -95,18 +95,11 @@ build-job:
     - echo "=== ccache statistics ==="
     - ccache --show-stats || true
     - ccache --show-config || true
-  artifacts:
-    paths:
-      - build/
-      - install/
-    expire_in: 2 hours
-    when: on_success
 
 test-job:
   stage: test
   needs:
     - job: build-job
-      artifacts: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
