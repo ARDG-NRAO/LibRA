@@ -24,6 +24,23 @@ include(CheckCXXCompilerFlag)
 include(GNUInstallDirs)
 include(CTest)
 
+# Enable ccache for faster builds (if available)
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message(STATUS "Found ccache: ${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "Use ccache for C compilation")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}" CACHE STRING "Use ccache for C++ compilation")
+    
+    # Set ccache environment for optimization
+    set(ENV{CCACHE_COMPILERCHECK} "content")
+    set(ENV{CCACHE_SLOPPINESS} "file_macro,time_macros,include_file_mtime")
+    set(ENV{CCACHE_MAXSIZE} "2G")
+    
+    message(STATUS "ccache integration enabled for spack build")
+else()
+    message(STATUS "ccache not found - compilation will proceed without caching")
+endif()
+
 # Add local cmake modules to path - this will be set properly in src/CMakeLists.txt
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
 

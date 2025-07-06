@@ -1,16 +1,56 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+    - if: '$CI_COMMIT_MESSAGE =~ /SPACK BUILD/'
+    - if: '$FORCE_CI == "true"'
+    - if: '$FORCE_SPACK == "true"'
+    - when: never
+
 stages:
   - build
   - test
+  - spack-test
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: $CI_PROJECT_DIR/ccache
   GIT_CLEAN_FLAGS: none
+  SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-${CI_PIPELINE_ID}"
+  LIBRA_SPACK_ENV: "libra-test-${CI_PIPELINE_ID}"
+  SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
 
 cache:
-  key: ccache
-  paths:
-    - $CCACHE_DIR
+  - key: ccache-cmake
+    paths:
+      - $CCACHE_DIR
+  - key: spack-builds
+    paths:
+      - "${CI_BUILDS_DIR}/spack-cache"
+    when: on_success
+
+# Check ccache integration first
+check-ccache:
+  stage: build
+  script:
+    - |
+      echo "=== Checking ccache integration ==="
+      which ccache || echo "ccache not found in PATH"
+      ccache --version || echo "ccache not working"
+      echo "CMAKE_CXX_COMPILER_LAUNCHER: ${CMAKE_CXX_COMPILER_LAUNCHER:-not set}"
+      echo "CMAKE_C_COMPILER_LAUNCHER: ${CMAKE_C_COMPILER_LAUNCHER:-not set}"
+      echo "=== Checking Python version ==="
+      python3 --version || echo "python3 not found"
+      python3.11 --version || echo "python3.11 not found"
+      /usr/bin/python3.11 --version || echo "/usr/bin/python3.11 not found"
+      echo "=== Checking system info ==="
+      cat /etc/redhat-release
+      nproc
+      df -h ${CI_BUILDS_DIR}
+  rules:
+    - when: manual
+  allow_failure: true
 
 build-job:
   stage: build
@@ -18,55 +58,80 @@ build-job:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
-        - (exclude)README.md
-        - (exclude)scripts/**/*
-        - (exclude)doc/**/*
+        - "**/*"
+        - "!README.md"
+        - "!scripts/**/*"
+        - "!doc/**/*"
+        - "!spack-repo/**/*"
     - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
     - if: '$FORCE_CI == "true"'
     - when: never
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
+    - export CCACHE_MAXSIZE=2G
+    # Ensure ccache is used by cmake
+    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+    - export CMAKE_C_COMPILER_LAUNCHER=ccache
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
   script:
-    - echo "Compiling the code..."
+    - echo "=== Compiling with ccache integration ==="
     - echo $PATH
     - nvidia-smi
     - which nvcc
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
-    - make
+    # Explicitly enable ccache in cmake
+    - cmake -DApps_BUILD_TESTS=ON
+        -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        ..
+    - make -j$(nproc)
   after_script:
+    - echo "=== ccache statistics ==="
     - ccache --show-stats || true
+    - ccache --show-config || true
+  artifacts:
+    paths:
+      - build/
+      - install/
+    expire_in: 2 hours
+    when: on_success
 
 test-job:
   stage: test
   needs:
     - job: build-job
+      artifacts: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
-        - (exclude)README.md
-        - (exclude)scripts/**/*
-        - (exclude)doc/**/*
+        - "**/*"
+        - "!README.md"
+        - "!scripts/**/*"
+        - "!doc/**/*"
+        - "!spack-repo/**/*"
     - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
     - if: '$FORCE_CI == "true"'
     - when: never
-  before_script:
-    - mkdir -p $CCACHE_DIR
   script: |
     echo "Current working directory: $PWD"
     base_path=$PWD
     echo "Entering $base_path/apps/src/tests to run apps unit tests"
     cd ${base_path}/apps/src/tests
     mkdir -p ${base_path}/apps/src/tests/reports
-    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
-    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+    timeout 30m ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
+    # Use explicit python3.11 if available
+    if command -v python3.11 >/dev/null 2>&1; then
+      timeout 30m python3.11 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+    else
+      timeout 30m python3 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+    fi
   artifacts:
     when: always
     reports:
@@ -75,46 +140,152 @@ test-job:
         - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
     expire_in: 1 week
 
+# Spack test for RHEL8
+spack-test:
+  stage: spack-test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - spack-repo/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - spack-repo/**/*
+    - if: '$CI_COMMIT_MESSAGE =~ /SPACK BUILD/'
+    - if: '$FORCE_SPACK == "true"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - echo "=== RHEL8 Spack Setup ==="
+    - cat /etc/redhat-release
+
+    # Create local directories (not in /tmp)
+    - mkdir -p ${SPACK_ROOT}
+    - mkdir -p ${SPACK_CACHE_DIR}
+    - mkdir -p ${CI_BUILDS_DIR}/spack-installs
+
+    # Setup ccache for spack
+    - export CCACHE_DIR="${SPACK_CACHE_DIR}/ccache"
+    - export CCACHE_MAXSIZE=5G
+    - mkdir -p ${CCACHE_DIR}
+
+    # Find and use python3.11 explicitly
+    - |
+      if command -v python3.11 >/dev/null 2>&1; then
+        export PYTHON_CMD=python3.11
+        echo "Using python3.11"
+      elif command -v /usr/bin/python3.11 >/dev/null 2>&1; then
+        export PYTHON_CMD=/usr/bin/python3.11
+        echo "Using /usr/bin/python3.11"
+      else
+        export PYTHON_CMD=python3
+        echo "Falling back to python3"
+      fi
+    - ${PYTHON_CMD} --version
+
+    # Clone spack if not exists
+    - |
+      if [ ! -d "${SPACK_ROOT}/.git" ]; then
+        echo "Cloning fresh spack..."
+        git clone --depth=1 --branch=releases/v0.23 https://github.com/spack/spack.git ${SPACK_ROOT}
+      else
+        echo "Using existing spack installation"
+        cd ${SPACK_ROOT} && git pull
+      fi
+
+    # Setup spack environment
+    - source ${SPACK_ROOT}/share/spack/setup-env.sh
+
+    # Configure spack for RHEL8 and ccache
+    - mkdir -p ~/.spack
+    - |
+      cat > ~/.spack/config.yaml << EOF
+      config:
+        install_tree:
+          root: ${SPACK_CACHE_DIR}/opt/spack
+        build_stage:
+          - ${SPACK_CACHE_DIR}/stage
+        misc_cache: ${SPACK_CACHE_DIR}/misc
+        build_jobs: $(nproc)
+        ccache: true
+        python_path: ${PYTHON_CMD}
+      packages:
+        all:
+          compiler: [gcc]
+      EOF
+
+    # Show spack info
+    - spack debug report
+  script:
+    - source ${SPACK_ROOT}/share/spack/setup-env.sh
+
+    # Add custom repo and verify
+    - spack repo add ${CI_PROJECT_DIR}/spack-repo
+    - spack repo list
+    - spack list libra
+
+    # Create environment in local directory
+    - spack env create ${LIBRA_SPACK_ENV} --dir ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}
+    - spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}
+
+    # Show what we're building
+    - spack add libra+cuda ^kokkos cuda_arch=70 ^casacore~python
+    - spack spec libra
+    - spack find -l
+
+    # Install with timeout and verbose output
+    - echo "=== Starting spack install ==="
+    - timeout 120m spack install --fail-fast --verbose --no-checksum
+
+    # Verify installation
+    - spack find libra
+    - spack find --deps libra
+    - echo "Spack installation completed successfully!"
+  after_script:
+    - |
+      echo "=== Cleanup and Debug Info ==="
+      echo "SPACK_ROOT: ${SPACK_ROOT}"
+      echo "Disk usage:"
+      du -sh ${SPACK_ROOT} || true
+      du -sh ${SPACK_CACHE_DIR} || true
+      ccache --show-stats || true
+      echo "Spack installation preserved at ${SPACK_ROOT}"
+      echo "Environment preserved at ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
+      echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
+  timeout: 3h
+  artifacts:
+    when: always
+    paths:
+      - ${SPACK_CACHE_DIR}/build-logs/
+    expire_in: 1 day
+
+# Manual jobs (simplified)
 manual-trigger:
   stage: build
   script:
     - echo "Manual full build trigger initiated..."
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
+    - export CCACHE_MAXSIZE=2G
+    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+    - export CMAKE_C_COMPILER_LAUNCHER=ccache
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
-    - make
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - make -j$(nproc)
     - ccache --show-stats || true
   when: manual
   only:
     - branches
   allow_failure: false
 
-manual-test:
-  stage: test
-  script: |
-    echo "Manual test trigger initiated..."
-    base_path=$PWD
-    echo "Entering $base_path/apps/src/tests to run apps unit tests"
-    cd ${base_path}/apps/src/tests
-    mkdir -p ${base_path}/apps/src/tests/reports
-    ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
-    python -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+manual-spack:
+  extends: spack-test
   when: manual
-  only:
-    - main
+  rules:
+    - when: manual
   allow_failure: false
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
-        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
-    expire_in: 1 week
-  needs: []  # decouple it from 'build-job'
 

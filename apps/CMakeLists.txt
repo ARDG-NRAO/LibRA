@@ -9,6 +9,9 @@ set (CMAKE_CXX_STANDARD 17)
 include(FetchContent)
 include(FindPkgConfig)
 
+# Find GSL dependency (required by casacpp libraries)
+find_package(GSL REQUIRED)
+
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
 
 if (ARM_CPU)
@@ -90,6 +93,8 @@ set(APP_LINK_LIBRARIES
   readline
   history
   termcap
+  GSL::gsl
+  GSL::gslcblas
   m
   c)
 
