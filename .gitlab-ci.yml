@@ -167,18 +167,13 @@ spack-test:
     - export CCACHE_MAXSIZE=5G
     - mkdir -p ${CCACHE_DIR}
 
-    # Find and use python3.11 explicitly
-    - |
-      if command -v python3.11 >/dev/null 2>&1; then
-        export PYTHON_CMD=python3.11
-        echo "Using python3.11"
-      elif command -v /usr/bin/python3.11 >/dev/null 2>&1; then
-        export PYTHON_CMD=/usr/bin/python3.11
-        echo "Using /usr/bin/python3.11"
-      else
-        export PYTHON_CMD=python3
-        echo "Falling back to python3"
-      fi
+    # Create Python virtual environment for spack
+    - python3.11 --version
+    - python3.11 -m venv spack_venv
+    - source spack_venv/bin/activate
+    - pip install --upgrade pip setuptools wheel
+    - export PYTHON_CMD=$(which python)
+    - echo "Using Python: ${PYTHON_CMD}"
     - ${PYTHON_CMD} --version
 
     # Clone spack if not exists
@@ -215,6 +210,7 @@ spack-test:
     # Show spack info
     - spack debug report
   script:
+    - source spack_venv/bin/activate
     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
     # Add custom repo and verify
@@ -228,7 +224,9 @@ spack-test:
 
     # Show what we're building
     - spack add libra+cuda ^kokkos cuda_arch=70 ^casacore~python
-    - spack spec libra
+    - echo "=== Spack concretization output ===" > ${SPACK_CACHE_DIR}/spack_build_info.txt
+    - spack spec libra >> ${SPACK_CACHE_DIR}/spack_build_info.txt
+    - echo "=== Build started at $(date) ===" >> ${SPACK_CACHE_DIR}/spack_build_info.txt
     - spack find -l
 
     # Install with timeout and verbose output
@@ -238,23 +236,38 @@ spack-test:
     # Verify installation
     - spack find libra
     - spack find --deps libra
+    - echo "=== Build completed successfully at $(date) ===" >> ${SPACK_CACHE_DIR}/spack_build_info.txt
+    - spack find --deps libra >> ${SPACK_CACHE_DIR}/spack_build_info.txt
     - echo "Spack installation completed successfully!"
   after_script:
     - |
       echo "=== Cleanup and Debug Info ==="
       echo "SPACK_ROOT: ${SPACK_ROOT}"
-      echo "Disk usage:"
+      echo "Disk usage before cleanup:"
       du -sh ${SPACK_ROOT} || true
       du -sh ${SPACK_CACHE_DIR} || true
       ccache --show-stats || true
-      echo "Spack installation preserved at ${SPACK_ROOT}"
-      echo "Environment preserved at ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
-      echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
+      
+      # If build succeeded, clean up spack environment to force fresh builds
+      if [ "$CI_JOB_STATUS" = "success" ]; then
+        echo "=== Build succeeded - cleaning up spack environment for fresh future builds ==="
+        rm -rf ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV} || true
+        rm -rf ${SPACK_CACHE_DIR}/opt/spack || true
+        echo "Spack environment cleaned up to ensure fresh builds"
+      else
+        echo "=== Build failed - preserving spack environment for debugging ==="
+        echo "Environment preserved at ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
+        echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
+      fi
+      
+      echo "=== Cleaning up python venv ==="
+      rm -rf spack_venv
   timeout: 3h
   artifacts:
     when: always
     paths:
       - ${SPACK_CACHE_DIR}/build-logs/
+      - ${SPACK_CACHE_DIR}/spack_build_info.txt
     expire_in: 1 day
 
 # Manual jobs (simplified)
