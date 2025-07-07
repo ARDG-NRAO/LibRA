@@ -96,7 +96,7 @@ build-job:
     - which nvcc
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
     - make
   after_script:
     - echo "=== ccache statistics ==="
@@ -124,18 +124,33 @@ test-job:
   script: |
     echo "Current working directory: $PWD"
     base_path=$PWD
-    echo "Entering $base_path/apps/src/tests to run apps unit tests"
-    cd ${base_path}/apps/src/tests
-    mkdir -p ${base_path}/apps/src/tests/reports
-    timeout 30m ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/apps/src/tests/reports/report.xml"
-    # Use micromamba python environment
-    timeout 30m ${CI_BUILDS_DIR}/../micromamba/envs/py4ci/bin/python3.10 -m pytest --junitxml=${base_path}/apps/src/tests/reports/pytest_report.xml
+    
+    # Run C++ tests
+    echo "Running C++ unit tests..."
+    mkdir -p ${base_path}/libra-python/reports
+    timeout 30m ${base_path}/install/bin/tests/LibRATests --gtest_output="xml:${base_path}/libra-python/reports/report.xml"
+    
+    # Setup Python environment for tests
+    echo "Setting up Python test environment..."
+    export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
+    echo "PYTHONPATH: $PYTHONPATH"
+    
+    # Symlink test data to libra-python directory (if it exists)
+    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/libra-python/tests/gold_standard" ]; then
+      ln -sf ../../apps/src/tests/gold_standard ${base_path}/libra-python/tests/gold_standard
+      echo " Symlinked test data"
+    fi
+    
+    # Run Python tests using our new test structure
+    echo "Running Python unit tests..."
+    cd ${base_path}/libra-python/tests
+    timeout 30m python3 -m pytest test_*.py --junitxml=${base_path}/libra-python/reports/pytest_report.xml -v
   artifacts:
     when: always
     reports:
       junit:
-        - ${CI_PROJECT_DIR}/apps/src/tests/reports/report.xml
-        - ${CI_PROJECT_DIR}/apps/src/tests/reports/pytest_report.xml
+        - ${CI_PROJECT_DIR}/libra-python/reports/report.xml
+        - ${CI_PROJECT_DIR}/libra-python/reports/pytest_report.xml
     expire_in: 1 week
 
 # Spack test for RHEL8
@@ -154,7 +169,6 @@ spack-test:
     - echo "=== RHEL8 Spack Setup ==="
     - cat /etc/redhat-release
 
-    # Create local directories (not in /tmp)
     - mkdir -p ${SPACK_ROOT}
     - mkdir -p ${SPACK_CACHE_DIR}
     - mkdir -p ${CI_BUILDS_DIR}/spack-installs
