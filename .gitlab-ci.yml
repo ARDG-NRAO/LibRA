@@ -173,7 +173,6 @@ spack-test:
     - source spack_venv/bin/activate
     - pip install --upgrade pip setuptools wheel
     - export PYTHON_CMD=$(which python)
-    - echo "Using Python: ${PYTHON_CMD}"
     - ${PYTHON_CMD} --version
 
     # Clone spack if not exists
