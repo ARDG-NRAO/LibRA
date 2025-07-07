@@ -1,9 +1,9 @@
+cmake_minimum_required(VERSION 3.12.0)
+
 project("LibRA Scripts"
     DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
     HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
     LANGUAGES CXX Fortran C)
-
-cmake_minimum_required(VERSION 3.12.0)
 
 # Check if the TOP_LEVEL_DIR and INSTALL_DIR are defined
 if(DEFINED TOP_LEVEL_DIR AND DEFINED INSTALL_DIR)
