@@ -73,10 +73,11 @@ build-job:
     # Ensure ccache is used by cmake
     - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
     - export CMAKE_C_COMPILER_LAUNCHER=ccache
-    # Create temporary Python virtual environment for building
+    # Create temporary Python virtual environment for building outside the Libra path
+    - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
     - python3.11 --version
-    - python3.11 -m venv build_venv
-    - source build_venv/bin/activate
+    - python3.11 -m venv "${BUILD_VENV_DIR}"
+    - source "${BUILD_VENV_DIR}/bin/activate"
     - pip install --upgrade pip setuptools wheel
     - pip install pytest numpy
     - python --version
@@ -85,7 +86,6 @@ build-job:
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
-  script:
     - echo "=== Compiling with ccache integration ==="
     - source build_venv/bin/activate
     - echo $PATH
