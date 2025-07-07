@@ -94,7 +94,7 @@ build-job:
     - which nvcc
     - mkdir -p build
     - cd build
-    # Explicitly enable ccache in cmake
+  script:
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
     - make
   after_script:
