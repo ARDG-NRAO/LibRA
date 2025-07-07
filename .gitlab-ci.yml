@@ -73,6 +73,10 @@ build-job:
     # Ensure ccache is used by cmake
     - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
     - export CMAKE_C_COMPILER_LAUNCHER=ccache
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+    - mkdir -p $CCACHE_DIR
+    - ccache --show-stats || true
+    - git clean -ffdx
     # Create temporary Python virtual environment for building outside the Libra path
     - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
     - python3.11 --version
@@ -82,19 +86,15 @@ build-job:
     - pip install pytest numpy
     - python --version
     - which python
-    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
-    - mkdir -p $CCACHE_DIR
-    - ccache --show-stats || true
-    - git clean -ffdx
+  script:
     - echo "=== Compiling with ccache integration ==="
-    - source build_venv/bin/activate
+    - source "${BUILD_VENV_DIR}/bin/activate"
     - echo $PATH
     - python --version
     - nvidia-smi
     - which nvcc
     - mkdir -p build
     - cd build
-  script:
     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
     - make
   after_script:
@@ -102,7 +102,7 @@ build-job:
     - ccache --show-stats || true
     - ccache --show-config || true
     - echo "=== Cleaning up build venv ==="
-    - rm -rf build_venv
+    - rm -rf "${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
 
 test-job:
   stage: test
@@ -164,9 +164,10 @@ spack-test:
     - mkdir -p ${CCACHE_DIR}
 
     # Create Python virtual environment for spack
+    - export SPACK_VENV_DIR="${CI_BUILDS_DIR}/spack_venv_${CI_PIPELINE_ID}"
     - python3.11 --version
-    - python3.11 -m venv spack_venv
-    - source spack_venv/bin/activate
+    - python3.11 -m venv "${SPACK_VENV_DIR}"
+    - source "${SPACK_VENV_DIR}/bin/activate"
     - pip install --upgrade pip setuptools wheel
     - export PYTHON_CMD=$(which python)
     - ${PYTHON_CMD} --version
@@ -205,7 +206,7 @@ spack-test:
     # Show spack info
     - spack debug report
   script:
-    - source spack_venv/bin/activate
+    - source "${SPACK_VENV_DIR}/bin/activate"
     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
     # Add custom repo and verify
@@ -256,7 +257,7 @@ spack-test:
       fi
       
       echo "=== Cleaning up python venv ==="
-      rm -rf spack_venv
+      rm -rf "${CI_BUILDS_DIR}/spack_venv_${CI_PIPELINE_ID}"
   timeout: 3h
   artifacts:
     when: always
