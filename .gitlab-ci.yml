@@ -15,16 +15,17 @@ stages:
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
-  CCACHE_DIR: $CI_PROJECT_DIR/ccache
+  CCACHE_DIR: "${CI_BUILDS_DIR}/ccache"
   GIT_CLEAN_FLAGS: none
   SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-${CI_PIPELINE_ID}"
   LIBRA_SPACK_ENV: "libra-test-${CI_PIPELINE_ID}"
   SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
 
 cache:
-  - key: ccache-cmake
+  - key: ccache-global
     paths:
       - $CCACHE_DIR
+    policy: pull-push
   - key: spack-builds
     paths:
       - "${CI_BUILDS_DIR}/spack-cache"
@@ -69,12 +70,12 @@ build-job:
   before_script:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
-    - export CCACHE_MAXSIZE=2G
+    - export CCACHE_MAXSIZE=5G
     # Ensure ccache is used by cmake
     - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
     - export CMAKE_C_COMPILER_LAUNCHER=ccache
-    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
     - ccache --show-stats || true
     - git clean -ffdx
     # Create temporary Python virtual environment for building outside the Libra path
