@@ -18,13 +18,15 @@ set(CMAKE_CXX_STANDARD 17)
 project(libracore)
 
 find_package(Kokkos REQUIRED)
-
+include(FindPkgConfig)
+pkg_check_modules(WCSLIB REQUIRED wcslib)
 
 include_directories(${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
   ${CMAKE_CURRENT_SOURCE_DIR}  
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
+  ${WCSLIB_INCLUDEDIR}
 )
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -60,12 +62,20 @@ install(TARGETS ${PROJECT_NAME}
 #install(FILES ${MDSPAN_HEADER} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/mdspan")
 
 # for testing
-link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+link_directories(
+  "${CMAKE_INSTALL_PREFIX}/lib"
+  ${WCSLIB_LIBRARY_DIRS}
+  )
 add_executable(testmdspan "${CMAKE_CURRENT_SOURCE_DIR}/testmdspan.cc")
+#target_link_libraries(testmdspan PRIVATE libracore
+#casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images
+#casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath
+#casa_scimath_f casa_casa pthread parafeed readline history termcap m c
+#"-Wl,--disable-new-dtags")
 target_link_libraries(testmdspan PRIVATE libracore
 casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images
 casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath
-casa_scimath_f casa_casa pthread parafeed readline history termcap m c
+casa_scimath_f casa_casa pthread parafeed m c
 "-Wl,--disable-new-dtags")
 
 # for tesing
@@ -74,6 +84,6 @@ add_executable(testLibracoreTypes "${CMAKE_CURRENT_SOURCE_DIR}/testLibracoreType
 target_link_libraries(testLibracoreTypes PRIVATE libracore
 casacpp_synthesis casacpp_msvis hpg kokkoscore casa_msfits casa_ms casa_images
 casa_coordinates casa_lattices casa_fits casa_measures casa_tables casa_scimath
-casa_scimath_f casa_casa pthread parafeed readline history termcap m c
+casa_scimath_f casa_casa pthread parafeed  m c
 "-Wl,--disable-new-dtags")
 

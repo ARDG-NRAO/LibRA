@@ -208,17 +208,23 @@ namespace casa{
   //  
   std::tuple<String, hpg::Device> AWVisResamplerHPG::getHPGDevice()
   {
-    String hpgDevice="cuda";
+    String hpgDevice="libra_cuda";
     hpg::Device Device=hpg::Device::Cuda;
-
     hpgDevice=refim::SynthesisUtils::getenv("HPGDEVICE",hpgDevice);
-    if      (hpgDevice=="cuda")    Device=hpg::Device::Cuda;
-    else if (hpgDevice=="serial")  Device=hpg::Device::Serial;
+
+    if      ((hpgDevice=="curd")   || (hpgDevice=="libra_cuda"))   Device=hpg::Device::Cuda;
+    else if ((hpgDevice=="cereal") || (hpgDevice=="libra_serial")) Device=hpg::Device::Serial;
+    else if ((hpgDevice=="opium")  || (hpgDevice=="libra_omp"))    Device=hpg::Device::OpenMP;
     else
+    {
+      std::string msg="Supported backend names: \"curd or libra_cuda\" for CUDA\n"
+                      "                         \"cereal or libra_serial\" for Serial\n"
+                      "                         \"opium or libra_omp\" for OpenMP";
       throw(
-	    SynthesisFTMachineError("HPGDEVICE env. var. setting incorrect: " +
-				    hpgDevice)
+	    SynthesisFTMachineError("Incorrect setting for the HPGDEVICE env. var.: " +
+				    hpgDevice + "\n" + msg.c_str())
 	    );
+    }
 
     return std::make_tuple(hpgDevice,Device);
   }

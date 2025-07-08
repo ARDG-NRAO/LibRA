@@ -1,10 +1,10 @@
+cmake_minimum_required(VERSION 3.12.0)
+set (CMAKE_CXX_STANDARD 17)
+
 project("LibRA Apps"
   DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
   HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
   LANGUAGES CXX Fortran C)
-
-cmake_minimum_required(VERSION 3.12.0)
-set (CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 include(FindPkgConfig)
@@ -67,6 +67,9 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
 )                                    
 
+pkg_check_modules(WCSLIB REQUIRED wcslib)
+pkg_check_modules(CFITSIO REQUIRED cfitsio)
+
 set(APP_LINK_LIBRARIES
   casacpp_synthesis
   casacpp_msvis
@@ -87,9 +90,9 @@ set(APP_LINK_LIBRARIES
   casa_casa
   pthread
   parafeed
-  readline
-  history
-  termcap
+#  readline
+#  history
+#  termcap
   m
   c)
 
@@ -102,9 +105,15 @@ include_directories(
   # for libracore
   ${CMAKE_SOURCE_DIR}/../src
   # for mdspan
-  ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/)
+  ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
+  ${WCSLIB_INCLUDEDIR}
+  ${CFITSIO_INCLUDEDIR}
+  )
 
-link_directories(${CMAKE_INSTALL_PREFIX}/lib)
+link_directories(${CMAKE_INSTALL_PREFIX}/lib
+  ${WCSLIB_LIBRARY_DIRS}
+  ${CFITSIO_LIBRARY_DIRS}
+  )
 
 
 # for runtime linking. Needs to be before add_executable
