@@ -137,37 +137,35 @@ test-job:
     # Ensure libra-python is importable for pytest
     export PYTHONPATH="${base_path}/libra-python:${PYTHONPATH:-}"
 
-    # Symlink test data if needed for python tests
-    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/libra-python/tests/gold_standard" ]; then
-      ln -sf ../../apps/src/tests/gold_standard ${base_path}/libra-python/tests/gold_standard
-      echo "Symlinked test data for python tests"
+    # Symlink test data if needed for both python and cpp tests
+    cd ${base_path}/libra-python
+    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "gold_standard" ]; then
+      ln -sf ../../apps/src/tests/gold_standard gold_standard
+      echo "Symlinked test data for tests"
     fi
 
-    # Run pytest and always generate a report
-    cd ${base_path}/libra-python
-    pytest tests --junitxml=reports/pytest_report.xml -v || {
-      echo "Pytest failed, but continuing for CI artifact collection"
-    }
-
     # --- C++ GTest section ---
-    cd "${base_path}"
     mkdir -p cpp_test_dir
-    # Symlink gold_standard for cpp tests
-    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/cpp_test_dir/gold_standard" ]; then
-      ln -sf ../apps/src/tests/gold_standard cpp_test_dir/gold_standard
-      echo "Symlinked test data for cpp tests"
+    if [ -d "gold_standard" ] && [ ! -e "cpp_test_dir/gold_standard" ]; then
+      ln -sf ../gold_standard cpp_test_dir/gold_standard
     fi
 
     # Run C++ gtest binary if it exists
     if [ -x "${base_path}/install/bin/tests/LibraTests" ]; then
       cd cpp_test_dir
       "${base_path}/install/bin/tests/LibraTests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml" || {
-      echo "C++ GTest failed, but continuing for CI artifact collection"
+        echo "C++ GTest failed, but continuing for CI artifact collection"
       }
-      cd "${base_path}"
+      cd ..
     else
       echo "C++ test binary not found: ${base_path}/install/bin/tests/LibraTests"
     fi
+
+    # --- Python pytest section ---
+    cd "${base_path}/libra-python"
+    pytest tests --junitxml=reports/pytest_report.xml -v || {
+      echo "Pytest failed, but continuing for CI artifact collection"
+    }
   artifacts:
     when: always
     reports:
@@ -238,19 +236,11 @@ spack-test:
     # Setup spack environment
     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
-    # Configure spack for RHEL8 and ccache (store config in ${SPACK_ROOT}/.spack, not ~/.spack)
+    # Use a minimal/vanilla spack config for RHEL8 (store config in ${SPACK_ROOT}/.spack, not ~/.spack)
     - mkdir -p ${SPACK_ROOT}/.spack
     - |
       cat > ${SPACK_ROOT}/.spack/config.yaml << EOF
-      config:
-      install_tree:
-        root: ${SPACK_CACHE_DIR}/opt/spack
-      build_stage:
-        - ${SPACK_CACHE_DIR}/stage
-      misc_cache: ${SPACK_CACHE_DIR}/misc
-      build_jobs: $(nproc)
-      ccache: true
-      python_path: ${PYTHON_CMD}
+      config: {}
       EOF
     - export SPACK_USER_CONFIG_PATH=${SPACK_ROOT}/.spack
 
