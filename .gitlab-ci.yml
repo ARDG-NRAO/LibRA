@@ -151,14 +151,14 @@ test-job:
     fi
 
     # Run C++ gtest binary if it exists
-    if [ -x "${base_path}/install/bin/tests/LibraTests" ]; then
+    if [ -x "${base_path}/install/bin/tests/LibRATests" ]; then
       cd cpp_test_dir
-      "${base_path}/install/bin/tests/LibraTests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml" || {
+      "${base_path}/install/bin/tests/LibRATests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml" || {
         echo "C++ GTest failed, but continuing for CI artifact collection"
       }
-      cd ..
-    else
-      echo "C++ test binary not found: ${base_path}/install/bin/tests/LibraTests"
+      cd "${base_path}/libra-python"
+          else
+      echo "C++ test binary not found: ${base_path}/install/bin/tests/LibRATests"
     fi
 
     # --- Python pytest section ---
