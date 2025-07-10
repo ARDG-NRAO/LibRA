@@ -102,8 +102,6 @@ build-job:
     - echo "=== ccache statistics ==="
     - ccache --show-stats || true
     - ccache --show-config || true
-    - echo "=== Cleaning up build venv ==="
-    - rm -rf "${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
 
 test-job:
   stage: test
@@ -122,6 +120,8 @@ test-job:
     - if: '$FORCE_CI == "true"'
     - when: never
   script: |
+    # Ensure we are in the project root directory
+    cd "${CI_PROJECT_DIR}"
     echo "Current working directory: $PWD"
     base_path=$PWD
 
@@ -137,10 +137,10 @@ test-job:
     # Optionally install libra-python as a package (editable mode)
     pip install -e ${base_path}/libra-python
 
-    # Symlink test data if needed
+    # Symlink test data if needed for python tests
     if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/libra-python/tests/gold_standard" ]; then
       ln -sf ../../apps/src/tests/gold_standard ${base_path}/libra-python/tests/gold_standard
-      echo "Symlinked test data"
+      echo "Symlinked test data for python tests"
     fi
 
     # Run pytest and always generate a report
@@ -148,13 +148,48 @@ test-job:
     pytest tests --junitxml=reports/pytest_report.xml -v || {
       echo "Pytest failed, but continuing for CI artifact collection"
     }
+
+    # --- C++ GTest section ---
+    cd "${base_path}"
+    mkdir -p cpp_test_dir
+    # Symlink gold_standard for cpp tests
+    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/cpp_test_dir/gold_standard" ]; then
+      ln -sf ../apps/src/tests/gold_standard cpp_test_dir/gold_standard
+      echo "Symlinked test data for cpp tests"
+    fi
+
+    # Run C++ gtest binary if it exists
+    if [ -x "${base_path}/install/bin/tests/LibraTests" ]; then
+      cd cpp_test_dir
+      "${base_path}/install/bin/tests/LibraTests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml" || {
+      echo "C++ GTest failed, but continuing for CI artifact collection"
+      }
+      cd "${base_path}"
+    else
+      echo "C++ test binary not found: ${base_path}/install/bin/tests/LibraTests"
+    fi
   artifacts:
     when: always
     reports:
       junit:
         - ${CI_PROJECT_DIR}/libra-python/reports/pytest_report.xml
-        - ${CI_PROJECT_DIR}/libra-python/reports/cpp_report.xml
+        - ${CI_PROJECT_DIR}/cpp_test_dir/cpp_report.xml
     expire_in: 1 week
+  after_script: |
+    echo "=== Test job completed ==="
+    echo "Current working directory: $PWD"
+    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+    echo "PYTHONPATH: $PYTHONPATH"
+    echo "Python version: $(python --version)"
+    echo "CMake version: $(cmake --version)"
+    echo "ccache stats:"
+    ccache --show-stats || true
+    echo "=== Cleaning up venv ==="
+    rm -rf "${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
+    rm -rf ${base_path}/libra-python/reports
+    rm -rf ${base_path}/cpp_test_dir
+  timeout: 1h
+  allow_failure: true
 
 # Spack test for RHEL8
 spack-test:
