@@ -146,33 +146,22 @@ test-job:
 
     # --- C++ GTest section ---
     cd ${base_path}/apps/src/tests/
-    # mkdir -p cpp_test_dir
-    if [ -d "gold_standard" ] && [ ! -e "cpp_test_dir/gold_standard" ]; then
-      ln -sf ../gold_standard cpp_test_dir/gold_standard
-    fi
-
     # Run C++ gtest binary if it exists
     if [ -x "${base_path}/install/bin/tests/LibRATests" ]; then
-      cd cpp_test_dir
-      "${base_path}/install/bin/tests/LibRATests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml" || {
-        echo "C++ GTest failed, but continuing for CI artifact collection"
-      }
-      cd "${base_path}/libra-python"
-          else
+      "${base_path}/install/bin/tests/LibRATests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml"
+    else
       echo "C++ test binary not found: ${base_path}/install/bin/tests/LibRATests"
     fi
 
     # --- Python pytest section ---
-    cd "${base_path}/libra-python"
-    pytest tests --junitxml=reports/pytest_report.xml -v || {
-      echo "Pytest failed, but continuing for CI artifact collection"
-    }
+    cd "${base_path}/apps/src/tests/"
+    pytest ${base_path}/libra-python/tests --junitxml=pytest_report.xml -v || echo "Pytest failed, but continuing for CI artifact collection"
   artifacts:
     when: always
     reports:
       junit:
-        - ${CI_PROJECT_DIR}/libra-python/reports/pytest_report.xml
-        - ${CI_PROJECT_DIR}/cpp_test_dir/cpp_report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/pytest_report.xml
+        - ${CI_PROJECT_DIR}/apps/src/tests/cpp_report.xml
     expire_in: 1 week
   after_script: |
     echo "=== Test job completed ==="
