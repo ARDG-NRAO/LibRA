@@ -127,6 +127,8 @@ test-job:
 
     export LD_LIBRARY_PATH="${base_path}/install/lib:${LD_LIBRARY_PATH:-}"
     export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
+    export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
+    source "${BUILD_VENV_DIR}/bin/activate"
     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
     echo "PYTHONPATH: $PYTHONPATH"
 
