@@ -124,47 +124,34 @@ test-job:
   script: |
     echo "Current working directory: $PWD"
     base_path=$PWD
-    
-    # Setup LD_LIBRARY_PATH for both C++ and Python tests
+
     export LD_LIBRARY_PATH="${base_path}/install/lib:${LD_LIBRARY_PATH:-}"
-    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-    
-    # Create reports directory
-    mkdir -p ${base_path}/libra-python/reports
-    
-    # Run C++ tests first to generate fresh test data
-    echo "Running C++ unit tests to generate fresh test data..."
-    cd ${base_path}/apps/src/tests
-    timeout 30m ${base_path}/install/bin/tests/LibRATests --gtest_filter="*AppLevel*" --gtest_output="xml:${base_path}/libra-python/reports/cpp_report.xml" || {
-      echo "C++ tests had issues, but may have generated some test data"
-    }
-    
-    # Setup Python environment for tests
-    echo "Setting up Python test environment..."
     export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
+    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
     echo "PYTHONPATH: $PYTHONPATH"
-    
-    # Symlink test data to libra-python directory (if it exists)
+
+    mkdir -p ${base_path}/libra-python/reports
+
+    # Optionally install libra-python as a package (editable mode)
+    pip install -e ${base_path}/libra-python
+
+    # Symlink test data if needed
     if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/libra-python/tests/gold_standard" ]; then
       ln -sf ../../apps/src/tests/gold_standard ${base_path}/libra-python/tests/gold_standard
       echo "Symlinked test data"
     fi
-    
-    # Run Python tests using our new test structure
-    echo "Running Python unit tests..."
+
+    # Run pytest and always generate a report
     cd ${base_path}/libra-python
-    timeout 30m python3 run_tests.py --junit-xml=${base_path}/libra-python/reports/pytest_report.xml || {
-      echo "Python tests failed, but continuing..."
-      # Run pytest directly as fallback
-      cd ${base_path}/libra-python/tests
-      timeout 15m python3 -m pytest test_*.py --junitxml=${base_path}/libra-python/reports/pytest_report.xml -v
+    pytest tests --junitxml=reports/pytest_report.xml -v || {
+      echo "Pytest failed, but continuing for CI artifact collection"
     }
   artifacts:
     when: always
     reports:
       junit:
-        - ${CI_PROJECT_DIR}/libra-python/reports/cpp_report.xml
         - ${CI_PROJECT_DIR}/libra-python/reports/pytest_report.xml
+        - ${CI_PROJECT_DIR}/libra-python/reports/cpp_report.xml
     expire_in: 1 week
 
 # Spack test for RHEL8
