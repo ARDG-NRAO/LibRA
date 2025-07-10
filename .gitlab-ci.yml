@@ -145,7 +145,8 @@ test-job:
     fi
 
     # --- C++ GTest section ---
-    mkdir -p cpp_test_dir
+    cd ${base_path}/apps/src/tests/
+    # mkdir -p cpp_test_dir
     if [ -d "gold_standard" ] && [ ! -e "cpp_test_dir/gold_standard" ]; then
       ln -sf ../gold_standard cpp_test_dir/gold_standard
     fi
@@ -256,11 +257,12 @@ spack-test:
     - spack list libra
 
     # Create environment in local directory
-    - spack env create ${LIBRA_SPACK_ENV} --dir ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}
-    - spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}
+    - spack env create ${LIBRA_SPACK_ENV}
+    - spack env activate ${LIBRA_SPACK_ENV}
 
     # Show what we're building
-    - spack add libra+cuda ^kokkos cuda_arch=70 ^casacore~python
+    - spack add libra
+    - spack concretize
     - echo "=== Spack concretization output ===" > ${SPACK_CACHE_DIR}/spack_build_info.txt
     - spack spec libra >> ${SPACK_CACHE_DIR}/spack_build_info.txt
     - echo "=== Build started at $(date) ===" >> ${SPACK_CACHE_DIR}/spack_build_info.txt
