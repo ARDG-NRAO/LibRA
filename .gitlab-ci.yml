@@ -134,8 +134,8 @@ test-job:
 
     mkdir -p ${base_path}/libra-python/reports
 
-    # Optionally install libra-python as a package (editable mode)
-    pip install -e ${base_path}/libra-python
+    # Ensure libra-python is importable for pytest
+    export PYTHONPATH="${base_path}/libra-python:${PYTHONPATH:-}"
 
     # Symlink test data if needed for python tests
     if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "${base_path}/libra-python/tests/gold_standard" ]; then
@@ -238,23 +238,21 @@ spack-test:
     # Setup spack environment
     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
-    # Configure spack for RHEL8 and ccache
-    - mkdir -p ~/.spack
+    # Configure spack for RHEL8 and ccache (store config in ${SPACK_ROOT}/.spack, not ~/.spack)
+    - mkdir -p ${SPACK_ROOT}/.spack
     - |
-      cat > ~/.spack/config.yaml << EOF
+      cat > ${SPACK_ROOT}/.spack/config.yaml << EOF
       config:
-        install_tree:
-          root: ${SPACK_CACHE_DIR}/opt/spack
-        build_stage:
-          - ${SPACK_CACHE_DIR}/stage
-        misc_cache: ${SPACK_CACHE_DIR}/misc
-        build_jobs: $(nproc)
-        ccache: true
-        python_path: ${PYTHON_CMD}
-      packages:
-        all:
-          compiler: [gcc]
+      install_tree:
+        root: ${SPACK_CACHE_DIR}/opt/spack
+      build_stage:
+        - ${SPACK_CACHE_DIR}/stage
+      misc_cache: ${SPACK_CACHE_DIR}/misc
+      build_jobs: $(nproc)
+      ccache: true
+      python_path: ${PYTHON_CMD}
       EOF
+    - export SPACK_USER_CONFIG_PATH=${SPACK_ROOT}/.spack
 
     # Show spack info
     - spack debug report
