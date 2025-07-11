@@ -258,8 +258,7 @@ spack-test:
 
     # Install with timeout and verbose output
     - echo "=== Starting spack install ==="
-    - timeout 120m spack install --fail-fast --verbose --no-checksum
-
+    - timeout 120m spack install --fail-fast
     # Verify installation
     - spack find libra
     - spack find --deps libra
