@@ -177,7 +177,6 @@ test-job:
     rm -rf ${base_path}/libra-python/reports
     rm -rf ${base_path}/cpp_test_dir
   timeout: 1h
-  allow_failure: true
 
 # Spack test for RHEL8
 spack-test:
