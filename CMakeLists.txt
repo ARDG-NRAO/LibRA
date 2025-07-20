@@ -1,5 +1,28 @@
-cmake_minimum_required(VERSION 3.18)
+#-*- cmake -*-
+# Copyright (C) 2025
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
 
+cmake_minimum_required(VERSION 3.18)
 #if cmake is greater than 3.24.0, set policy to old
 if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
   cmake_policy(SET CMP0135 OLD)
@@ -10,10 +33,30 @@ project("LibRA Apps"
   HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
   LANGUAGES CXX Fortran C)
 
+
 set(LIBRA_ID "LibRA INFO: ")
 set(CMAKE_CXX_STANDARD 17)
 set(BUILD_TYPE "RelWithDebInfo")
 set(CASA_BUILD_TYPE "RelWithDebInfo")
+
+# Set the top-level build and install directories
+set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
+set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_INSTALL_LIBDIR lib)
+set(CMAKE_INSTALL_INCLUDEDIR include)
+set(CMAKE_INSTALL_BINDIR bin)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+# LibRA location to find Find<PACKAGE>.cmake files 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+message("${LIBRA_ID} CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message("${LIBRA_ID} BUILD_DIR: ${BUILD_DIR}")
+message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
+message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
+message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
+message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
 
 # Include the ExternalProject module
 include(ExternalProject)
@@ -25,6 +68,15 @@ include(cmake/EnableCcache.cmake)
 set(ENV{PATH} $ENV{PATH}:/usr/local/cuda/bin)
 message("${LIBRA_ID} PATH=$ENV{PATH}")
 LIST(APPEND CMAKE_PROGRAM_PATH  "/usr/local/cuda/bin" ...)
+# pkg_check_modules(WCSLIB REQUIRED wcslib) # we are finding wcs in the libracore CMakeLists.txt
+
+#Check if it's an SPACK env. If it is, use env root as /usr and / for
+#finding libs and include files.
+find_package(SPACKENV)
+if (SPACKENV_FOUND)
+  set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include  -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib ")
+  message("${LIBRA_ID} Adding SPACK flags ${SPACK_FLAGS}")
+endif()
 #
 #------------------------------------------------------------------------------
 # Various repositories and the tags we dependend on
@@ -36,14 +88,12 @@ set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
 #set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.com/dsa-2000/rcp/hpg")
 set(LIBRA_HPG_GIT_TAG             "v3.0.3")
 
-#set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/preshanth/casacore.git")#"https://github.com/casacore/casacore.git")#
-#set(LIBRA_CASACORE_GIT_TAG        "fix_regex_v3.5.0")#"2e121e67bf881ac7f309604447a4b0d481913902")#
 set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/casacore/casacore.git")
 set(LIBRA_CASACORE_GIT_TAG	  "v3.7.1")
 
 
 set(LIBRA_PARAFEED_GIT_REPOSITORY "https://github.com/sanbee/parafeed.git")
-set(LIBRA_PARAFEED_GIT_TAG        "v1.1.4")
+set(LIBRA_PARAFEED_GIT_TAG        "v1.1.44")
 
 set(LIBRA_SAKURA_GIT_REPOSITORY   "https://github.com/tnakazato/sakura.git")
 set(LIBRA_SAKURA_GIT_TAG          "libsakura-5.1.3")
@@ -75,6 +125,7 @@ if(NOT DEFINED LIBRA_USE_EXODUS)
   set(LIBRA_USE_EXODUS OFF)
 endif()
 
+
 # Find system information
 if (NOT DEFINED NCORES)
 	cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
@@ -104,49 +155,18 @@ if ($NCORES LESS 1)
 endif()
 message(${LIBRA_ID} "Setting number of cores to ${NCORES}")
 
-# Set the top-level build and install directories
-set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
-set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_INSTALL_LIBDIR lib)
-set(CMAKE_INSTALL_INCLUDEDIR include)
-set(CMAKE_INSTALL_BINDIR bin)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
-
-# set(CMAKE_C_FLAGS "${OPT} -std=c++17 -DUseCasacoreNamespace -Wno-deprecated \
-#            ${DEFS64}                                        \
-#            -DHAVE_QT4                                       \
-#            -DAIPS_NEEDS_RETHROW                             \
-#            -DAIPS_LINUX                                     \
-#            -DAIPS_LITTLE_ENDIAN                             \
-#            -DAIPS_STDLIB                                    \
-#            -DAIPS_NO_LEA_MALLOC                             \
-#            -D_GLIBCPP_DEPRECATED                            \
-#            -DAIPS_AUTO_STL                                  \
-#            -DAIPS_ARRAY_INDEX_CHECK                         \
-#            -DSIGNBIT                                        \
-#            -DAIPS_NO_TEMPLATE_SRC                           \
-#            -Wall -pipe -Wno-non-template-friend             \
-#            -Woverloaded-virtual -Wcast-align                \
-#            -Wno-comment -D_FILE_OFFSET_BITS=64              \
-#            -D_LARGEFILE_SOURCE                              \
-#            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
-# )  
-
-message("${LIBRA_ID} BUILD_DIR: ${BUILD_DIR}")
-message("${LIBRA_ID} INSTALL_DIR: ${INSTALL_DIR}")
-message("${LIBRA_ID} Installing all libraries to ${INSTALL_DIR}/lib")
-message("${LIBRA_ID} Installing all headers to ${INSTALL_DIR}/include")
-message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
-
 message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")  
 
 # Set the PKG_CONFIG_PATH environment variable
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
+# Add Kokkos as an external project
 if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
-  # Add Kokkos as an external project
   message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME: ${Kokkos_CUDA_ARCH_NAME}")
+  set(Kokkos_CUDA_ARCH_NAME_OPT "-D${Kokkos_CUDA_ARCH_NAME}=ON")
+else()
+  message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME is empty. Will automatically detect the CUDA architecture")
+endif()
   ExternalProject_Add(
     Kokkos
     GIT_REPOSITORY ${LIBRA_KOKKOS_GIT_REPOSITORY}
@@ -159,35 +179,15 @@ if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
                    -DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper
                    -DKokkos_ENABLE_CUDA_LAMBDA=ON
   	           -DKokkos_ENABLE_CUDA=ON
-  	           -D${Kokkos_CUDA_ARCH_NAME}=ON
+	           ${Kokkos_CUDA_ARCH_NAME_OPT}
   	           -DKokkos_ENABLE_OPENMP=ON
   	           -DKokkos_ENABLE_SERIAL=ON
   	           -DBUILD_SHARED_LIBS=ON
+                   ${SPACK_FLAGS}
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   )
-else()
-  message("${LIBRA_ID} Kokkos_CUDA_ARCH_NAME is empty. Will automatically detect the CUDA architecture")
-  ExternalProject_Add(
-    Kokkos
-    GIT_REPOSITORY ${LIBRA_KOKKOS_GIT_REPOSITORY}
-    GIT_TAG        ${LIBRA_KOKKOS_GIT_TAG}
-    SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/Kokkos
-    BINARY_DIR     ${BUILD_DIR}/Kokkos
-    CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                   -DCMAKE_INSTALL_LIBDIR=lib
-                   -DCMAKE_INSTALL_BINDIR=bin/kokkos
-                   -DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper
-                   -DKokkos_ENABLE_CUDA_LAMBDA=ON
-                   -DKokkos_ENABLE_CUDA=ON
-                   -DKokkos_ENABLE_OPENMP=ON
-                   -DKokkos_ENABLE_SERIAL=ON
-                   -DKokkos_ENABLE_PROFILING=ON
-                   -DBUILD_SHARED_LIBS=ON
-  BUILD_COMMAND   make -j ${NCORES}
-  INSTALL_COMMAND make install
-  )
-endif()
+
 # Add FFTW as an external project
 ExternalProject_Add(
   FFTW
@@ -231,6 +231,8 @@ ExternalProject_Add(
                  -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
                  -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                  -DBUILD_SHARED_LIBS=ON
+		 -DGNUREADLINE=ON
+                  ${SPACK_FLAGS}
   BUILD_COMMAND make -j ${NCORES}
   INSTALL_COMMAND make install
 )
@@ -268,8 +270,9 @@ ExternalProject_Add(
                  -DBUILD_PYTHON=OFF
                  -DBUILD_PYTHON3=OFF
                  -DBUILD_DYSCO=ON
-                 -DUseCcache=1 
+                 -DUseCcache=0 
                  -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+                  ${SPACK_FLAGS}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/dependencies/casacore
                     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
                     -DCMAKE_INSTALL_LIBDIR=lib
@@ -286,8 +289,9 @@ ExternalProject_Add(
                     -DBUILD_PYTHON=OFF
                     -DBUILD_PYTHON3=OFF
                     -DBUILD_DYSCO=ON
-                    -DUseCcache=1 
+                    -DUseCcache=0 
                     -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+                     ${SPACK_FLAGS}
   BUILD_COMMAND  make -j${NCORES}
   INSTALL_COMMAND make install
   DEPENDS DataDownload
@@ -360,6 +364,8 @@ else()
   set(SAKURA_DEPENDENCE "")
 endif()
 
+include(FindPkgConfig)
+pkg_check_modules(GSL REQUIRED gsl)
 ExternalProject_Add(
   Casacpp
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/src/
@@ -367,12 +373,29 @@ ExternalProject_Add(
   BINARY_DIR      ${BUILD_DIR}/Libra/src
   DEPENDS         Casacore ${SAKURA_DEPENDENCE} Hpg Parafeed Pybind11
   #DEPENDS         Casacore Hpg Parafeed Pybind11
-  CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
+  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
+                  -DCMAKE_INSTALL_LIBDIR=lib
+                  -DCMAKE_INSTALL_BINDIR=bin/casacpp
+                  -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
+                  -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
+	                -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
+                  -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                  -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
+		              -DGSL_INCLUDE_DIR=${GSL_INCLUDEDIR}
+		              -DGSL_LIBRARY=${GSL_LIBRARY_DIRS}
+		              -DGSL_CBLAS_LIBRARY=${GSL_LIBRARY_DIRS}
+                   ${SPACK_FLAGS}
+  CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/casacpp -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include 
                                     -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                                     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-	BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig make -j${NCORES}
+				                            -DGSL_INCLUDE_DIR=${GSL_INCLUDEDIR}
+				                            -DGSL_LIBRARY=${GSL_LIBRARY_DIRS}
+				                            -DGSL_CBLAS_LIBRARY=${GSL_LIBRARY_DIRS} ${SPACK_FLAGS}
+
+	BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
   INSTALL_COMMAND make install
 )
 
@@ -403,11 +426,11 @@ ExternalProject_Add(
                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
 		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                     -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
+                     ${SPACK_FLAGS}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                       ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
-                                      -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-                                      #-DINSTALL_DIR=${INSTALL_DIR} -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
+                                      -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE} -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper ${SPACK_FLAGS}
     BUILD_COMMAND   make -j${NCORES}
     INSTALL_COMMAND make install
 )

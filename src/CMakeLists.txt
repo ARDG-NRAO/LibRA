@@ -86,6 +86,8 @@ if (CMAKE_USE_GRPC)
 endif()
 
 # GSL dependency
+include(FindPkgConfig)
+pkg_check_modules(GSL REQUIRED gsl)
 find_package(GSL REQUIRED)
 
 if (CMAKE_PYTHON_INTERFACE)
@@ -122,7 +124,7 @@ find_package(parafeed REQUIRED)
   # add_definitions(-DUSE_PARAFEED)
 # endif()
 
-pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
+#pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
 
 if (LIBRA_USE_LIBSAKURA)

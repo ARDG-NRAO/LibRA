@@ -22,10 +22,14 @@
 # Declare this component using the function in the top level CMakeList.txt
 declare_casacpp_component("components")
 
+message("GSL_LIBRARY_DIRS: " ${GSL_LIBRARY_DIRS})
+message("GSL_INCLUDEDIR: " ${GSL_INCLUDEDIR})
+
 # External dependencies
 target_link_libraries(casacpp_components PUBLIC PkgConfig::CASACORE)
-target_link_libraries(casacpp_components PUBLIC GSL::gsl)
+#target_link_libraries(casacpp_components PUBLIC GSL::gsl)
 target_link_libraries(casacpp_components PUBLIC PkgConfig::CFITSIO)
+#target_link_libraries(casacpp_components PUBLIC PkgConfig::GSL)
 
 # Internal dependencies
 add_dependencies(casacpp_components casacpp_casatools casacpp_stdcasa)
