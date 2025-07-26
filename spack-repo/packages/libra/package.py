@@ -2,20 +2,18 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
-from spack.build_systems.cmake import CMakePackage
+
 import os
-import spack.util.spack_yaml as syaml
-import llnl.util.tty as tty
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack.package import *
 
 
 class Libra(CMakePackage):
     """LibRA (Library of Radio Astronomy) - A radio astronomy data processing library"""
 
     homepage = "https://github.com/ARDG-NRAO/LibRA"
-    #git = "https://github.com/ARDG-NRAO/LibRA.git"
-    git = "gitlab@gitlab.nrao.edu:pjaganna/libra.git"
-    maintainers("ardg-nrao", "sanbw", "sanbee", "pjaganna")
+    git = "https://github.com/ARDG-NRAO/LibRA.git"
+    maintainers = ["ardg-nrao", "sanbw", "sanbee", "pjaganna"]
 
     license("GPL-3.0-or-later", checked_by="pjaganna")
 
@@ -44,6 +42,10 @@ class Libra(CMakePackage):
     depends_on("parafeed@1.1.4:")
     depends_on("py-pybind11@2.10.2:")
     depends_on("casacore@3.6.1:")
+
+    # CUDA dependency with GCC version constraint
+    depends_on("cuda@:12.2", when="+cuda %gcc@:8")
+    depends_on("cuda@:12.2", when="+all %gcc@:8")
     depends_on("cuda", when="+cuda")
     depends_on("cuda", when="+all")
     
@@ -53,6 +55,9 @@ class Libra(CMakePackage):
     # Build dependencies
     depends_on("cmake@3.18:", type="build")
     depends_on("pkgconfig", type="build")
+    depends_on("fortran", type="build")
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     
     # Runtime dependencies
     depends_on("python@3.6:", type=("build", "run"))
@@ -65,7 +70,8 @@ class Libra(CMakePackage):
     depends_on("wcslib")
     depends_on("readline")
     depends_on("ncurses")
-    depends_on("fortran", type="build")
+    
+    
 
     def cmake_args(self):
         # Copy CMakeLists.txt.spack from package directory to staged source
@@ -87,9 +93,14 @@ class Libra(CMakePackage):
             print("*** SPACK CMAKE NOT FOUND IN PACKAGE DIR ***")
         
         args = [
+            # Explicitly override compiler paths to bypass spack wrapper issues
+            self.define("CMAKE_C_COMPILER", "/usr/bin/gcc"),
+            self.define("CMAKE_CXX_COMPILER", "/usr/bin/g++"),
+            self.define("CMAKE_Fortran_COMPILER", "/usr/bin/gfortran"),
+            
             # Set C++ standard and build type
             self.define("CMAKE_CXX_STANDARD", 17),
-            self.define("BUILD_TYPE", "RelWithDebInfo"),
+            self.define("CMAKE_BUILD_TYPE", "RelWithDebInfo"),
             self.define("CASA_BUILD_TYPE", "RelWithDebInfo"),
             
             # Install directories
@@ -114,6 +125,12 @@ class Libra(CMakePackage):
         # Add CUDA to PATH if available
         if ("+cuda" in self.spec or "+all" in self.spec) and "cuda" in self.spec:
             env.prepend_path("PATH", self.spec["cuda"].prefix.bin)
+            
+        # Work around spack 1.0.0 compiler wrapper issues
+        # Force use of system compilers
+        env.set("CC", "gcc")
+        env.set("CXX", "g++") 
+        env.set("FC", "gfortran")
 
     # @run_after("patch")
     # def setup_spack_cmake(self):

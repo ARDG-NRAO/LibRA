@@ -62,8 +62,6 @@ message("${LIBRA_ID} Installing all binaries to ${INSTALL_DIR}/bin")
 include(ExternalProject)
 include(FindPkgConfig)
 
-# Enable ccache for faster builds
-include(cmake/EnableCcache.cmake)
 
 set(ENV{PATH} $ENV{PATH}:/usr/local/cuda/bin)
 message("${LIBRA_ID} PATH=$ENV{PATH}")
@@ -76,6 +74,14 @@ find_package(SPACKENV)
 if (SPACKENV_FOUND)
   set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include  -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib ")
   message("${LIBRA_ID} Adding SPACK flags ${SPACK_FLAGS}")
+endif()
+
+option(USE_CCACHE "Enable use of ccache for compilation" OFF)
+if (USE_CCACHE)
+  # Enable ccache for faster builds
+  include(cmake/EnableCcache.cmake)
+  set(CCACHE_LAUNCHER "-DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}")
+  message("${LIBRA_ID} Adding CCACHE_LAUNCHER flag ${CCACHE_LAUNCHER}")
 endif()
 #
 #------------------------------------------------------------------------------
@@ -202,7 +208,6 @@ ExternalProject_Add(
 # Get the install directory of Kokkos
 ExternalProject_Get_Property(Kokkos install_dir)
 
-
 # Add HPG as an external project
 ExternalProject_Add(
   Hpg
@@ -212,7 +217,7 @@ ExternalProject_Add(
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/HPG
   BINARY_DIR     ${BUILD_DIR}/HPG
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Kokkos 
-                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/Hpg -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=17 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
+                    ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/Hpg -DCMAKE_BUILD_TYPE=Release -DFFTW_LIBRARIES=${INSTALL_DIR}/lib/ -DHpg_ENABLE_MIXED_PRECISION=OFF -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF -DHpg_API=17 -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos ${CCACHE_LAUNCHER}
   BUILD_COMMAND   make -j ${NCORES};
   INSTALL_COMMAND make install
 )
@@ -227,8 +232,7 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} 
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_INSTALL_BINDIR=bin/parafeed
-                 -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
+		 ${CCACHE_LAUNCHER}
                  -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
                  -DBUILD_SHARED_LIBS=ON
 		 -DGNUREADLINE=ON
@@ -255,32 +259,11 @@ ExternalProject_Add(
   GIT_TAG        ${LIBRA_CASACORE_GIT_TAG}
   SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/casacore
   BINARY_DIR     ${BUILD_DIR}/casacore
-  CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
-                 -DCMAKE_INSTALL_LIBDIR=lib
-                 -DCMAKE_INSTALL_BINDIR=bin/casacore
-                 -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DDATA_DIR=${CMAKE_SOURCE_DIR}/install/data
-                 -DBUILD_PYTHON=OFF
-                 -DUSE_OPENMP=ON
-                 -DUSE_THREADS=ON
-                 -DCMAKE_CXX_FLAGS="-fno-tree-vrp"
-                 -DBUILD_FFTPACK_DEPRECATED=ON
-                 -DBUILD_TESTING=OFF
-                 -DBUILD_PYTHON=OFF
-                 -DBUILD_PYTHON3=OFF
-                 -DBUILD_DYSCO=ON
-                 -DUseCcache=0 
-                 -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-                  ${SPACK_FLAGS}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/dependencies/casacore
                     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_SOURCE_DIR}/install
                     -DCMAKE_INSTALL_LIBDIR=lib
                     -DCMAKE_INSTALL_BINDIR=bin/casacore
-                    -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                    -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
                     -DDATA_DIR=${CMAKE_SOURCE_DIR}/install/data
-                    -DBUILD_PYTHON=OFF
                     -DUSE_OPENMP=ON
                     -DUSE_THREADS=ON
                     -DCMAKE_CXX_FLAGS="-fno-tree-vrp"
@@ -291,7 +274,8 @@ ExternalProject_Add(
                     -DBUILD_DYSCO=ON
                     -DUseCcache=0 
                     -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-                     ${SPACK_FLAGS}
+		    ${CCACHE_LAUNCHER}
+                    ${SPACK_FLAGS}
   BUILD_COMMAND  make -j${NCORES}
   INSTALL_COMMAND make install
   DEPENDS DataDownload
@@ -308,12 +292,12 @@ if (LIBRA_USE_LIBSAKURA)
     BINARY_DIR     ${BUILD_DIR}/sakura
     SOURCE_SUBDIR  libsakura
     CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-    -DCMAKE_INSTALL_LIBDIR=lib
-    -DCMAKE_INSTALL_BINDIR=bin/sakura
-    -DBUILD_DOC:BOOL=OFF
-    -DPYTHON_BINDING:BOOL=OFF
-    -DSIMD_ARCH=GENERIC
-    -DENABLE_TEST:BOOL=OFF
+                   -DCMAKE_INSTALL_LIBDIR=lib
+                   -DCMAKE_INSTALL_BINDIR=bin/sakura
+                   -DBUILD_DOC:BOOL=OFF
+                   -DPYTHON_BINDING:BOOL=OFF
+                   -DSIMD_ARCH=GENERIC
+                   -DENABLE_TEST:BOOL=OFF
     BUILD_COMMAND   make -j ${NCORES};
     INSTALL_COMMAND make install
     )
@@ -330,8 +314,7 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_INSTALL_BINDIR=bin/pybind11
-                 -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
+		 ${CCACHE_LAUNCHER}
                  -DPYBIND11_TEST=OFF
   BUILD_COMMAND   make -j ${NCORES}; 
   INSTALL_COMMAND make install
@@ -348,8 +331,7 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_INSTALL_BINDIR=bin/gtest
-                 -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
-                 -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM}
+		 ${CCACHE_LAUNCHER}
                  -DBUILD_GMOCK=OFF
                  -DBUILD_GTEST=ON
                  -DBUILD_SHARED_LIBS=ON
@@ -388,7 +370,7 @@ ExternalProject_Add(
                    ${SPACK_FLAGS}
   CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                     ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_BINDIR=bin/casacpp -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include 
-                                    -DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_C_COMPILER_LAUNCHER=${CCACHE_PROGRAM} -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
+                                    ${CCACHE_LAUNCHER} -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/ -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/ -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
                                     -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
                                     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
 				                            -DGSL_INCLUDE_DIR=${GSL_INCLUDEDIR}
@@ -418,15 +400,6 @@ ExternalProject_Add(
     DOWNLOAD_COMMAND ""
     BINARY_DIR      ${BUILD_DIR}/Libra/apps
     DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11 GTest
-    CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                    -DCMAKE_INSTALL_LIBDIR=lib
-                    -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
-                    -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
-                    -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
-                    -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
-		                -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-                    -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
-                     ${SPACK_FLAGS}
     CONFIGURE_COMMAND PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos 
                                       ${CMAKE_COMMAND} <SOURCE_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore 
 		                                  -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest -DApps_BUILD_TESTS=${Apps_BUILD_TESTS} 
@@ -442,10 +415,6 @@ ExternalProject_Add(
   DOWNLOAD_COMMAND ""
   BINARY_DIR      ${BUILD_DIR}/Libra/frameworks
   DEPENDS         Apps
-  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                  -DCMAKE_INSTALL_LIBDIR=lib
-                  -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
-                  -DINSTALL_DIR=${INSTALL_DIR}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
   BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
   INSTALL_COMMAND make install -C <BINARY_DIR>
@@ -458,10 +427,6 @@ ExternalProject_Add(
   DOWNLOAD_COMMAND ""
   BINARY_DIR      ${BUILD_DIR}/Libra/scripts
   DEPENDS         Frameworks
-  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
-                  -DCMAKE_INSTALL_LIBDIR=lib
-                  -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR}
-                  -DINSTALL_DIR=${INSTALL_DIR}
   CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
   BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
   INSTALL_COMMAND make install -C <BINARY_DIR>

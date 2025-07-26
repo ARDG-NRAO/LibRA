@@ -17,8 +17,9 @@ variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: "${CI_BUILDS_DIR}/ccache"
   GIT_CLEAN_FLAGS: none
-  SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-${CI_PIPELINE_ID}"
-  LIBRA_SPACK_ENV: "libra-test-${CI_PIPELINE_ID}"
+  SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-persistent"
+  SPACK_TEST_BASE_ENV: "spack-test-base"
+  LIBRA_TEST_ENV: "libra-test-${CI_PIPELINE_ID}"
   SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
 
 cache:
@@ -178,8 +179,8 @@ test-job:
     rm -rf ${base_path}/cpp_test_dir
   timeout: 1h
 
-# Spack test for RHEL8
 spack-test:
+  needs: []
   stage: spack-test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -203,12 +204,19 @@ spack-test:
     - export CCACHE_MAXSIZE=5G
     - mkdir -p ${CCACHE_DIR}
 
-    # Create Python virtual environment for spack
-    - export SPACK_VENV_DIR="${CI_BUILDS_DIR}/spack_venv_${CI_PIPELINE_ID}"
+    # Create or reuse persistent Python virtual environment for spack
+    - export SPACK_VENV_DIR="${CI_BUILDS_DIR}/spack_venv_persistent"
     - python3.11 --version
-    - python3.11 -m venv "${SPACK_VENV_DIR}"
-    - source "${SPACK_VENV_DIR}/bin/activate"
-    - pip install --upgrade pip setuptools wheel
+    - |
+      if [ ! -d "${SPACK_VENV_DIR}" ]; then
+        echo "Creating persistent spack Python venv..."
+        python3.11 -m venv "${SPACK_VENV_DIR}"
+        source "${SPACK_VENV_DIR}/bin/activate"
+        pip install --upgrade pip setuptools wheel
+      else
+        echo "Using existing persistent spack Python venv..."
+        source "${SPACK_VENV_DIR}/bin/activate"
+      fi
     - export PYTHON_CMD=$(which python)
     - ${PYTHON_CMD} --version
 
@@ -216,7 +224,7 @@ spack-test:
     - |
       if [ ! -d "${SPACK_ROOT}/.git" ]; then
         echo "Cloning fresh spack..."
-        git clone --depth=1 --branch=releases/v0.23 https://github.com/spack/spack.git ${SPACK_ROOT}
+          git clone --depth=1 --branch v1.0.0 https://github.com/spack/spack.git ${SPACK_ROOT}
       else
         echo "Using existing spack installation"
         cd ${SPACK_ROOT} && git pull
@@ -239,62 +247,95 @@ spack-test:
     - source "${SPACK_VENV_DIR}/bin/activate"
     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
-    # Add custom repo and verify
-    - spack repo add ${CI_PROJECT_DIR}/spack-repo
+    # Add custom repo only if not already added
+    - |
+      if ! spack repo list | grep -q "${CI_PROJECT_DIR}/spack-repo"; then
+        spack repo add ${CI_PROJECT_DIR}/spack-repo
+      else
+        echo "Repo already added: ${CI_PROJECT_DIR}/spack-repo"
+      fi
     - spack repo list
     - spack list libra
 
-    # Create environment in local directory
-    - spack env create ${LIBRA_SPACK_ENV}
-    - spack env activate ${LIBRA_SPACK_ENV}
+    # Check if persistent base environment exists, create if not
+    - |
+      if spack env list | grep -q "^${SPACK_TEST_BASE_ENV}$"; then
+        echo "Persistent base environment ${SPACK_TEST_BASE_ENV} already exists, reusing it"
+      else
+        echo "Creating persistent base environment ${SPACK_TEST_BASE_ENV}..."
+        spack env create ${SPACK_TEST_BASE_ENV}
+        spack env activate ${SPACK_TEST_BASE_ENV}
+        
+        # Add all dependencies to base environment (everything except libra)
+        spack add kokkos+cuda+cuda_lambda+wrapper cuda_arch=70
+        spack add casacore~python
+        spack add cuda@12.2
+        spack add fftw@3.3.10:+openmp
+        spack add hpg@3.0.3:+cuda
+        spack add parafeed@1.1.4:
+        spack add py-pybind11@2.10.2:
+        spack add googletest@1.14.0:
+        spack add cmake@3.18:
+        spack add pkgconfig
+        spack add cfitsio
+        spack add blas
+        spack add lapack
+        spack add boost
+        spack add wcslib
+        spack add readline
+        spack add ncurses
+        
+        # Concretize and install base environment
+        spack concretize -f
+        spack install --fail-fast --verbose --no-checksum
+        
+        echo "Persistent base environment ${SPACK_TEST_BASE_ENV} created and installed"
+      fi
 
-    # Show what we're building
-    - spack add libra
-    - spack concretize
-    - echo "=== Spack concretization output ===" > ${SPACK_CACHE_DIR}/spack_build_info.txt
-    - spack spec libra >> ${SPACK_CACHE_DIR}/spack_build_info.txt
-    - echo "=== Build started at $(date) ===" >> ${SPACK_CACHE_DIR}/spack_build_info.txt
-    - spack find -l
+    # Create job-specific libra test environment
+    - spack env create ${LIBRA_TEST_ENV}
+    - spack env activate ${LIBRA_TEST_ENV}
+    
+    # Add only libra to this environment with appropriate CUDA constraint
+    - |
+      GCC_VERSION=$(gcc --version | head -n1 | grep -oP 'gcc \(.*\) \K[0-9]+')
+      if [ "$GCC_VERSION" = "8" ]; then
+        echo "Using CUDA 12.2 constraint for GCC 8.x"
+        spack add libra+cuda ^cuda@12.2
+      else
+        echo "Using latest CUDA for GCC $GCC_VERSION"
+        spack add libra+cuda
+      fi
 
-    # Install with timeout and verbose output
-    - echo "=== Starting spack install ==="
-    - timeout 120m spack install --fail-fast
+    # Concretize and install libra (fresh build each time)
+    - spack concretize -f
+    - spack install --fail-fast --verbose --no-checksum --no-cache
+
     # Verify installation
     - spack find libra
     - spack find --deps libra
-    - echo "=== Build completed successfully at $(date) ===" >> ${SPACK_CACHE_DIR}/spack_build_info.txt
-    - spack find --deps libra >> ${SPACK_CACHE_DIR}/spack_build_info.txt
-    - echo "Spack installation completed successfully!"
-  after_script:
-    - |
-      echo "=== Cleanup and Debug Info ==="
-      echo "SPACK_ROOT: ${SPACK_ROOT}"
-      echo "Disk usage before cleanup:"
-      du -sh ${SPACK_ROOT} || true
-      du -sh ${SPACK_CACHE_DIR} || true
-      ccache --show-stats || true
-      
-      # If build succeeded, clean up spack environment to force fresh builds
-      if [ "$CI_JOB_STATUS" = "success" ]; then
-        echo "=== Build succeeded - cleaning up spack environment for fresh future builds ==="
-        rm -rf ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV} || true
-        rm -rf ${SPACK_CACHE_DIR}/opt/spack || true
-        echo "Spack environment cleaned up to ensure fresh builds"
-      else
-        echo "=== Build failed - preserving spack environment for debugging ==="
-        echo "Environment preserved at ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
-        echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${SPACK_CACHE_DIR}/envs/${LIBRA_SPACK_ENV}"
-      fi
-      
-      echo "=== Cleaning up python venv ==="
-      rm -rf "${CI_BUILDS_DIR}/spack_venv_${CI_PIPELINE_ID}"
-  timeout: 3h
+  after_script: |
+    if [ -d "${SPACK_VENV_DIR}" ]; then
+      source "${SPACK_VENV_DIR}/bin/activate"
+      source ${SPACK_ROOT}/share/spack/setup-env.sh
+    fi
+
+    if [ "$CI_JOB_STATUS" = "success" ]; then
+      echo "=== Build succeeded - cleaning up job-specific test environment ==="
+      spack env remove --yes-to-all ${LIBRA_TEST_ENV} || true
+      echo "Spack environment ${LIBRA_TEST_ENV} removed"
+      echo "Persistent base environment ${SPACK_TEST_BASE_ENV} preserved for future runs"
+    else
+      echo "=== Build failed - preserving test environment for debugging ==="
+      echo "Test environment preserved: ${LIBRA_TEST_ENV}"
+      echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${LIBRA_TEST_ENV}"
+    fi
   artifacts:
     when: always
     paths:
-      - ${SPACK_CACHE_DIR}/build-logs/
-      - ${SPACK_CACHE_DIR}/spack_build_info.txt
-    expire_in: 1 day
+      - ${SPACK_CACHE_DIR}
+    expire_in: 1 year
+  timeout: 3h
 
 # Manual jobs (simplified)
 manual-trigger:

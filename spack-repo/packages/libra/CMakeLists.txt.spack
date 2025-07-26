@@ -11,6 +11,14 @@ project("LibRA Apps"
   HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
   LANGUAGES CXX Fortran C)
 
+enable_language(CXX)
+
+# --- Add this block ---
+file(WRITE "${CMAKE_BINARY_DIR}/dummy.cpp" "int main() { return 0; }\n")
+add_executable(libra_dummy_cxx_target "${CMAKE_BINARY_DIR}/dummy.cpp")
+set_target_properties(libra_dummy_cxx_target PROPERTIES EXCLUDE_FROM_ALL TRUE)
+# --- End block ---
+
 set(LIBRA_ID "LibRA INFO: ")
 set(CMAKE_CXX_STANDARD 17)
 set(BUILD_TYPE "RelWithDebInfo")
@@ -34,7 +42,7 @@ if(CCACHE_PROGRAM)
     # Set ccache environment for optimization
     set(ENV{CCACHE_COMPILERCHECK} "content")
     set(ENV{CCACHE_SLOPPINESS} "file_macro,time_macros,include_file_mtime")
-    set(ENV{CCACHE_MAXSIZE} "2G")
+    set(ENV{CCACHE_MAXSIZE} "5G")
     
     message(STATUS "ccache integration enabled for spack build")
 else()
@@ -113,7 +121,7 @@ else()
     find_path(CASACORE_INCLUDE_DIR 
         NAMES casacore/casa/aips.h casa/aips.h
         HINTS ${CMAKE_PREFIX_PATH}
-        PATH_SUFFIXES include
+        PATH_SUFFIXES include include/casacore
         NO_DEFAULT_PATH
         DOC "Casacore include directory")
     
@@ -121,7 +129,7 @@ else()
     if(NOT CASACORE_INCLUDE_DIR)
         find_path(CASACORE_INCLUDE_DIR 
             NAMES casacore/casa/aips.h casa/aips.h
-            PATH_SUFFIXES include
+            PATH_SUFFIXES include include/casacore
             DOC "Casacore include directory")
     endif()
     
@@ -285,7 +293,13 @@ if(GSL_INCLUDE_DIR AND GSL_LIBRARY)
         INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "${GSL_LIBRARY};${GSL_CBLAS_LIBRARY}")
     
-    message("${LIBRA_ID} Created GSL::gsl target")
+    # Also create the GSL::gslcblas target that your code expects
+    add_library(GSL::gslcblas INTERFACE IMPORTED)
+    set_target_properties(GSL::gslcblas PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "${GSL_CBLAS_LIBRARY}")
+    
+    message("${LIBRA_ID} Created GSL::gsl and GSL::gslcblas targets")
 endif()
 
 # Find CFITSIO and create PkgConfig::CFITSIO target
@@ -344,6 +358,7 @@ endif()
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_SOURCE_DIR}/apps/src
+  ${CASACORE_INCLUDE_DIR}
 )
 
 # Add subdirectories for building LibRA components

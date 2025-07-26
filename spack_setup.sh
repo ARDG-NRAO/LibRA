@@ -1,4 +1,4 @@
-
+#Spack script
 # Some user-defined variables
 LIBRA_HOME=$WORK/Packages/LibRA/libra
 SPACK_INSTALL_HOME=$WORK/Packages
