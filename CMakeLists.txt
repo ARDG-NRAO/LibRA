@@ -113,6 +113,7 @@ set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
 set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
+set(LIBRA_MEASURES_HTTPS          "https://www.astron.nl/iers/WSRT_Measures.ztar")
 
 set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/sanbee/exodus_sbfork.git")
 set(LIBRA_EXODUS_GIT_TAG          "master")
@@ -129,6 +130,10 @@ endif()
 
 if(NOT DEFINED LIBRA_USE_EXODUS)
   set(LIBRA_USE_EXODUS OFF)
+endif()
+
+if(NOT DEFINED CASACORE_DATA_DOWNLOAD)
+  set(CASACORE_DATA_DOWNLOAD ON)
 endif()
 
 
@@ -244,13 +249,26 @@ ExternalProject_Add(
 # Create the path ${CMAKE_SOURCE_DIR}/install/data and download the data into it
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/install/data)
 # Create an external project for the data download
-ExternalProject_Add(
-  DataDownload
-  DOWNLOAD_COMMAND curl ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-)
+if(CASACORE_DATA_DOWNLOAD)
+  message("${LIBRA_ID} CASACORE_DATA_DOWNLOAD is ON. Downloading measures data...")
+  ExternalProject_Add(
+    DataDownload
+    DOWNLOAD_COMMAND bash -c "curl ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || curl ${LIBRA_MEASURES_HTTPS} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -"
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+  )
+else()
+  message("${LIBRA_ID} CASACORE_DATA_DOWNLOAD is OFF. Skipping measures data download.")
+  # Create a dummy DataDownload target
+  ExternalProject_Add(
+    DataDownload
+    DOWNLOAD_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+  )
+endif()
 
 # Create the Casacore external project
 ExternalProject_Add(
