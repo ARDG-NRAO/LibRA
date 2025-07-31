@@ -75,9 +75,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     class MakeCFArray
     {
     public:
-      MakeCFArray(const PolMapType& mndx, const PolMapType& conj_mndx)
+      MakeCFArray(const PolMapType& mndx, const PolMapType& conj_mndx, const hpg::Device& HPGDevice_l)
 	:mndx_p(mndx), conj_mndx_p(conj_mndx), cachedVBSpw_p(-1), cachedFieldID_p(-1),
-	 initialized_p(false) {};
+	 initialized_p(false),HPGDevice_p(HPGDevice_l) {};
       ~MakeCFArray() {};
       
       //
@@ -93,8 +93,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		   CountedPtr<casa::refim::CFStore2> cfs2_l,
 		   const int& vbSpw_l, const double& spwRefFreq,
 		   const int& nDataPol,
-		   //VisBuffer2 *vb_l,
-		   //CountedPtr<vi::VisibilityIterator2> vi2,
 		   Vector<Int>& wNdxList, Vector<Int>& spwNdxList);
       //
       //--------------------------------------------------------------------------------------------
@@ -113,6 +111,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       int cachedVBSpw_p;
       int cachedFieldID_p;
       bool initialized_p;
+      hpg::Device HPGDevice_p;
     };
   } //# NAMESPACE refim - END
 } //# NAMESPACE CASA - END

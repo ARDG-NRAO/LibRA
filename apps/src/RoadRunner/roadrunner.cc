@@ -671,7 +671,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // below, which is modified by lambda functions supplied to
 	  // cooridinate with the CFServer thread.
 	  //
-	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
+
+	  // The static_cast in the following would emit a
+	  // std::exception if visResampler can't be cast to
+	  // refim::AWVisResamplerHPG.  This is appropriate since
+	  // currently MakeCFArray is used only with
+	  // AWVisResamplerHPG.
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx,
+					static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice());
 	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 

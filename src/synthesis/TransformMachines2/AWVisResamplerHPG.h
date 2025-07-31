@@ -58,6 +58,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
 
   public:
+    // makeHPGDevice() creates the hpg::Device.  This can be called
+    // from anywhere (it is a static method, but kept here to keep the
+    // dependence on HPG limited in scope).
+    static std::tuple<String, hpg::Device> makeHPGDevice();
+
+    // This returns the internal member holding the hpg::Device in use.
+    hpg::Device getHPGDevice() {return HPGDevice_p;};
+
     AWVisResamplerHPG(bool hpgInitAndFin=false,
 		      int nVisPerBucket=VIS_IN_THE_BUCKET):
       AWVisResampler(), hpgGridder_p(NULL), vis(),
@@ -79,7 +87,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       hpgVBList_p.reserve(maxVBList_p);
 
       String hpgDevice="cuda";
-      std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
+      std::tie(hpgDevice, HPGDevice_p) = makeHPGDevice();
       LogIO log_l(LogOrigin("AWVRHPG", "AWVRHPG()"));
       log_l << "Using HPG device " << hpgDevice << LogIO::POST;
       log_l << "VB Bucket size: " << nVisPerBucket_p << LogIO::POST;
@@ -127,8 +135,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
       cerr << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << endl;
     };
-
-    std::tuple<String, hpg::Device> getHPGDevice();
 
     virtual String name(){return String("HPGResampler");};
     virtual Bool needCFPhaseScreen() {return false;};
