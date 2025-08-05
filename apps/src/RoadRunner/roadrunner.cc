@@ -677,8 +677,10 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // refim::AWVisResamplerHPG.  This is appropriate since
 	  // currently MakeCFArray is used only with
 	  // AWVisResamplerHPG.
-	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx,
-					static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice());
+	  std::string HPGDeviceName_p;
+	  hpg::Device HPGDevice_p;
+	  std::tie(HPGDeviceName_p, HPGDevice_p) = static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice();
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p);
 	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
