@@ -1,7 +1,7 @@
 #ifndef LIBRACORE_VECTOR_H
 #define LIBRACORE_VECTOR_H
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <casacore/casa/Arrays/Vector.h>
 #include <cassert>
 

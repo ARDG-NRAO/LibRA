@@ -1,7 +1,7 @@
 #ifndef LIBRACORE_CUBE_H
 #define LIBRACORE_CUBE_H
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <casacore/casa/namespace.h>
 #include <casacore/casa/Arrays/Cube.h>
 #include <cassert>

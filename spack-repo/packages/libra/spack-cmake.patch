@@ -1,0 +1,245 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,11 +1,29 @@
+ cmake_minimum_required(VERSION 3.18)
+ 
++# Set policy for CMAKE_VERSION >= 3.24.0
++if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
++  cmake_policy(SET CMP0135 OLD)
++endif()
++
+ project("LibRA Apps"
+   DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
+   HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
+   LANGUAGES CXX Fortran C)
+ 
+ set(LIBRA_ID "LibRA INFO: ")
++set(CMAKE_CXX_STANDARD 17)
++set(BUILD_TYPE "RelWithDebInfo")
++set(CASA_BUILD_TYPE "RelWithDebInfo")
++
++# Include required modules
++include(FindPkgConfig)
++
++# Set CMAKE environment variables
++set(CMAKE_INSTALL_LIBDIR lib)
++set(CMAKE_INSTALL_INCLUDEDIR include)
++set(CMAKE_INSTALL_BINDIR bin)
++set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
++
+ # Find system information
+ if (NOT DEFINED NCORES)
+     cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
+@@ -19,6 +37,7 @@ if (NCORES LESS 1)
+ endif()
+ message("${LIBRA_ID} Setting number of cores to ${NCORES}")
+ 
++# LibRA variant options
+ if(NOT DEFINED LIBRA_USE_LIBSAKURA)
+   set(LIBRA_USE_LIBSAKURA OFF)
+ endif()
+@@ -31,6 +50,65 @@ if(NOT DEFINED Apps_BUILD_TESTS)
+   set(Apps_BUILD_TESTS OFF)
+ endif()
+ 
++message("${LIBRA_ID} LIBRA_USE_LIBSAKURA: ${LIBRA_USE_LIBSAKURA}")
++message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")
++message("${LIBRA_ID} Apps_BUILD_TESTS: ${Apps_BUILD_TESTS}")
++
++# Find Spack-managed dependencies
++find_package(PkgConfig REQUIRED)
++
++# Find Kokkos
++find_package(Kokkos REQUIRED)
++message("${LIBRA_ID} Found Kokkos: ${Kokkos_DIR}")
++
++# Find HPG
++find_package(Hpg REQUIRED)
++message("${LIBRA_ID} Found HPG: ${Hpg_DIR}")
++
++# Find parafeed
++find_package(parafeed REQUIRED)
++message("${LIBRA_ID} Found parafeed: ${parafeed_DIR}")
++
++# Find casacore
++find_package(casacore REQUIRED)
++message("${LIBRA_ID} Found casacore: ${casacore_DIR}")
++
++# Find pybind11
++find_package(pybind11 REQUIRED)
++message("${LIBRA_ID} Found pybind11: ${pybind11_DIR}")
++
++# Find FFTW
++pkg_check_modules(FFTW REQUIRED fftw3)
++message("${LIBRA_ID} Found FFTW: ${FFTW_LIBDIR}")
++
++# Find system libraries
++find_package(BLAS REQUIRED)
++find_package(LAPACK REQUIRED)
++
++# Find optional dependencies
++if(LIBRA_USE_LIBSAKURA)
++  find_package(PkgConfig REQUIRED)
++  pkg_check_modules(SAKURA REQUIRED libsakura)
++  message("${LIBRA_ID} Found libsakura: ${SAKURA_LIBDIR}")
++endif()
++
++if(Apps_BUILD_TESTS)
++  find_package(GTest REQUIRED)
++  message("${LIBRA_ID} Found GTest: ${GTest_DIR}")
++endif()
++
++# Set up include directories
++include_directories(
++  ${CMAKE_CURRENT_SOURCE_DIR}/src
++  ${CMAKE_CURRENT_SOURCE_DIR}/apps/src
++)
++
++# Add subdirectories for building LibRA components
++add_subdirectory(src)
++add_subdirectory(apps)
++add_subdirectory(frameworks)
++add_subdirectory(scripts)
++
+ # Create installation directories
+ install(DIRECTORY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ install(DIRECTORY DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+@@ -39,135 +117,12 @@ install(DIRECTORY DESTINATION share)
+ 
+ # Set up data directory for casacore if needed
+ set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/casacore/data)
+-include(ExternalProject)
+-
+-# Check for dependencies and download if not found
+-
+-# Kokkos
+-find_package(Kokkos QUIET)
+-if(NOT Kokkos_FOUND)
+-  message("${LIBRA_ID} Kokkos not found, downloading...")
+-  ExternalProject_Add(
+-    Kokkos
+-    GIT_REPOSITORY https://github.com/kokkos/kokkos.git
+-    GIT_TAG 4.6.01
+-    CMAKE_ARGS
+-      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
+-      -DCMAKE_BUILD_TYPE=Release
+-      -DKokkos_ENABLE_OPENMP=ON
+-      -DKokkos_ENABLE_SERIAL=ON
+-      -DKokkos_ARCH_ZEN3=ON
+-    BUILD_COMMAND make -j${NCORES}
+-  )
+-  set(Kokkos_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/Kokkos)
+-  message("${LIBRA_ID} Using locally built Kokkos")
+-endif()
+-
+-# HPG
+-find_package(Hpg QUIET)
+-if(NOT Hpg_FOUND)
+-  message("${LIBRA_ID} HPG not found, downloading...")
+-  ExternalProject_Add(
+-    Hpg
+-    GIT_REPOSITORY https://gitlab.com/dsa-2000/rcp/hpg.git
+-    GIT_TAG v3.0.3
+-    CMAKE_ARGS
+-      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
+-      -DCMAKE_INSTALL_LIBDIR=lib
+-      -DCMAKE_INSTALL_BINDIR=bin/Hpg
+-      -DCMAKE_BUILD_TYPE=Release
+-      -DFFTW_LIBRARIES=${CMAKE_CURRENT_SOURCE_DIR}/install/lib/
+-      -DHpg_ENABLE_MIXED_PRECISION=OFF
+-      -DHpg_ENABLE_EXPERIMENTAL_IMPLEMENTATIONS=OFF
+-      -DHpg_API=17
+-      -DHpg_BUILD_TESTS=OFF
+-      -DBUILD_SHARED_LIBS=ON
+-      -DCMAKE_CXX_COMPILER=${CMAKE_CURRENT_SOURCE_DIR}/install/bin/kokkos/nvcc_wrapper
+-      -DKokkos_DIR=${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/Kokkos
+-    BUILD_COMMAND make -j${NCORES}
+-    DEPENDS Kokkos
+-  )
+-  set(Hpg_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/Hpg)
+-  message("${LIBRA_ID} Using locally built HPG")
+-endif()
+-
+-# parafeed
+-find_package(parafeed QUIET)
+-if(NOT parafeed_FOUND)
+-  message("${LIBRA_ID} parafeed not found, downloading...")
+-  ExternalProject_Add(
+-    Parafeed
+-    GIT_REPOSITORY https://gitlab.com/dsa-2000/parafeed.git
+-    GIT_TAG v1.1.4
+-    CMAKE_ARGS
+-      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
+-      -DCMAKE_BUILD_TYPE=Release
+-    BUILD_COMMAND make -j${NCORES}
+-  )
+-  set(parafeed_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/parafeed)
+-  message("${LIBRA_ID} Using locally built parafeed")
+-endif()
+-
+-# casacore
+-find_package(casacore QUIET)
+-if(NOT casacore_FOUND)
+-  message("${LIBRA_ID} casacore not found, downloading...")
+-  ExternalProject_Add(
+-    Casacore
+-    GIT_REPOSITORY https://github.com/casacore/casacore.git
+-    GIT_TAG v3.6.1
+-    CMAKE_ARGS
+-      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
+-      -DCMAKE_BUILD_TYPE=Release
+-      -DBUILD_TESTING=OFF
+-      -DBUILD_PYTHON=OFF
+-      -DUSE_OPENMP=OFF
+-      -DUSE_HDF5=OFF
+-      -DUSE_THREADS=ON
+-      -DUSE_FFTW3=ON
+-      -DDATA_DIR=${DATA_DIR}
+-    BUILD_COMMAND make -j${NCORES}
+-  )
+-  set(casacore_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/casacore)
+-  message("${LIBRA_ID} Using locally built casacore")
+-endif()
+-
+-# pybind11
+-find_package(pybind11 QUIET)
+-if(NOT pybind11_FOUND)
+-  message("${LIBRA_ID} pybind11 not found, downloading...")
+-  ExternalProject_Add(
+-    Pybind11
+-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+-    GIT_TAG v2.10.2
+-    CMAKE_ARGS
+-      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install
+-      -DCMAKE_BUILD_TYPE=Release
+-      -DPYBIND11_TEST=OFF
+-    BUILD_COMMAND make -j${NCORES}
+-  )
+-  set(pybind11_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install/lib/cmake/pybind11)
+-  message("${LIBRA_ID} Using locally built pybind11")
+-endif()
+-
+-# Add subdirectories for building LibRA components
+-add_subdirectory(src)
+-add_subdirectory(apps)
+-add_subdirectory(frameworks)
+-add_subdirectory(scripts)
++install(DIRECTORY DESTINATION ${DATA_DIR})
+ 
+ message("${LIBRA_ID} Installing libraries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+ message("${LIBRA_ID} Installing headers to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+ message("${LIBRA_ID} Installing binaries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+-message("${LIBRA_ID} Installing data to ${DATA_DIR}")
+-
+-# Final message about next steps
+-message("")
+-message("${LIBRA_ID} ================================")
+-message("${LIBRA_ID} LibRA Build Configuration Complete")
+-message("${LIBRA_ID} ================================")
+-message("${LIBRA_ID} To build LibRA, run:")
+-message("${LIBRA_ID}   make -j${NCORES}")
+-message("${LIBRA_ID} To install LibRA, run:")
+-message("${LIBRA_ID}   make install")
+-message("${LIBRA_ID} ================================")
+-message("")
++message("${LIBRA_ID} Installing data to ${DATA_DIR}")

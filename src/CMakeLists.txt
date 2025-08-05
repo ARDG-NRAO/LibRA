@@ -32,8 +32,12 @@ project(
   LANGUAGES CXX Fortran C)
 
 # Add directory with additional macros
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
+#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+if(NOT CMAKE_MODULE_PATH)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+else()
+  set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
+endif()
 include(DeclareCasacppComponent)
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
@@ -177,7 +181,7 @@ endif()
 
 # Add a subdirectory per casacpp component
 foreach(_component IN LISTS casacpp_all_components)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/${_component})
+  add_subdirectory(${_component})
 endforeach()
 
 

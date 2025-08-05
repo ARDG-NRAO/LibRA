@@ -34,7 +34,7 @@
 #include <casacore/images/Images/PagedImage.h>
 #include <casacore/images/Images/ImageConcat.h>
 #include <casacore/casa/namespace.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+#include <casacore/scimath/Mathematics/FFTW.h>
 #include <casacore/images/Images/TempImage.h>
 #include <casacore/images/Images/PagedImage.h>
 #include <casacore/coordinates/Coordinates/CoordinateUtil.h>

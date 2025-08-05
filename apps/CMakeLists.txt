@@ -9,6 +9,9 @@ project("LibRA Apps"
 include(FetchContent)
 include(FindPkgConfig)
 
+# Find GSL dependency (required by casacpp libraries)
+find_package(GSL REQUIRED)
+
 set(DEFS64 "-DAIPS_64B -DCASA_STANDALONE")
 
 if (ARM_CPU)
@@ -90,9 +93,8 @@ set(APP_LINK_LIBRARIES
   casa_casa
   pthread
   parafeed
-#  readline
-#  history
-#  termcap
+  GSL::gsl
+  GSL::gslcblas
   m
   c)
 

@@ -25,19 +25,19 @@
 #ifndef CHIP_H
 #define CHIP_H
 
-#include <casa/aips.h>
-#include <ms/MSOper/MSSummary.h>
-#include <ms/MeasurementSets/MeasurementSet.h>
-#include <casa/Logging/LogIO.h>
-#include <casa/Logging/StreamLogSink.h>
-#include <images/Images/TempImage.h>
-#include <images/Images/ImageInterface.h>
-#include <images/Images/ImageUtilities.h>
-#include <images/Images/ImageOpener.h>
-#include <images/Images/ImageSummary.h>
-#include <casa/Containers/Record.h>
+#include <casacore/casa/aips.h>
+#include <casacore/ms/MSOper/MSSummary.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Logging/LogIO.h>
+#include <casacore/casa/Logging/StreamLogSink.h>
+#include <casacore/images/Images/TempImage.h>
+#include <casacore/images/Images/ImageInterface.h>
+#include <casacore/images/Images/ImageUtilities.h>
+#include <casacore/images/Images/ImageOpener.h>
+#include <casacore/images/Images/ImageSummary.h>
+#include <casacore/casa/Containers/Record.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
-#include <lattices/Lattices/PagedArray.h>
+#include <casacore/lattices/Lattices/PagedArray.h>
 #include <fstream>
 
 using namespace std;

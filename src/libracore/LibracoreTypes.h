@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <casacore/casa/namespace.h>
 
 namespace libracore {

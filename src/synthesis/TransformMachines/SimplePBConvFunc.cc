@@ -65,7 +65,6 @@
 #include <synthesis/TransformMachines/SimplePBConvFunc.h>
 #include <synthesis/TransformMachines/SkyJones.h>
 #include <synthesis/TransformMachines/PBMath1DNumeric.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
 #include <casacore/scimath/Mathematics/FFTW.h>
 #include <casacore/scimath/Mathematics/FFTServer.h>
 #include <casacore/casa/Utilities/CompositeNumber.h>

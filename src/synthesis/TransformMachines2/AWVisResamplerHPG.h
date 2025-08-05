@@ -58,13 +58,22 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
 
   public:
+    // makeHPGDevice() creates the hpg::Device.  This can be called
+    // from anywhere (it is a static method, but kept here to keep the
+    // dependence on HPG limited in scope).
+    static std::tuple<String, hpg::Device> makeHPGDevice();
+
+    // This returns the internal member holding the hpg::Device in use.
+    std::tuple<String, hpg::Device> getHPGDevice() {return std::make_tuple(HPGDeviceName_p, HPGDevice_p);};
+
     AWVisResamplerHPG(bool hpgInitAndFin=false,
 		      int nVisPerBucket=VIS_IN_THE_BUCKET):
       AWVisResampler(), hpgGridder_p(NULL), vis(),
       grid_cubes(), cf_cubes(), weights(), frequencies(),
       cf_phase_screens(), hpgPhases(), visUVW(),nVBS_p(0),
       maxVBList_p(1), cachedVBSpw_p(-1), hpgVBList_p(),
-      HPGModelImageName_p(),hpgSoW_p(),HPGDevice_p(hpg::Device::Cuda),
+      HPGModelImageName_p(),hpgSoW_p(),
+      HPGDevice_p(hpg::Device::Cuda),HPGDeviceName_p(),
       isHPGCustodian_p(hpgInitAndFin),
       cfsi_p({1,false},{1,false},{1,true},{1,true}, 1),
       cfArray_p(),dcf_ptr_p(),rwdcf_ptr_p(),
@@ -78,10 +87,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
       hpgVBList_p.reserve(maxVBList_p);
 
-      String hpgDevice="cuda";
-      std::tie(hpgDevice, HPGDevice_p) = getHPGDevice();
+      std::string HPGDeviceName_p="cuda";
+      std::tie(HPGDeviceName_p, HPGDevice_p) = makeHPGDevice();
       LogIO log_l(LogOrigin("AWVRHPG", "AWVRHPG()"));
-      log_l << "Using HPG device " << hpgDevice << LogIO::POST;
+      log_l << "Using HPG device " << HPGDeviceName_p << LogIO::POST;
       log_l << "VB Bucket size: " << nVisPerBucket_p << LogIO::POST;
 
       //      cached_PointingOffset_p.resize(2);cached_PointingOffset_p=-1000.0;runTimeG_p=runTimeDG_p=0.0;
@@ -127,8 +136,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
       cerr << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << endl;
     };
-
-    std::tuple<String, hpg::Device> getHPGDevice();
 
     virtual String name(){return String("HPGResampler");};
     virtual Bool needCFPhaseScreen() {return false;};
@@ -281,6 +288,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     std::string HPGModelImageName_p;
     sumofweight_fp hpgSoW_p;
     hpg::Device HPGDevice_p;
+    std::string HPGDeviceName_p;
     bool isHPGCustodian_p;
     hpg::CFSimpleIndexer cfsi_p;
     casa::refim::MyCFArray cfArray_p;
