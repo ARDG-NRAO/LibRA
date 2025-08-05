@@ -206,7 +206,7 @@ namespace casa{
   //
   //-------------------------------------------------------------------------
   //  
-  std::tuple<String, hpg::Device> AWVisResamplerHPG::getHPGDevice()
+  std::tuple<String, hpg::Device> AWVisResamplerHPG::makeHPGDevice()
   {
     String hpgDevice="libra_cuda";
     hpg::Device Device=hpg::Device::Cuda;
