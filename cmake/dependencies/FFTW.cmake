@@ -18,7 +18,7 @@ ExternalProject_Add(
   FFTW_double
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW_double
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E sleep 2 && <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   DEPENDS         FFTW_source
@@ -29,7 +29,7 @@ ExternalProject_Add(
   FFTW_float
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW_float
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --enable-float --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E sleep 2 && <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --enable-float --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install
   DEPENDS         FFTW_double
