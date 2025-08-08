@@ -1,0 +1,13 @@
+# Frameworks component
+include(ExternalProject)
+
+ExternalProject_Add(
+  Frameworks
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/frameworks
+  DOWNLOAD_COMMAND ""
+  BINARY_DIR      ${BUILD_DIR}/Libra/frameworks
+  DEPENDS         Apps
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
+  BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
+  INSTALL_COMMAND make install -C <BINARY_DIR>
+)
