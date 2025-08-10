@@ -14,37 +14,24 @@
 # limitations under the License.
 #
 
+
 cmake_minimum_required(VERSION 3.18)
 set(CMAKE_CXX_STANDARD 17)
 project(libracore)
 
-find_package(Kokkos REQUIRED)
-
-# Get Kokkos include directories and find mdspan
-get_target_property(KOKKOS_INCLUDE_DIRS Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
-set(MDSPAN_INCLUDE_DIR "")
-foreach(kokkos_dir ${KOKKOS_INCLUDE_DIRS})
-    if(EXISTS "${kokkos_dir}/mdspan/mdspan.hpp")
-        set(MDSPAN_INCLUDE_DIR "${kokkos_dir}")
-        break()
-    elseif(EXISTS "${kokkos_dir}/../tpls/mdspan/include/mdspan/mdspan.hpp")
-        set(MDSPAN_INCLUDE_DIR "${kokkos_dir}/../tpls/mdspan/include")
-        break()
-    elseif(EXISTS "${kokkos_dir}/../tpls/mdspan/include")
-        set(MDSPAN_INCLUDE_DIR "${kokkos_dir}/../tpls/mdspan/include")
-        break()
-    endif()
-endforeach()
+set(MDSPAN_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include") # Adjust this path if your mdspan headers are elsewhere
 include(FindPkgConfig)
 pkg_check_modules(WCSLIB REQUIRED wcslib)
 
-if(NOT MDSPAN_INCLUDE_DIR)
-    message(FATAL_ERROR "Could not find mdspan headers in Kokkos installation")
-endif()
 
-message(STATUS "Found mdspan include directory: ${MDSPAN_INCLUDE_DIR}")
-
-
+message(STATUS "Using mdspan include directory: ${MDSPAN_INCLUDE_DIR}")
+message(STATUS "Kokkos_FOUND: ${Kokkos_FOUND}")
+message(STATUS "Kokkos_INCLUDE_DIRS: ${Kokkos_INCLUDE_DIRS}")
+message(STATUS "Kokkos_LIBRARIES: ${Kokkos_LIBRARIES}")
+get_target_property(Kokkos_IMPORTED_LOCATION Kokkos::kokkos IMPORTED_LOCATION)
+message(STATUS "Kokkos::kokkos IMPORTED_LOCATION: ${Kokkos_IMPORTED_LOCATION}")
+get_target_property(Kokkos_INTERFACE_COMPILE_OPTIONS Kokkos::kokkos INTERFACE_COMPILE_OPTIONS)
+message(STATUS "Kokkos::kokkos INTERFACE_COMPILE_OPTIONS: ${Kokkos_INTERFACE_COMPILE_OPTIONS}")
 
 
 # List of public headers
@@ -103,8 +90,6 @@ target_link_libraries(testmdspan PRIVATE
   libracore
   casacpp_synthesis
   casacpp_msvis
-  Hpg::hpg
-  Kokkos::kokkos
   parafeed::parafeed
   # Add other imported targets for CASA libraries if available, e.g. casa::msfits, casa::ms, etc.
   pthread
@@ -126,8 +111,6 @@ target_link_libraries(testLibracoreTypes PRIVATE
   libracore
   casacpp_synthesis
   casacpp_msvis
-  Hpg::hpg
-  Kokkos::kokkos
   parafeed::parafeed
   # Add other imported targets for CASA libraries if available, e.g. casa::msfits, casa::ms, etc.
   pthread
