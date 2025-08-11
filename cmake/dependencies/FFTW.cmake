@@ -26,15 +26,26 @@ include(ExternalProject)
 
 
 # Download and extract FFTW only once
-ExternalProject_Add(
-  FFTW_source
-  URL             ${LIBRA_FFTW_URL}
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND    ""
-  INSTALL_COMMAND  ""
-)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24")
+  ExternalProject_Add(
+    FFTW_source
+    URL             ${LIBRA_FFTW_URL}
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND    ""
+    INSTALL_COMMAND  ""
+  )
+else()
+  ExternalProject_Add(
+    FFTW_source
+    URL             ${LIBRA_FFTW_URL}
+    SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND    ""
+    INSTALL_COMMAND  ""
+  )
+endif()
 
 # Build double precision (default)
 ExternalProject_Add(
