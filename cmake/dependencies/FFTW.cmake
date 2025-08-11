@@ -26,7 +26,7 @@ include(ExternalProject)
 
 
 # Download and extract FFTW only once
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24")
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.25")
   ExternalProject_Add(
     FFTW_source
     URL             ${LIBRA_FFTW_URL}
