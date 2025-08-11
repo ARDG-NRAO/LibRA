@@ -37,6 +37,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)
 
 # Print summary of machine and LIBRA configuration
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrintLibraSummary.cmake)
 print_libra_summary()
 
 # Include dependencies
@@ -53,7 +54,4 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Casacpp.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Apps.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Frameworks.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Scripts.cmake)
-
-
-
 
