@@ -22,7 +22,6 @@
 #                        Socorro, NM - 87801, USA
 #
 
-
 cmake_minimum_required(VERSION 3.18)
 project("LibRA Apps"
   DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
@@ -31,6 +30,8 @@ project("LibRA Apps"
 
 
 
+# Path and directory setup
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
 
 # Load project configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)
@@ -55,5 +56,4 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Scripts.cmake)
 
 
 
-# Path and directory setup
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
+

@@ -1,4 +1,26 @@
 #-*- cmake -*-
+# Copyright (C) 2025
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
 # Macro to print LIBRA and machine configuration summary
 macro(print_libra_summary)
   cmake_host_system_information(RESULT OS_NAME QUERY OS_NAME)
@@ -59,21 +81,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(BUILD_TYPE "RelWithDebInfo")
 set(CASA_BUILD_TYPE "RelWithDebInfo")
 
-# Set the top-level build and install directories
-set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
-set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_INSTALL_LIBDIR lib)
-set(CMAKE_INSTALL_INCLUDEDIR include)
-set(CMAKE_INSTALL_BINDIR bin)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-
-# LibRA location to find Find<PACKAGE>.cmake files 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+# Path and directory setup moved to paths.cmake
+# include(${CMAKE_CURRENT_SOURCE_DIR}/paths.cmake)
 
 # External project repositories and tags
+
 set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
 set(LIBRA_KOKKOS_GIT_TAG          "4.6.01")
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
@@ -103,17 +115,16 @@ option(LIBRA_USE_EXODUS "Enable use of Exodus" OFF)
 option(CASACORE_DATA_DOWNLOAD "Enable download of casacore data" ON)
 
 # System info
+
+# Set NCORES to total logical cores minus two (minimum 1)
 if (NOT DEFINED NCORES)
-  cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
-  cmake_host_system_information(RESULT NTHREADS QUERY NUMBER_OF_LOGICAL_CORES)
+  cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_LOGICAL_CORES)
   math(EXPR NCORES "${NCORES} - 2")
-endif()
-if (${NCORES} LESS 1)
-  set(NCORES 1)
+  if (NCORES LESS 1)
+    set(NCORES 1)
+  endif()
 endif()
 
-set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/install/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
+
+
