@@ -54,7 +54,7 @@ set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
 set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
 set(LIBRA_MEASURES_HTTPS          "https://www.astron.nl/iers/WSRT_Measures.ztar")
-set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/sanbee/exodus_sbfork.git")
+set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/preshanth/exodus_sbfork.git")
 set(LIBRA_EXODUS_GIT_TAG          "master")
 set(LIBRA_EXODUS_BUNDLE_NAME      "libra_apps.sh")
 set(LIBRA_EXODUS_BUNDLE_PATH      "")
@@ -64,6 +64,7 @@ option(USE_CCACHE "Enable use of ccache for compilation" OFF)
 option(LIBRA_USE_LIBSAKURA "Enable use of Sakura library" OFF)
 option(LIBRA_USE_EXODUS "Enable use of Exodus" OFF)
 option(CASACORE_DATA_DOWNLOAD "Enable download of casacore data" ON)
+option(Apps_BUILD_TESTS "Enable building of Apps tests" OFF)
 
 # System info
 
