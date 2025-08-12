@@ -47,9 +47,10 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/HPG.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Casacore.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Parafeed.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Pybind11.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/GTest.cmake)
-if(LIBRA_USE_EXODUS)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/exodus.cmake)
+
+# Build gtest on if tests are enabled
+if(Apps_BUILD_TESTS)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/GTest.cmake)
 endif()
 
 # Include components
@@ -58,3 +59,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Apps.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Frameworks.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Scripts.cmake)
 
+# Exodus - Needs to be here so Apps is created first.
+if(LIBRA_USE_EXODUS)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/exodus.cmake)
+endif()

@@ -24,21 +24,29 @@
 # Apps component
 include(ExternalProject)
 
+# Build dependency list based on enabled features
+set(APPS_DEPENDS Casacpp Hpg Parafeed Casacore Pybind11)
+set(APPS_CMAKE_PREFIX_PATH ${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos)
+if(LIBRA_BUILD_TESTING)
+  list(APPEND APPS_DEPENDS GTest)
+  set(APPS_CMAKE_PREFIX_PATH ${APPS_CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/GTest)
+endif()
+
 ExternalProject_Add(
   Apps
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/apps
   DOWNLOAD_COMMAND ""
   BINARY_DIR      ${BUILD_DIR}/Libra/apps
-  DEPENDS         Casacpp Hpg Parafeed Casacore Pybind11 GTest
+  DEPENDS         ${APPS_DEPENDS}
   CONFIGURE_COMMAND
     PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig
-    CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
+    CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:${APPS_CMAKE_PREFIX_PATH}
     ${CMAKE_COMMAND} <SOURCE_DIR>
       -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
       -DCMAKE_INSTALL_LIBDIR=lib
       -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
       -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
-      -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos:${INSTALL_DIR}/lib/cmake/GTest
+      -DCMAKE_PREFIX_PATH=${APPS_CMAKE_PREFIX_PATH}
       -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
       -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler

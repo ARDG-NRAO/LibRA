@@ -41,8 +41,12 @@ if (LIBRA_USE_EXODUS)
     set(LIBRA_EXODUS_BUNDLE_PATH ${INSTALL_DIR}/bin)
   endif()
 
-  # Define LibRA applications to bundle
-  set(EXODUS_APPS "roadrunner,hummbee,coyote,chip,dale,dataiter,mssplit,subms,tableinfo,acme,taylor")
+  # Define LibRA applications to bundle - create full paths
+  set(EXODUS_APP_NAMES "roadrunner" "hummbee" "coyote" "chip" "dale" "dataiter" "mssplit" "subms" "tableinfo" "acme")
+  set(EXODUS_APPS "")
+  foreach(APP ${EXODUS_APP_NAMES})
+    list(APPEND EXODUS_APPS "${INSTALL_DIR}/bin/${APP}")
+  endforeach()
   
   message("${LIBRA_ID} Bundle output: ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}")
   message("${LIBRA_ID} Applications to bundle: ${EXODUS_APPS}")
@@ -70,8 +74,8 @@ if (LIBRA_USE_EXODUS)
                     COMMAND ${Python3_EXECUTABLE} -m venv ${LIBRA_PYTHON_VENV_DIR}
                     COMMAND ${LIBRA_PYTHON_VENV_DIR}/bin/pip3 install <SOURCE_DIR>/
                     COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBRA_EXODUS_BUNDLE_PATH}
-                    COMMAND ${LIBRA_PYTHON_VENV_DIR}/bin/exodus ${INSTALL_DIR}/bin/{${EXODUS_APPS}} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
-    DEPENDS         Exodus_source
+                    COMMAND ${LIBRA_PYTHON_VENV_DIR}/bin/exodus ${EXODUS_APPS} -o ${LIBRA_EXODUS_BUNDLE_PATH}/${LIBRA_EXODUS_BUNDLE_NAME}
+    DEPENDS         Exodus_source Apps
   )
 
 else()
