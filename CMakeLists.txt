@@ -63,3 +63,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Scripts.cmake)
 if(LIBRA_USE_EXODUS)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/exodus.cmake)
 endif()
+
+# Use spack environment if set
+if(LIBRA_USE_SPACK)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Findspackenv.cmake)
+endif()
