@@ -36,28 +36,15 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
 # Load project configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)
 
+# Use spack environment if set
+if(LIBRA_USE_SPACK)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspackenv.cmake)
+endif()
+
 # Print summary of machine and LIBRA configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrintLibraSummary.cmake)
 print_libra_summary()
 
-#
-# Use spack environment, if set.  This enables use of dependencies
-# built in a SPACK environment to be used for building the rest of the
-# code.  The SPACK_FLAGS adds paths to include, lib and lib64 of the
-# SPACK env. to the CXX_FLAGS complier and linker flags.
-#
-if(LIBRA_USE_SPACK)
-  #Run cmake/FindSPACKENV.cmake.  This check if it's an SPACK env. If
-  #it is, use env root as /usr and / for finding libs and include
-  #files.
-  find_package(SPACKENV)
-
-  if (SPACKENV_FOUND)
-    set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include  -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib ")
-    message("${LIBRA_ID} Adding SPACK flags ${SPACK_FLAGS}")
-  endif()
-
-endif()
 
 # Include dependencies
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Kokkos.cmake)
