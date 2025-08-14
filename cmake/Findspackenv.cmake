@@ -23,28 +23,35 @@
 #
 # Path and directory setup for LibRA
 
-# Use spack environment, if set.  This enables use of dependencies
-# built in a SPACK environment to be used for building the rest of the
-# code.  The SPACK_FLAGS adds paths to include, lib and lib64 of the
-# SPACK env. to the CXX_FLAGS complier and linker flags.
+# Use spack environment, if set (defined as the existance of the
+# SPACK_ROOT shell variable).  This enables use of dependencies built
+# in a SPACK environment to be used for building the rest of the code.
+# The SPACK_FLAGS adds paths to include, lib and lib64 of the SPACK
+# env. to the CXX_FLAGS for the compiler and linker.
 #
 # Detect if we are in a Spack environment
-if(DEFINED ENV{SPACK_ENV} OR DEFINED ENV{SPACK_ENV_PATH} OR DEFINED ENV{SPACK_ROOT})
-  set(SPACK_ENV_ACTIVE TRUE)
-  # Try to get the view root (adjust as needed for your Spack setup)
-  if(DEFINED ENV{SPACK_ENV})
-    set(SPACK_VIEW_ROOT $ENV{SPACK_ENV})
-  elseif(DEFINED ENV{SPACK_ENV_PATH})
-    set(SPACK_VIEW_ROOT $ENV{SPACK_ENV_PATH})
-  elseif(DEFINED ENV{SPACK_ROOT})
-    set(SPACK_VIEW_ROOT $ENV{SPACK_ROOT})
-  endif()
+#
+set(SPACKENV_FOUND FALSE)
+
+if (DEFINED ENV{SPACK_ROOT})
+  if (DEFINED ENV{SPACK_ENV})
+    set(SPACKENV_FOUND TRUE)
+    # Construct the root of the env where lib,lib64,include and bin dirs will be found
+    set(SPACK_VIEW_ROOT "$ENV{SPACK_ENV}/.spack-env/view/")
+  else()
+    message(WARNING "SPACK_ROOT is defined, but not SPACK_ENV. "
+      "If you intended to build in an spack environment, please activate spack env (or set SPACK_ENV by-hand) for us to find the path to the spack env root.")
+  endif(DEFINED ENV{SPACK_ENV})
+endif(DEFINED ENV{SPACK_ROOT})
+
+if (SPACKENV_FOUND)
   set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib")
-  message(STATUS "Spack environment detected. Adding SPACK flags: ${SPACK_FLAGS}")
+  message(STATUS "Spack environment detected. Adding SPACK flags (the cmake variable SPACK_FLAGS): ${SPACK_FLAGS}")
+  #
+  # Not sure of the usefullness (and correctness) of the rest of the code below: Sanjay
+  #
   # Optionally update CMAKE_PREFIX_PATH, CMAKE_LIBRARY_PATH, etc.
-  list(APPEND CMAKE_PREFIX_PATH "${SPACK_VIEW_ROOT}")
-  link_directories("${SPACK_VIEW_ROOT}/lib" "${SPACK_VIEW_ROOT}/lib64")
-  include_directories("${SPACK_VIEW_ROOT}/include")
-else()
-  set(SPACK_ENV_ACTIVE FALSE)
-endif()
+  # list(APPEND CMAKE_PREFIX_PATH "${SPACK_VIEW_ROOT}")
+  # link_directories("${SPACK_VIEW_ROOT}/lib" "${SPACK_VIEW_ROOT}/lib64")
+  # include_directories("${SPACK_VIEW_ROOT}/include")
+endif(SPACKENV_FOUND)
