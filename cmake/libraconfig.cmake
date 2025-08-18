@@ -65,6 +65,7 @@ option(LIBRA_USE_LIBSAKURA "Enable use of Sakura library" OFF)
 option(LIBRA_USE_EXODUS "Enable use of Exodus" OFF)
 option(CASACORE_DATA_DOWNLOAD "Enable download of casacore data" ON)
 option(Apps_BUILD_TESTS "Enable building of Apps tests" OFF)
+option(LIBRA_USE_SPACK "Enable use of Spack" OFF)
 
 # System info
 
