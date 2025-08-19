@@ -43,7 +43,7 @@ if (DEFINED ENV{SPACK_ROOT})
       "If you intended to build in a spack environment, please activate spack env (or set SPACK_ENV by-hand) for us to find the path to the spack env root.")
   endif()
 else()
-  message(STATUS "Neither SPACK_ROOT nor SPACK_ENV are defined. Not using a Spack environment.")
+  message(WARNING "SPACK_ROOT is not defined. Not using a Spack environment.")
 endif()
 
 if (SPACKENV_FOUND)
