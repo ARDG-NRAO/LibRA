@@ -44,7 +44,7 @@ elseif(DEFINED ENV{SPACK_ROOT})
 elseif(DEFINED ENV{SPACK_ENV})
   message(WARNING "SPACK_ENV is defined, but not SPACK_ROOT. Please set SPACK_ROOT to your Spack installation root.")
 else()
-  message(WARNING "SPACK_ROOT is not defined. Not using a Spack environment.")
+  message(WARNING "SPACK_ROOT and SPACK ENV is not defined. Not using a Spack environment.")
 endif()
 
   # Not sure of the usefullness (and correctness) of the rest of the code below: Sanjay
