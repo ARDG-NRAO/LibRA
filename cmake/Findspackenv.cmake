@@ -33,27 +33,23 @@
 #
 set(SPACKENV_FOUND FALSE)
 
-if (DEFINED ENV{SPACK_ROOT})
-  if (DEFINED ENV{SPACK_ENV})
-    set(SPACKENV_FOUND TRUE)
-    # Construct the root of the env where lib,lib64,include and bin dirs will be found
-    set(SPACK_VIEW_ROOT "$ENV{SPACK_ENV}/.spack-env/view/")
-  else()
-    message(WARNING "SPACK_ROOT is defined, but not SPACK_ENV. "
-      "If you intended to build in a spack environment, please activate spack env (or set SPACK_ENV by-hand) for us to find the path to the spack env root.")
-  endif()
+if(DEFINED ENV{SPACK_ROOT} AND DEFINED ENV{SPACK_ENV})
+  set(SPACKENV_FOUND TRUE)
+  # Construct the root of the env where lib,lib64,include and bin dirs will be found
+  set(SPACK_VIEW_ROOT "$ENV{SPACK_ENV}/.spack-env/view/")
+  set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib")
+  message(STATUS "Spack environment detected. Adding SPACK flags (the cmake variable SPACK_FLAGS): ${SPACK_FLAGS}")
+elseif(DEFINED ENV{SPACK_ROOT})
+  message(WARNING "SPACK_ROOT is defined, but not SPACK_ENV. Please activate your Spack environment or set SPACK_ENV.")
+elseif(DEFINED ENV{SPACK_ENV})
+  message(WARNING "SPACK_ENV is defined, but not SPACK_ROOT. Please set SPACK_ROOT to your Spack installation root.")
 else()
   message(WARNING "SPACK_ROOT is not defined. Not using a Spack environment.")
 endif()
 
-if (SPACKENV_FOUND)
-  set(SPACK_FLAGS "-DCMAKE_CXX_FLAGS=-I${SPACK_VIEW_ROOT}/include -L${SPACK_VIEW_ROOT}/lib64 -L${SPACK_VIEW_ROOT}/lib")
-  message(STATUS "Spack environment detected. Adding SPACK flags (the cmake variable SPACK_FLAGS): ${SPACK_FLAGS}")
-  #
   # Not sure of the usefullness (and correctness) of the rest of the code below: Sanjay
   #
   # Optionally update CMAKE_PREFIX_PATH, CMAKE_LIBRARY_PATH, etc.
   # list(APPEND CMAKE_PREFIX_PATH "${SPACK_VIEW_ROOT}")
   # link_directories("${SPACK_VIEW_ROOT}/lib" "${SPACK_VIEW_ROOT}/lib64")
   # include_directories("${SPACK_VIEW_ROOT}/include")
-endif(SPACKENV_FOUND)
