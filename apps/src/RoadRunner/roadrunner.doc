@@ -84,9 +84,9 @@
 	<Put the explaination for the keyword here>
 
 
-%%A rmode (default=none)
+%%A rmode (default=norm) Options: [norm abs none]
 
-	<Put the explaination for the keyword here>
+	The robustness mode.
 
 
 %%A robust (default=0)

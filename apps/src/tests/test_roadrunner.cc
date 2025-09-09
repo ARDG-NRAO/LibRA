@@ -196,6 +196,91 @@ TEST(RoadrunnerTest, AppLevelWeight) {
 
 }
 
+TEST(RoadrunnerTest, Interface_rmode) {
+  // Get the test name
+  string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // Create a unique directory for this test case
+  path testDir = current_path() / testName;
+
+  // create dir AppLevelSNRPSF
+  std::filesystem::create_directory(testDir);
+
+  //copy over CYGTST.corespiral.ms from gold_standard to Interface_rmode
+  std::filesystem::copy(goldDir/"CYGTST.corespiral.ms", testDir/"CYGTST.corespiral.ms", copy_options::recursive);
+  //copy over 4k_nosquint.cfc from gold_standard to Interface_rmode
+  std::filesystem::copy(goldDir/"4k_nosquint.cfc", testDir/"4k_nosquint.cfc", copy_options::recursive);
+  // copy the input .def
+  std::filesystem::copy(goldDir/"BriggsRobust+2.def", testDir/"BriggsRobust+2.def", copy_options::recursive);  
+  std::filesystem::copy(goldDir/"BriggsRobust-2.def", testDir/"BriggsRobust-2.def", copy_options::recursive);  
+  // copy htclean scripts
+  std::filesystem::copy(goldDir/"../../../../frameworks/htclean/runapp.sh", testDir/"runapp.sh", copy_options::recursive);
+  //Step into test dir
+  std::filesystem::current_path(testDir);
+
+  
+  // Run the script
+	system("chmod +x ./runapp.sh");
+
+    // weighting=briggs robust=2 mode=norm
+	std::string command = "./runapp.sh ../../../../install/bin/roadrunner weight BriggsRobust+2 BriggsRobust+2.def";
+	char buffer[128];
+	std::string result = "";
+	FILE* fp = popen(command.c_str(), "r");
+	if (fp == nullptr) {
+	    result="Error running script";
+	    EXPECT_TRUE(false);
+	}
+	/*while (fgets(buffer, sizeof(buffer), fp) != nullptr) {
+	    result += buffer;
+	}*/
+	fclose(fp);
+
+  // Check that the images are generated
+  path p1("BriggsRobust+2.weight");
+  path p2("BriggsRobust+2.sumwt");
+  bool ans = exists(p1) && exists(p2);
+   
+  EXPECT_TRUE( ans );
+
+  PagedImage<casacore::Float> Nimage("BriggsRobust+2.weight");
+  float tol = 0.05;
+  float goldValLoc0 = 1257490;
+
+  EXPECT_NEAR(Nimage(IPosition(4,1994,1973,0,0)), goldValLoc0, tol);
+
+  // weighting=briggs robust=-2 mode=norm
+  command = "./runapp.sh ../../../../install/bin/roadrunner weight BriggsRobust-2 BriggsRobust-2.def";
+	result = "";
+	fp = popen(command.c_str(), "r");
+	if (fp == nullptr) {
+	    result="Error running script";
+	    EXPECT_TRUE(false);
+	}
+	/*while (fgets(buffer, sizeof(buffer), fp) != nullptr) {
+	    result += buffer;
+	}*/
+	fclose(fp);
+
+  // Check that the images are generated
+  path p3("BriggsRobust-2.weight");
+  path p4("BriggsRobust-2.sumwt");
+  ans = exists(p3) && exists(p4);
+   
+  EXPECT_TRUE( ans );
+
+  PagedImage<casacore::Float> Uimage("BriggsRobust-2.weight");
+  float goldValLoc1 = 46.539;
+
+  EXPECT_NEAR(Uimage(IPosition(4,1994,1973,0,0)), goldValLoc1, tol);
+
+  //move to parent directory
+  std::filesystem::current_path(testDir.parent_path());
+
+  remove_all(testDir);
+}
+
+
 TEST(RoadrunnerTest, UIFactory) {
     // The Factory Settings.
   int argc = 1;
@@ -206,7 +291,7 @@ TEST(RoadrunnerTest, UIFactory) {
     cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
     imageName, modelImageName,cmplxGridName="", stokes="I",
     weighting="natural", sowImageExt,
-    imagingMode="residual",rmode="none";
+    imagingMode="residual",rmode="norm";
 
   string phaseCenter = "J2000 19h57m44.44s  040d35m46.3s";
 
