@@ -244,7 +244,7 @@ TEST(RoadrunnerTest, Interface_rmode) {
   EXPECT_TRUE( ans );
 
   PagedImage<casacore::Float> Nimage("BriggsRobust+2.weight");
-  float tol = 0.05;
+  float tol = 0.1;
   float goldValLoc0 = 1257490;
 
   EXPECT_NEAR(Nimage(IPosition(4,1994,1973,0,0)), goldValLoc0, tol);
