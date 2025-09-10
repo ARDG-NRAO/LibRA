@@ -226,7 +226,8 @@ int main(int argc, char **argv)
     cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
     refFreqStr="3.0e9", weighting="natural", sowImageExt,
-    imagingMode="residual",rmode="none";
+    imagingMode="residual",
+    rmode="norm"; // set to "norm" to match rWeightor.h
 
   float cellSize=0;//refFreq=3e09, freqBW=3e9;
   float robust=0.0;
