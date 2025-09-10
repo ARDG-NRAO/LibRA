@@ -38,6 +38,7 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_INSTALL_BINDIR=bin/kokkos
+                 ${KOKKOS_CUDA_COMPILER_FLAGS}
                  ${KOKKOS_CUDA_ENABLE_FLAGS}
                  ${Kokkos_CUDA_ARCH_NAME_OPT}
                  -DKokkos_ENABLE_OPENMP=ON
