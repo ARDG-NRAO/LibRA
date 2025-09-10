@@ -38,9 +38,7 @@ ExternalProject_Add(
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
                  -DCMAKE_INSTALL_BINDIR=bin/kokkos
-                 -DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper
-                 -DKokkos_ENABLE_CUDA_LAMBDA=ON
-                 -DKokkos_ENABLE_CUDA=ON
+                 ${KOKKOS_CUDA_ENABLE_FLAGS}
                  ${Kokkos_CUDA_ARCH_NAME_OPT}
                  -DKokkos_ENABLE_OPENMP=ON
                  -DKokkos_ENABLE_SERIAL=ON

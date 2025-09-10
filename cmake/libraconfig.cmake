@@ -66,6 +66,7 @@ option(LIBRA_USE_EXODUS "Enable use of Exodus" OFF)
 option(CASACORE_DATA_DOWNLOAD "Enable download of casacore data" ON)
 option(Apps_BUILD_TESTS "Enable building of Apps tests" OFF)
 option(LIBRA_USE_SPACK "Enable use of Spack" OFF)
+option(LIBRA_DISABLE_CUDA "Disable CUDA acceleration (OpenMP only)" OFF)
 
 # System info
 
@@ -78,6 +79,15 @@ if (NOT DEFINED NCORES)
   endif()
 endif()
 
+# CUDA control flags (CUDA enabled by default)
+set(KOKKOS_CUDA_ENABLE_FLAGS "-DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON")
+set(HPG_CUDA_ENABLE_FLAGS "-DHpg_ENABLE_CUDA=ON") 
+set(KOKKOS_WRAPPER_FLAGS "-DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper")
 
-
+# Override when CUDA is disabled
+if(LIBRA_DISABLE_CUDA)
+  set(KOKKOS_CUDA_ENABLE_FLAGS "-DKokkos_ENABLE_CUDA=OFF")
+  set(HPG_CUDA_ENABLE_FLAGS "-DHpg_ENABLE_CUDA=OFF")
+  set(KOKKOS_WRAPPER_FLAGS "")
+endif()
 
