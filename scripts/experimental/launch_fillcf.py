@@ -292,6 +292,7 @@ class FillCFLauncher:
 #SBATCH --account={self.username}
 #SBATCH --mail-user={self.email}
 #SBATCH --mail-type=FAIL
+export CASAPATH="{self.casapath}"
 python3 {self.python_file_path} --cfcache_dir {self.cfcache_dir} --nprocs {self.nprocs} --coyote_app {self.coyote_app}
                 """
             )

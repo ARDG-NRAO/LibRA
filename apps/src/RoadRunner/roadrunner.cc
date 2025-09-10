@@ -441,6 +441,9 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
       cgrid.table().markForDelete();
 
+      if (weighting == "briggs" && rmode !="norm")
+        throw(AipsError("Ensure `rmode` is set correctly. For Briggs weighting, use `rmode = norm` for the robust parameter to take effect."));
+
       // Setup the weighting scheme in the supplied VI2
       weightor(*(db.vi2_l),
 	       cgrid.coordinates(), // CSys of the sky image

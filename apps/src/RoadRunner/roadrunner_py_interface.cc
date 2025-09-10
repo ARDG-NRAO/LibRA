@@ -33,7 +33,7 @@ PYBIND11_MODULE(roadrunner2py, m)
 	"sowimageext"_a="",	"complexgrid"_a="",
 	"imsize"_a,	"wprojplanes"_a=1,	"cell"_a,
 	"stokes"_a="I",	"reffreq"_a="3GHz",	"phasecenter"_a,
-	"weighting"_a="natural", "rmode"_a="",	"robust"_a=0.0,
+	"weighting"_a="natural", "rmode"_a="norm",	"robust"_a=0.0,
 	"gridder"_a="awphpg",	"cfcache"_a="",	"mode"_a="residual",
 	"wbawp"_a=true,
 	"field"_a="*",	"spw"_a="*",	"uvrange"_a="",

@@ -21,7 +21,7 @@ spack-repo/
 
 ```bash
 # Navigate to your LibRA directory
-cd /home/pjaganna/Software/libra
+cd $LIBRA_HOME
 
 # Add the local repository to Spack
 spack repo add spack-repo
@@ -141,7 +141,7 @@ spack install
 
 ### To remove the repository:
 ```bash
-spack repo remove /home/pjaganna/Software/libra/spack-repo
+spack repo remove $LIBRA_HOME/spack-repo
 ```
 
 ## Notes

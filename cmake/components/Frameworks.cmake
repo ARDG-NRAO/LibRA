@@ -21,13 +21,16 @@
 #                        1003 Lopezville Road,
 #                        Socorro, NM - 87801, USA
 #
+# Frameworks component
+include(ExternalProject)
 
-if (DEFINED ENV{SPACK_ROOT})
-  if (DEFINED ENV{SPACK_ENV})
-    set(SPACKENV_FOUND TRUE)
-    set(SPACK_VIEW_ROOT "$ENV{SPACK_ENV}/.spack-env/view/")
-  else()
-    message(WARNING "SPACK_ROOT is defined, but not SPACK_ENV. "
-      "If you intended to build in an spack env, please activate env for us to find the path to the root of the spack env.")
-  endif()
-endif()
+ExternalProject_Add(
+  Frameworks
+  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/frameworks
+  DOWNLOAD_COMMAND ""
+  BINARY_DIR      ${BUILD_DIR}/Libra/frameworks
+  DEPENDS         Apps
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR> -B <BINARY_DIR> -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} -DCMAKE_INSTALL_LIBDIR=lib -DTOP_LEVEL_DIR=${TOP_LEVEL_DIR} -DINSTALL_DIR=${INSTALL_DIR}
+  BUILD_COMMAND   make -j${NCORES} -C <BINARY_DIR>
+  INSTALL_COMMAND make install -C <BINARY_DIR>
+)
