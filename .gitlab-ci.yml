@@ -390,15 +390,6 @@ manual-cpu-only:
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
     - ccache --show-stats || true
     - git clean -ffdx
-    # Create temporary Python virtual environment for building outside the Libra path
-    - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
-    - python3.11 --version
-    - python3.11 -m venv "${BUILD_VENV_DIR}"
-    - source "${BUILD_VENV_DIR}/bin/activate"
-    - pip install --upgrade pip setuptools wheel
-    - pip install pytest numpy
-    - python --version
-    - which python
   script:
     - echo "=== CPU-only build with LIBRA_DISABLE_CUDA=ON ==="
     - source "${BUILD_VENV_DIR}/bin/activate"
@@ -415,8 +406,6 @@ manual-cpu-only:
     - echo "=== ccache statistics ==="
     - ccache --show-stats || true
     - ccache --show-config || true
-    - echo "=== Cleaning up venv ==="
-    - rm -rf "${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
 
 manual-spack:
   extends: spack-test
