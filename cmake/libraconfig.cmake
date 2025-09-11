@@ -82,7 +82,8 @@ endif()
 # CUDA control flags (CUDA enabled by default)
 set(KOKKOS_CUDA_ENABLE_FLAGS "-DKokkos_ENABLE_CUDA=ON" "-DKokkos_ENABLE_CUDA_LAMBDA=ON")
 set(KOKKOS_CUDA_COMPILER_FLAGS "-DCMAKE_CXX_COMPILER=${CMAKE_SOURCE_DIR}/dependencies/Kokkos/bin/nvcc_wrapper")
-set(HPG_CUDA_ENABLE_FLAGS "-DHpg_ENABLE_CUDA=ON") 
+set(HPG_CUDA_ENABLE_FLAGS "-DHpg_ENABLE_CUDA=ON")
+set(HPG_CUDA_COMPILER_FLAGS "-DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper") 
 set(KOKKOS_WRAPPER_FLAGS "-DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler" "-DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper")
 
 # Override when CUDA is disabled
@@ -90,6 +91,7 @@ if(LIBRA_DISABLE_CUDA)
   set(KOKKOS_CUDA_ENABLE_FLAGS "-DKokkos_ENABLE_CUDA=OFF")
   set(KOKKOS_CUDA_COMPILER_FLAGS "")
   set(HPG_CUDA_ENABLE_FLAGS "-DHpg_ENABLE_CUDA=OFF")
+  set(HPG_CUDA_COMPILER_FLAGS "")
   set(KOKKOS_WRAPPER_FLAGS "")
 endif()
 
