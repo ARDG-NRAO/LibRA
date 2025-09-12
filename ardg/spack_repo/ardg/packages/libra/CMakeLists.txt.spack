@@ -1,0 +1,96 @@
+cmake_minimum_required(VERSION 3.18)
+project("LibRA Apps"
+  DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
+  HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
+  LANGUAGES CXX Fortran C)
+
+set(LIBRA_ID "LibRA INFO: ")
+set(CMAKE_CXX_STANDARD 17)
+
+# Add src/cmake to module path so we can find FindCasacore.cmake and other custom modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/cmake)
+message("${LIBRA_ID} CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+
+# Find all Spack-installed dependencies
+find_package(PkgConfig REQUIRED)
+
+# Find Kokkos
+find_package(Kokkos REQUIRED)
+message("${LIBRA_ID} Found Kokkos: ${Kokkos_DIR}")
+
+# Find FFTW (use pkg-config)
+pkg_check_modules(FFTW REQUIRED fftw3)
+message("${LIBRA_ID} Found FFTW via pkg-config")
+
+# Find HPG
+find_package(Hpg REQUIRED)
+message("${LIBRA_ID} Found HPG: ${Hpg_DIR}")
+
+# Find casacore using the custom FindCasacore.cmake
+find_package(Casacore REQUIRED COMPONENTS casa tables measures fits images coordinates scimath lattices ms)
+if(Casacore_FOUND)
+  message("${LIBRA_ID} Found Casacore: ${CASACORE_INCLUDE_DIRS}")
+else()
+  # Fallback to pkg-config if FindCasacore fails
+  pkg_check_modules(CASACORE REQUIRED casacore)
+  set(CASACORE_INCLUDE_DIRS ${CASACORE_INCLUDE_DIRS})
+  set(CASACORE_LIBRARIES ${CASACORE_LIBRARIES})
+  message("${LIBRA_ID} Found casacore via pkg-config fallback")
+endif()
+
+# Find other dependencies
+find_package(parafeed REQUIRED)
+message("${LIBRA_ID} Found parafeed: ${parafeed_DIR}")
+
+# Find GSL (required by apps)
+find_package(GSL REQUIRED)
+
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED)
+
+# Ensure readline and ncurses are linked for all targets (use pkg-config for readline)
+pkg_check_modules(READLINE readline)
+find_package(Curses REQUIRED)
+include_directories(${READLINE_INCLUDE_DIRS} ${CURSES_INCLUDE_DIR})
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${READLINE_LDFLAGS} ${CURSES_LIBRARIES}")
+
+# Try to find readline with pkg-config, fallback to manual ncurses linkage if needed
+include(CheckCXXSourceCompiles)
+set(HAVE_READLINE 0)
+pkg_check_modules(READLINE readline)
+if(READLINE_FOUND)
+  include_directories(${READLINE_INCLUDE_DIRS})
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${READLINE_LDFLAGS}")
+  set(HAVE_READLINE 1)
+else()
+  find_package(Curses REQUIRED)
+  include_directories(${CURSES_INCLUDE_DIR})
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lreadline ${CURSES_LIBRARIES}")
+  message(WARNING "Could not find readline with pkg-config, falling back to -lreadline and ncurses.")
+endif()
+
+# Configure cmake paths and variables (from Casacpp.cmake)
+# Add source directory to include path for relative includes like <stdcasa/record.h>
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# Add all dependency include directories
+include_directories(${CASACORE_INCLUDE_DIRS})
+include_directories(${Kokkos_INCLUDE_DIRS})
+include_directories(${FFTW_INCLUDE_DIRS})
+include_directories(${Hpg_INCLUDE_DIRS})
+
+set(Hpg_DIR ${Hpg_DIR})
+set(parafeed_DIR ${parafeed_DIR})
+
+# Set CMAKE_PREFIX_PATH for all cmake configs
+list(APPEND CMAKE_PREFIX_PATH 
+  ${Kokkos_DIR}
+  ${Hpg_DIR}
+  ${parafeed_DIR}
+)
+
+# Build Casacpp (all components) as in the ExternalProject_Add from Casacpp.cmake
+add_subdirectory(src)
+
+add_subdirectory(apps)
