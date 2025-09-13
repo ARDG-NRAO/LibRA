@@ -90,7 +90,11 @@ list(APPEND CMAKE_PREFIX_PATH
   ${parafeed_DIR}
 )
 
+get_directory_property(inc_dirs INCLUDE_DIRECTORIES)
+message(STATUS "CMake include directories: ${inc_dirs}")
+
 # Build Casacpp (all components) as in the ExternalProject_Add from Casacpp.cmake
 add_subdirectory(src)
 
 add_subdirectory(apps)
+
