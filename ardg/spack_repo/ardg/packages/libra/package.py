@@ -9,7 +9,8 @@ from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack.package import *
 
 
-class Libra(CMakePackage):
+# class Libra(CMakePackage):
+class Libra(Package):
     """LibRA (Library of Radio Astronomy) - A radio astronomy data processing library"""
 
     homepage = "https://github.com/ARDG-NRAO/LibRA"
@@ -78,6 +79,62 @@ class Libra(CMakePackage):
     depends_on("ncurses")
 
 
+    # def cmake_args(self):
+    #     # Copy CMakeLists.txt.spack and FindCasacore.cmake from package directory to staged source
+    #     import shutil
+    #     import os
+
+    #     package_dir = os.path.dirname(__file__)
+    #     source_spack_cmake = join_path(package_dir, "CMakeLists.txt.spack")
+    #     target_main_cmake = join_path(self.stage.source_path, "CMakeLists.txt")
+
+    #     print("*** COPYING CMAKE FROM PACKAGE DIR ***")
+    #     print("Package dir:", package_dir)
+    #     print("Source spack cmake:", source_spack_cmake)
+    #     print("Target main cmake:", target_main_cmake)
+
+    #     if os.path.exists(source_spack_cmake):
+    #         print("*** FOUND SPACK CMAKE IN PACKAGE DIR - COPYING ***")
+    #         shutil.copy2(source_spack_cmake, target_main_cmake)
+    #         print("*** COPY COMPLETE ***")
+    #     else:
+    #         print("*** SPACK CMAKE NOT FOUND IN PACKAGE DIR ***")
+
+    #     # Copy FindCasacore.cmake to the staged source cmake directory
+    #     source_find_casacore = join_path(package_dir, "FindCasacore.cmake")
+    #     target_cmake_dir = join_path(self.stage.source_path, "src", "cmake")
+    #     target_find_casacore = join_path(target_cmake_dir, "FindCasacore.cmake")
+
+    #     print("*** COPYING FindCasacore.cmake ***")
+    #     print("Source FindCasacore:", source_find_casacore)
+    #     print("Target FindCasacore:", target_find_casacore)
+
+    #     if os.path.exists(source_find_casacore):
+    #         # Ensure the target directory exists
+    #         os.makedirs(target_cmake_dir, exist_ok=True)
+    #         print("*** FOUND FindCasacore.cmake IN PACKAGE DIR - COPYING ***")
+    #         shutil.copy2(source_find_casacore, target_find_casacore)
+    #         print("*** FindCasacore.cmake COPY COMPLETE ***")
+    #     else:
+    #         print("*** FindCasacore.cmake NOT FOUND IN PACKAGE DIR ***")
+
+    #     args = [
+    #         # Set C++ standard and build type
+    #         self.define("CMAKE_CXX_STANDARD", 17),
+    #         self.define("CMAKE_BUILD_TYPE", "RelWithDebInfo"),
+    #         self.define("CASA_BUILD_TYPE", "RelWithDebInfo"),
+    #         # Install directories
+    #         self.define("CMAKE_INSTALL_LIBDIR", "lib"),
+    #         self.define("CMAKE_INSTALL_INCLUDEDIR", "include"),
+    #         self.define("CMAKE_INSTALL_BINDIR", "bin"),
+    #         # Build options
+    #         self.define("CMAKE_INTERPROCEDURAL_OPTIMIZATION", False),
+    #         self.define("LIBRA_USE_LIBSAKURA", False),
+    #         self.define_from_variant("LIBRA_USE_EXODUS", "exodus"),
+    #         self.define_from_variant("Apps_BUILD_TESTS", "tests"),
+    #     ]
+
+    #     return args
 
     def setup_build_environment(self, env):
         # Set PKG_CONFIG_PATH for dependencies
@@ -168,3 +225,7 @@ class Libra(CMakePackage):
         ] + apps_cmake_args, cwd=build_dir_apps)
         subprocess.check_call(["make", "-j", "16"], cwd=build_dir_apps)
         subprocess.check_call(["make", "install"], cwd=build_dir_apps)
+
+    def install(self, spec, prefix):
+          # Installation already completed in build() method
+          pass
