@@ -28,7 +28,7 @@ foreach (APP_DIR IN LISTS APP_LIST)
   set(BUILD_CLWRAPPER ON)
   if(BUILD_CLWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
     add_executable(${APP_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
-    target_link_libraries(${APP_NAME} ${APP_LINK_LIBRARIES} libra ${READLINE_LDFLAGS} ${CURSES_LIBRARIES})
+    target_link_libraries(${APP_NAME} ${APP_LINK_LIBRARIES} libra)
     install(TARGETS ${APP_NAME} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
   endif()
 
