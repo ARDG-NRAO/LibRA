@@ -47,8 +47,7 @@ ExternalProject_Add(
     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
     -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
     -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
-    -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
-    -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+    ${KOKKOS_WRAPPER_FLAGS}
     -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake
     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
     -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}

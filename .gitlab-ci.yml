@@ -371,6 +371,40 @@ manual-trigger:
     - branches
   allow_failure: false
 
+manual-cpu-only:
+  stage: build
+  rules:
+    - when: manual
+  allow_failure: false
+  before_script:
+    # Ensure submodules are in sync with the index
+    - git submodule sync
+    - git submodule update --init --recursive
+    - export CCACHE_BASEDIR="$PWD"
+    - export CCACHE_COMPILERCHECK=content
+    - export CCACHE_MAXSIZE=5G
+    # Ensure ccache is used by cmake
+    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+    - export CMAKE_C_COMPILER_LAUNCHER=ccache
+    - mkdir -p $CCACHE_DIR
+    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
+    - ccache --show-stats || true
+    - git clean -ffdx
+  script:
+    - echo "=== CPU-only build with LIBRA_DISABLE_CUDA=ON ==="
+    - echo $PATH
+    - echo "=== System Info (CPU-only build) ==="
+    - nproc
+    - echo "=== Building without CUDA ==="
+    - mkdir -p build
+    - cd build
+    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DLIBRA_DISABLE_CUDA=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - make -j$(nproc)
+  after_script:
+    - echo "=== ccache statistics ==="
+    - ccache --show-stats || true
+    - ccache --show-config || true
+
 manual-spack:
   extends: spack-test
   when: manual

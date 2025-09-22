@@ -1,0 +1,43 @@
+--- a/apps/src/CMakeLists.txt
++++ b/apps/src/CMakeLists.txt
+@@ -2,6 +2,9 @@
+ set (CMAKE_CXX_STANDARD 17)
+ 
+ # Set optimization flags
+ set(OPT "-g -O2 ")
+ 
++# Find readline and ncurses packages for CLI applications
++find_package(PkgConfig REQUIRED)
++pkg_check_modules(READLINE readline)
++find_package(Curses REQUIRED)
++
+ # Find required packages
+ find_package(Kokkos REQUIRED)
+ find_package(parafeed REQUIRED)
+@@ -28,7 +31,7 @@
+   set(BUILD_CLWRAPPER ON)
+   if(BUILD_CLWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
+     add_executable(${APP_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
+-    target_link_libraries(${APP_NAME} ${APP_LINK_LIBRARIES} libra)
++    target_link_libraries(${APP_NAME} ${APP_LINK_LIBRARIES} libra ${READLINE_LIBRARIES} ${CURSES_LIBRARIES})
+     install(TARGETS ${APP_NAME} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+   endif()
+ 
+@@ -35,7 +38,7 @@
+   # Build individual CLI interface library for unit tests if the source file exists
+   if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
+    add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
+-   target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra "-Wl,--disable-new-dtags")
++   target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra ${READLINE_LIBRARIES} ${CURSES_LIBRARIES} "-Wl,--disable-new-dtags")
+    install(TARGETS ${APP_NAME}_cl_interface
+     LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+   endif()
+@@ -44,7 +47,7 @@
+   set(BUILD_PYWRAPPER ON)
+   if(BUILD_PYWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_py_interface.cc")
+     pybind11_add_module(${APP_NAME}2py "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_py_interface.cc")
+-    target_link_libraries(${APP_NAME}2py PRIVATE ${APP_LINK_LIBRARIES} libra)
++    target_link_libraries(${APP_NAME}2py PRIVATE ${APP_LINK_LIBRARIES} libra ${READLINE_LIBRARIES} ${CURSES_LIBRARIES})
+     install(TARGETS ${APP_NAME}2py
+     LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+   endif()

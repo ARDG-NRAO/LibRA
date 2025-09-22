@@ -49,8 +49,7 @@ ExternalProject_Add(
       -DCMAKE_PREFIX_PATH=${APPS_CMAKE_PREFIX_PATH}
       -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-      -DKokkos_COMPILE_LAUNCHER=${INSTALL_DIR}/bin/kokkos/kokkos_launch_compiler
-      -DKokkos_NVCC_WRAPPER=${INSTALL_DIR}/bin/kokkos/nvcc_wrapper
+      ${KOKKOS_WRAPPER_FLAGS}
       ${SPACK_FLAGS}
   BUILD_COMMAND   make -j${NCORES}
   INSTALL_COMMAND make install
