@@ -25,6 +25,11 @@ jobs:
           ccache --show-stats || true
           git clean -ffdx
 
+      - name: Sync and update submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
       - name: Compile the code
         run: |
           echo "Compiling the code..."
