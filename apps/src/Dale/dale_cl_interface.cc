@@ -89,7 +89,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
   catch (clError x)
     {
       x << x << endl;
-      clRetry();
+      if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
     }
   if (imageName=="")
     throw(AipsError("Input image name not set."));

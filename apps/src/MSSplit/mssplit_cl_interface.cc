@@ -66,10 +66,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   catch (clError& x)
     {
-      x << x << endl;
-      if (x.Severity() == CL_FATAL) exit(1);
-      //clRetry();
-      RestartUI(REENTER);
+       x << x << endl;
+      if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
     }
 }
 

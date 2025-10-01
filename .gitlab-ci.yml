@@ -150,13 +150,18 @@ test-job:
 
     # --- C++ GTest section ---
     cd ${base_path}/apps/src/tests/
-    # Run C++ gtest binary if it exists
-    if [ -x "${base_path}/install/bin/tests/LibRATests" ]; then
-      "${base_path}/install/bin/tests/LibRATests" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_report.xml"
-    else
-      echo "C++ test binary not found: ${base_path}/install/bin/tests/LibRATests"
-    fi
+    # Run C++ gtest binaries if they exist
+    test_binaries=("LibRATests" "test_roadrunner_robustMinus2" "test_roadrunner_robustPlus2" "test_roadrunner_snrpsf" "test_roadrunner_weight")
 
+    for test_binary in "${test_binaries[@]}"; do
+        if [ -x "${base_path}/install/bin/tests/${test_binary}" ]; then
+            echo "Running ${test_binary}..."
+            "${base_path}/install/bin/tests/${test_binary}" --gtest_output=xml:"${base_path}/libra-python/reports/cpp_${test_binary}_report.xml"
+        else
+            echo "C++ test binary not found: ${base_path}/install/bin/tests/${test_binary}"
+        fi
+    done
+    
     # --- Python pytest section ---
     cd "${base_path}/apps/src/tests/"
     pytest ${base_path}/libra-python/tests --junitxml=pytest_report.xml -v || echo "Pytest failed, but continuing for CI artifact collection"

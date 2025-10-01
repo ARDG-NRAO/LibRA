@@ -396,16 +396,16 @@ namespace casa
       Double feed1_pa=getPA(vb);
       if (abs(feed1_pa-last_pa_p) > pa_tolerance_p) 
 	{
-	  //  	 cout << "Utils: " << feed1_pa*57.295 << " " << last_pa_p*57.295 << " " << abs(feed1_pa-last_pa_p)*57.295 << " " << ttt*57.295 << " " << vb.time()(0)-4.51738e+09 << endl;
+	  // cout << "Utils: " << feed1_pa*57.295 << " " << last_pa_p*57.295 << " " << abs(feed1_pa-last_pa_p)*57.295 << endl;
 	  return true;
 	}
-      //     const Double feed2_pa=vb.feed2_pa()[row];
+      //const Double feed2_pa=vb.feed2_pa()[row];
       Double feed2_pa = getPA(vb);
       if (abs(feed2_pa-last_pa_p) > pa_tolerance_p) 
 	{
-	  //  	 cout << "Utils: " << feed2_pa*57.295 << " " 
-	  //  	      << last_pa_p*57.295 << " " 
-	  //  	      << abs(feed2_pa-last_pa_p)*57.295 << " " << ttt*57.295 << vb.time()(0)-4.51738e+09 <<endl;
+	   	 // cout << "Utils: " << feed2_pa*57.295 << " " 
+	   	 //      << last_pa_p*57.295 << " " 
+	   	 //      << abs(feed2_pa-last_pa_p)*57.295 << " " << endl;
 	  return true;
 	}
       return false;

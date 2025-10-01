@@ -30,79 +30,6 @@
 #include <libracore/MakeComponents.h>
 
 #include <coyote.h>
-
-//
-//--------------------------------------------------------------------------
-//
-PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
-					 const MeasurementSet& selectedMS,
-					 MSSelection& msSelection,
-					 const String& imageName,
-					 const Vector<Int>& imSize, const float& cellSize,
-					 const String& phaseCenter, const String& stokes,
-					 const String& refFreq)
-{
-  Vector<Quantity> qCellSize(2);
-  for (int i=0;i<2;i++)
-    {
-      String qUnit("arcsec");
-      qCellSize[i]=Quantity(cellSize, qUnit);
-    }
-  
-  int imStokes=1;
-  if (stokes=="I") imStokes=1;
-  else if (stokes=="IV") imStokes=2;
-  else if (stokes=="IQUV") imStokes=4;
-  
-  int imNChan=1;
-  
-  MDirection mphaseCenter;
-  mdFromString(mphaseCenter, phaseCenter);
-  
-  SynthesisParamsGrid gridParams;
-  SynthesisParamsImage imageParams;
-  imageParams.imageName=imageName;
-  imageParams.imsize=imSize;
-  imageParams.cellsize=qCellSize;
-  imageParams.phaseCenter = mphaseCenter;
-  imageParams.stokes=stokes;
-  imageParams.mode=String("mfs");
-  imageParams.frame=String("LSRK");
-  imageParams.veltype=String("radio");
-  
-  //
-  // There are two items related to ref. freq. "reffreq" (a String) and "refFreq" (a Quantity).
-  // Set them both.
-  //
-  if (refFreq != "")
-    {
-      imageParams.reffreq=refFreq;
-
-      // Parse the user string. It may be parse as a pure numerical
-      // value, or as a numerical value with units.
-      // If no units were provided, it is assumed to be Hz.
-      //
-      // refFreq element of the imageParams struct requires a Quantity
-      // in GHz units.  We provide it as such, without understanding
-      // why it is required in these units, or even why this element
-      // is required at all (given that imageParams.reffreq also
-      // exist which takes the frequency as a string).
-      try
-	{
-	  imageParams.refFreq=SynthesisUtils::makeFreqQuantity(refFreq,"GHz");
-	}
-      catch (AipsError& e)
-	{
-	  string msg("reffreq setting: "); msg+=e.what();
-	  throw(AipsError(msg));
-	}
-    }
-  
-  casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;
-  CoordinateSystem csys = imageParams.buildCoordinateSystem(vi2,makeTheChanSelMap(msSelection),msList);
-  IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
-  return PagedImage<Complex>(imshape, csys, imageParams.imageName);
-}
 //
 //--------------------------------------------------------------------------
 //
@@ -343,10 +270,14 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // This is inherited from ImageInterface so should be able to pass
 	  // an image interface object from it.
 	  //
-	  PagedImage<Complex> cgrid =
-	    makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
-				 imageName, imSize, cellSize, phaseCenter, 
-				 stokes, refFreqStr);
+	  // PagedImage<Complex> cgrid =
+	  //   makeEmptySkyImage4CF(*(db.vi2_l), db.selectedMS, db.msSelection, 
+	  // 			 imageName, imSize, cellSize, phaseCenter, 
+	  // 			 stokes, refFreqStr);
+	  TempImage<Complex> cgrid =
+	    makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection, 
+			      imageName, String(""),imSize, cellSize, phaseCenter, 
+			      stokes, refFreqStr,String("mfs"));
 	  //
 	  // Save the coordinate system in a record and make it persistent in
 	  // the CFCache.
@@ -354,7 +285,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  //	  String targetName=String(cfCacheName);
 	  ImageInformation<Complex> imInfo(cgrid,casacore::String(cfCacheName));
 	  imInfo.save();
-	  cgrid.table().markForDelete();
+	  //	  cgrid.table().markForDelete();
 	  
 	  //-------------------------------------------------------------------------------------------------
 	  
