@@ -1299,10 +1299,6 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
   void AWConvFunc::prepareConvFunction(const VisBuffer2& vb, VB2CFBMap& theMap)
   {
     if (aTerm_p->rotationallySymmetric() == false) return;
-    Int nRow=theMap.nelements();
-    // CountedPtr<CFBuffer> cfb, cbPtr;
-    // CountedPtr<CFCell>  cfc;
-    // CountedPtr<ATerm> aTerm_l=aTerm_p;
     CFBuffer *cfb, *cbPtr=0;
     CFCell  *cfc, *baseCFC=NULL;
     ATerm *aTerm_l=&*aTerm_p;
@@ -1315,6 +1311,7 @@ AWConvFunc::AWConvFunc(const casacore::CountedPtr<ATerm> aTerm,
     if (fabs(dPA) <= fabs(rotateCFOTFAngleRad_p)) return;
 
 
+    Int nRow=theMap.nelements();
 //     Int Nth=1;
 // #ifdef _OPENMP
 //     Nth=max(omp_get_max_threads()-2,1);

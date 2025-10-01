@@ -86,7 +86,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       std::tuple<bool,                   // If new CFs were loaded (reloadCFs)
 		 int,                    // The SPW ID for which the CFs were loaded
 		 hpg::CFSimpleIndexer,   // The corresponding CFSI.  This should be used in AWVRHPG to fill hpg::VisData
-		 std::shared_ptr<hpg::RWDeviceCFArray>> // The RWDeviceCFArray.  Use it if reloadCFs==true
+		 std::shared_ptr<hpg::RWDeviceCFArray>, // The RWDeviceCFArray.  Use it if reloadCFs==true
+		 std::vector<int>
+		 > 
       makeRWDArray(const bool& wbAWP, const int& nw,
 		   const ImageInterface<Float>& skyImage,
 		   const Vector<int>& polMap,
@@ -97,7 +99,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //
       //--------------------------------------------------------------------------------------------
       //
-      std::tuple<hpg::CFSimpleIndexer, std::shared_ptr<hpg::RWDeviceCFArray>>
+      std::tuple<hpg::CFSimpleIndexer,
+		 std::shared_ptr<hpg::RWDeviceCFArray>,
+		 std::vector<int>
+		 >
       makeRWDCFA_p(casa::refim::MyCFArrayShape& cfArrayShape,
 		   const double& vbPA, const double& imRefFreq,
 		   casa::refim::CFBuffer& cfb,

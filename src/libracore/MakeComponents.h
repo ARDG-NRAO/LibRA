@@ -30,6 +30,7 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/images/Images/ImageInterface.h>
 #include <casacore/images/Images/PagedImage.h>
+#include <casacore/images/Images/TempImage.h>
 #include <casacore/tables/TaQL/ExprNode.h>
 
 #include <synthesis/TransformMachines2/FTMachine.h>
@@ -299,7 +300,7 @@ makeTheChanSelMap(MSSelection& mss)
  * @param refFreq The reference frequency.
  * @return A PagedImage object representing the empty sky image.
  */
-inline PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
+inline TempImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
 				      const MeasurementSet& selectedMS,
 				      MSSelection& msSelection,
 				      const String& imageName, const String& startModelImageName,
@@ -361,7 +362,8 @@ inline PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
   casacore::Block<const casacore::MeasurementSet *> msList(1); msList[0]=&selectedMS;
   CoordinateSystem csys = imageParams.buildCoordinateSystem(vi2,makeTheChanSelMap(msSelection),msList);
   IPosition imshape(4,imSize(0),imSize(1),imStokes,imNChan);
-  return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
+  //  return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
+  return TempImage<Complex>(imshape, csys);
 }
 
 // // Get from UI

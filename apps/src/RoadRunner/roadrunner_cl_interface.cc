@@ -79,7 +79,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
   // else
   //   clRetry();
  REENTER:
-  try
+  //  try
     {
       SMap watchPoints; VString exposedKeys;
       int i;
@@ -110,6 +110,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       clSetOptions("weighting",{"natural","uniform","briggs"});
 
       i=1;clgetSValp("rmode", rmode,i);
+      clSetOptions("rmode",{"abs","norm", "none"});
+
       i=1;clgetValp("robust", robust,i);
 
       i=1;clgetValp("wprojplanes", nW,i);
@@ -130,7 +132,8 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       // Expose the datacolumn parameter only for mode=residual
       // exposedKeys.push_back("datacolumn");
       // watchPoints["residual"]=exposedKeys;
-      i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",{"weight","psf","snrpsf","residual","predict"});
+      std::vector<std::string> imagingModeOpts = {"weight","psf","snrpsf","residual","predict"};
+      i=1;clgetSValp("mode", imagingMode,i,watchPoints); clSetOptions("mode",imagingModeOpts);
 
       i=1;clgetValp("wbawp", WBAwp,i);
 
@@ -159,6 +162,11 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
      // do some input parameter checking now.
      string mesgs;
+     auto si=std::find(imagingModeOpts.begin(), imagingModeOpts.end(),imagingMode);
+     if ((si != imagingModeOpts.end()) && (imagingMode != "predict"))
+       if (imageName == "")
+	 mesgs += "Imaging mode="+imagingMode+" needs imagename to be set.\n";
+     
      if (CFCache == "")
        mesgs += "The cfcache parameter needs to be set.\n";
 
@@ -176,27 +184,13 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
      if (mesgs != "")
        clThrowUp(mesgs,"###Fatal", CL_FATAL);
-    }
-  catch (clError& x)
-    {
-      x << x << endl;
-      //      if (x.Severity() == CL_FATAL)
-	    exit(1);
-      //clRetry();
-      //RestartUI(REENTER);
-    }
-}
-//
-//-------------------------------------------------------------------------
-//
-// Moving the embedded MPI interfaces out of the (visual) way.  If
-// necessary in the future, MPI code should be implemented in a
-// separate class and this code appropriate re-factored to be used as
-// an API for MPI class.  Ideally, MPI code should not be part of the
-// roadrunner (application layer) code.
-//#include <synthesis/TransformMachines2/test/RR_MPI.h>
-//
 
+    }
+  // catch (clError& x)
+  //   {
+  //     if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
+  //   }
+}
 //
 //-------------------------------------------------------------------------
 // Experimantal code not yet working
@@ -229,9 +223,9 @@ int main(int argc, char **argv)
     imagingMode="residual",
     rmode="norm"; // set to "norm" to match rWeightor.h
 
-  float cellSize=0;//refFreq=3e09, freqBW=3e9;
+  float cellSize=0;
   float robust=0.0;
-  int NX=0, nW=1;//cfBufferSize=512, cfOversampling=20, nW=1;
+  int NX=0, nW=1;
   bool WBAwp=true;
   bool restartUI=false;
   bool doPointing=false;
@@ -269,6 +263,10 @@ int main(int argc, char **argv)
   catch(AipsError& er)
     {
       cerr << er.what() << endl;
+    }
+  catch(std::exception& e)
+    {
+      cerr << e.what() << endl;
     }
 
   // An example code below for extracting the info from RRRetrunType (a std::unordered_map).

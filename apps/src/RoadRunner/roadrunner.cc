@@ -62,6 +62,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 
   casacore::Vector<Int> wNdxList;
   casacore::Vector<Int> spwNdxList;
+  std::vector<int> cfShapeList;
   std::chrono::time_point<std::chrono::steady_clock>
     startMkCF=std::chrono::steady_clock::now();
   auto ret=
@@ -79,8 +80,11 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
   if (newCF)
     {
       casa::refim::MyCFArray cfArray;
+      cfShapeList = std::get<4>(ret);
       cerr << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << endl;
-      cerr << "CF W list: " << wNdxList << endl << "CF SPW List: " << spwNdxList << endl;
+      cerr << "CF W list: " << wNdxList << endl << "CF SPW List: " << spwNdxList << endl
+	   << "CF Shapes: ";
+      for(auto s : cfShapeList) cerr << s << " "; cerr << endl;
       cfsi_g = get<2>(ret);
 
       dcf_sptr = std::get<3>(ret);
@@ -433,16 +437,26 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // pc.print(oss);
       //      cerr << "PC = " << oss << endl;
 
-      PagedImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
+      TempImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
 						  cmplxGridName, startModelImageName,
 						  imSize, cellSize, phaseCenter,
 						  stokes, refFreqStr, mode);
       PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
 
-      cgrid.table().markForDelete();
-
+      // set the default of rmode to be "norm"
+      if (rmode =="")
+        rmode = "norm";
+      // put the guard here so in the UI() users don't need to correct `rmode` if they don't know how to
+      if (rmode != "norm")
+      {
+        log_l << "'rmode' parameter is not set to 'norm'. Please verify this is intentional." << LogIO::WARN;
+        log_l << "For Briggs weighting, `rmode` is automatically set to `norm` to ensure the robust parameter functions correctly." << LogIO::WARN;
+      }
       if (weighting == "briggs" && rmode !="norm")
-        throw(AipsError("Ensure `rmode` is set correctly. For Briggs weighting, use `rmode = norm` for the robust parameter to take effect."));
+        rmode = "norm";
+        
+
+      //      cgrid.table().markForDelete();
 
       // Setup the weighting scheme in the supplied VI2
       weightor(*(db.vi2_l),
