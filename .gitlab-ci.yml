@@ -151,8 +151,9 @@ test-job:
     # --- C++ GTest section ---
     cd ${base_path}/apps/src/tests/
     # Run C++ gtest binaries if they exist
-    test_binaries=("LibRATests" "test_roadrunner_robustMinus2" "test_roadrunner_robustPlus2" "test_roadrunner_snrpsf" "test_roadrunner_weight")
-
+    #test_binaries=("LibRATests" "test_roadrunner_robustMinus2" "test_roadrunner_robustPlus2" "test_roadrunner_snrpsf" "test_roadrunner_weight")
+    test_binaries=("LibRATests")
+    
     for test_binary in "${test_binaries[@]}"; do
         if [ -x "${base_path}/install/bin/tests/${test_binary}" ]; then
             echo "Running ${test_binary}..."

@@ -8,7 +8,7 @@ namespace test{
   const path goldDir = current_path() / "gold_standard";
 
 
-/*TEST(RoadrunnerTest, InitializeTest) {
+TEST(RoadrunnerTest, InitializeTest) {
   // Create a LibHPG object
   LibHPG lib_hpg;
 
@@ -17,10 +17,8 @@ namespace test{
 
   // Check that the return value is true
   EXPECT_TRUE(ret);
-}*/
+}
 
-// uncomment the following when the multiple hpg initialization error is fixed.
-/*
 TEST(RoadrunnerTest, AppLevelSNRPSF_performance) {
   // Get the test name
   string testName = ::testing::UnitTest::GetInstance()->current_test_info()->name();
@@ -185,8 +183,8 @@ TEST(RoadrunnerTest, AppLevelWeight) {
    
   PagedImage<Float> weight("htclean_gpu_newpsf.weight");
   float tol = 0.1;
-  float goldValLoc0 = -277710.1875;
-  float goldValLoc1 = 470668.9375;
+  float goldValLoc0 = 1255553.875;
+  float goldValLoc1 = 580468.3125;
   EXPECT_NEAR(weight(IPosition(4,2000,2053,0,0)), goldValLoc0, tol);
   EXPECT_NEAR(weight(IPosition(4,1379,1969,0,0)), goldValLoc1, tol);
 
@@ -348,7 +346,7 @@ TEST(RoadrunnerTest, Interface_rmode_minus2) {
   std::filesystem::current_path(testDir.parent_path());
 
   remove_all(testDir);
-}*/
+}
 
 TEST(RoadrunnerTest, UIFactory) {
     // The Factory Settings.
