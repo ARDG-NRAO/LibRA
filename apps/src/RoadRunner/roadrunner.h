@@ -115,7 +115,8 @@ public:
    * @brief Constructor for the LibHPG class.
    * @param usingHPG A boolean indicating whether to use HPG. Default is true.
    */
-  LibHPG(const bool usingHPG=true): init_hpg(usingHPG)
+  LibHPG(const bool usingHPG=true, std::ostream* os=nullptr):
+    init_hpg(usingHPG),hpg_initialized(false),os_p(os)
   {
     initialize();
   }
@@ -125,43 +126,65 @@ public:
    */
   bool initialize()
   {
-    bool ret = true;
     startTime = std::chrono::steady_clock::now();
-#ifdef ROADRUNNER_USE_HPG
-    if (init_hpg) ret = hpg::initialize();
-#endif
-    if (!ret)
-      throw(AipsError("LibHPG::initialize() failed"));
-    return ret;
-  };
-  /**
-   * @brief Finalizes the HPG library.
-   */
-  void finalize()
-  {
+
+    hpg_initialized=true;
 #ifdef ROADRUNNER_USE_HPG
     if (init_hpg)
       {
-	cerr << endl << "CALLING hpg::finalize()" << endl;
-	hpg::finalize();
-      }	
+	static bool once = [&]
+			   {
+			     assert(!hpg::is_finalized());
+			     if (!hpg::is_initialized())
+			       {
+				 hpg_initialized=hpg::initialize();
+				 // cerr << "LibHPG:: hpg::initialize() called" << endl;
+				 // Kokkos::push_finalize_hook([]() {
+				 // 	 cerr << "Kokkos::finalize() called" << endl;
+				 // });
+				 std::atexit(hpg::finalize);
+			       }
+			     return hpg_initialized;
+			   }();
+      } 
+   assert(hpg::is_intialized);
 #endif
+    return hpg_initialized;
   };
+
+  //
+  // @brief Return the internal state variable to indicate if the
+  // hpg::initialize() method was called.
+  //
+  bool hpg_intialize_called() {return hpg_initialized;}
+  
+  //
+  // @brief Return the total time elasped since the class constructor was called.
+  //
+  double runtime()
+  {
+    auto endTime = std::chrono::steady_clock::now();
+    std::chrono::duration<double> totalRuntime = endTime - startTime;
+    return totalRuntime.count();
+  }
   /**
    * @brief Destructor for the LibHPG class.
+   *
+   * If an output stream is give, this also prints the total runtime
+   * on that stream.
    */
   ~LibHPG()
   {
-    finalize();
-
-    auto endTime = std::chrono::steady_clock::now();
-    std::chrono::duration<double> runtime = endTime - startTime;
-    std::cerr << "roadrunner runtime: " << runtime.count()
-	      << " sec" << std::endl;
+    if (os_p != nullptr)
+      (*os_p) << "roadrunner runtime: "
+	      << std::fixed << std::setprecision(2)
+	      << runtime() << " sec" << std::endl;
   };
 
   std::chrono::time_point<std::chrono::steady_clock> startTime;
   bool init_hpg;
+  bool hpg_initialized;
+  std::ostream *os_p;
 };
 //
 //-------------------------------------------------------------------------
@@ -225,8 +248,6 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::Vector<int>& spwidList,
 	      casacore::Vector<double>& spwRefFreqList,
 	      int& nDataPol);
-
-
 
 //--------------------------------------------------------------------------------------------
 // Place-holder functions to build the appropriate Mueller index
@@ -337,4 +358,3 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
 
 #endif
-

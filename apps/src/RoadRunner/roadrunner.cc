@@ -339,13 +339,24 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		bool& conjBeams, float& pbLimit, vector<float>& posigdev,
 		bool& doSPWDataIter) -> RRReturnType
 {
-  LogFilter filter(LogMessage::NORMAL);
-  LogSink::globalSink().filter(filter);
+  // LogFilter filter(LogMessage::NORMAL);
+  // LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
   RRReturnType rrr;
 
   try
     {
+      // set the default of rmode to be "norm"
+      if (rmode =="")
+        rmode = "norm";
+
+      // put the guard here so in the UI() users don't need to correct `rmode` if they don't know how to
+      if (weighting == "briggs" && rmode !="norm")
+	{
+	  log_l << "'rmode' parameter set to 'norm' for Briggs weighting to function correctly"
+		<<  LogIO::WARN << LogIO::POST;
+	  rmode = "norm";
+	}
       // Set safe defaults...
       casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
       if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
@@ -368,7 +379,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
       // scope.
-      LibHPG libhpg(ftmName=="awphpg");
+      LibHPG libhpg(ftmName=="awphpg",&std::cerr);
       //  std::atexit(tpl_finalize);
 
       bool const doSow = sowImageExt != "";
@@ -442,19 +453,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 						  imSize, cellSize, phaseCenter,
 						  stokes, refFreqStr, mode);
       PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
-
-      // set the default of rmode to be "norm"
-      if (rmode =="")
-        rmode = "norm";
-      // put the guard here so in the UI() users don't need to correct `rmode` if they don't know how to
-      if (rmode != "norm")
-      {
-        log_l << "'rmode' parameter is not set to 'norm'. Please verify this is intentional." << LogIO::WARN;
-        log_l << "For Briggs weighting, `rmode` is automatically set to `norm` to ensure the robust parameter functions correctly." << LogIO::WARN;
-      }
-      if (weighting == "briggs" && rmode !="norm")
-        rmode = "norm";
-        
 
       //      cgrid.table().markForDelete();
 
