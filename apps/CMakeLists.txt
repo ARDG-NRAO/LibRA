@@ -70,8 +70,9 @@ set(CMAKE_C_FLAGS "${OPT} -std=c++11 -DUseCasacoreNamespace -Wno-deprecated \
            -DDBUS_CPP=1  -Dlibcasadbus_EXPORTS"                             
 )                                    
 
-pkg_check_modules(WCSLIB REQUIRED wcslib)
-pkg_check_modules(CFITSIO REQUIRED cfitsio)
+find_package(WCSLIB REQUIRED)
+find_package(CFITSIO REQUIRED)
+find_package(Kokkos REQUIRED)
 
 set(APP_LINK_LIBRARIES
   casacpp_synthesis
@@ -79,7 +80,6 @@ set(APP_LINK_LIBRARIES
   librautils
   libracore
   hpg
-  kokkoscore
   casa_msfits
   casa_ms
   casa_images
@@ -93,6 +93,9 @@ set(APP_LINK_LIBRARIES
   casa_casa
   pthread
   parafeed
+  Kokkos::kokkos
+  wcslib::wcs
+  CFITSIO::CFITSIO
   GSL::gsl
   GSL::gslcblas
   m
@@ -108,13 +111,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/../src
   # for mdspan
   ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
-  ${WCSLIB_INCLUDEDIR}
-  ${CFITSIO_INCLUDEDIR}
   )
 
 link_directories(${CMAKE_INSTALL_PREFIX}/lib
-  ${WCSLIB_LIBRARY_DIRS}
-  ${CFITSIO_LIBRARY_DIRS}
   )
 
 

@@ -43,7 +43,7 @@ target_sources(${LIB_NAME}
 
 # External dependencies
 # directory where casacore is installed
-target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::CASACORE)
+target_link_libraries(${LIB_NAME} PUBLIC ${CASACORE_LIBRARIES})
 # OpenMP dependency
 #target_link_libraries(${LIB_NAME} PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency

@@ -24,6 +24,9 @@
 # Apps component
 include(ExternalProject)
 
+# Find WCSLIB for passing to Apps
+find_package(WCSLIB REQUIRED)
+
 # Build dependency list based on enabled features
 set(APPS_DEPENDS Casacpp Hpg Parafeed Casacore Pybind11)
 set(APPS_CMAKE_PREFIX_PATH ${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos)
@@ -31,6 +34,11 @@ if(LIBRA_BUILD_TESTING)
   list(APPEND APPS_DEPENDS GTest)
   set(APPS_CMAKE_PREFIX_PATH ${APPS_CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/GTest)
 endif()
+
+# Debug output
+message(STATUS "Apps.cmake: WCSLIB_FOUND = ${WCSLIB_FOUND}")
+message(STATUS "Apps.cmake: WCSLIB_INCLUDE_DIRS = ${WCSLIB_INCLUDE_DIRS}")
+message(STATUS "Apps.cmake: WCSLIB_LIBRARIES = ${WCSLIB_LIBRARIES}")
 
 ExternalProject_Add(
   Apps
@@ -46,9 +54,14 @@ ExternalProject_Add(
       -DCMAKE_INSTALL_LIBDIR=lib
       -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
       -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
+      -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
+      -DCMAKE_MODULE_PATH=<SOURCE_DIR>/../cmake/modules
       -DCMAKE_PREFIX_PATH=${APPS_CMAKE_PREFIX_PATH}
       -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
+      -DWCSLIB_INCLUDE_DIRS=${WCSLIB_INCLUDE_DIRS}
+      -DWCSLIB_LIBRARIES=${WCSLIB_LIBRARIES}
+      -DWCSLIB_FOUND=${WCSLIB_FOUND}
       ${KOKKOS_WRAPPER_FLAGS}
       ${SPACK_FLAGS}
   BUILD_COMMAND   make -j${NCORES}

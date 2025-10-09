@@ -19,8 +19,7 @@ set(CMAKE_CXX_STANDARD 17)
 project(librautils)
 
 find_package(Kokkos REQUIRED)
-include(FindPkgConfig)
-pkg_check_modules(WCSLIB REQUIRED wcslib)
+find_package(WCSLIB REQUIRED)
 
 
 
@@ -44,7 +43,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${WCSLIB_INCLUDEDIR}
+  ${WCSLIB_INCLUDE_DIRS}
 )
 
 # Install library and public headers to include/librautils

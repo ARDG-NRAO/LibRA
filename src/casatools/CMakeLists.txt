@@ -23,7 +23,7 @@
 declare_casacpp_component("casatools")
 
 # External dependencies
-target_link_libraries(casacpp_casatools PUBLIC PkgConfig::CASACORE)
+target_link_libraries(casacpp_casatools PUBLIC ${CASACORE_LIBRARIES})
 if (CMAKE_USE_GRPC)
 #   target_link_libraries(casacpp_casatools PRIVATE casacpp_protobuf)
 # else()

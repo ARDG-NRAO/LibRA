@@ -17,10 +17,6 @@ variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
   CCACHE_DIR: "${CI_BUILDS_DIR}/ccache"
   GIT_CLEAN_FLAGS: none
-  SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-persistent"
-  SPACK_TEST_BASE_ENV: "spack-test-base"
-  LIBRA_TEST_ENV: "libra-test-${CI_PIPELINE_ID}"
-  SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
 
 cache:
   - key: ccache-global
@@ -75,9 +71,6 @@ build-job:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
     - export CCACHE_MAXSIZE=5G
-    # Ensure ccache is used by cmake
-    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-    - export CMAKE_C_COMPILER_LAUNCHER=ccache
     - mkdir -p $CCACHE_DIR
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
     - ccache --show-stats || true
@@ -100,7 +93,7 @@ build-job:
     - which nvcc
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make
   after_script:
     - echo "=== ccache statistics ==="
@@ -191,6 +184,11 @@ test-job:
 spack-test:
   needs: []
   stage: spack-test
+  variables:
+    SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-persistent"
+    SPACK_TEST_BASE_ENV: "spack-test-base"
+    LIBRA_TEST_ENV: "libra-test-${CI_PIPELINE_ID}"
+    SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
@@ -361,27 +359,25 @@ manual-trigger:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
     - export CCACHE_MAXSIZE=2G
-    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-    - export CMAKE_C_COMPILER_LAUNCHER=ccache
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
     - mkdir -p $CCACHE_DIR
     - ccache --show-stats || true
     - git clean -ffdx
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
     - make -j$(nproc)
     - ccache --show-stats || true
   when: manual
   only:
     - branches
-  allow_failure: false
+  allow_failure: true
 
 manual-cpu-only:
   stage: build
   rules:
     - when: manual
-  allow_failure: false
+  allow_failure: true
   before_script:
     # Ensure submodules are in sync with the index
     - git submodule sync
@@ -389,9 +385,6 @@ manual-cpu-only:
     - export CCACHE_BASEDIR="$PWD"
     - export CCACHE_COMPILERCHECK=content
     - export CCACHE_MAXSIZE=5G
-    # Ensure ccache is used by cmake
-    - export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-    - export CMAKE_C_COMPILER_LAUNCHER=ccache
     - mkdir -p $CCACHE_DIR
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
     - ccache --show-stats || true
@@ -404,7 +397,7 @@ manual-cpu-only:
     - echo "=== Building without CUDA ==="
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DLIBRA_DISABLE_CUDA=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache ..
+    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DLIBRA_DISABLE_CUDA=ON ..
     - make -j$(nproc)
   after_script:
     - echo "=== ccache statistics ==="
@@ -416,5 +409,5 @@ manual-spack:
   when: manual
   rules:
     - when: manual
-  allow_failure: false
+  allow_failure: true
 

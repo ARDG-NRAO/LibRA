@@ -22,8 +22,8 @@
 #                        Socorro, NM - 87801, USA
 #
 # Casacpp external project
-include(FindPkgConfig)
-pkg_check_modules(GSL REQUIRED gsl)
+find_package(GSL REQUIRED)
+find_package(WCSLIB REQUIRED)
 include(ExternalProject)
 
 if (LIBRA_USE_LIBSAKURA)
@@ -31,6 +31,11 @@ if (LIBRA_USE_LIBSAKURA)
 else()
   set(SAKURA_DEPENDENCE "")
 endif()
+
+# Debug output
+message(STATUS "Casacpp.cmake: WCSLIB_FOUND = ${WCSLIB_FOUND}")
+message(STATUS "Casacpp.cmake: WCSLIB_INCLUDE_DIRS = ${WCSLIB_INCLUDE_DIRS}")
+message(STATUS "Casacpp.cmake: WCSLIB_LIBRARIES = ${WCSLIB_LIBRARIES}")
 
 ExternalProject_Add(
   Casacpp
@@ -48,12 +53,16 @@ ExternalProject_Add(
     -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
     -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
     ${KOKKOS_WRAPPER_FLAGS}
-    -DCMAKE_MODULE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/src/cmake
+    -DCMAKE_MODULE_PATH=<SOURCE_DIR>/../cmake/modules
     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
+    -DCASACORE_ROOT_DIR=${INSTALL_DIR}
     -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
-    -DGSL_INCLUDE_DIR=${GSL_INCLUDEDIR}
-    -DGSL_LIBRARY=${GSL_LIBRARY_DIRS}
-    -DGSL_CBLAS_LIBRARY=${GSL_LIBRARY_DIRS}
+    -DGSL_INCLUDE_DIR=${GSL_INCLUDE_DIRS}
+    -DGSL_LIBRARY=${GSL_LIBRARIES}
+    -DGSL_CBLAS_LIBRARY=${GSL_LIBRARIES}
+    -DWCSLIB_INCLUDE_DIRS=${WCSLIB_INCLUDE_DIRS}
+    -DWCSLIB_LIBRARIES=${WCSLIB_LIBRARIES}
+    -DWCSLIB_FOUND=${WCSLIB_FOUND}
     ${SPACK_FLAGS}
   BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
   INSTALL_COMMAND make install
