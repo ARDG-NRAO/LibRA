@@ -23,7 +23,7 @@
 declare_casacpp_component("casa_sakura")
 
 # External dependencies
-target_link_libraries(casacpp_casa_sakura PUBLIC PkgConfig::CASACORE)
+target_link_libraries(casacpp_casa_sakura PUBLIC ${CASACORE_LIBRARIES})
 target_link_libraries(casacpp_casa_sakura PUBLIC PkgConfig::SAKURA)
 
 # Internal dependencies

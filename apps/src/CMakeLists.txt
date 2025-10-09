@@ -5,7 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 set(OPT "-g -O2 ")
 
 # Find required packages
-find_package(Kokkos REQUIRED)
+# find_package(Kokkos REQUIRED)
 find_package(parafeed REQUIRED)
 find_package(pybind11 REQUIRED)
 

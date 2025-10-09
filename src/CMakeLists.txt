@@ -32,12 +32,8 @@ project(
   LANGUAGES CXX Fortran C)
 
 # Add directory with additional macros
-#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-if(NOT CMAKE_MODULE_PATH)
-  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-else()
-  set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
-endif()
+# Preserve any MODULE_PATH passed in from parent, then append local cmake dir
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(DeclareCasacppComponent)
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
@@ -63,7 +59,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(MPI)
 
 # casacore dependency
-pkg_check_modules(CASACORE REQUIRED IMPORTED_TARGET casacore)
+find_package(Casacore REQUIRED COMPONENTS casa coordinates derivedmscal fits images lattices meas measures mirlib ms msfits scimath scimath_f tables)
+include_directories(${CASACORE_INCLUDE_DIRS})
 
 # Find BISON, FLEX
 find_package(BISON REQUIRED)
@@ -86,20 +83,18 @@ if (CMAKE_USE_GRPC)
 endif()
 
 # GSL dependency
-include(FindPkgConfig)
-pkg_check_modules(GSL REQUIRED gsl)
 find_package(GSL REQUIRED)
 
 if (CMAKE_PYTHON_INTERFACE)
   # LIBXML dependecy
-  pkg_check_modules(LibXML++ REQUIRED IMPORTED_TARGET libxml++-2.6)
+  find_package(LibXML++ REQUIRED)
 
   # LIBXSLT dependecy
-  pkg_check_modules(XSLT REQUIRED IMPORTED_TARGET libxslt)
+  find_package(LibXSLT REQUIRED)
 endif()
 
 # CFITSIO dependecy
-pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
+find_package(CFITSIO REQUIRED)
 
 # sqllite3 dependency
 #find_package(SQLite3 REQUIRED)
@@ -126,6 +121,18 @@ find_package(parafeed REQUIRED)
 
 #pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
+# WCSLIB Check
+# Check if WCSLIB variables were passed from parent
+if(DEFINED WCSLIB_INCLUDE_DIRS AND DEFINED WCSLIB_LIBRARIES)
+  message(STATUS "Using WCSLIB from parent: ${WCSLIB_INCLUDE_DIRS}")
+  include_directories(${WCSLIB_INCLUDE_DIRS})
+else()
+  # Try to find it ourselves
+  find_package(WCSLIB REQUIRED)
+  if(WCSLIB_FOUND)
+    include_directories(${WCSLIB_INCLUDE_DIRS})
+  endif()
+endif()
 
 if (LIBRA_USE_LIBSAKURA)
   set(CASA_SAKURA "casa_sakura")

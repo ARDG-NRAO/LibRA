@@ -20,8 +20,7 @@ set(CMAKE_CXX_STANDARD 17)
 project(libracore)
 
 set(MDSPAN_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include") # Adjust this path if your mdspan headers are elsewhere
-include(FindPkgConfig)
-pkg_check_modules(WCSLIB REQUIRED wcslib)
+find_package(WCSLIB REQUIRED)
 
 
 message(STATUS "Using mdspan include directory: ${MDSPAN_INCLUDE_DIR}")
@@ -64,7 +63,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${WCSLIB_INCLUDEDIR}
+  ${WCSLIB_INCLUDE_DIRS}
 )
 
 # Install library and public headers to include/libracore
@@ -84,7 +83,7 @@ target_include_directories(testmdspan PRIVATE
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${WCSLIB_INCLUDEDIR}
+  ${WCSLIB_INCLUDE_DIRS}
 )
 target_link_libraries(testmdspan PRIVATE
   libracore
@@ -105,7 +104,7 @@ target_include_directories(testLibracoreTypes PRIVATE
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
   ${CMAKE_INSTALL_PREFIX}/include
-  ${WCSLIB_INCLUDEDIR}
+  ${WCSLIB_INCLUDE_DIRS}
 )
 target_link_libraries(testLibracoreTypes PRIVATE
   libracore

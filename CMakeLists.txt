@@ -1,37 +1,25 @@
-#-*- cmake -*-
-# Copyright (C) 2025
-# Associated Universities, Inc. Washington DC, USA.
-#
-# This library is free software; you can redistribute it and/or modify it
-# under the terms of the GNU Library General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or (at your
-# option) any later version.
-#
-# This library is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
-# License for more details.is
-#
-# You should have received a copy of the GNU Library General Public License
-# along with this library; if not, write to the Free Software Foundation,
-# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
-#
-# Correspondence concerning this should be addressed as follows:
-#        Postal address: National Radio Astronomy Observatory
-#                        1003 Lopezville Road,
-#                        Socorro, NM - 87801, USA
-#
+# LibRA Main CMakeLists.txt - Clean modular approach
+# Copyright 2025 Associated Universities, Inc. Washington DC, USA.
 
 cmake_minimum_required(VERSION 3.18)
 project("LibRA Apps"
-  DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
-  HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
-  LANGUAGES CXX Fortran C)
+    DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
+    HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
+    LANGUAGES CXX Fortran C)
 
 
 
 # Path and directory setup
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
+message("================ Top-level CMAKE_MODULE_PATH after paths.cmake ================")
+message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+message("Testing if FindWCSLIB.cmake can be found...")
+find_file(WCSLIB_FIND_MODULE FindWCSLIB.cmake PATHS ${CMAKE_MODULE_PATH})
+message("FindWCSLIB.cmake found at: ${WCSLIB_FIND_MODULE}")
+message("Testing find_package(WCSLIB) at top level...")
+find_package(WCSLIB QUIET)
+message("Top-level WCSLIB_FOUND: ${WCSLIB_FOUND}")
+message("================ End MODULE_PATH debug ================")
 
 # Load project configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)
@@ -44,7 +32,6 @@ endif()
 # Print summary of machine and LIBRA configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PrintLibraSummary.cmake)
 print_libra_summary()
-
 
 # Include dependencies
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Kokkos.cmake)

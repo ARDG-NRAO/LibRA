@@ -146,10 +146,10 @@ void casacore_asp_mdspan(std::string& imageName, std::string& modelImageName,
       float CycleFactor = 1.0;
       
       Float psffraction = MaxPsfSidelobe * CycleFactor;
-      psffraction = max(psffraction, minpsffraction);
-      psffraction = min(psffraction, maxpsffraction);
+      psffraction = std::max(psffraction, minpsffraction);
+      psffraction = std::min(psffraction, maxpsffraction);
       Float cyclethreshold = PeakResidual * psffraction;
-      threshold = max(threshold, cyclethreshold);   
+      threshold = std::max(threshold, cyclethreshold);
 
       //std::cout << "MaxPsfSidelobe " << MaxPsfSidelobe << " threshold " << threshold << endl;
 
