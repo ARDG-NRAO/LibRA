@@ -26,7 +26,7 @@ configure and execute the algorithms from a Linux shell.  The
 low-level algorithms exposed by these interfaces are factorized to be
 used as components in a higher-level _generalized_ **[Alogrithm Architecture (S. Bhatnagar, U. Rau, M. Hsieh, J. Kern, and R. Xue, AJ 170 246, 2025)](https://doi.org/10.3847/1538-3881/adfe61).**
 
-**[This page](doc/AlgoArch/README.md) is meant for a condensed description of the architecture -- though this page is still under construction.**
+**[This page](doc/AlgoArch/README.md) is meant for a condensed description of the architecture.  This page is still under construction.**
 
 Interferometric radio telescopes are indirect imaging devices which
 collect data in the Fourier domain. Transforming the raw data from
