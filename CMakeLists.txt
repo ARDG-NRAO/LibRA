@@ -11,7 +11,7 @@ project("LibRA Apps"
 
 # Path and directory setup
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/paths.cmake)
-message("================ Top-level CMAKE_MODULE_PATH after paths.cmake ================")
+# message("================ Top-level CMAKE_MODULE_PATH after paths.cmake ================")
 message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 message("Testing if FindWCSLIB.cmake can be found...")
 find_file(WCSLIB_FIND_MODULE FindWCSLIB.cmake PATHS ${CMAKE_MODULE_PATH})
@@ -19,7 +19,7 @@ message("FindWCSLIB.cmake found at: ${WCSLIB_FIND_MODULE}")
 message("Testing find_package(WCSLIB) at top level...")
 find_package(WCSLIB QUIET)
 message("Top-level WCSLIB_FOUND: ${WCSLIB_FOUND}")
-message("================ End MODULE_PATH debug ================")
+# message("================ End MODULE_PATH debug ================")
 
 # Load project configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)

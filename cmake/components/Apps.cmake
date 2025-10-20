@@ -26,6 +26,7 @@ include(ExternalProject)
 
 # Find WCSLIB for passing to Apps
 find_package(WCSLIB REQUIRED)
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
 # Build dependency list based on enabled features
 set(APPS_DEPENDS Casacpp Hpg Parafeed Casacore Pybind11)
