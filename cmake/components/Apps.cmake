@@ -26,7 +26,8 @@ include(ExternalProject)
 
 # Find WCSLIB for passing to Apps
 find_package(WCSLIB REQUIRED)
-find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
+# Turn this on only when debugging on TACC
+#find_package(Python3 3.6 COMPONENTS Interpreter Development REQUIRED)
 
 # Build dependency list based on enabled features
 set(APPS_DEPENDS Casacpp Hpg Parafeed Casacore Pybind11)
