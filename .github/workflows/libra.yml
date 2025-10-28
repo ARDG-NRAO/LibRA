@@ -53,6 +53,7 @@ jobs:
           base_path=$PWD
           echo "Entering $PWD/apps/src/tests to run apps unit tests"
           cd ${base_path}/apps/src/tests
+          export LD_LIBRARY_PATH=${base_path}/install/lib:$LD_LIBRARY_PATH
           ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
 
       - name: Upload test report
