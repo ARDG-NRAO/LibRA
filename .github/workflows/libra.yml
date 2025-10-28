@@ -38,7 +38,7 @@ jobs:
           which nvcc
           mkdir build
           cd build
-          cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+          cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
           make
           echo "Compilation complete."
 

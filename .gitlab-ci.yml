@@ -93,7 +93,7 @@ build-job:
     - which nvcc
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
     - make
   after_script:
     - echo "=== ccache statistics ==="
@@ -365,7 +365,7 @@ manual-trigger:
     - git clean -ffdx
     - mkdir -p build
     - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=Kokkos_ARCH_VOLTA70 ..
+    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
     - make -j$(nproc)
     - ccache --show-stats || true
   when: manual
