@@ -25,10 +25,12 @@
 include(ExternalProject)
 
 if(NOT "${Kokkos_CUDA_ARCH_NAME}" STREQUAL "")
-  set(Kokkos_CUDA_ARCH_NAME_OPT "-D${Kokkos_CUDA_ARCH_NAME}=ON")
+  set(Kokkos_CUDA_ARCH_NAME_OPT "-DKokkos_ARCH_${Kokkos_CUDA_ARCH_NAME}=ON")
 else()
+  message(WARNING "CUDA arch name not specified.\nAn attempt will be made to determine CUDA arch.\nCUDA arch name can be sepcified with CLI option -DKokkos_CUDA_ARCH_NAME=<NAME> (recommended).")
   set(Kokkos_CUDA_ARCH_NAME_OPT "")
 endif()
+
 ExternalProject_Add(
   Kokkos
   GIT_REPOSITORY ${LIBRA_KOKKOS_GIT_REPOSITORY}
