@@ -33,7 +33,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   //else
   // clRetry();
-  REENTER:
+  //REENTER:
   try
     {
       int i;
@@ -71,6 +71,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
 }
 
+#ifndef MSSPLIT_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
   Bool deepCopy=0;
   Bool restartUI=False;
 
- REENTER:// UI re-entry point.
+ //REENTER:// UI re-entry point.
   //
   //---------------------------------------------------
   //
@@ -134,7 +135,8 @@ int main(int argc, char **argv)
   }
 
   showTableCache();
-  //if (restartUI) 
+  //if (restartUI)
   //restartUI=True;
   //RestartUI(REENTER);
 }
+#endif // MSSPLIT_LIBRARY_BUILD

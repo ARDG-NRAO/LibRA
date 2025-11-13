@@ -78,7 +78,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       }
   // else
   //   clRetry();
- REENTER:
+  // REENTER:
   //  try
     {
       SMap watchPoints; VString exposedKeys;
@@ -210,6 +210,8 @@ static const string defaultFtmName = "awphpg";
 #else // !ROADRUNNER_USE_HPG
 static const string defaultFtmName = "awproject";
 #endif // ROADRUNNER_USE_HPG
+
+#ifndef ROADRUNNER_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -273,3 +275,4 @@ int main(int argc, char **argv)
   //  cerr << rrr[MAKEVB_TIME] << " " << rrr[NVIS] << " " << rrr[DATA_VOLUME] << " " << rrr[IMAGING_RATE] << " " << rrr[NVIS]/rrr[CUMULATIVE_GRIDDING_ENGINE_TIME] << " vis/sec" << endl;
   return 0;
 }
+#endif // ROADRUNNER_LIBRARY_BUILD

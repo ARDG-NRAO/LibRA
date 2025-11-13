@@ -124,7 +124,7 @@ namespace casa{
 	  << grid_size[0] << " " << grid_size[1] << " "
 	  << grid_size[2] << " " << grid_size[3] << " " << LogIO::POST;
     
-    if (!hpg::is_initialized()) hpg::initialize();
+    if (!hpg::is_initialized()) hpg::initialize(false);
     
     
     {

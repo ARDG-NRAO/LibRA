@@ -38,9 +38,9 @@ set(CASA_BUILD_TYPE "RelWithDebInfo")
 # External project repositories and tags
 
 set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
-set(LIBRA_KOKKOS_GIT_TAG          "4.6.01")
+set(LIBRA_KOKKOS_GIT_TAG          "4.7.01")
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
-set(LIBRA_HPG_GIT_TAG             "v3.0.3")
+set(LIBRA_HPG_GIT_TAG             "v3.3.0")
 set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/casacore/casacore.git")
 set(LIBRA_CASACORE_GIT_TAG        "v3.7.1")
 set(LIBRA_PARAFEED_GIT_REPOSITORY "https://github.com/sanbee/parafeed.git")

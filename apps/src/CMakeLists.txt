@@ -35,6 +35,8 @@ foreach (APP_DIR IN LISTS APP_LIST)
   # Build individual CLI interface library for unit tests if the source file exists
   if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
    add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_DIR}/${APP_NAME}_cl_interface.cc")
+   string(TOUPPER ${APP_NAME} APP_NAME_UPPER)
+   target_compile_definitions(${APP_NAME}_cl_interface PRIVATE ${APP_NAME_UPPER}_LIBRARY_BUILD)
    target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_LINK_LIBRARIES} libra "-Wl,--disable-new-dtags")
    install(TARGETS ${APP_NAME}_cl_interface
     LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")

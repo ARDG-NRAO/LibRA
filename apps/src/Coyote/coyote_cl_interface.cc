@@ -71,7 +71,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
     }
   // else
   //   clRetry();
- REENTER:
   try
     {
       SMap watchPoints; VString exposedKeys;
@@ -151,6 +150,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 //
 //--------------------------------------------------------------------------
 //
+#ifndef COYOTE_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -215,6 +215,7 @@ int main(int argc, char **argv)
     }
   return 0;
 }
+#endif // COYOTE_LIBRARY_BUILD
 //
 //--------------------------------------------------------------------------
 //

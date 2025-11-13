@@ -77,6 +77,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 //
 //-------------------------------------------------------------------------
 //
+#ifndef ACME_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -118,3 +119,4 @@ int main(int argc, char **argv)
     }
   //  if (restartUI) RestartUI(RENTER);
 }
+#endif // ACME_LIBRARY_BUILD

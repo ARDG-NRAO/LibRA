@@ -28,13 +28,12 @@
 //
 //================================================================================
 //
-#define ROADRUNNER_USE_HPG
+#define LIBRA_USE_HPG
 #include <libracore/rWeightor.h>
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 #include <libracore/MakeComponents.h>
 #include <roadrunner.h>
-#include <librautils/utils.h>
 
 #include <stdexcept>
 
@@ -82,7 +81,8 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
       casa::refim::MyCFArray cfArray;
       cfShapeList = std::get<4>(ret);
       cerr << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << endl;
-      cerr << "CF W list: " << wNdxList << endl << "CF SPW List: " << spwNdxList << endl
+      cerr //<< "CF W list: " << wNdxList << endl
+	   << "CF SPW List: " << spwNdxList << endl
 	   << "CF Shapes: ";
       for(auto s : cfShapeList) cerr << s << " "; cerr << endl;
       cfsi_g = get<2>(ret);
@@ -380,7 +380,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // And hpg::finalize() is called when this instance goes out of
       // scope.
       LibHPG libhpg(ftmName=="awphpg",&std::cerr);
-      //  std::atexit(tpl_finalize);
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert
@@ -425,7 +424,9 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 			  ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
 			  ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
 			  )
-			throw(AipsError("MS verification error: The requested data column (\""+dataColumnName+"\") for mode="+imagingMode+" not found.  Bailing out."));
+			throw(AipsError("MS verification error: "
+					"The requested data column (\""+dataColumnName+"\") for mode="
+					+imagingMode+" not found.  Bailing out."));
 		    };
 
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,

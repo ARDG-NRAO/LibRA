@@ -48,15 +48,17 @@
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 
+#include <librautils/utils.h>
 #include <libracore/ThreadCoordinator.h>
 
-#ifdef ROADRUNNER_USE_HPG
+#ifdef LIBRA_USE_HPG
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <hpg/hpg.hpp>
 #endif
 
-
+#include <LibHPG.h>
+#include <stdexcept>
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -95,100 +97,7 @@ std::string remove_extension(const std::string& path);
 // an API for MPI class.  Ideally, MPI code should not be part of the
 // roadrunner (application layer) code.
 //#include <synthesis/TransformMachines2/test/RR_MPI.h>
-//
-//-------------------------------------------------------------------------
-// Class to manages the HPG initialize/finalize scope.
-// hpg::finalize() in the destructor.  This also reports, via the
-// destructor, the time elapsed between contruction and destruction.
-//
-/**
- * @class LibHPG
- * @brief Manages the HPG initialize/finalize scope.
- *
- * This class is responsible for initializing and finalizing the HPG library. 
- * It also reports the time elapsed between construction and destruction.
- */
-class LibHPG
-{
-public:
-  /**
-   * @brief Constructor for the LibHPG class.
-   * @param usingHPG A boolean indicating whether to use HPG. Default is true.
-   */
-  LibHPG(const bool usingHPG=true, std::ostream* os=nullptr):
-    init_hpg(usingHPG),hpg_initialized(false),os_p(os)
-  {
-    initialize();
-  }
-  /**
-   * @brief Initializes the HPG library.
-   * @return A boolean indicating whether the initialization was successful.
-   */
-  bool initialize()
-  {
-    startTime = std::chrono::steady_clock::now();
 
-    hpg_initialized=true;
-#ifdef ROADRUNNER_USE_HPG
-    if (init_hpg)
-      {
-	static bool once = [&]
-			   {
-			     assert(!hpg::is_finalized());
-			     if (!hpg::is_initialized())
-			       {
-				 hpg_initialized=hpg::initialize();
-				 // cerr << "LibHPG:: hpg::initialize() called" << endl;
-				 // Kokkos::push_finalize_hook([]() {
-				 // 	 cerr << "Kokkos::finalize() called" << endl;
-				 // });
-				 std::atexit(hpg::finalize);
-			       }
-			     return hpg_initialized;
-			   }();
-      } 
-   assert(hpg::is_intialized);
-#endif
-    return hpg_initialized;
-  };
-
-  //
-  // @brief Return the internal state variable to indicate if the
-  // hpg::initialize() method was called.
-  //
-  bool hpg_intialize_called() {return hpg_initialized;}
-  
-  //
-  // @brief Return the total time elasped since the class constructor was called.
-  //
-  double runtime()
-  {
-    auto endTime = std::chrono::steady_clock::now();
-    std::chrono::duration<double> totalRuntime = endTime - startTime;
-    return totalRuntime.count();
-  }
-  /**
-   * @brief Destructor for the LibHPG class.
-   *
-   * If an output stream is give, this also prints the total runtime
-   * on that stream.
-   */
-  ~LibHPG()
-  {
-    if (os_p != nullptr)
-      (*os_p) << "roadrunner runtime: "
-	      << std::fixed << std::setprecision(2)
-	      << runtime() << " sec" << std::endl;
-  };
-
-  std::chrono::time_point<std::chrono::steady_clock> startTime;
-  bool init_hpg;
-  bool hpg_initialized;
-  std::ostream *os_p;
-};
-//
-//-------------------------------------------------------------------------
-//
 //
 //-------------------------------------------------------------------------
 // The engine that loads the required CFs from the cache and copies

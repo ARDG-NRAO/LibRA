@@ -57,7 +57,6 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
     }
   //else
   //clRetry();
-  REENTER:
   try
     {
       int i;
@@ -88,6 +87,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 //
 //-------------------------------------------------------------------------
 //
+#ifndef TABLEINFO_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -127,3 +127,4 @@ int main(int argc, char **argv)
     }
   if (restartUI) RestartUI(RENTER);
 }
+#endif // TABLEINFO_LIBRARY_BUILD

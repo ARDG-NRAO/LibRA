@@ -97,6 +97,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 //
 //-------------------------------------------------------------------------
 //
+#ifndef DALE_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -152,3 +153,4 @@ int main(int argc, char **argv)
     }
   if (restartUI) RestartUI(RENTER);
 }
+#endif // DALE_LIBRARY_BUILD
