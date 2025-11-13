@@ -6,6 +6,20 @@ project(LibRATests VERSION 1.0
 
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
+# Add include directories for all application headers
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/../RoadRunner
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Coyote
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Hummbee
+  ${CMAKE_CURRENT_SOURCE_DIR}/../MSSplit
+  ${CMAKE_CURRENT_SOURCE_DIR}/../SubMS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../TableInfo
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Chip
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Dale
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Acme
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Asp
+)
+
 enable_testing()
 
 find_package(GTest REQUIRED)

@@ -181,6 +181,10 @@ set (RESTORE_MDSPAN_SOURCES
 set (ROADRUNNER_SOURCES
   RoadRunner/roadrunner.cc
   RoadRunner/roadrunner.h
+  RoadRunner/LibHPG.h
+  RoadRunner/LibHPG.cc
+  RoadRunner/KokkosInit.cc
+  RoadRunner/KokkosInit.h
   # RoadRunner/DataBase.h
   # RoadRunner/DataIterations.h
   # RoadRunner/MakeComponents.h

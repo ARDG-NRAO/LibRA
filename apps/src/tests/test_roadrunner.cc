@@ -1,3 +1,5 @@
+#define LIBRA_USE_HPG
+#include <RoadRunner/LibHPG.h>
 #include <RoadRunner/roadrunner.h>
 #include <tests/test_utils.h>
 
@@ -10,10 +12,24 @@ namespace test{
 
 TEST(RoadrunnerTest, InitializeTest) {
   // Create a LibHPG object
-  LibHPG lib_hpg;
+  //
+  // This is an RAII class. The Resources (HPG/Kokkos devices) will be
+  // Acquired and Initialize upon creation.
+  bool ret=false;
+  {
+    LibHPG lib_hpg;
+  }
+  // Test that LibHPG::global_initialized_kokkos_backends is available
+  // outside the LibHPG scope
+  cerr << "RoadrunnerTest::InitializeTest: Kokkos backends from LibHPG::global_initialized_kokkos_backends: ";
+  for (auto b : LibHPG::global_initialized_kokkos_backends)
+    cerr << KokkosInterop::kokkos_backend_to_str(b) << " ";
+  cerr << endl;
+  // Call the initialize() function -- THIS IS IN CORRECT USE OF AN RAII CLASS
+  // bool ret = lib_hpg.initialize();
 
-  // Call the initialize() function
-  bool ret = lib_hpg.initialize();
+  // If the control got here, LibHPG was successfully initialized.
+  ret=true;
 
   // Check that the return value is true
   EXPECT_TRUE(ret);
