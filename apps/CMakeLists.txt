@@ -74,12 +74,13 @@ find_package(WCSLIB REQUIRED)
 find_package(CFITSIO REQUIRED)
 find_package(Kokkos REQUIRED)
 
-set(APP_LINK_LIBRARIES
-  casacpp_synthesis
-  casacpp_msvis
-  librautils
-  libracore
-  hpg
+# Lazy binding flags to allow apps to run without GPU on non-CUDA machines
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
+
+# Tier 1: Core CASA libraries (no GPU)
+set(APP_LINK_LIBRARIES_CORE
+  casa_derivedmscal
   casa_msfits
   casa_ms
   casa_images
@@ -87,13 +88,14 @@ set(APP_LINK_LIBRARIES
   casa_lattices
   casa_fits
   casa_measures
+  casa_meas
+  casa_mirlib
   casa_tables
   casa_scimath
   casa_scimath_f
   casa_casa
   pthread
   parafeed
-  Kokkos::kokkos
   wcslib::wcs
   CFITSIO::CFITSIO
   GSL::gsl
@@ -101,17 +103,51 @@ set(APP_LINK_LIBRARIES
   m
   c)
 
+# Tier 2: Add MS processing (no GPU)
+set(APP_LINK_LIBRARIES_MS
+  ${APP_LINK_LIBRARIES_CORE}
+  casacpp_msvis)
+
+# Tier 3: Add LibRA utilities (check if these need GPU)
+set(APP_LINK_LIBRARIES_LIBRA
+  ${APP_LINK_LIBRARIES_MS}
+  librautils
+  libracore)
+
+# Tier 4: GPU-enabled imaging
+set(APP_LINK_LIBRARIES_GPU
+  ${APP_LINK_LIBRARIES_LIBRA}
+  casacpp_synthesis
+  hpg
+  Kokkos::kokkos)
+
+# Default to core (apps opt-in to higher tiers)
+set(APP_LINK_LIBRARIES ${APP_LINK_LIBRARIES_CORE})
+
 include_directories(
-  ${CMAKE_INSTALL_PREFIX}/include/casacore
-  ${CMAKE_INSTALL_PREFIX}/include
-  ${CMAKE_INSTALL_PREFIX}/include/casacpp
-  /usr/include/cfitsio 
-  ${CMAKE_SOURCE_DIR}/src
-  # for libracore
-  ${CMAKE_SOURCE_DIR}/../src
-  # for mdspan
-  ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
-  )
+    ${CMAKE_INSTALL_PREFIX}/include/casacore
+    ${CMAKE_INSTALL_PREFIX}/include
+    ${CMAKE_INSTALL_PREFIX}/include/casacpp
+    /usr/include/cfitsio
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/RoadRunner
+    ${CMAKE_SOURCE_DIR}/src/Hummbee
+    ${CMAKE_SOURCE_DIR}/src/Coyote
+    ${CMAKE_SOURCE_DIR}/src/Chip
+    ${CMAKE_SOURCE_DIR}/src/Dale
+    ${CMAKE_SOURCE_DIR}/src/Acme
+    ${CMAKE_SOURCE_DIR}/src/MSSplit
+    ${CMAKE_SOURCE_DIR}/src/SubMS
+    ${CMAKE_SOURCE_DIR}/src/TableInfo
+    ${CMAKE_SOURCE_DIR}/src/Asp
+    ${CMAKE_SOURCE_DIR}/src/Asp_mdspan
+    ${CMAKE_SOURCE_DIR}/src/Restore
+    ${CMAKE_SOURCE_DIR}/src/Restore_mdspan
+    # for libracore
+    ${CMAKE_SOURCE_DIR}/../src
+    # for mdspan
+    ${CMAKE_SOURCE_DIR}/../dependencies/Kokkos/tpls/mdspan/include/mdspan/
+    )
 
 link_directories(${CMAKE_INSTALL_PREFIX}/lib
   )
@@ -126,112 +162,6 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
 # add and build each APP
-set(APP_LIST Coyote Hummbee RoadRunner Chip Dale Acme MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Utilities)
-
-set (ACME_SOURCES
-  Acme/acme.cc
-  Acme/acme.h
-)
-
-set (ASP_SOURCES
-  Asp/asp.cc
-  Asp/asp.h
-)
-
-set (ASP_MDSPAN_SOURCES
-  Asp_mdspan/asp_mdspan.cc
-  Asp_mdspan/asp_mdspan.h
-)
-
-set (CHIP_SOURCES
-  Chip/chip.cc
-  Chip/chip.h
-)
-
-set (COYOTE_SOURCES
-  Coyote/coyote.cc
-  Coyote/coyote.h
-)
-
-set (DALE_SOURCES
-  Dale/dale.cc
-  Dale/dale.h
-)
-
-set (HUMMBEE_SOURCES
-  Hummbee/hummbee.cc
-  Hummbee/hummbee.h
-)
-
-set (MSSPLIT_SOURCES
-  MSSplit/mssplit.cc
-  MSSplit/mssplit.h
-)
-
-set (RESTORE_SOURCES
-  Restore/restore.cc
-  Restore/restore.h
-)
-
-set (RESTORE_MDSPAN_SOURCES
-  Restore_mdspan/restore_mdspan.cc
-  Restore_mdspan/restore_mdspan.h
-)
-
-set (ROADRUNNER_SOURCES
-  RoadRunner/roadrunner.cc
-  RoadRunner/roadrunner.h
-  RoadRunner/LibHPG.h
-  RoadRunner/LibHPG.cc
-  RoadRunner/KokkosInit.cc
-  RoadRunner/KokkosInit.h
-  # RoadRunner/DataBase.h
-  # RoadRunner/DataIterations.h
-  # RoadRunner/MakeComponents.h
-  # RoadRunner/rWeightor.h
-  # RoadRunner/ThreadCoordinator.h
-)
-
-set (SUBMS_SOURCES
-  SubMS/subms.cc
-  SubMS/subms.h
-)
-
-set (TABLEINFO_SOURCES
-  TableInfo/tableinfo.cc
-  TableInfo/tableinfo.h
-)
-
-# set(UTILITIES_SOURCES 
-  # Utilities/backup.cc
-  # Utilities/backup.h
-# )
-
-set (LIBRA_SOURCES
-  ${ACME_SOURCES}
-  ${ASP_SOURCES}
-  ${ASP_MDSPAN_SOURCES}
-  ${CHIP_SOURCES}
-  ${COYOTE_SOURCES}
-  ${HUMMBEE_SOURCES}
-  ${MSSPLIT_SOURCES}
-  ${RESTORE_SOURCES}
-  ${RESTORE_MDSPAN_SOURCES}
-  ${ROADRUNNER_SOURCES}
-  ${SUBMS_SOURCES}
-  ${TABLEINFO_SOURCES}
-  # ${UTILITIES_SOURCES}
-  ${DALE_SOURCES}
-)
-
-# add and build googletest
-if(Apps_BUILD_TESTS)
-  add_subdirectory(src/tests)
-endif()
-
-# add and build translation layer
-add_subdirectory(src/translation)
-
 add_subdirectory(src)
 
 

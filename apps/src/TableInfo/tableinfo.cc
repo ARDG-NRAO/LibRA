@@ -24,9 +24,8 @@
 
 
 #include <tableinfo.h>
-#include <synthesis/TransformMachines2/Utils.h>
-using namespace casa;
-using  namespace refim;
+#include <casacore/casa/IO/AipsIO.h>
+using namespace casacore;
 
 //
 //-------------------------------------------------------------------------
@@ -111,7 +110,20 @@ void TableInfo_func(const string& MSNBuf,
 	}
       else
 	{
-	  casacore::Record rec = SynthesisUtils::readRecord(MSNBuf);
+	  Record rec;
+	  try {
+	    AipsIO rrfile;
+	    rrfile.open(MSNBuf, ByteIO::Old);
+	    rrfile >> rec;
+	  } catch (AipsError &) {
+	    try {
+	      Table tab(MSNBuf, Table::Update);
+	      rec = tab.keywordSet().asRecord("record");
+	    } catch (AipsError &) {
+	      Table tab(MSNBuf, Table::Old);
+	      rec = tab.keywordSet().asRecord("record");
+	    }
+	  }
 	  rec.print(cerr);
 	  cerr << "------------------------------" << endl;
 	}
