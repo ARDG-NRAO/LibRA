@@ -50,6 +50,9 @@ ExternalProject_Add(
     -DCMAKE_INSTALL_LIBDIR=lib
     -DCMAKE_INSTALL_BINDIR=bin/casacpp
     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+    -DCMAKE_BUILD_RPATH_USE_ORIGIN=TRUE
+    -DCMAKE_INSTALL_RPATH=${INSTALL_DIR}/lib
     -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
     -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
     ${KOKKOS_WRAPPER_FLAGS}

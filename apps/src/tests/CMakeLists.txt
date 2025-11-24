@@ -6,7 +6,6 @@ project(LibRATests VERSION 1.0
 
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
-# Add include directories for all application headers
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../RoadRunner
   ${CMAKE_CURRENT_SOURCE_DIR}/../Coyote
@@ -24,7 +23,6 @@ enable_testing()
 
 find_package(GTest REQUIRED)
 
-# List of test source files
 set(TEST_SOURCES
   test_hummbee.cc
   test_roadrunner.cc
@@ -36,21 +34,37 @@ set(TEST_SOURCES
   test_chip.cc
   test_dale.cc
   test_restore.cc
-  test_dale.cc
   test_htclean.cc
   test_libracoretypes.cc
-  #test_antsol.cc
 )
 
 add_executable(LibRATests ${TEST_SOURCES})
 
-# Link with Google Test
-set(INTERFACE_LIBRARIES libra libracore roadrunner_cl_interface coyote_cl_interface hummbee_cl_interface mssplit_cl_interface subms_cl_interface tableinfo_cl_interface chip_cl_interface dale_cl_interface casacore_asp)
+set(APP_LIBRARIES
+  roadrunner_lib
+  coyote_lib
+  hummbee_lib
+  mssplit_lib
+  subms_lib
+  tableinfo_lib
+  chip_lib
+  dale_lib
+  casacore_asp
+)
 
-target_link_libraries(LibRATests GTest::gtest_main stdc++fs ${APP_LINK_LIBRARIES} ${INTERFACE_LIBRARIES})
+set(APP_CLI_INTERFACE_LIBRARIES
+  roadrunner_cl_interface
+  coyote_cl_interface
+  hummbee_cl_interface
+  mssplit_cl_interface
+  subms_cl_interface
+  tableinfo_cl_interface
+  chip_cl_interface
+  dale_cl_interface
+)
 
+target_link_libraries(LibRATests GTest::gtest_main stdc++fs ${APP_LIBRARIES} ${APP_CLI_INTERFACE_LIBRARIES})
 
-# Add the test executable as a test target
 add_test(NAME LibRATests COMMAND LibRATests)
 
 if(Apps_BUILD_TESTS_PYTHON)
@@ -61,7 +75,6 @@ if(Apps_BUILD_TESTS_PYTHON)
   )
 endif()
 
-# Install the test executable
 install(TARGETS LibRATests
   RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/tests"
 )

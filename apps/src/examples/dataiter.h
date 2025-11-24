@@ -43,6 +43,7 @@
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 
+std::exception_ptr CFServerThreadExceptionPtr_g = nullptr;
 
 // Data column to use for the data fidelity term in a solver.
 casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::OBSERVED;
