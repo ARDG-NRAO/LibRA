@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2025
+# Copyright (C) 2024
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -45,18 +45,81 @@
 # Additional commands required on stampede3 before running this script:
 # . <PATH_TO_SPACK_PACKAGE>/share/spack/setup-env.sh
 # spacktivate -p <LIBRA_ENV_NAME>
-# module unload python/3.9.18 intel/24.0 
+# module unload python/3.9.18 intel/24.0
 
-function in_spack_env() {
-    if [[ -v SPACK_ROOT ]]; then
- 	return 0; # True is bash!
-    else
-	return 1; # False in bash!
-    fi
+# Display help message
+function show_help() {
+    cat << EOF
+LibRA Build Script
+
+DESCRIPTION:
+    This script sets up and builds LibRA using an out-of-tree build
+    configuration. It configures the build environment, and runs CMake to
+    configure and build the project. It optionally checks for required SPACK
+    dependencies, if SPACK is being used.
+
+SPACK PREREQUISITES:
+    1. SPACK must be set up and activated:
+       . <PATH_TO_SPACK_PACKAGE>/share/spack/setup-env.sh
+       spacktivate -p <LIBRA_ENV_NAME>
+    2. On stampede3, unload conflicting modules:
+       module unload python/3.9.18 intel/24.0
+    3. Enable SPACK buil of this script by passing in -DLIBRA_USE_SPACK=ON
+       to the command line.
+
+REQUIRED SPACK PACKAGES:
+    - cfitsio
+    - wcslib
+    - gsl
+    - ncurses
+    - readline
+    - cmake
+
+OPTIONAL SPACK PACKAGES:
+    - openblas
+    - python
+
+USAGE:
+    $0 (-DLIBRA_ENABLE_CUDA_BACKEND=OFF | -DKokkos_CUDA_ARCH_NAME=<GPU_ARCH>) [CMAKE_OPTIONS...]
+
+CMAKE OPTIONS:
+    -DLIBRA_ENABLE_CUDA_BACKEND=OFF
+        Build for CPU-only (default: ON for GPU build)
+
+    -DKokkos_CUDA_ARCH_NAME=<GPU_ARCH>
+        Specify GPU architecture for GPU+CPU build
+        Example: -DKokkos_CUDA_ARCH_NAME=AMPERE80
+
+    Any other CMake options can be passed and will be forwarded to cmake
+
+EXAMPLES:
+    # CPU-only build
+    $0 -DLIBRA_ENABLE_CUDA_BACKEND=OFF
+
+    # GPU build for Ampere architecture
+    $0 -DKokkos_CUDA_ARCH_NAME=AMPERE80
+
+    # GPU build with additional CMake options
+    $0 -DKokkos_CUDA_ARCH_NAME=AMPERE80 -DCMAKE_BUILD_TYPE=Debug
+
+NOTES:
+    - HPG does not build with GCC 11.4 and CUDA 12.x combo
+    - GCC 11.4 with CUDA 11.x works
+    - The script assumes CMakeLists.txt is in the parent directory (..)
+    - Build output will be in ../build directory
+
+EOF
 }
+
+# Check for help flag or no arguments
+if [[ $# -eq 0 ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
 # This function checks if a given package is installed in the spack env.
 function is_installed_in_spack() {
-if in_spack_env; then
+if [[ -v SPACK_ROOT ]]; then
     if spack find --format "{name}" "$1" > /dev/null 2>&1; then
 	return 1;
     else
@@ -69,10 +132,7 @@ fi
 
 export CMAKE=`which cmake`
 
-#
-# Setup and checks for build in an SPACK env
-#
-if in_spack_env; then
+if [[ -v SPACK_ROOT ]]; then
     # $SPACK_ENV gets defined in an activated env.
     SPACK_ENV_ROOT=$SPACK_ENV/.spack-env/view/
 
@@ -99,7 +159,7 @@ if in_spack_env; then
     # Maybe required
     #
     tt=$(is_installed_in_spack "openblas")
-    tt+=$(is_installed_in_spack "python")
+    tt+=" "$(is_installed_in_spack "python")
 
     if [[ -z "$tt" ]]; then
 	echo -n "";
@@ -113,7 +173,6 @@ if in_spack_env; then
     #
     export GSL_ROOT=$(spack location -i gsl)
     export WCSLIB_ROOT=$(spack location -i wcslib)
-
     export LD_LIBRARY_PATH=/lib64:/lib:$SPACK_ENV_ROOT/lib64:$SPACK_ENV_ROOT/lib:$LD_LIBRARY_PATH
 
     export CMAKE=$(spack location -i cmake)/bin/cmake
