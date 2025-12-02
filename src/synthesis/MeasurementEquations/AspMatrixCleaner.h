@@ -72,6 +72,7 @@ public:
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
+  void loadInitScaleXfrs(const casacore::Vector<casacore::Float> & scales);
 
   // calculate the convolutions of the psf with the initial scales
   void setInitScalePsfs();
@@ -83,6 +84,7 @@ public:
 
   // returns the active-set aspen for cleaning
   std::vector<casacore::Float> getActiveSetAspen();
+  void MFaspclean(casacore::Matrix<casacore::Float> & model);
 
   // Juat define the active-set aspen scales
   void defineAspScales(std::vector<casacore::Float>& scaleSizes);
@@ -102,6 +104,8 @@ public:
   void setBinSizeForSumFlux(const casacore::Int binSize = 4) { itsBinSizeForSumFlux = binSize ; } ;
   void getFluxByBins(const std::vector<casacore::Float>& scaleSizes,const std::vector<casacore::Float>& optimum, casacore::Int binSize, std::vector<casacore::Float>&  sumFluxByBins, std::vector<casacore::Float>&  rangeFluxByBins);
 
+  void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps, const casacore::Bool waveletTrigger = false, const casacore::Bool mfasp = false) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps; itsWaveletTrigger=waveletTrigger; itsmfasp=mfasp;}
+  void setLBFGSControl(const casacore::Float LbfgsEpsF, const casacore::Float LbfgsEpsX, const casacore::Float LbfgsEpsG, const casacore::Int LbfgsMaxit) { itsLbfgsEpsF = LbfgsEpsF; itsLbfgsEpsX = LbfgsEpsX; itsLbfgsEpsG = LbfgsEpsG; itsLbfgsMaxit = LbfgsMaxit;}
 
 protected:
 //private:
@@ -182,6 +186,17 @@ protected:
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
+  
+  casacore::Vector<casacore::Float> itsWaveletScales;
+  casacore::Vector<casacore::Float> itsWaveletAmps;
+  casacore::Bool itsWaveletTrigger;
+  casacore::Bool itsmfasp;
+  casacore::Bool itsdimensionsareeven;
+  casacore::Bool itsstopMS;
+  casacore::Float itsLbfgsEpsF;
+  casacore::Float itsLbfgsEpsX;
+  casacore::Float itsLbfgsEpsG;
+  casacore::Int itsLbfgsMaxit;
 };
 
 } //# NAMESPACE CASA - END

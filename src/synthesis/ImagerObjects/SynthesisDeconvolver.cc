@@ -155,7 +155,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (decpars.nTaylorTerms > 1) // wide-band
         itsDeconvolver.reset(new SDAlgorithmMTAspClean(decpars.nTaylorTerms, decpars.fusedThreshold, isSingle, decpars.largestscale));
       else //narrow-band. WAsp can be use for cube imaging as well but for now let AspClean handle that.
-	      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.fusedThreshold, isSingle, decpars.largestscale));
+	      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.scales, decpars.waveletScales, decpars.waveletAmps, decpars.fusedThreshold, isSingle, decpars.largestscale, -1, decpars.waveletTrigger, decpars.mfasp, decpars.lbfgsEpsF, decpars.lbfgsEpsX, decpars.lbfgsEpsG, decpars.lbfgsMaxit));
 	  }
   /*else if (decpars.algorithm==String("asp")) 
     {
@@ -166,6 +166,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //narrow-band
       itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.fusedThreshold, isSingle, decpars.largestscale));
     }*/
+    else if (decpars.algorithm==String("autocorrelation"))
+	  {
+	    itsDeconvolver.reset(new SDAlgorithmAutoClean(decpars.autoThreshold, decpars.autoMaxiter, decpars.autoGain, decpars.autoHogbom, decpars.autoTrigger, decpars.autoPower, decpars.autoXMask, decpars.autoYMask));
+	  }
 	else
 	  {
 	    throw( AipsError("Un-known algorithm : "+decpars.algorithm) );

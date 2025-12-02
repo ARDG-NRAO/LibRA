@@ -44,6 +44,7 @@
 #include<synthesis/ImagerObjects/SDAlgorithmMEM.h>
 #include<synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
 #include<synthesis/ImagerObjects/SDAlgorithmMTAspClean.h>
+#include<synthesis/ImagerObjects/SDAlgorithmAutoClean.h>
 
 #include<synthesis/ImagerObjects/SDMaskHandler.h>
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
