@@ -109,6 +109,7 @@ public:
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
+  void loadInitScaleXfrs(const casacore::Vector<casacore::Float> & scales);
 
   // calculate the convolutions of the psf with the initial scales
   void setInitScalePsfs();
@@ -147,7 +148,6 @@ public:
     alglib::minlbfgsreport &rep,
     const std::vector<casacore::IPosition> &activeSetCenter,
     casacore::FFTServer<casacore::Float,casacore::Complex> &fft) const;
-
 
 protected:
 //private:

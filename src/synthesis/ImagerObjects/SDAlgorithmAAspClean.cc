@@ -61,7 +61,7 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode):
+  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -124,6 +124,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
     }
+    
+    itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
+    itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6
