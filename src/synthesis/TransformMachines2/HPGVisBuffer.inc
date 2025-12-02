@@ -215,7 +215,7 @@ unsigned mRow=0;
 			  hpgUVW={UVW(0,irow),
 				  UVW(1,irow),
 				  UVW(2,irow)};
-			  dphaseHPG=-2.0*C::pi*dphase[irow]*frequency/C::c;
+			  dphaseHPG=-2.0*M_PI*dphase[irow]*frequency/C::c;
 			}
 		      //hpg::vis_frequency_fp frequency=casaVB.getFrequencies(irow)(ichan);
 		      grid_cube=0; // For now, grid on the same plane.
@@ -305,6 +305,7 @@ void makeCASAVisBuffer(//const unsigned nVisRow, const unsigned nVisChan, const 
 		  // cerr << iPol << " " << iChan << " " << iRow << " " << hpgRow << " " << hpgVis.size()
 		  //      << " " << hpgVis[hpgRow].m_visibilities[hpgPol]
 		  //      << " " << hpgVis[hpgRow].m_weights[hpgPol]
+		  //      << " " << casaModelVisCube(iPol,iChan, iRow)
 		  //      << endl;
 		  hpgPol++;
 		}
@@ -526,7 +527,7 @@ unsigned mRow=0;
 			  hpgUVW={UVW(0,irow),
 				  UVW(1,irow),
 				  UVW(2,irow)};
-			  dphaseHPG=-2.0*C::pi*dphase[irow]*frequency/C::c;
+			  dphaseHPG=-2.0*M_PI*dphase[irow]*frequency/C::c;
 			}
 		      //hpg::vis_frequency_fp frequency=casaVB.getFrequencies(irow)(ichan);
 		      grid_cube=0; // For now, grid on the same plane.

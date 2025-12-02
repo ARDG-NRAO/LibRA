@@ -45,7 +45,7 @@ PhaseShiftTvi::phaseCenterShift (Cube<Complex> & cube) const
 
     // Convert the offsets from arcseconds to radians
 
-    double radiansPerArcsecond = C::pi / (180 * 3600);
+    double radiansPerArcsecond = M_PI / (180 * 3600);
     double dXRadians = dXArcseconds_p * radiansPerArcsecond;
     double dYRadians = dYArcseconds_p * radiansPerArcsecond;
 
@@ -79,7 +79,7 @@ PhaseShiftTvi::phaseCenterShift (Cube<Complex> & cube) const
 
         double u = theUvw (uIndex, row);
         double v = theUvw (vIndex, row);
-        double rowPhasePerHz = (u * dXRadians + v * dYRadians) * -2 * C::pi / C::c;
+        double rowPhasePerHz = (u * dXRadians + v * dYRadians) * -2 * M_PI / C::c;
 
         for (Int channel = 0; channel < nChannels; channel ++){
 

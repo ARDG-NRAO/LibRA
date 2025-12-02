@@ -88,7 +88,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       }
   // else
   //   clRetry();
- REENTER:
       try
     {
       SMap watchPoints; VString exposedKeys;
@@ -208,13 +207,11 @@ void UI(bool restart, int argc, char **argv, bool interactive,
   catch (clError& x)
     {
       x << x << endl;
-      if (x.Severity() == CL_FATAL) exit(1);
-      //clRetry();
-      RestartUI(REENTER);
+      if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
     }
 }
 
-
+#ifndef HUMMBEE_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -314,3 +311,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
+#endif // HUMMBEE_LIBRARY_BUILD

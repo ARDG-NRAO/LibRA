@@ -161,10 +161,10 @@ Array<Float> ROCTMainColumns::cycles() {
 
 void ROCTMainColumns::cycles(Array<Float>& cy) {
   this->phase(cy);    // Extract phase
-  cy+=Float(C::pi);   // add a half-cycle
-  cy/=Float(C::_2pi); // divide by rad/cycle
+  cy+=Float(M_PI);   // add a half-cycle
+  cy/=Float(2.0*M_PI); // divide by rad/cycle
   cy=floor(cy);       // integer part is cycles
-  cy*=Float(C::_2pi); // in radians
+  cy*=Float(2.0*M_PI); // in radians
 }
 
 

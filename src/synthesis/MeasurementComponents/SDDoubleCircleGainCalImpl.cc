@@ -34,7 +34,7 @@ inline Double getPrimaryBeamSize(Double const observing_frequency,
   Double beam_size = -1.0;
   constexpr Double kFactorALMA = 1.13; // measured factor for ALMA
   Double const speed_of_light = C::c;
-  //Double const rad2arcsec = 180.0 / C::pi * 3600.0;
+  //Double const rad2arcsec = 180.0 / M_PI * 3600.0;
 
   if (observing_frequency <= 0.0 || antenna_diameter <= 0.0) {
     beam_size = 0.0;
@@ -532,7 +532,7 @@ bool SDDoubleCircleGainCalImpl::findTimeRange(Vector<Double> const &time,
   for (++iter; iter != index_vector.end(); ++iter) {
     Double current_from = time_sel[*iter] - 0.5 * interval_sel[*iter];
     Double current_to = time_sel[*iter] + 0.5 * interval_sel[*iter];
-    if (abs(current_from - time_to) < time_to * C::dbl_epsilon) {
+    if (abs(current_from - time_to) < time_to * DBL_EPSILON) {
       time_to = current_to;
     } else {
       TimeRange range(time_from, time_to);

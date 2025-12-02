@@ -107,11 +107,11 @@ Bool RFAUVBinner::newChunk (Int &maxmem)
 // init min/max estimates
   ymin.resize(num(CHAN));
   ymax.resize(num(CHAN));
-  ymin.set(C::flt_max);
-  ymax.set(C::flt_min);
+  ymin.set(FLT_MAX);
+  ymax.set(FLT_MIN);
   uvmin.resize(num(CHAN));
   uvmax.resize(num(CHAN));
-  uvmin.set(C::flt_max);
+  uvmin.set(FLT_MAX);
   uvmax.set(0);
   binned = false;
 // finish with init  

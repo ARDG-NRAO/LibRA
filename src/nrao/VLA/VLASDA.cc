@@ -227,7 +227,7 @@ Double VLASDA::correlatedBandwidth(VLAEnum::CDA cda) const {
   uChar byte;
   itsRecord >> byte;
   Int code;
-  if ((cda == VLAEnum::CDA0) || (VLAEnum::CDA2)) {
+  if ((cda == VLAEnum::CDA0) || (cda == VLAEnum::CDA2)) {
     code = (byte & 0xf0) >> 4;
   } else {
     code = (byte & 0x0f);
@@ -554,7 +554,7 @@ Double VLASDA::obsTime() const {
   itsRecord.seek(where);
   Double radians;
   itsRecord >> radians;
-  return radians/C::_2pi * 60.0 * 60.0 * 24.0 - intTime()/2.0;
+  return radians/(2*M_PI) * 60.0 * 60.0 * 24.0 - intTime()/2.0;
 }
 
 String VLASDA::obsId() const {

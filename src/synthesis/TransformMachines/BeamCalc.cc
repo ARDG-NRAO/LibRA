@@ -170,8 +170,8 @@ namespace casa{
         String fullFileName;
         const std::list<std::string> &data_path = AppStateSource::fetch( ).dataPath( );
         const std::string distrodata_path =casatools::get_state().distroDataPath( );
-        //cerr<<"distrodata_path="<<distrodata_path<<endl; 
-        //cerr<<"DATA PATH==="<< *data_path <<endl;
+        // cerr<<"distrodata_path="<<distrodata_path<<endl;
+        // cerr<<"DATA PATH==="<< data_path <<endl;
         // The data path search need to be rewritten to adopt the recommanded setting via python
         // file for CASA6. 
         // For now, only the first path that actually exist will be set to the data path (TT 2018.12.10)
@@ -194,6 +194,7 @@ namespace casa{
                ddir.exists();
                found = True;
                fullFileName=slpath;
+	       cerr << "FullFileName :"<<fullFileName<<endl;
                break;
             }
             catch (...)  {
@@ -210,16 +211,23 @@ namespace casa{
              fullFileName = distrodata_path;
              found = True;
           }
-        } 
-        else if(!found) {
-          const char *sep=" ";
-          char *aipsPath = strtok(getenv("CASAPATH"),sep);
-          if (aipsPath == NULL)
-            throw(SynthesisError("CASAPATH not found."));
-          fullFileName=aipsPath;
-          fullFileName+="/data";
         }
+	else if(!found) {
+        const char *sep=" ";
+        const char *casapathEnv = getenv("CASAPATH");
+        if (casapathEnv == NULL) {
+          throw(SynthesisError("CASAPATH not found."));
+        }
+        std::cout << "CASAPATH: " << casapathEnv << std::endl; // Print CASAPATH
 
+        char *aipsPath = strtok(const_cast<char*>(casapathEnv),sep);
+        if (aipsPath == NULL) {
+          throw(SynthesisError("Error tokenizing CASAPATH."));
+        }
+        fullFileName=aipsPath;
+        fullFileName+="/data";
+        std::cout << "fullFileName: " << fullFileName << std::endl; // Print fullFileName
+      }
 
 	if(obsName_p=="VLA" && antType_p=="STANDARD"){
 	  //os <<  LogIO::NORMAL << "Will use default geometries for VLA STANDARD." << LogIO::POST;

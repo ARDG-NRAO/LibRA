@@ -57,7 +57,6 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
     }
   //else
   //clRetry();
-  REENTER:
   try
     {
       int i;
@@ -81,15 +80,14 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
     catch (clError& x)
     {
       x << x << endl;
-      if (x.Severity() == CL_FATAL) exit(1);
-      //clRetry();
-      RestartUI(REENTER);
+      if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
     }
   
 }
 //
 //-------------------------------------------------------------------------
 //
+#ifndef TABLEINFO_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -129,3 +127,4 @@ int main(int argc, char **argv)
     }
   if (restartUI) RestartUI(RENTER);
 }
+#endif // TABLEINFO_LIBRARY_BUILD

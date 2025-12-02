@@ -769,7 +769,7 @@ namespace casa{
     if (bandID_l == -1) bandID_l=getVisParams(vb,image.coordinates());
     
     log_l << "Making a new convolution function for PA="
-	  << pa*(180/C::pi) << "deg"
+	  << pa*(180/M_PI) << "deg"
 	  << " for field ID " << vb.fieldId();
     // log_l << "TimeStamps(0-10) ";
     // for (Int i=0;i<10;i++) 

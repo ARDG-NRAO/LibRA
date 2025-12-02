@@ -53,8 +53,8 @@ typedef std::list<TimeRange> TimeRangeList;
 class TimeRangeListTool {
 public:
   static bool InRange(TimeRange const &timerange, casacore::Double const current_time) {
-    auto const time_from = timerange.first * (1.0 - casacore::C::dbl_epsilon);
-    auto const time_to = timerange.second * (1.0 + casacore::C::dbl_epsilon);
+    auto const time_from = timerange.first * (1.0 - DBL_EPSILON);
+    auto const time_to = timerange.second * (1.0 + DBL_EPSILON);
     return time_from < current_time && current_time < time_to;
   }
 

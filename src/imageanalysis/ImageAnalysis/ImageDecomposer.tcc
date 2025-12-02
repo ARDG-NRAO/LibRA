@@ -2324,7 +2324,7 @@ void ImageDecomposer<T>::printComponents() const
              << ", " << clist(g,2) << "]  ";
         cout << "Axes: [" << clist(g,3)
              << ", " << clist(g,3) * clist(g,4) << "]  ";
-        cout << "Rotation: " << clist(g,5) /*  * 180 / C::pi  */;
+        cout << "Rotation: " << clist(g,5) /*  * 180 / M_PI  */;
       }
       if (itsDim == 3) {
         cout << "Mu: [" << clist(g,1) 
@@ -2333,8 +2333,8 @@ void ImageDecomposer<T>::printComponents() const
         cout << "Axes: [" << clist(g,4)
              << ", " << clist(g,5) 
              << ", " << clist(g,6) << "]  ";
-        cout << "Rotation: [" << clist(g,7)/*  *180/C::pi */
-             << ", " << clist(g,8)         /*  *180/C::pi */ << "]";
+        cout << "Rotation: [" << clist(g,7)/*  *180/M_PI */
+             << ", " << clist(g,8)         /*  *180/M_PI */ << "]";
       }
     }
     cout << endl;

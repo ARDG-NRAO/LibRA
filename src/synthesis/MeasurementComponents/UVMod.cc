@@ -181,11 +181,11 @@ void UVMod::setModel(const ComponentType::Shape type,
 	throw(AipsError("Wrong number of parameters for resolved component; need 6."));
 
       // Convert pa to radians
-      par()(5)*=(C::pi/180.0);
+      par()(5)*=(M_PI/180.0);
       
       // Set shape pars (all in rad)
       Vector<Double> gpar(3,0.0);  //  a, b, pa
-      gpar(0)=par()(3)*(C::pi/180.0/60.0/60.0);  
+      gpar(0)=par()(3)*(M_PI/180.0/60.0/60.0);  
       gpar(1)=gpar(0)*par()(4);                  
       gpar(2)=par()(5);
       comp.shape().setParameters(gpar);
@@ -209,11 +209,11 @@ void UVMod::setModel(const ComponentType::Shape type,
 
 
   // Convert direction from arcsec to radians
-  //  par()(1)*=(C::pi/180.0/60.0/60.0);
-  //  par()(2)*=(C::pi/180.0/60.0/60.0);
+  //  par()(1)*=(M_PI/180.0/60.0/60.0);
+  //  par()(2)*=(M_PI/180.0/60.0/60.0);
 
   // Render direction as an MDirection; use phase-center's DirRef
-  MVDirection mvdir(par()(1)*(C::pi/180.0/60.0/60.0),par()(2)*(C::pi/180.0/60.0/60.0));
+  MVDirection mvdir(par()(1)*(M_PI/180.0/60.0/60.0),par()(2)*(M_PI/180.0/60.0/60.0));
   MDirection dir(mvdir,pc().getRef());
 
   // Set direction in component
@@ -401,7 +401,7 @@ Bool UVMod::modelfit(const Int& maxiter, const String file) {
   //  cout << "hess() = " << hess() << endl;
 
   if (nPar()>3) {
-    dpar()(5)*=(180.0/C::pi);
+    dpar()(5)*=(180.0/M_PI);
   }
 
   cout << "dpar() = " << dpar() << endl;
@@ -437,14 +437,14 @@ Bool UVMod::modelfit(const Int& maxiter, const String file) {
   if (nPar()>3) {
     cout << "a = " << par()(3) << " +/- " << err(3) << " arcsec" << endl;
     cout << "r = " << par()(4) << " +/- " << err(4) << endl;
-    cout << "p = " << par()(5)*180.0/C::pi << " +/- " << err(5)*180.0/C::pi << " deg" << endl;
+    cout << "p = " << par()(5)*180.0/M_PI << " +/- " << err(5)*180.0/M_PI << " deg" << endl;
   }
 
   //  }  // (false)
 
   // Shift pa back to deg
   if (par().nelements()>3) {
-    par()(5)*=(180.0/C::pi);
+    par()(5)*=(180.0/M_PI);
   }
 
   // Shift model to phase center of selected field
@@ -585,7 +585,7 @@ void UVMod::residual() {
 
   // Calculate wave number per frequency
   Vector<Double> freq = svb().frequency();
-  Vector<Double> waveNum = C::_2pi*freq/C::c;
+  Vector<Double> waveNum = (2*M_PI)*freq/C::c;
 
   //  cout << "waveNum = " << waveNum << endl;
 
@@ -633,7 +633,7 @@ void UVMod::residual() {
   Double dGda(0.0), G(0.0), g1(0.0),g2(0.0);
   Double pi2a2(0.0);
   if (nPar()>3)
-    pi2a2=C::pi*C::pi*p(3)*p(3);
+    pi2a2=M_PI*M_PI*p(3)*p(3);
 	    
   // Pointer access to R(), dR();
   DComplex  *res = &R()(0,0,0);
@@ -655,7 +655,7 @@ void UVMod::residual() {
 	  M=skycomp(0).visibility(uvw2,freq(chn)).value();
 
 	  // Scale uvw2 to 1/arcsec (dir pars are in arcsec)
-	  uvw2/=(648000/C::pi);
+	  uvw2/=(648000/M_PI);
 
 	  // Direction phase factors (OPTIMIZED?)
 	  Double phase=waveNum(chn)*( uvw2(0)*p(1)+uvw2(1)*p(2) );
@@ -671,16 +671,16 @@ void UVMod::residual() {
 	    
 	    cospa=cos(p(5));
 	    sinpa=sin(p(5));
-	    g1=waveNum(chn)*(uvw2(0)*cospa - uvw2(1)*sinpa)/C::_2pi;
-	    g2=waveNum(chn)*(uvw2(0)*sinpa + uvw2(1)*cospa)/C::_2pi;
-	    dGda=C::pi*sqrt(g1*g1*p(4)*p(4) + g2*g2);
+	    g1=waveNum(chn)*(uvw2(0)*cospa - uvw2(1)*sinpa)/(2*M_PI);
+	    g2=waveNum(chn)*(uvw2(0)*sinpa + uvw2(1)*cospa)/(2*M_PI);
+	    dGda=M_PI*sqrt(g1*g1*p(4)*p(4) + g2*g2);
 	    G=p(3)*dGda;
 	    
 	    // Gaussian-specific, for now
 	    switch (skycomp(0).shape().type()) {
 	    case ComponentType::GAUSSIAN:
 	      {
-		dMdG=M*DComplex(-G/2.0/C::ln2);
+		dMdG=M*DComplex(-G/2.0/M_LN2);
 		break;
 	      }
 	    case ComponentType::DISK:
@@ -889,7 +889,7 @@ Bool UVMod::setCompPar() {
   skycomp(0).flux().convertPol(ComponentType::STOKES);
   skycomp(0).flux().setValue(par()(0));
 
-  Double rad2as(180.0*60.0*60.0/C::pi);
+  Double rad2as(180.0*60.0*60.0/M_PI);
 
   // Update (relative) direction:
   MVDirection mvdir(par()(1)/rad2as,par()(2)/rad2as);
@@ -900,8 +900,8 @@ Bool UVMod::setCompPar() {
   if (skycomp(0).shape().nParameters() > 0) {
 
     // Keep pa within a quarter cycle of zero
-    while (par()(5) > C::pi/2.0)  par()(5)-=C::pi;
-    while (par()(5) < -C::pi/2.0) par()(5)+=C::pi;
+    while (par()(5) > M_PI/2.0)  par()(5)-=M_PI;
+    while (par()(5) < -M_PI/2.0) par()(5)+=M_PI;
     
     Vector<Double> gpar(skycomp(0).shape().parameters());  //  a, b, pa
     //    cout << "gpar = " << gpar << endl;
@@ -958,9 +958,9 @@ void UVMod::printPar(const Int& iter) {
   if (skycomp(0).shape().nParameters()>0) {
     Vector<Double> gpar(skycomp(0).shape().parameters());  //  a, b, pa
     cout << ",  shape=["
-	 << gpar(0)*180.0*60.0*60.0/C::pi << ", "   // a (arcsec)
+	 << gpar(0)*180.0*60.0*60.0/M_PI << ", "   // a (arcsec)
 	 << gpar(1)/gpar(0) << ", "                 // r
-	 << gpar(2)*180.0/C::pi << "]";             // pa (deg)
+	 << gpar(2)*180.0/M_PI << "]";             // pa (deg)
   }
   cout << endl;
     

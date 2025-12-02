@@ -50,7 +50,6 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   //else
   // clRetry();
-  REENTER:
   try
     {
       int i;
@@ -86,16 +85,15 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   catch (clError& x)
     {
-      x << x << endl;
-      if (x.Severity() == CL_FATAL) exit(1);
-      //clRetry();
-      RestartUI(REENTER);
+       x << x << endl;
+      if (x.Severity() == CL_FATAL) {throw;} // Re-throw instead of exit - allows proper exception handling
     }
 
 }
 //
 //-------------------------------------------------------------------------
 //
+#ifndef SUBMS_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -178,3 +176,4 @@ int main(int argc, char **argv)
     }
   if (restartUI) RestartUI(RENTER);
 }
+#endif // SUBMS_LIBRARY_BUILD

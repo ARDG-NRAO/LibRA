@@ -57,7 +57,7 @@
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+#include <casacore/scimath/Mathematics/FFTW.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <synthesis/TransformMachines/SimplePBConvFunc.h> //por SINCOS
@@ -278,8 +278,9 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
-   FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
+   // Using FFTW (replaces deprecated FFTPack)
+   FFTW fftw_plan;
+   IPosition fft_size(2, convSize, convSize);
    ////////// 
    Matrix<Complex> screen(convSize, convSize);
    makeGWplane(screen, 0, s0, s1, wsaveptr, lsav, inner, cor, wScale);
@@ -424,7 +425,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     screen.set(0.0);
      Bool cpscr;
      Complex *scr=screen.getStorage(cpscr);
-      Double twoPiW=2.0*C::pi*Double(iw*iw)/cpWscale;
+      Double twoPiW=2.0*M_PI*Double(iw*iw)/cpWscale;
 	 for (Int iy=-inner/2;iy<inner/2;iy++) {
 	   Double m=s1*Double(iy);
 	   Double msq=m*m;
@@ -448,12 +449,10 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 	   }
 	 }
 	 ////Por FFTPack
-	 Vector<Float>work(2*cpConvSize*cpConvSize);
-	 Int lenwrk=2*cpConvSize*cpConvSize;
-	 Bool worksave;
-	 Float *workptr=work.getStorage(worksave);
-	 Int ier;
-	 FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
+	 // Using FFTW for 2D complex FFT
+	 FFTW local_fftw_plan;
+	 IPosition fft_size_local(2, cpConvSize, cpConvSize);
+	 local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
        
        screen.putStorage(scr, cpscr);
 

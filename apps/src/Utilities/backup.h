@@ -19,14 +19,14 @@
 #include <iostream>
 #include <vector>
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <casacore/casa/namespace.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/images/Images/ImageInterface.h>
 #include <casacore/casa/Logging/LogMessage.h>
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Arrays/Matrix.h>
-#include<synthesis/ImagerObjects/SIImageStore.h>
+#include <synthesis/ImagerObjects/SIImageStore.h>
 
 #include <casacore/scimath/Fitting/NonLinearFitLM.h>
 #include <casacore/scimath/Functionals/Gaussian2D.h>

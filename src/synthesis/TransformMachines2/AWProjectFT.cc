@@ -650,7 +650,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -776,7 +776,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Double LST   = LAST.get(Day).getValue();
     Double SDec0 = sin(Dec0), CDec0=cos(Dec0);
     LST -= floor(LST); // Extract the fractional day
-    LST *= 2*C::pi;// Convert to Raidan
+    LST *= 2*M_PI;// Convert to Raidan
     
     Double HA0;
     HA0 = LST - RA0;
@@ -1178,7 +1178,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   {
     if (!paChangeDetector.changed(vb,0)) return;
     Int cfSource=CFDefs::NOTCACHED;
-    CoordinateSystem ftcoords;
     // Think of a generic call to get the key-values.  And a
     // overloadable method (or an externally supplied one?) to convert
     // the values to key-ids.  That will ensure that AWProjectFT
@@ -1519,7 +1518,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Float centerX=nx/2;
     for (Int ix=0;ix<nx;ix++) 
       {
-	Float x=C::pi*Float(ix-centerX)/(Float(nx)*Float(convSampling));
+	Float x=M_PI*Float(ix-centerX)/(Float(nx)*Float(convSampling));
 	if(ix==centerX) sincConv(ix)=1.0;
 	else            sincConv(ix)=sin(x)/x;
 	sincConv(ix) = 1.0;
@@ -1869,6 +1868,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     // std::chrono::time_point<std::chrono::steady_clock> 
     //   uvwTime=std::chrono::steady_clock::now();
+
     Matrix<Double> uvw(negateUV(vb));
     
     Vector<Double> dphase(vb.nRows());
@@ -2616,26 +2616,28 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     //timer_p.mark();
 
+    auto setCFBMap = [this,&vbs,&vb](casacore::CountedPtr<CFStore2> cfs_l)
+		     {
+		       cfs_l->invokeGC(vbs.spwID_p);
+		       vb2CFBMap_p->setDoPointing(doPointing);
+		       vb2CFBMap_p->makeVBRow2CFBMap(*cfs_l,
+						     vb,
+						     paChangeDetector.getParAngleTolerance(),
+						     chanMap,polMap,po_p);
+		     };
+
     po_p->fetchPointingOffset(*image, vb, doPointing);
-    if (makingPSF || (vbs.ftmType_p==casa::refim::FTMachine::WEIGHT)){
-      cfwts2_p->invokeGC(vbs.spwID_p);
-      vb2CFBMap_p->setDoPointing(doPointing);
-      vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
-				      vb,
-				      paChangeDetector.getParAngleTolerance(),
-				      chanMap,polMap,po_p);
-    }
+    if (makingPSF || (vbs.ftmType_p==casa::refim::FTMachine::WEIGHT))
+      {
+	setCFBMap(cfwts2_p);
+      }
     else
       {
 	// If the Wt. CFs are still in the memory, clear them.  They
 	// won't be required again (though with the silly check below,
 	// if the in-memory Wt. CFs are less than 1KB, they will be
 	// left in memory).
-	cfs2_p->invokeGC(vbs.spwID_p);
-	vb2CFBMap_p->setDoPointing(doPointing);
-	vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p, vb,
-				       paChangeDetector.getParAngleTolerance(),
-				       chanMap,polMap,po_p);
+	setCFBMap(cfs2_p);
       }
     // 
     // Trigger the computation of phase gradiant corresponding to the

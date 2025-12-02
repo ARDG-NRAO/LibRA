@@ -23,7 +23,7 @@
 declare_casacpp_component("asdmstman")
 
 # External dependencies
-target_link_libraries(casacpp_asdmstman PUBLIC PkgConfig::CASACORE)
+target_link_libraries(casacpp_asdmstman PUBLIC ${CASACORE_LIBRARIES})
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes

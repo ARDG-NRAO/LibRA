@@ -56,7 +56,7 @@
 #include <casacore/lattices/Lattices/LatticeCache.h>
 #include <casacore/lattices/LatticeMath/LatticeFFT.h>
 #include <casacore/scimath/Mathematics/ConvolveGridder.h>
-#include <casacore/scimath/Mathematics/FFTPack.h>
+#include <casacore/scimath/Mathematics/FFTW.h>
 #include <msvis/MSVis/VisBuffer.h>
 #include <msvis/MSVis/VisibilityIterator.h>
 #include <synthesis/TransformMachines/SimplePBConvFunc.h> //por SINCOS
@@ -266,13 +266,14 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int* suppstor=pcsupp.getStorage(delsupstor);
    Double s1=sampling(1);
    Double s0=sampling(0);
-   ///////////Por FFTPack
+   ///////////Using FFTW (replaces deprecated FFTPack)
+   FFTW fftw_plan;
+   IPosition fft_size(2, convSize, convSize);
+   // Create dummy parameters for makeGWplane compatibility
    Vector<Float> wsave(2*convSize*convSize+15);
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
-   FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
    ////////// 
    Matrix<Complex> screen(convSize, convSize);
    makeGWplane(screen, 0, s0, s1, wsaveptr, lsav, inner, cor, wScale);
@@ -293,7 +294,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 #ifdef _OPENMP
      omp_set_nested(0);
 #endif
-#pragma omp parallel for default(none) firstprivate(/*cpWConvSize,*/ cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, cpWscale,  wstart, wend) 
+#pragma omp parallel for default(none) firstprivate(/*cpWConvSize,*/ cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, cpWscale,  wstart, wend) shared(fftw_plan) 
      for (Int iw=wstart; iw < (wend+1)  ; ++iw) {
        Matrix<Complex> screen1(cpConvSize, cpConvSize);
        makeGWplane(screen1, iw, s0, s1, wsaveptr, lsav, inner, cor, cpWscale);
@@ -409,7 +410,7 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     screen.set(0.0);
      Bool cpscr;
      Complex *scr=screen.getStorage(cpscr);
-      Double twoPiW=2.0*C::pi*Double(iw*iw)/cpWscale;
+      Double twoPiW=2.0*M_PI*Double(iw*iw)/cpWscale;
 	 for (Int iy=-inner/2;iy<inner/2;iy++) {
 	   Double m=s1*Double(iy);
 	   Double msq=m*m;
@@ -437,8 +438,10 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
 	 Int lenwrk=2*cpConvSize*cpConvSize;
 	 Bool worksave;
 	 Float *workptr=work.getStorage(worksave);
-	 Int ier;
-	 FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
+	 // Using FFTW for 2D complex FFT
+	 FFTW local_fftw_plan;
+	 IPosition fft_size_local(2, cpConvSize, cpConvSize);
+	 local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
        
        screen.putStorage(scr, cpscr);
 
@@ -639,13 +642,14 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Complex *cor=corr.getStorage(cpcor);
    Double s1=sampling(1);
    Double s0=sampling(0);
-   ///////////Por FFTPack
+   ///////////Using FFTW (replaces deprecated FFTPack)
+   FFTW fftw_plan;
+   IPosition fft_size(2, convSize, convSize);
+   // Create dummy parameters for compatibility
    Vector<Float> wsave(2*convSize*convSize+15);
    Int lsav=2*convSize*convSize+15;
    Bool wsavesave;
    Float *wsaveptr=wsave.getStorage(wsavesave);
-   Int ier;
-   FFTPack::cfft2i(convSize, convSize, wsaveptr, lsav, ier);
    //////////
 #ifdef _OPENMP
    omp_set_nested(0);
@@ -654,8 +658,8 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
    Int cpConvSize=convSize;
    Int cpWConvSize=wConvSize;
    Double cpWscale=wScale;
-   //Float max0=1.0;
-#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, ier, lsav, cor, inner, maxptr, cpWscale, C::pi )
+   Double twopi = 2.0 * M_PI; // Define a local variable for 2π
+#pragma omp parallel for default(none) firstprivate(cpWConvSize, cpConvSize, convFuncPtr, s0, s1, wsaveptr, lsav, cor, inner, maxptr, cpWscale, twopi) shared(fftw_plan)
 
   for (Int iw=0; iw< cpWConvSize;iw++) {
     // First the w term
@@ -664,9 +668,9 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     Bool cpscr;
     Complex *scr=screen.getStorage(cpscr);
     if(cpWConvSize>1) {
-      //      Double twoPiW=2.0*C::pi*sqrt(Double(iw))/uvScale(2);
-      //Double twoPiW=2.0*C::pi*Double(iw)/wScale_p;
-      Double twoPiW=2.0*C::pi*Double(iw*iw)/cpWscale;
+      //      Double twoPiW=2.0*M_PI*sqrt(Double(iw))/uvScale(2);
+      //Double twoPiW=2.0*M_PI*Double(iw)/wScale_p;
+      Double twoPiW=twopi*Double(iw*iw)/cpWscale; // Use the local variable
       for (Int iy=-inner/2;iy<inner/2;iy++) {
 	Double m=s1*Double(iy);
 	Double msq=m*m;
@@ -724,7 +728,10 @@ void WPConvFunc::findConvFunction(const ImageInterface<Complex>& image,
     Int lenwrk=2*cpConvSize*cpConvSize;
     Bool worksave;
     Float *workptr=work.getStorage(worksave);
-    FFTPack::cfft2f(cpConvSize, cpConvSize, cpConvSize, scr, wsaveptr, lsav, workptr, lenwrk, ier);
+    // Using FFTW for 2D complex FFT
+    FFTW local_fftw_plan;
+    IPosition fft_size_local(2, cpConvSize, cpConvSize);
+    local_fftw_plan.c2c(fft_size_local, reinterpret_cast<std::complex<float>*>(scr), true);
    
     screen.putStorage(scr, cpscr);
     /////////////////////

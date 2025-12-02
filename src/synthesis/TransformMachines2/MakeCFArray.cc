@@ -143,7 +143,9 @@ namespace casa{
     std::tuple<bool,                   // If new CFs were loaded (reloadCFs)
 	       int,                    // The SPW ID for which the CFs were loaded
 	       hpg::CFSimpleIndexer,   // The corresponding CFSI.  This should be used in AWVRHPG to fill hpg::VisData
-	       std::shared_ptr<hpg::RWDeviceCFArray>> // The RWDeviceCFArray.  Use it if reloadCFs==true
+	       std::shared_ptr<hpg::RWDeviceCFArray>, // The RWDeviceCFArray.  Use it if reloadCFs==true
+	       std::vector<int>
+	       > 
     MakeCFArray::makeRWDArray(const bool& wbAWP, const int& user_wprojplanes,
 			     const ImageInterface<Float>& skyImage,
 			     const Vector<int>& polMap,
@@ -155,6 +157,8 @@ namespace casa{
       bool reloadCFs = SynthesisUtils::needNewCF(cachedVBSpw_p, vbSpw_l, user_wprojplanes, wbAWP,initialized_p==false);
       hpg::CFSimpleIndexer cfsi({1,false},{1,false},{1,true},{1,true}, 1);
       std::shared_ptr<hpg::RWDeviceCFArray> rwdcfa_sptr;
+
+      std::vector<int> cfShapeList;
 
       if (reloadCFs)
 	{
@@ -196,13 +200,17 @@ namespace casa{
 
 	  cfsi = std::get<0>(ret);
 	  rwdcfa_sptr = std::move(std::get<1>(ret));
+	  cfShapeList = std::get<2>(ret);
 	}
-      return std::make_tuple(reloadCFs, cachedVBSpw_p, cfsi, rwdcfa_sptr);
+      return std::make_tuple(reloadCFs, cachedVBSpw_p, cfsi, rwdcfa_sptr,cfShapeList);
     }
     //
     //--------------------------------------------------------------------------------------------
     //
-    std::tuple<hpg::CFSimpleIndexer, std::shared_ptr<hpg::RWDeviceCFArray>>
+    std::tuple<hpg::CFSimpleIndexer,
+	       std::shared_ptr<hpg::RWDeviceCFArray>,
+	       std::vector<int>
+	       >
     MakeCFArray::makeRWDCFA_p(casa::refim::MyCFArrayShape& cfArrayShape,
 			      const double& vbPA, const double& imRefFreq,
 			      casa::refim::CFBuffer& cfb,
@@ -368,7 +376,7 @@ namespace casa{
       // }
       // cerr << endl;
       //-------------------------------------------------------------------------------------------------
-      auto err_or_val = hpg::RWDeviceCFArray::create(hpg::Device::Cuda, cfArrayShape);
+      auto err_or_val = hpg::RWDeviceCFArray::create(HPGDevice_p, cfArrayShape);
       if (!hpg::is_value(err_or_val))
 	throw(AipsError("Error while creating hpg::RWDeviceCFArray in MakeCFArray::makeRWDCFA_p()"));
       std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = hpg::get_value(std::move(err_or_val));
@@ -390,6 +398,8 @@ namespace casa{
       // 	  cerr << endl;
       // 	}
       // cerr << endl << "--------------------------------" << endl;
+
+      std::vector<int> cfShapeList;
 
       for(int iFreq=0; iFreq < nFreqCF; iFreq++) // CASA CF Freq-index
     	{
@@ -438,6 +448,8 @@ namespace casa{
 							 cfShape, support,muellerElement,
 							 fNdx, wNdx, pNdx,
 							 paTolerance);
+			      cfShapeList.push_back(support[0]);
+
 			      //
 			      // Ref. for meaning of the indices in CFCellInex: (BL, PA, W, Freq, Pol)
 			      //hpg::CFCellIndex cfCellNdx(0,0,wNdx,fNdx,(mndx_p[targetIMPol][mCol]));
@@ -506,7 +518,7 @@ namespace casa{
     	  if (nWCF > 1) iGrp=0;
     	} // Freq loop
       //cerr << endl;
-      return std::make_tuple(cfsi,rwDCFArray);
+      return std::make_tuple(cfsi,rwDCFArray,cfShapeList);
     }
   } // NAMESPACE refin - END
 } // NAMESPACE casa - END

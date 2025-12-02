@@ -659,7 +659,7 @@ DelayRateFFT::snr(Int icorr, Int ielem, Float delay, Float rate) {
             cerr << "Correlation " << icorr << " antenna " << ielem << ": sum of weights is zero." << endl;
         }
     } else {
-        Float x = C::pi/2*peak/sumw_(p);
+        Float x = M_PI/2*peak/sumw_(p);
         // The magic numbers in the following formula are from AIPS FRING
         cwt = (pow(tan(x), 1.163) * sqrt(sumw_(p)/sqrt(sumww_(p)/xcount_(p))));
         if (DEVDEBUG) {
@@ -924,7 +924,7 @@ expb_f(const gsl_vector *param, void *d, gsl_vector *f)
                 if (fl(dcorr, ichan, irow)) continue;
 
                 Float freq = freqs(ichan);
-                Float k_disp = KDISPSCALE*C::_2pi*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
+                Float k_disp = KDISPSCALE*(2*M_PI)*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
 
                 Complex vis = v(dcorr, ichan, irow);
                 Double w0 = weights(dcorr, ichan, irow);
@@ -941,8 +941,8 @@ expb_f(const gsl_vector *param, void *d, gsl_vector *f)
                 if (fabs(w) < FLT_EPSILON) continue;
                 // We have to turn the delay back into seconds from nanoseconds.
                 // Freq difference is in Hz, which comes out typically as 1e6 bands
-                //Double wDf = C::_2pi*(freqs(ichan) - freqs(0))*1e-9;
-                Double wDf = C::_2pi*(freqs(ichan) - reffreq0)*1e-9;
+                //Double wDf = (2*M_PI)*(freqs(ichan) - freqs(0))*1e-9;
+                Double wDf = (2*M_PI)*(freqs(ichan) - reffreq0)*1e-9;
                 //
                 Double t1 = s.time()(0);
                 // FIXME: Remind me why we *do* scale wDf with 1e-9
@@ -950,8 +950,8 @@ expb_f(const gsl_vector *param, void *d, gsl_vector *f)
                 // I have a theory which is mine:
                 // this is because tau is in nanoseconds.
                 //Double ref_freq = freqs(0);
-                //Double wDt = C::_2pi*(t1 - refTime) * ref_freq; 
-                Double wDt = C::_2pi*(t1 - refTime) * reffreq0; 
+                //Double wDt = (2*M_PI)*(t1 - refTime) * ref_freq; 
+                Double wDt = (2*M_PI)*(t1 - refTime) * reffreq0; 
 
                 Double mtheta = -(phi0 + tau*wDf + r*wDt + disp*k_disp); 
                 Double vtheta = arg(vis);
@@ -1052,8 +1052,8 @@ expb_df(CBLAS_TRANSPOSE_t TransJ, const gsl_vector* param, const gsl_vector *u, 
 
                 
             //Double ref_freq = freqs(0); 
-            //Double wDt = C::_2pi*(t1 - refTime) * ref_freq; 
-            Double wDt = C::_2pi*(t1 - refTime) * reffreq0; 
+            //Double wDt = (2*M_PI)*(t1 - refTime) * ref_freq; 
+            Double wDt = (2*M_PI)*(t1 - refTime) * reffreq0; 
             bool found_data = false;
 
             for (size_t ichan = 0; ichan != vis.ncolumn(); ichan++) {
@@ -1064,11 +1064,11 @@ expb_df(CBLAS_TRANSPOSE_t TransJ, const gsl_vector* param, const gsl_vector *u, 
                 found_data = true;
 
                 Float freq = freqs(ichan);
-                Float k_disp = KDISPSCALE*C::_2pi*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
+                Float k_disp = KDISPSCALE*(2*M_PI)*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
                     
                 // Add a 1e-9 factor because tau parameter is in nanoseconds.
-                //Double wDf = C::_2pi*(freqs(ichan) - freqs(0))*1e-9;
-                Double wDf = C::_2pi*(freqs(ichan) - reffreq0)*1e-9;
+                //Double wDf = (2*M_PI)*(freqs(ichan) - freqs(0))*1e-9;
+                Double wDf = (2*M_PI)*(freqs(ichan) - reffreq0)*1e-9;
                 //
                 Double mtheta = -(phi0 + tau*wDf + r*wDt + disp*k_disp);
                 Double ws = sin(mtheta);
@@ -1320,17 +1320,17 @@ expb_hess(gsl_vector *param, AuxParamBundle *bundle, gsl_matrix *hess, Double xi
                 
                 // We have to turn the delay back into seconds from nanoseconds.
                 // Freq difference is in Hz, which comes out typically as 1e6 bands
-                //Double wDf = C::_2pi*(freqs(ichan) - freqs(0))*1e-9;
-                Double wDf = C::_2pi*(freqs(ichan) - reffreq0)*1e-9;
+                //Double wDf = (2*M_PI)*(freqs(ichan) - freqs(0))*1e-9;
+                Double wDf = (2*M_PI)*(freqs(ichan) - reffreq0)*1e-9;
                 //
                 Double t1 = s.time()(0);
 
                 //Double ref_freq = freqs(0);
-                //Double wDt = C::_2pi*(t1 - refTime) * ref_freq;
-                Double wDt = C::_2pi*(t1 - refTime) * reffreq0; 
+                //Double wDt = (2*M_PI)*(t1 - refTime) * ref_freq;
+                Double wDt = (2*M_PI)*(t1 - refTime) * reffreq0; 
 
                 Float freq = freqs(ichan);
-                Float k_disp = KDISPSCALE*C::_2pi*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
+                Float k_disp = KDISPSCALE*(2*M_PI)*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
 
                 Double mtheta = -(phi0 + tau*wDf + r*wDt + disp*k_disp); 
                 Double vtheta = arg(vis);
@@ -1896,7 +1896,7 @@ void CTRateAwareTimeInterp1::applyPhaseRate(Bool single)
       Double dtime=(currTime_-timeRef_)-timelist_(currIdx_);
       Double phase=result_(IPosition(2,ipol*4,0));
       Double rate=result_(IPosition(2,ipol*4+2,0));
-      phase+=2.0*C::pi*rate*centroidFreq*dtime;
+      phase+=2.0*M_PI*rate*centroidFreq*dtime;
       result_(IPosition(2,ipol*4,0))=phase;
     }
   } else {
@@ -1916,8 +1916,8 @@ void CTRateAwareTimeInterp1::applyPhaseRate(Bool single)
       rate(0)=r.xyPlane(0)(IPosition(2,ipol*4+2,0));
       rate(1)=r.xyPlane(1)(IPosition(2,ipol*4+2,0));
 
-      phase(0)+=2.0*C::pi*rate(0)*centroidFreq*dtime(0);
-      phase(1)+=2.0*C::pi*rate(1)*centroidFreq*dtime(1);
+      phase(0)+=2.0*M_PI*rate(0)*centroidFreq*dtime(0);
+      phase(1)+=2.0*M_PI*rate(1)*centroidFreq*dtime(1);
 
       Vector<Complex> ph(2);
       ph(0)=Complex(cos(phase(0)),sin(phase(0)));
@@ -2175,12 +2175,12 @@ void FringeJones::calcAllJones() {
       for (Int ipar=0;ipar<nPar();ipar+=4) {
 	if (onePOK(ipar)) {
           Float freq = currFreq()(ich);
-          Float k_disp = 1e-9*KDISPSCALE*C::_2pi*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
+          Float k_disp = 1e-9*KDISPSCALE*(2*M_PI)*(1.0/freq + (freq-fmin-fmax)/(fmin*fmax));
                           
 	  phase=onePar(ipar);
-	  phase+=2.0*C::pi*onePar(ipar+1)*
+	  phase+=2.0*M_PI*onePar(ipar+1)*
 	    (currFreq()(ich)-KrefFreqs_(currSpw()));
-	  phase+=2.0*C::pi*onePar(ipar+2)*KrefFreqs_(currSpw())*1e9*
+	  phase+=2.0*M_PI*onePar(ipar+2)*KrefFreqs_(currSpw())*1e9*
 	    (currTime() - refTime());
           Float dph_d = onePar(ipar+3) * k_disp;
           if (DEVDEBUG && 0) {
@@ -2386,7 +2386,7 @@ FringeJones::selfSolveOne(SDBList& sdbs) {
             // table) is the left-hand edge of the frequency grid.
             Double delta1 = df0*delay/1e9;
             Double delta2 = reffreq*dt0*rate;
-            Double delta3 = C::_2pi*(delta1+delta2);
+            Double delta3 = (2*M_PI)*(delta1+delta2);
             Double dt;
             auto p = aggregateTime.find(iant);
             if (zeroRates() && p != aggregateTime.end()) {

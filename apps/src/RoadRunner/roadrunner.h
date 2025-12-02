@@ -48,15 +48,17 @@
 #include <synthesis/TransformMachines2/CFStore2.h>
 #include <synthesis/TransformMachines2/MakeCFArray.h>
 
+#include <librautils/utils.h>
 #include <libracore/ThreadCoordinator.h>
 
-#ifdef ROADRUNNER_USE_HPG
+#ifdef LIBRA_USE_HPG
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/AWProjectWBFTHPG.h>
 #include <hpg/hpg.hpp>
 #endif
 
-
+#include <LibHPG.h>
+#include <stdexcept>
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -95,77 +97,7 @@ std::string remove_extension(const std::string& path);
 // an API for MPI class.  Ideally, MPI code should not be part of the
 // roadrunner (application layer) code.
 //#include <synthesis/TransformMachines2/test/RR_MPI.h>
-//
-//-------------------------------------------------------------------------
-// Class to manages the HPG initialize/finalize scope.
-// hpg::finalize() in the destructor.  This also reports, via the
-// destructor, the time elapsed between contruction and destruction.
-//
-/**
- * @class LibHPG
- * @brief Manages the HPG initialize/finalize scope.
- *
- * This class is responsible for initializing and finalizing the HPG library. 
- * It also reports the time elapsed between construction and destruction.
- */
-class LibHPG
-{
-public:
-  /**
-   * @brief Constructor for the LibHPG class.
-   * @param usingHPG A boolean indicating whether to use HPG. Default is true.
-   */
-  LibHPG(const bool usingHPG=true): init_hpg(usingHPG)
-  {
-    initialize();
-  }
-  /**
-   * @brief Initializes the HPG library.
-   * @return A boolean indicating whether the initialization was successful.
-   */
-  bool initialize()
-  {
-    bool ret = true;
-    startTime = std::chrono::steady_clock::now();
-#ifdef ROADRUNNER_USE_HPG
-    if (init_hpg) ret = hpg::initialize();
-#endif
-    if (!ret)
-      throw(AipsError("LibHPG::initialize() failed"));
-    return ret;
-  };
-  /**
-   * @brief Finalizes the HPG library.
-   */
-  void finalize()
-  {
-#ifdef ROADRUNNER_USE_HPG
-    if (init_hpg)
-      {
-	cerr << endl << "CALLING hpg::finalize()" << endl;
-	hpg::finalize();
-      }	
-#endif
-  };
-  /**
-   * @brief Destructor for the LibHPG class.
-   */
-  ~LibHPG()
-  {
-    finalize();
 
-    auto endTime = std::chrono::steady_clock::now();
-    std::chrono::duration<double> runtime = endTime - startTime;
-    std::cerr << "roadrunner runtime: " << runtime.count()
-	      << " sec" << std::endl;
-  };
-
-  std::chrono::time_point<std::chrono::steady_clock> startTime;
-  bool init_hpg;
-};
-//
-//-------------------------------------------------------------------------
-//
 //
 //-------------------------------------------------------------------------
 // The engine that loads the required CFs from the cache and copies
@@ -225,8 +157,6 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::Vector<int>& spwidList,
 	      casacore::Vector<double>& spwRefFreqList,
 	      int& nDataPol);
-
-
 
 //--------------------------------------------------------------------------------------------
 // Place-holder functions to build the appropriate Mueller index
@@ -337,4 +267,3 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 
 
 #endif
-

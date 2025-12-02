@@ -124,7 +124,7 @@ namespace casa{
 	  << grid_size[0] << " " << grid_size[1] << " "
 	  << grid_size[2] << " " << grid_size[3] << " " << LogIO::POST;
     
-    if (!hpg::is_initialized()) hpg::initialize();
+    if (!hpg::is_initialized()) hpg::initialize(false);
     
     
     {
@@ -173,7 +173,7 @@ namespace casa{
       grid_size_int[3]=grid_size[3];
       
 	
-      hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
+     hpg::rval_t<Gridder> g = Gridder::create<N>(HPGDevice_l, NProcs, max_visibilities_batch_size,
 						  cfArray_ptr, grid_size_int, grid_scale, mueller_indexes,
 						  conjugate_mueller_indexes);
       if (!hpg::is_value(g))
@@ -206,19 +206,25 @@ namespace casa{
   //
   //-------------------------------------------------------------------------
   //  
-  std::tuple<String, hpg::Device> AWVisResamplerHPG::getHPGDevice()
+  std::tuple<String, hpg::Device> AWVisResamplerHPG::makeHPGDevice()
   {
-    String hpgDevice="cuda";
+    String hpgDevice="libra_cuda";
     hpg::Device Device=hpg::Device::Cuda;
-
     hpgDevice=refim::SynthesisUtils::getenv("HPGDEVICE",hpgDevice);
-    if      (hpgDevice=="cuda")    Device=hpg::Device::Cuda;
-    else if (hpgDevice=="serial")  Device=hpg::Device::Serial;
+
+    if      ((hpgDevice=="curd")   || (hpgDevice=="libra_cuda"))   Device=hpg::Device::Cuda;
+    else if ((hpgDevice=="cereal") || (hpgDevice=="libra_serial")) Device=hpg::Device::Serial;
+    else if ((hpgDevice=="opium")  || (hpgDevice=="libra_omp"))    Device=hpg::Device::OpenMP;
     else
+    {
+      std::string msg="Supported backend names: \"curd or libra_cuda\" for CUDA\n"
+                      "                         \"cereal or libra_serial\" for Serial\n"
+                      "                         \"opium or libra_omp\" for OpenMP";
       throw(
-	    SynthesisFTMachineError("HPGDEVICE env. var. setting incorrect: " +
-				    hpgDevice)
+	    SynthesisFTMachineError("Incorrect setting for the HPGDEVICE env. var.: " +
+				    hpgDevice + "\n" + msg.c_str())
 	    );
+    }
 
     return std::make_tuple(hpgDevice,Device);
   }
@@ -514,7 +520,7 @@ namespace casa{
   // Create an instance of the HPG.  If a new HPG was created, if
   // requested, load the model image as well.
   //
-  bool AWVisResamplerHPG::createHPG(const uint& nVBRows,
+  bool AWVisResamplerHPG::createHPG(const uint& nVBVis,
 				    const int& nx, const int& ny, const int& nGridPol, const int& nGridChan,
 				    const PolMapType& mVals,  const PolMapType& mNdx,
 				    const PolMapType& conjMVals, const PolMapType& conjMNdx)
@@ -532,9 +538,11 @@ namespace casa{
     nProcs=refim::SynthesisUtils::getenv("NPROCS",nProcs);
     log_l << "NPROCS: " << nProcs << LogIO::POST;
 
+    // This is set from VBBUCKETSIZE env. variable in createFTMachine().
     nVisPerBucket_p = hpgVBBucket_p.size();
-    nVisPerBucket_p = nVisPerBucket_p <= nVBRows ? nVBRows : nVisPerBucket_p;
-    //    hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,&cfArray_p, gridSize, gridScale,
+    // The minimum bucket size is set by the number of visibilities (NRows * NChan) in the VB.
+    nVisPerBucket_p = nVisPerBucket_p <= nVBVis ? nVBVis : nVisPerBucket_p;
+
     hpgGridder_p = initGridder2<HPGNPOL>(HPGDevice_p,nProcs,rwdcf_ptr_p.get(), gridSize, gridScale,
 					 mNdx,mVals,conjMNdx,conjMVals,
 					 nVisPerBucket_p);
@@ -591,9 +599,17 @@ namespace casa{
 					       hpgGridder_p==NULL);
     bool do_degrid=(HPGModelImageName_p != "");
 
+    //    cerr << "No. of vis per VB: " << vbs.vb_p->nRows() << " " << vbs.nDataChan_p << " " << vbs.vb_p->nRows()*vbs.nDataChan_p << endl;
     // If this is the first pass, create the HPG object.
-    if (hpgGridder_p==NULL) do_degrid = createHPG(vbs.vb_p->nRows(),
-						  nx,ny,nGridPol, nGridChan,
+
+    // HPG format linearizes the VisCube along the time and channel
+    // axis, but not along the polarization axis.  So, one has to
+    // provide the total number of visibilities as No. Of Rows x
+    // No. of chanels. Polarization is handles as a separate index in
+    // HPG format (quite a convoluted way to hold a simple Cube!)
+    //
+    uint NVis = vbs.vb_p->nRows()*vbs.nDataChan_p;
+    if (hpgGridder_p==NULL) do_degrid = createHPG(NVis,nx,ny,nGridPol, nGridChan,
 						  mVals, mNdx, conjMVals, conjMNdx);
 
     if (reloadCFs)
@@ -841,7 +857,7 @@ namespace casa{
 	    	// 				Device host_device,
 	    	// 				std::vector<VisData<N>>&& visibilities)
 
-		//cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
+		//		cerr << "HPG VB: " << hpgVBList_p[i].size() << endl;
 	    	auto maybe_predictedVis = hpgGridder_p->degrid_get_predicted_visibilities(
 											  hpg::Device::OpenMP,
 											  std::move(hpgVBList_p[i])
@@ -850,7 +866,9 @@ namespace casa{
 		  {
 		    LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","GridToData"));
 		    log_l << "Failed hpg::degrid_get_predicted_visibilities()"
-			  << " Error type: " << static_cast<int>(hpg::get_error(maybe_predictedVis).type()) << LogIO::SEVERE;
+			  << " Error type: " << static_cast<int>(hpg::get_error(maybe_predictedVis).type())
+			  << " (hpgVB size = " << hpgVBList_p[i].size() << ")"
+			  << LogIO::SEVERE;
 		  }
 		hpgGridder_p->fence();
 		//

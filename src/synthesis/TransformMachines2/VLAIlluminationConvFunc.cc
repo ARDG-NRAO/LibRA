@@ -214,8 +214,8 @@ namespace casa{
     xform = 0.0; xform.diagonal() = 1.0;     
     DirectionCoordinate dirCoords(MDirection::J2000,
 				  Projection(Projection::SIN),  
-				  135*C::pi/180.0, 60*C::pi/180.0,
-				  -1*C::pi/180.0, 1*C::pi/180,    
+				  135*M_PI/180.0, 60*M_PI/180.0,
+				  -1*M_PI/180.0, 1*M_PI/180,    
 				  xform,                          
 				  128, 128); 
     Vector<Bool> diraxes(2); diraxes=true;

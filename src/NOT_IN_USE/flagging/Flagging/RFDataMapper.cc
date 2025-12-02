@@ -94,8 +94,8 @@ UVRowMapper(AbsU,abs(UVW(0)));
 UVRowMapper(AbsV,abs(UVW(1)));
 UVRowMapper(AbsW,abs(UVW(2)));
 UVRowMapper(UVD,sqrt(UVW(0)*UVW(0)+UVW(1)*UVW(1)));
-UVRowMapper(UVA,atan2(UVW(0),UVW(1))/C::pi*180);
-UVRowMapper(HA,sin_dec!=0 ? atan2(UVW(1)/sin_dec,UVW(0))/C::pi*180 : 0 );
+UVRowMapper(UVA,atan2(UVW(0),UVW(1))/M_PI*180);
+UVRowMapper(HA,sin_dec!=0 ? atan2(UVW(1)/sin_dec,UVW(0))/M_PI*180 : 0 );
 
 // these arrays define a mapping between column names and cube mappers
 const String 

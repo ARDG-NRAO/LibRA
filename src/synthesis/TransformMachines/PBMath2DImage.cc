@@ -1152,7 +1152,7 @@ void PBMath2DImage::updateJones(const CoordinateSystem& coords,
   xform(0,1) = -sin(pa);
   xform(1,0) = +sin(pa);
 
-  //  cout << "updateJones: position angle = " << 180.0*pa/C::pi << endl;
+  //  cout << "updateJones: position angle = " << 180.0*pa/M_PI << endl;
 
   IPosition desiredShape(shape);
   desiredShape(2)=reJonesImage_p->shape()(2);

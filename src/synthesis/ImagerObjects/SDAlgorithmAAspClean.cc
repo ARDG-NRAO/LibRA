@@ -67,6 +67,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsCleaner(),
     itsStopPointMode(stoppointmode),
     itsFusedThreshold(fusedThreshold),
+    itsUserLargestScale(largestScale),
     itsScales(scales),
     itsWaveletScales(waveletScales),
     itsWaveletAmps(waveletAmps),
@@ -77,7 +78,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsLbfgsEpsG(lbfgsEpsG),
     itsLbfgsMaxit(lbfgsMaxit),
     itsMCsetup(true),
-    itsUserLargestScale(largestScale),
     itsPrevPsfWidth(0),
     itsIsSingle(isSingle)
   {

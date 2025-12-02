@@ -23,7 +23,7 @@
 declare_casacpp_component("atmosphere")
 
 # External dependencies
-target_link_libraries(casacpp_atmosphere PUBLIC PkgConfig::CASACORE)
+target_link_libraries(casacpp_atmosphere PUBLIC ${CASACORE_LIBRARIES})
 
 # Internal dependencies
 # the top level source directory, so that we can find all the includes

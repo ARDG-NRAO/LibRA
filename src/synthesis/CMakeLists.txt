@@ -43,15 +43,15 @@ target_sources(${LIB_NAME}
 
 # External dependencies
 # directory where casacore is installed
-target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::CASACORE)
+target_link_libraries(${LIB_NAME} PUBLIC ${CASACORE_LIBRARIES})
 # OpenMP dependency
 #target_link_libraries(${LIB_NAME} PUBLIC OpenMP::OpenMP_CXX)
 # Libsakura dependency
 if (LIBRA_USE_LIBSAKURA)
   target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 endif()
-# Libhpg dependency
-target_link_libraries(${LIB_NAME} PUBLIC Hpg::hpg)
+# Libhpg dependency - use --as-needed to avoid pulling in GPU deps for apps that don't use gridding
+target_link_libraries(${LIB_NAME} PRIVATE -Wl,--push-state,--as-needed Hpg::hpg -Wl,--pop-state)
 # Libparafeed dependency
 target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
 

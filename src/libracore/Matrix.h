@@ -1,7 +1,7 @@
 #ifndef LIBRACORE_MATRIX_H
 #define LIBRACORE_MATRIX_H
 
-#include <mdspan.hpp>
+#include <mdspan/mdspan.hpp>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <cassert>
 

@@ -1,0 +1,183 @@
+#-*- cmake -*-
+# Copyright (C) 2025
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+
+cmake_minimum_required(VERSION 3.18)
+
+# Set policy for CMAKE_VERSION >= 3.24.0
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+  cmake_policy(SET CMP0135 OLD)
+endif()
+
+project("LibRA Apps"
+  DESCRIPTION "LibRA CL, C/C++, Py Interfaces"
+  HOMEPAGE_URL https://github.com/ARDG-NRAO/LibRA
+  LANGUAGES CXX Fortran C)
+
+set(LIBRA_ID "LibRA INFO: ")
+set(CMAKE_CXX_STANDARD 17)
+set(BUILD_TYPE "RelWithDebInfo")
+set(CASA_BUILD_TYPE "RelWithDebInfo")
+
+# Include required modules
+include(FindPkgConfig)
+
+# Add local cmake modules to path - this will be set properly in src/CMakeLists.txt
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
+
+# Set CMAKE environment variables
+set(CMAKE_INSTALL_LIBDIR lib)
+set(CMAKE_INSTALL_INCLUDEDIR include)
+set(CMAKE_INSTALL_BINDIR bin)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+# Find system information
+if (NOT DEFINED NCORES)
+    cmake_host_system_information(RESULT NCORES QUERY NUMBER_OF_PHYSICAL_CORES)
+    cmake_host_system_information(RESULT NTHREADS QUERY NUMBER_OF_LOGICAL_CORES)
+    message("${LIBRA_ID} Number of physical cores: ${NCORES}")
+    message("${LIBRA_ID} Number of logical cores: ${NTHREADS}")
+    math(EXPR NCORES "${NCORES} - 2")
+endif()
+
+if (NCORES LESS 1)
+  set(NCORES 1)
+endif()
+message("${LIBRA_ID} Setting number of cores to ${NCORES}")
+
+# LibRA variant options
+if(NOT DEFINED LIBRA_USE_LIBSAKURA)
+  set(LIBRA_USE_LIBSAKURA OFF)
+endif()
+
+if(NOT DEFINED LIBRA_USE_EXODUS)
+  set(LIBRA_USE_EXODUS OFF)
+endif()
+
+if(NOT DEFINED Apps_BUILD_TESTS)
+  set(Apps_BUILD_TESTS OFF)
+endif()
+
+message("${LIBRA_ID} LIBRA_USE_LIBSAKURA: ${LIBRA_USE_LIBSAKURA}")
+message("${LIBRA_ID} LIBRA_USE_EXODUS: ${LIBRA_USE_EXODUS}")
+message("${LIBRA_ID} Apps_BUILD_TESTS: ${Apps_BUILD_TESTS}")
+
+# Find Spack-managed dependencies
+find_package(PkgConfig REQUIRED)
+
+# Find Kokkos
+find_package(Kokkos REQUIRED)
+message("${LIBRA_ID} Found Kokkos: ${Kokkos_DIR}")
+
+# Find HPG
+find_package(Hpg REQUIRED)
+message("${LIBRA_ID} Found HPG: ${Hpg_DIR}")
+
+# Find parafeed
+find_package(parafeed REQUIRED)
+message("${LIBRA_ID} Found parafeed: ${parafeed_DIR}")
+
+# Find casacore using pkg-config (casacore only provides .pc files)
+pkg_check_modules(CASACORE REQUIRED casacore)
+message("${LIBRA_ID} Found casacore: ${CASACORE_LIBDIR}")
+
+# Find pybind11
+find_package(pybind11 REQUIRED)
+message("${LIBRA_ID} Found pybind11: ${pybind11_DIR}")
+
+# Find FFTW
+pkg_check_modules(FFTW REQUIRED fftw3)
+message("${LIBRA_ID} Found FFTW: ${FFTW_LIBDIR}")
+
+# Find system libraries
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
+# Find optional dependencies
+if(LIBRA_USE_LIBSAKURA)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(SAKURA REQUIRED libsakura)
+  message("${LIBRA_ID} Found libsakura: ${SAKURA_LIBDIR}")
+endif()
+
+if(Apps_BUILD_TESTS)
+  find_package(GTest REQUIRED)
+  message("${LIBRA_ID} Found GTest: ${GTest_DIR}")
+endif()
+
+# Set up include directories
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/apps/src
+)
+
+# Add subdirectories for building LibRA components
+# Don't use add_subdirectory(src) - instead include src components directly
+add_subdirectory(apps)
+add_subdirectory(frameworks)
+add_subdirectory(scripts)
+
+# Handle src components manually to avoid path issues
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake")
+include(DeclareCasacppComponent)
+
+# List of src components to build
+set(LIBRA_COMPONENTS
+    asdmstman
+    atmosphere  
+    casatools
+    components
+    imageanalysis
+    libracore
+    librautils
+    mstransform
+    msvis
+    nrao
+    stdcasa
+    synthesis
+)
+
+# Add each component from src directory
+foreach(_component ${LIBRA_COMPONENTS})
+    set(component_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/${_component}")
+    if(EXISTS ${component_dir})
+        message("${LIBRA_ID} Adding component: ${_component}")
+        add_subdirectory("src/${_component}")
+    else()
+        message("${LIBRA_ID} Skipping missing component: ${_component}")
+    endif()
+endforeach()
+
+# Create installation directories
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(DIRECTORY DESTINATION share)
+
+# Set up data directory for casacore if needed
+set(DATA_DIR ${CMAKE_INSTALL_PREFIX}/share/casacore/data)
+install(DIRECTORY DESTINATION ${DATA_DIR})
+
+message("${LIBRA_ID} Installing libraries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+message("${LIBRA_ID} Installing headers to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+message("${LIBRA_ID} Installing binaries to ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")

@@ -598,7 +598,7 @@ void AWVisResampler::sgrid(Vector<Double>& pos, Vector<Int>& loc,
   
   if (dphase != 0.0)
     {
-      phase=-2.0*C::pi*dphase*freq/C::c;
+      phase=-2.0*M_PI*dphase*freq/C::c;
       Double sp,cp;
       SINCOS(phase,sp,cp);
       phasor=Complex(cp,sp);

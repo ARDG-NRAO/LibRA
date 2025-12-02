@@ -38,12 +38,12 @@ using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 //# Constants
-const Double GaussianSpectralElement::SigmaToFWHM = sqrt(8.0*C::ln2);
+const Double GaussianSpectralElement::SigmaToFWHM = sqrt(8.0*M_LN2);
 
 GaussianSpectralElement::GaussianSpectralElement()
-: PCFSpectralElement(SpectralElement::GAUSSIAN, 1, 0, 2*sqrt(C::ln2)/C::pi) {
+: PCFSpectralElement(SpectralElement::GAUSSIAN, 1, 0, 2*sqrt(M_LN2)/M_PI) {
 	_setFunction(
-		std::shared_ptr<Gaussian1D<Double> >(
+		std::shared_ptr<Gaussian1D<Double> >( 
 			new Gaussian1D<Double>(1, 0, 1)
 		)
 	);
@@ -132,7 +132,7 @@ Bool GaussianSpectralElement::fixedSigma() const {
 }
 
 Double GaussianSpectralElement::getIntegral() const {
-	static const Double c = sqrt(C::pi_4/C::ln2);
+	static const Double c = sqrt(M_PI_4/M_LN2);
 	return c * getAmpl() * getFWHM();
 }
 

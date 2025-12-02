@@ -885,19 +885,19 @@ Bool Simulator::setmosaicfield(const String& sourcename, const String& calcode, 
               newdecval = fieldcenter.getAngle().getValue("rad")(1) + 
 		((j-ceil(ny/2.0)) - 0.5)*roffset;
             }
-            if(newraval >2.0*C::pi) {
-              newraval = newraval - 2.0*C::pi;
+            if(newraval >2.0*M_PI) {
+              newraval = newraval - 2.0*M_PI;
             }
 	    Int sign;
-            if(abs(newdecval) >C::pi/2) {
+            if(abs(newdecval) >M_PI/2) {
               if(newdecval<0) {
                  sign = -1;
               }
               else {
 		sign = 1;
               }
-              newdecval =  sign*(C::pi - abs(newdecval));
-              newraval = abs(C::pi - newraval); 
+              newdecval =  sign*(M_PI - abs(newdecval));
+              newraval = abs(M_PI - newraval); 
             } 
             Quantity newdirra(newraval, "rad");
             Quantity newdirdec(newdecval, "rad");

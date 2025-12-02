@@ -460,7 +460,7 @@ void ProfileFit1D<T>::copy(const ProfileFit1D& other)
 template <class T> 
 void ProfileFit1D<T>::checkType() const
 {
-   T* p=0;
+   // T* p=0;
    AlwaysAssert(casacore::whatType<T>()==casacore::TpDouble,casacore::AipsError);
 }
 

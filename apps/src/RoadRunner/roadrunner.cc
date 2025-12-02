@@ -28,13 +28,12 @@
 //
 //================================================================================
 //
-#define ROADRUNNER_USE_HPG
+#define LIBRA_USE_HPG
 #include <libracore/rWeightor.h>
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 #include <libracore/MakeComponents.h>
 #include <roadrunner.h>
-#include <librautils/utils.h>
 
 #include <stdexcept>
 
@@ -62,6 +61,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 
   casacore::Vector<Int> wNdxList;
   casacore::Vector<Int> spwNdxList;
+  std::vector<int> cfShapeList;
   std::chrono::time_point<std::chrono::steady_clock>
     startMkCF=std::chrono::steady_clock::now();
   auto ret=
@@ -79,8 +79,12 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
   if (newCF)
     {
       casa::refim::MyCFArray cfArray;
+      cfShapeList = std::get<4>(ret);
       cerr << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << endl;
-      cerr << "CF W list: " << wNdxList << endl << "CF SPW List: " << spwNdxList << endl;
+      cerr //<< "CF W list: " << wNdxList << endl
+	   << "CF SPW List: " << spwNdxList << endl
+	   << "CF Shapes: ";
+      for(auto s : cfShapeList) cerr << s << " "; cerr << endl;
       cfsi_g = get<2>(ret);
 
       dcf_sptr = std::get<3>(ret);
@@ -316,7 +320,7 @@ double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBas
 // Enums for the key (the first tempalate-type) is
 // ReturnType(CUMULATIVE_GRIDDING_ENGINE_TIME) --> Total time taken by the Gridding/deGridding kernel (griddingEngine_time).
 // ReturnType(IMAGING_TIME) --> Total time taken to make the image (griddingTime).  This includes the overheads FFT + move to host memory.
-// ReturnType(IMAGING_RATE) --> The rage of gridding in units of Vis/sec (allVol/griddingTime).
+// ReturnType(IMAGING_RATE) --> The rate of gridding in units of Vis/sec (allVol/griddingTime).
 // ReturnType(SOW) --> Sum of weights (sow(IPosition(4,0,0,0,0))).
 // ReturnType(NVIS) --> Number of visibilities processed (visResampler->getVisGridded()).
 // ReturnType.(DATA_VOLUME) --> Number of bytes of data used (visResampler->getDataVolume()).
@@ -335,13 +339,24 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 		bool& conjBeams, float& pbLimit, vector<float>& posigdev,
 		bool& doSPWDataIter) -> RRReturnType
 {
-  LogFilter filter(LogMessage::NORMAL);
-  LogSink::globalSink().filter(filter);
+  // LogFilter filter(LogMessage::NORMAL);
+  // LogSink::globalSink().filter(filter);
   LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
   RRReturnType rrr;
 
   try
     {
+      // set the default of rmode to be "norm"
+      if (rmode =="")
+        rmode = "norm";
+
+      // put the guard here so in the UI() users don't need to correct `rmode` if they don't know how to
+      if (weighting == "briggs" && rmode !="norm")
+	{
+	  log_l << "'rmode' parameter set to 'norm' for Briggs weighting to function correctly"
+		<<  LogIO::WARN << LogIO::POST;
+	  rmode = "norm";
+	}
       // Set safe defaults...
       casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::CORRECTED;
       if (imagingMode=="predict")       dataCol_l=casa::refim::FTMachine::MODEL;
@@ -364,8 +379,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // A RAII class instance that manages the HPG initialize/finalize scope.
       // And hpg::finalize() is called when this instance goes out of
       // scope.
-      LibHPG libhpg(ftmName=="awphpg");
-      //  std::atexit(tpl_finalize);
+      LibHPG libhpg(ftmName=="awphpg",&std::cerr);
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert
@@ -410,7 +424,9 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 			  ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
 			  ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
 			  )
-			throw(AipsError("MS verification error: The requested data column (\""+dataColumnName+"\") for mode="+imagingMode+" not found.  Bailing out."));
+			throw(AipsError("MS verification error: "
+					"The requested data column (\""+dataColumnName+"\") for mode="
+					+imagingMode+" not found.  Bailing out."));
 		    };
 
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
@@ -433,13 +449,13 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // pc.print(oss);
       //      cerr << "PC = " << oss << endl;
 
-      PagedImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
+      TempImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
 						  cmplxGridName, startModelImageName,
 						  imSize, cellSize, phaseCenter,
 						  stokes, refFreqStr, mode);
       PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
 
-      cgrid.table().markForDelete();
+      //      cgrid.table().markForDelete();
 
       // Setup the weighting scheme in the supplied VI2
       weightor(*(db.vi2_l),
@@ -671,7 +687,16 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // below, which is modified by lambda functions supplied to
 	  // cooridinate with the CFServer thread.
 	  //
-	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
+
+	  // The static_cast in the following would emit a
+	  // std::exception if visResampler can't be cast to
+	  // refim::AWVisResamplerHPG.  This is appropriate since
+	  // currently MakeCFArray is used only with
+	  // AWVisResamplerHPG.
+	  std::string HPGDeviceName_p;
+	  hpg::Device HPGDevice_p;
+	  std::tie(HPGDeviceName_p, HPGDevice_p) = static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice();
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p);
 	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 

@@ -141,13 +141,13 @@ class SIImageStore
 			  casacore::Bool addpsf, casacore::Bool addresidual, casacore::Bool addweight, casacore::Bool adddensity );
 
   ///// Normalizers
-  virtual void dividePSFByWeight(const casacore::Float pblimit=casacore::C::minfloat);
-  virtual void normalizePrimaryBeam(const casacore::Float pblimit=casacore::C::minfloat);
-  virtual void divideResidualByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
-  virtual void divideModelByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
-  virtual void multiplyModelByWeight(const casacore::Float pblimit=casacore::C::minfloat, const casacore::String normtype="flatnoise");
-
-  /// Other
+  virtual void dividePSFByWeight(const casacore::Float pblimit=FLT_MIN);
+  virtual void normalizePrimaryBeam(const casacore::Float pblimit=FLT_MIN);
+  virtual void divideResidualByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
+  virtual void divideModelByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
+  virtual void multiplyModelByWeight(const casacore::Float pblimit=FLT_MIN, const casacore::String normtype="flatnoise");
+  
+  /// Other 
   virtual casacore::Bool releaseLocks();
   virtual casacore::Bool releaseComplexGrids();
   void releaseImage( std::shared_ptr<casacore::ImageInterface<casacore::Float> > &im );

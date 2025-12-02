@@ -55,7 +55,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-using namespace std;
 
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -257,7 +256,7 @@ Bool VisBufferUtil::interpolateFrequency(Cube<Complex>& data,
     vi.origin();
 
     Double freqEnd=0.0;
-    Double freqStart=C::dbl_max;
+    Double freqStart=DBL_MAX ; //std::numeric_limits<double>::max();
     vi::VisBuffer2* vb=vi.getVisBuffer();
     for (vi.originChunks(); vi.moreChunks();vi.nextChunk())
     	{
@@ -309,7 +308,7 @@ Bool VisBufferUtil::interpolateFrequency(Cube<Complex>& data,
     vi.originChunks();
     vi.origin();
     try{
-      outfreqMin=C::dbl_max;
+      outfreqMin=DBL_MAX;
       outfreqMax=0;
       vi::VisBuffer2* vb=vi.getVisBuffer();
       MSColumns msc(vi.ms());
@@ -683,8 +682,8 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
 	     // oss.precision(13);
 	     // oss << tuniqptr[k] << "_" << a;
 	     // String key=oss.str();
-	     std::pair<double, int> key=make_pair(t[uniqIndx[k]],a);
-	     timeAntIndex_p[oldMSId_p][key]=indices[k] > -1 ? cshape : -1;
+	     std::pair<double, int> key = std::make_pair(static_cast<double>(t[uniqIndx[k]]), static_cast<int>(a));
+	     timeAntIndex_p[oldMSId_p][key] = indices[k] > -1 ? cshape : -1;
 	     
 	     if(indices[k] >-1){
 	       
@@ -719,7 +718,7 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
     }
    */
    /////////////
-   std::pair<double, int> index=make_pair(vb.time()(vbrow), antid);
+   std::pair<double, int> index = std::make_pair(static_cast<double>(vb.time()(vbrow)), static_cast<int>(antid));
    Int rowincache=timeAntIndex_p[oldMSId_p][index];
 	 ///////TESTOO
 	 /* if(rowincache>=0){
@@ -808,8 +807,8 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
 			       String key=oss.str();
 			       */
 			       //			       myfile <<std::setprecision(13) <<  tuniqptr[k] << "_" << a << " index "<<  indices[k] << "\n";
-			       pair<double, int> key=make_pair(tuniqptr[k],a);
-			       timeAntIndex_p[oldMSId_p][key]=indices[k] > -1 ? cshape : -1;
+			       std::pair<double, int> key = std::make_pair(static_cast<double>(tuniqptr[k]), static_cast<int>(a));
+			       timeAntIndex_p[oldMSId_p][key] = indices[k] > -1 ? cshape : -1;
 			       
 			       if(indices[k] >-1){
 				 timenow=MEpoch(Quantity(tuniqptr[k], timeUnit),timeType);
@@ -837,8 +836,8 @@ void VisBufferUtil::convertFrequency(Vector<Double>& outFreq,
 	   oss << vb.time()(vbrow) << "_" << antid  ;
 	   String index=oss.str();
 	   */
-	   pair<double, int> index=make_pair(vb.time()(vbrow),antid);
-	   rowincache=timeAntIndex_p[oldMSId_p].at(index);
+	   std::pair<double, int> index = std::make_pair(static_cast<double>(vb.time()(vbrow)), static_cast<int>(antid));
+	   rowincache = timeAntIndex_p[oldMSId_p].at(index);
 
 	 //tim.show("retrieved cache");
 	 }///if usepointing
@@ -1127,9 +1126,7 @@ void VisBufferUtil::rejectConsecutive(const Vector<Double>& t, Vector<Double>& r
   for (uInt iz=0; iz<nzz; ++iz, zOffset+=nxx) {
     Int yOffset=zOffset;
     for (uInt iy=0; iy<nyy; ++iy, yOffset+=nxx*nzz) {
-      for (uInt ix=0; ix<nxx; ++ix){ 
-	pout[i++] = pin[ix+yOffset];
-      }
+      for (uInt ix=0; ix<nxx; ix++) pout[i++] = pin[ix+yOffset];
     }
   }
   out.putStorage(pout,deleteOut);

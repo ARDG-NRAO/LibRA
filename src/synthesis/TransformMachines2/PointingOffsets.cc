@@ -148,8 +148,8 @@ namespace casa{
     gPP(0) = p(0) - double(nx_p/2);
     gPP(1) = p(1) - double(ny_p/2);
 
-    gPP(0) = -gPP(0)*2.0*C::pi/double(nx_p)/double(convOversampling_p);
-    gPP(1) = -gPP(1)*2.0*C::pi/double(ny_p)/double(convOversampling_p);
+    gPP(0) = -gPP(0)*2.0*M_PI/double(nx_p)/double(convOversampling_p);
+    gPP(1) = -gPP(1)*2.0*M_PI/double(ny_p)/double(convOversampling_p);
 
     return gPP;
   }
