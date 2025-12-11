@@ -1,0 +1,60 @@
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+include: imageSolver.htc
+include: imcycle.htc
+include: input_files.htc
+
+
+notification = Error
+
+request_memory = $(memModel)
+request_disk   = $(diskModel)
+
++DESIRED_SITES = "WISC-PATH" 
+
+arguments = "-j $(jobmode) -n $(jobmode) -f $(input_file) -i $(gatherimagelist) -b $(libra_bundle)"
+
+
+if $(useStartImages) 
+    output_files = $(baseimagename).residual.start.tgz
+endif
+
+if $(useStartModel)
+    input_files = $(input_files), $(imagesdir)/$(baseimagename).model.start.tgz?pack=auto
+    output_files = $(output_files), $(baseimagename).divmodel.tgz
+endif
+
+if $(useStartMask)
+    input_files = $(input_files), $(imagesdir)/$(baseimagename).mask.start.tgz?pack=auto
+endif
+
+transfer_input_files = $(htcimagerfiles), bin/imageSolver.def, $(softwaredir)/$(libra_bundle), $(softwaredir)/casa-data.tgz?pack=auto, $(input_files)
+
+transfer_output_files = logs.tgz, $(baseimagename).psf.tgz, $(baseimagename).weight.tgz, $(baseimagename).sumwt.tgz, $(baseimagename).pb.tgz, $(output_files)
+
+transfer_output_remaps = "logs.tgz = $(initialdir)/logs.$(jobmode).imcycle$(imcycle).tgz; $(baseimagename).psf.tgz = $(imagesdir)/$(baseimagename).psf.tgz; $(baseimagename).weight.tgz = $(imagesdir)/$(baseimagename).weight.tgz; $(baseimagename).sumwt.tgz = $(imagesdir)/$(baseimagename).sumwt.tgz; $(baseimagename).pb.tgz = $(imagesdir)/$(baseimagename).pb.tgz; $(baseimagename).divmodel.tgz = $(imagesdir)/$(baseimagename).divmodel.imcycle$(imcycle).tgz; $(baseimagename).residual.start.tgz = $(imagesdir)/$(baseimagename).residual.start.tgz"
+
+queue

@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Copyright (C) 2021
 # Associated Universities, Inc. Washington DC, USA.
 #
@@ -21,9 +23,6 @@
 #                        Socorro, NM - 87801, USA
 #
 # $Id$
-
-
-#!/bin/bash
 
 
 OMP_NUM_THREADS=1

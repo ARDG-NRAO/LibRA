@@ -1,0 +1,60 @@
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+include: imageSolver.def
+
+executable = htcimager.py
+
+# parameters formerly on jackhammer.htc
+job_lease_duration = 1000
+requirements = (PelicanPluginVersion >= "7.19.3")
+use_oauth_services = nrao
+# because htcimager.py is not in the submit directory
+transfer_executable = false
+
+
+
+output = $(jobmode).imcycle$(imcycle).stdout
+error  = $(jobmode).imcycle$(imcycle).stderr
+log    = $(jobmode).imcycle$(imcycle).condor.log
+
+
+request_cpus = 1
+
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el8:latest"
+
++WantIOProxy = True
++ProjectName = "NRAO_2022_Bhatnagar"
+
+
+if $(useStartModel)
+    useStartImages = True
+endif
+
+if $(useStartMask)
+    useStartImages = True
+endif
+
+should_transfer_files = YES

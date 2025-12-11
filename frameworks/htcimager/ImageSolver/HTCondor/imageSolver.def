@@ -1,0 +1,75 @@
+# HTCondor configuration
+memResidual          = 26 G
+memModel             = 10 G
+diskModel            = 50 G
+projectdir           = vlass/204PIMS 
+initialdir           = /home/felipe.madsen/$(projectdir)
+dataorigin           = osdf:///nrao-ardg/users/felipe.madsen
+softwaredir          = $(dataorigin)/apps
+cuda_cap             = 8
+libra_bundle         = libra.$(cuda_cap)x_20250908.sh
+imagesdir            = osdf:///path-facility/data/felipe.madsen/imagingdata/$(projectdir)/working_20280828-0925
+cfcachedir           = $(dataorigin)/cfcache
+msdir                = $(dataorigin)/data/vlass/T23t17/J161533+503000
+und_sites_grid       = "FIU-PATH,UTC-Epyc,SIUE-CC-production,LSU-Deep_Bayou,VU-AUGIE,PDX-Coeus"
+notify_user          = fmadsen@nrao.edu
+htcimagerdir         = /home/felipe.madsen/libra_htcimager/frameworks/htcimager
+htcimagerfiles       = $(htcimagerdir)/htcimager.py,$(htcimagerdir)/GPUMonitor.py,$(htcimagerdir)/customImager.py,$(htcimagerdir)/inputArgs.py,$(htcimagerdir)/jobmode.py,$(htcimagerdir)/libra_cl_imager.py,$(htcimagerdir)/makeImages.py,$(htcimagerdir)/setupLibRA.py,$(htcimagerdir)/staging.py
+wantOSPool           = True
+NRPexclusive         = False
+
+
+# General Imaging parameters
+useStartModel        = False
+useStartMask         = False
+msnamelist           = VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW0.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW1.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW2.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW3.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW4.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW5.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW6.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW7.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW8.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW9.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW10.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW11.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW12.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW13.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW14.ms,VLASS2.1.sb38528342.eb38565674.59072.03519471065_split_SPW15.ms
+cfcachelist          = cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW0.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW1.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW2.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW3.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW4.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW5.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW6.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW7.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW8.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW9.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW10.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW11.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW12.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW13.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW14.cfc,cfcache_imsize16384_cell0.6arcsec_w32_conjT_SPW15.cfc
+baseimagename        = T23t17_J161533p503000
+pblimit              = 0.1
+
+
+# gridding parameters
+vis                  = 
+modelimagename       =
+datacolumn           = data
+sowimageext          = sumwt
+complexgrid          =
+imsize               = 16384
+cell                 = 0.6
+stokes               = I
+reffreq              = 3.0GHz
+phasecenter          = 16:15:33.000 +50.30.00.000 J2000
+weighting            = natural
+rmode                = none
+robust               = 0
+wprojplanes          = 32
+gridder              = awphpg
+wbawp                = 1
+field                = *
+spw                  = *
+uvrange              =
+pbcor                = 1
+conjbeams            = 1
+usepointing          = 0
+pointingoffsetsigdev =
+
+# deconvolution parameters
+deconvolver          = hogbom
+scales               = 
+largestscale         = -1
+fusedthreshold       = 0
+nterms               = 1
+cycleniter           = 500
+nsigma               = 5
+gain                 = 0.1
+threshold            = 
+cyclefactor          = 1
+mask                 = 
+specmode             = mfs
+
+# normalization parameters
+normtype             = flatnoise
+imtype               = 
+psfcutoff            = 0.35
+resetimages          = 1
+computepb            = 0

@@ -50,6 +50,8 @@ pblimit              = 0.005
 
 
 # gridding parameters
+vis                  = ['ms1', 'ms2']
+cfcache              = ['cf1','cf2']
 datacolumn           = data
 sowimageext          = sumwt
 complexgrid          =
@@ -65,7 +67,7 @@ wprojplanes          = 192
 gridder              = awphpg
 wbawp                = 1
 field                = *
-spw                  = *
+spw                  = ['5','6~8']
 uvrange              =
 pbcor                = 1
 conjbeams            = 1

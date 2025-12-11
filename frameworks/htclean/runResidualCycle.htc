@@ -1,0 +1,69 @@
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+include: htclean.htc
+include: imcycle.htc
+
+notification = Error
+
+cuda_cap = $$([int(GPUs_Capability)])
+
+request_cpus = 2
+request_gpus = 1
+request_memory = $(memResidual)
+request_disk = $(diskResidual)
+
++UNDESIRED_SITES = $(und_sites_grid)
++WantOSPool = true
+#+DESIRED_SITES = "SDSC-PRP"
+
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el8:latest"
+
+arguments = "'$(jobmode)' '$(input_file)' '$(partId)' '$(msname)' '$(imagename)' '$(cfcache)'"
+
+
+output = $(jobmode)_$(partId).imcycle$(imcycle).$(cuda_cap)x.stdout
+error = $(jobmode)_$(partId).imcycle$(imcycle).$(cuda_cap)x.stderr
+log = $(jobmode)_$(partId).imcycle$(imcycle).condor.log
+
+#requirements = (GPUs_Capability >= 7.0)
++DESIRED_GPU_MIN_Capability = 8.0
++DESIRED_GPU_MIN_GlobalMemoryMb = 22000
++DESIRED_GPU_MIN_DriverVersion = 12.0
+RequireGPUs = (Capability >= DESIRED_GPU_MIN_Capability) && (GlobalMemoryMb > DESIRED_GPU_MIN_GlobalMemoryMb) && (DriverVersion >= DESIRED_GPU_MIN_DriverVersion) 
+#&& stringListMember(GLIDEIN_Site,DESIRED_Sites,",")
+
+
+should_transfer_files = YES
+transfer_input_files = bin, $(libra_bundle), $(softwaredir)/casa-data.tgz, $(cfcachedir)/$(cfcache).tgz?pack=auto, $(msdir)/$(msname).tgz?pack=auto, $(imagesdir)/$(imagename).divmodel.imcycle$(imcycle).tar?pack=auto
+
+
+transfer_output_files = logs.$(jobmode).tgz, $(imagename).$(partId).residual.tar
+
+
+transfer_output_remaps = "logs.$(jobmode).tgz = $(initialdir)/logs.$(partId).$(jobmode).imcycle$(imcycle).tgz; $(imagename).$(partId).residual.tar = $(imagesdir)/$(imagename).workdirectory.imcycle$(imcycle)/$(imagename).$(partId).residual.tar"
+
+
+queue

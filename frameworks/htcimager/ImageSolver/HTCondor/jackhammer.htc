@@ -1,0 +1,16 @@
+# to avoid transferring the executable via htcondor
+transfer_executable = False
+
+# to remove 'unfortunate' jobs
+job_lease_duration = 1000
+# The expressions below did not produce evictions:
+#periodic_vacate = JobCurrentFinishTransferInputDate - JobCurrentStartTransferInputDate > 200
+#periodic_vacate = (time() - JobCurrentStartTransferInputDate > 200) && ((JobCurrentFinishTransferInputDate?:0) < JobCurrentStartTransferInputDate)
+# This produced evictions, but did not avoid the 'stalled transfer' problem
+#periodic_vacate = time() - JobCurrentStartTransferInputDate > 200
+# The following is very rough, but setting in an attempt to avoid the 'stalled transfer' problem:
+#periodic_vacate = time() - JobCurrentStartDate > 2000
+#environment = "PELICAN_CLIENT_MINIMUMDOWNLOADSPEED=1024000000"
+
+requirements = (PelicanPluginVersion >= "7.19.3")
+use_oauth_services = nrao
