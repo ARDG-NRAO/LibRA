@@ -92,9 +92,13 @@ MTAspMatrixCleaner::MTAspMatrixCleaner():
   ntaylor_p(0),
   psfntaylor_p(0),
   nx_p(0),
-  ny_p(0)
+  ny_p(0),
+  sf("state.txt")
 {
-
+  sf.load();  // read existing state, if any
+  // Read variable
+  itsSwitchedToHogbom = sf.getBool("itsSwitchedToHogbom", false);
+  itsNumHogbomIter = sf.getInt("itsNumHogbomIter", 0);
 }
 
 MTAspMatrixCleaner::~MTAspMatrixCleaner()
@@ -162,8 +166,8 @@ Int MTAspMatrixCleaner::mtaspclean()
   }
 
   
-  // calculate rms residual
-  float rms = 0.0;
+  // calculate rms residual WRONG--matR_p is not initialized yet until computeRHS
+  /*float rms = 0.0;
   // should be masked
   int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
   for (int j = blcDirty(1); j <= trcDirty(1); ++j)
@@ -175,10 +179,11 @@ Int MTAspMatrixCleaner::mtaspclean()
   }
   rms = rms / num;
   initRMSResidual = rms;
-  //os << LogIO::NORMAL3 << "initial rms residual " << initRMSResidual << LogIO::POST;
-
+  os << "initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
+  */
   initModelFlux = sum(vecModel_p[0]); 
   //os << LogIO::NORMAL3 << "initial model flux " << initModelFlux << LogIO::POST; 
+
 
   for (Int ii = itsStartingIter; ii < itsMaxNiter; ii++)
   {
@@ -274,6 +279,20 @@ Int MTAspMatrixCleaner::mtaspclean()
       os << "Calculating convolutions of residual images with the optimal scale" << LogIO::POST;
       //cout << "Calculating convolutions of residual images with the optimal scale" << endl;
       computeRHS();
+
+      rms = 0.0;
+      // should be masked
+      num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
+      for (int j = blcDirty(1); j <= trcDirty(1); ++j)
+      {
+        for (int i = blcDirty(0); i <= trcDirty(0); ++i)
+        {
+          rms += pow((matR_p[IND2(0,0)])(i, j), 2);
+        }
+      }
+      rms = rms / num;
+      initRMSResidual = rms;
+      //os << "At ii= " << ii << ", initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
     }
 
     // solve matCoeffs (amplitudes) from invMatA and matR
@@ -316,7 +335,13 @@ Int MTAspMatrixCleaner::mtaspclean()
 
     // Break out of minor-cycle loop
     if(converged != 0)
+    {
+        // Write back
+        sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
         break;
+    }
 
     // determine if switch to hogbom or not
     // genie redo this
@@ -330,11 +355,12 @@ Int MTAspMatrixCleaner::mtaspclean()
         os << "Switch to hogbom b/c peak residual or optimum strength is small enough: " << itsFusedThreshold << LogIO::POST;
         bool runlong = false;
         
+        os << "initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         //option 1: use rms residual to detect convergence
         if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
-          os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
+          os << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         }
         //option 2: use model flux to detect convergence
         /*float modelFlux = 0.0;
@@ -359,11 +385,12 @@ Int MTAspMatrixCleaner::mtaspclean()
         //os << LogIO::NORMAL3 << "total flux " << totalFlux << " model flux " << sum(vecModel_p[0]) << LogIO::POST; 
         bool runlong = false;
 
+	os << "initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         //option 1: use rms residual to detect convergence
         if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
-          os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
+          os << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         }
         //option 2: use model flux to detect convergence
         /*float modelFlux = 0.0;
@@ -416,6 +443,10 @@ Int MTAspMatrixCleaner::mtaspclean()
           converged = 1;
           os << LogIO::NORMAL3 << "initial rms " << initRMSResidual << " final rms residual " << rms << LogIO::POST; 
 
+          // Write back
+          sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+          sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+          sf.save();
           break;
         }
         //option 2: use model flux to detect convergence
@@ -452,6 +483,12 @@ Int MTAspMatrixCleaner::mtaspclean()
     os << LogIO::POST;
   }
   //cout << "end of minor cycle: vecDirty_p[0](256,231) " << (vecDirty_p[0])(256,231) << endl;
+  os << "end of minor cycle: itsSwitched " << itsSwitchedToHogbom << " itsNumHogbomIter " << itsNumHogbomIter << LogIO::POST;
+  // Write back
+  sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+  sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+  sf.save();
+  
   return converged;
 }
 
@@ -464,6 +501,8 @@ vector<Float> MTAspMatrixCleaner::getActiveSetAspen()
 
   if(int(itsInitScaleXfrs.nelements()) == 0)
     throw(AipsError("Initial scales for Asp are not defined"));
+
+  //os << "start of minor iter: itsSwitched " << itsSwitchedToHogbom << " itsNumHogbomIter " << itsNumHogbomIter << LogIO::POST;
 
   if (!itsSwitchedToHogbom &&
   	  accumulate(itsNumIterNoGoodAspen.begin(), itsNumIterNoGoodAspen.end(), 0) >= 5)
