@@ -1,4 +1,5 @@
-# Copyright (C) 2021
+#!/bin/bash
+# Copyright (C) 2024
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -23,48 +24,39 @@
 # $Id$
 
 
+# $1: parameter file (imageSolver.def)
+# $2: retry / imcycle number (imcycle.htc)
+# Following eval/sed cmds remove spaces to convert htcondor variables to shell variables
+eval "`sed 's/ //g' $1 | sed 's/(/{/g' | sed 's/)/}/g'`"
+eval "`sed 's/ //g' $2`"
+job=${3:-psf}
 
-#!/bin/bash
+msnamelist=( `echo ${msnamelist} | sed 's/,/ /g'` )
 
-Usage()
-{
-    echo ""
-    echo "$0 writes DAGs for N-way distributed gridding in htclean."
-    echo ""
-    echo "USAGE: $0 <number of distributed gridding processes>"
-    echo ""
-}
+file_types="weight sumwt psf"
 
-# Begin execution block
-if [ $# != 1 ]
-then
-    Usage
-    echo "Error in $0: wrong number of arguments."
-    exit 1
-fi
+[ ${job} != "psf" ] && file_types="residual"
 
-njobs=$1
+input_files=""
+gatherimagelist=""
 
-DAGlist="makePSF runResidualCycle runResidualCycle_IMCycle"
-
-for DAG in ${DAGlist}
+for i in ${!msnamelist[@]}
 do
-    JOBtext=""
-    VARStext=""
-    TEXT=""
-    if [ "${DAG}" = "runResidualCycle_IMCycle" ]
+    i=$((i+1))
+    if [ "${gatherimagelist}" != "" ]
     then
-        python_state="runResidualCycle"
-    else
-        python_state=${DAG}
+        gatherimagelist="${gatherimagelist},"
     fi
-    for i in `seq 1 ${njobs}`
+    gatherimagelist="${gatherimagelist}${baseimagename}.n${i}"
+    for TYPE in ${file_types}
     do
-        JOBtext+="JOB         ${DAG}_n${i}          ${DAG}.htc"$'\n'
-        VARStext+="VARS        ${DAG}_n${i}          python_state=\"${python_state}\""$'\n'
-        VARStext+="VARS        ${DAG}_n${i}          input_file=\"../bin/htclean.params\""$'\n'
-        VARStext+="VARS        ${DAG}_n${i}          partId=\"n${i}\""$'\n\n'
+        if [ "$input_files" != "" ]
+        then
+            input_files="${input_files}, "
+        fi
+        input_files="${input_files}${imagesdir}/${baseimagename}.workdirectory.imcycle${imcycle}/${baseimagename}.n${i}.${TYPE}.tgz?pack=auto"
     done
-    TEXT=${JOBtext}$'\n\n'${VARStext}
-    echo "${TEXT}" > ${DAG}.dag
 done
+
+echo "input_files = ${input_files}" > input_files.htc
+echo "gatherimagelist = ${gatherimagelist}" >> input_files.htc

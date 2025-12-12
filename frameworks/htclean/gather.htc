@@ -1,0 +1,48 @@
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+include: htclean.htc
+include: imcycle.htc
+include: input_files.htc
+
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el8:latest"
+
+notification = Error
+
+request_memory = $(memModel)
+request_disk   = $(diskModel)
+
++DESIRED_SITES = "WISC-PATH"
+
+if $(useStartImages)
+    input_files = $(input_files), $(imagesdir)/$(imagename).residual.start.tar?pack=auto
+endif
+
+should_transfer_files = YES
+transfer_input_files = bin, $(libra_bundle), $(softwaredir)/casa-data.tgz, $(input_files), $(imagesdir)/$(imagename).sumwt.tar?pack=auto, $(imagesdir)/$(imagename).weight.tar?pack=auto
+
+transfer_output_remaps = "logs.$(jobmode).tgz = $(initialdir)/logs.$(jobmode).imcycle$(imcycle).tgz; $(imagename).residual.tar = $(imagesdir)/$(imagename).residual.imcycle$(imcycle).noiter.tar"
+
+queue

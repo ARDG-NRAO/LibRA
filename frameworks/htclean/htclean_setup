@@ -1,0 +1,360 @@
+#!/bin/bash
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
+
+usage()
+{
+    echo "Usage: $0 [-f <input file> | -P <project name>] [-L <htclean directory>] [-d <data origin>] [-M <MS directory>] [-C <CF directory>] [-i <imagename>] [-o <output file>] [-p <parameter file>] [-m <ms extension>] [-c <cfcache extension>] [-n <e-mail>] [-s <ms name list>] [-t <cfc name list>] [-a <casa data>] [-b <libra bundle>] [-h]"$'\n'\
+         "       -f <input file> (optional) is the input file with external data origin parameters;"$'\n'\
+         "       -P <project name> (required if no input file) is the project name, to be used as initial directory for the imaging run;"$'\n'\
+         "       -L <htclean directory> (optional) is the location of the htclean source directory in the LibRA repository, Default: ${HOME}/libra/frameworks/htclean_refactor;"$'\n'\
+         "       -d <data origin> (optional) is the path to the data origin directory. Default: /path-facility/data/${USER};"$'\n'\
+         "       -M <MS directory> (optional) is the location of the original MSes. If set, $0 makes compressed tarballs of the original MSes and copies the tarballs to the input MS directory;"$'\n'\
+         "       -C <CF directory> (optional) is the location of the original CFCaches. If set, $0 makes compressed tarballs of the original CFCaches and copies the tarballs to the input CFCache directory;"$'\n'\
+         "       -i <imagename> (optional) is the basename for image products;"$'\n'\
+         "       -o <output file> (optional) is the output file to save data origin configuration;"$'\n'\
+         "       -p <parameter file> (optional) set the name of the htclean parameter file. Default: libra_htclean.def;"$'\n'\
+         "       -m <ms extension> (optional) set the string corresponding to the extension of the input MSes. Default: ms;"$'\n'\
+         "       -c <cfc extension> (optional) set the string corresponding to the extension of the CFCache. Default: cfc;"$'\n'\
+         "       -n <e-mail> (optional) e-mail to receive job notifications (failed gridding jobs, all minor cycle jobs);"$'\n'\
+         "       -s <ms name list> (optional) set the string corresponding to the list of input MSes;"$'\n'\
+         "       -t <cfc name list> (optional) set the string corresponding to the list of CFCaches - this list maps directly to the list of input MSes."$'\n'\
+         "       -a <casa data> (optional) path to CASA data. Will make a tarball if the input is a directory;"$'\n'\
+         "       -b <libRA bundle> (optional) path to libRA bundle;"$'\n'\
+         "       -h prints help and exits."$'\n\n'\
+         "       Example: $0 -P myProject"$'\n'
+}
+
+createTarAndCopy()
+{
+    dir0=$PWD
+    origDir=$1
+    targetDir=`readlink -f $2`                  # to ensure absolute path
+    ext=`echo $3 | sed 's/\.//g'`
+    inputFileList=`echo $4 | sed 's/,/ /g'`
+    
+
+    cd ${origDir}
+    [ -z "${inputFileList}" ] && inputFileList=*.${ext}
+    if [ -n "${inputFileList}" ]
+    then
+        for file in ${inputFileList}
+        do
+            if [ -e ${targetDir}/${file}.tgz ]
+            then
+                echo "${file}.tgz already exists in ${targetDir}. Choose a different project name or clean up ${targetDir}."
+                cleanup
+                exit 1
+            else
+                if [ -e ${file}.tgz ]
+                then
+                    echo "${file}.tgz: File exists, will not make a new tarball."
+                elif [ -e ${file} ]
+                then
+                    echo "Writing tarball: ${file}.tgz"
+                    tar czhf ${file}.tgz ${file}
+                else
+                    echo "Check inputs. Couldn't find ${file} in ${origDir}."
+                    cleanup
+                    exit 1
+                fi
+            fi
+        done
+        echo "Copying tarballs to ${targetDir}"
+        for file in ${inputFileList}
+        do
+            cp ${file}.tgz ${targetDir}
+        done
+    else
+        echo "Check inputs. Couldn't find .${ext} files in ${origDir}."
+        cleanup
+        exit 1
+    fi
+    cd ${dir0}
+}
+
+makeInputList()
+{
+    dir0=$PWD
+    inputDir=$1
+    ext=$2
+    listName=$3
+    outputList=""
+
+    cd ${inputDir}
+    if [ `find . -name "*.${ext}.tgz" | wc -l` -gt 0 ]
+    then
+        for file in *.${ext}.tgz
+        do
+            file=`basename $file .tgz`
+            [ -z "${outputList}" ] && outputList=${file} || outputList+=,${file}
+        done
+        eval ${listName}=${outputList}
+    else
+        echo "Check inputs. Couldn't find .${ext}.tgz files in ${inputDir}."
+        cleanup
+        exit 1
+    fi
+    cd ${dir0}
+}
+
+cleanup()
+{
+    echo "Aborted. Removing directory ${HOME}/${projectname}."
+    rm -rf ${HOME}/${projectname}
+}
+
+# Begin execution
+
+# Default variables
+htcleandir=$(dirname $(readlink -f $0))
+parfile=libra_htclean.def
+msext=ms
+cfext=cfc
+external_origin=false
+
+# Not empty if running on PATh-AP
+pathAP=`hostname -f | grep 'path-ap'`
+
+while getopts "f:P:L:d:M:C:i:o:p:m:c:n:s:t:a:b:h" option
+do
+    case "$option" in
+        f) inputFile=${OPTARG}               ;;
+        P) projectname=${OPTARG}             ;;
+        L) htcleandir=${OPTARG}              ;;
+        d) dataorigin=${OPTARG}              ;;
+        M) origMSdir=${OPTARG}               ;;
+        C) origCFdir=${OPTARG}               ;;
+        i) imagename=${OPTARG}               ;;
+        o) outputFile=${OPTARG}              ;;
+        p) parfile=${OPTARG}                 ;;
+        m) msext=${OPTARG}                   ;;
+        c) cfext=${OPTARG}                   ;;
+        n) email=${OPTARG}                   ;;
+        s) inputMSList=${OPTARG}             ;;
+        t) inputCFList=${OPTARG}             ;;
+        a) casa_data=${OPTARG}               ;;
+        b) libra_bundle=${OPTARG}            ;;
+        h) usage            
+           exit 0                            ;;
+        *) echo "${option}: Unknown option"
+           usage
+           exit 1                            ;;
+    esac
+done
+
+if [ -n "${inputFile}" ]
+then
+    echo "Reading data input parameters from ${inputFile}."
+    if [ -z "${inputMSList}" ] && [ -z "${inputCFList}" ]
+    then
+        eval `cat ${inputFile} | sed 's/ //g'`
+    else
+        echo "Aborting. Option to read input file (-f) is not compatible with -s or -t. Please make sure the values of inputMSList and inputCFList in input file ${inputFile} are correct and rerun $0 -f ${inputFile}."
+    fi
+fi
+
+if [ -z ${projectname} ]
+then
+    echo "Input error: missing project name."
+    usage
+    exit 1
+else
+    projectbin=${HOME}/${projectname}/bin
+fi
+
+if [ -n "${inputMSList}" ] && [ -n "${inputCFList}" ]
+then
+    inputMSArray=( `echo ${inputMSList} | sed 's/,/ /g'` )
+    inputCFArray=( `echo ${inputCFList} | sed 's/,/ /g'` )
+    if [ ${#inputCFArray[@]} -gt 1 ] && [ ${#inputCFList[@]} -ne ${#inputMSList[@]} ]
+    then
+        echo "Review inputs: the number of entries in input CF list must be one or match the number of entries in input MS list."
+        cleanup
+        exit 1
+    fi
+else
+    [ -n "${inputMSList}" ] && [ -z "${inputCfList}"] && echo "Input CF list cannot be empty when input MS list is provided." && cleanup && exit 1
+    [ -n "${inputCFList}" ] && [ -z "${inputMSList}"] && echo "Input MS list cannot be empty when input CF list is provided." && cleanup && exit 1
+fi
+
+echo "user is ${USER}"
+echo "home is ${HOME}"
+
+if [ -z ${dataorigin} ]
+then
+    if [ -d /path-facility/data/${USER} ]
+    then
+        dataorigin=/path-facility/data/${USER}
+        echo "Using default data origin directory: ${dataorigin}"
+    elif [ -d /export/home/monte2/origin/ardg/${USER} ]
+    then
+        dataorigin=/export/home/monte2/origin/ardg/${USER}
+        echo "Using default data origin directory: ${dataorigin}"
+    else
+        echo "Aborting. Data origin argument not given and couldn't find default data origin locations."
+        exit 1
+    fi
+fi
+
+nrao_origin=`echo ${dataorigin} | grep '/export/home/monte2/origin/ardg'`
+if [ ! -d ${dataorigin} ]
+then
+    if [ -n "${pathAP}" ] && [ -z ${nrao_origin} ]
+    then
+        echo "Check inputs. Couldn't find data origin at ${dataorigin}."
+        exit 1
+    else
+        external_origin=true
+    fi
+fi
+
+# When running on PATh AP1, exit with error if projectbin already exists
+if [ -n "${pathAP}" ]
+then
+    if [ -d ${projectbin} ] && [ `ls -1 ${projectbin} | wc -l` -gt 0 ]
+    then
+        echo "Directory ${projectbin} already exists and is not empty. Please specify a new name."
+        exit 1
+    else
+        echo "Creating project directory: ${HOME}/${projectname} and copying htclean files to ${projectbin}"
+        mkdir -p ${projectbin}
+        cp -r ${htcleandir}/* ${projectbin}
+    fi
+fi
+
+# Create directories if they don't exist, otherwise inform that they already exist.
+if ! ${external_origin}
+then
+    [ ! -d ${dataorigin}/apps ] && mkdir -p ${dataorigin}/apps || echo "${dataorigin}/apps: directory exists"
+    [ ! -d ${dataorigin}/cfcache/${projectname} ] && mkdir -p ${dataorigin}/cfcache/${projectname} || echo "${dataorigin}/cfcache/${projectname}: directory exists"
+    [ ! -d ${dataorigin}/data/${projectname} ] && mkdir -p ${dataorigin}/data/${projectname} || echo "${dataorigin}/data/${projectname}: directory exists"
+fi
+
+if [ -n "${pathAP}" ]
+then
+    imagesdir=/path-facility/data/${USER}/imagingdata/${projectname}/working
+    if [ -d ${imagesdir} ] && [ `ls -1 ${imagesdir} | wc -l` -gt 0 ]
+    then
+        echo "Directory ${dataorigin}/imagingdata/${projectname}/working already exists and is not empty. Please specify a new name."
+        cleanup
+        exit 1
+    else
+        mkdir -p ${imagesdir}
+    fi
+fi
+
+# Make tarballs of MSes and CFCaches
+[ -n "${origMSdir}" ] && createTarAndCopy ${origMSdir} ${dataorigin}/data/${projectname} ${msext} ${inputMSList}
+[ -n "${origCFdir}" ] && createTarAndCopy ${origCFdir} ${dataorigin}/cfcache/${projectname} ${cfext} ${inputCFList}
+
+
+# Make input lists to populate the parameter file
+[ -z ${inputMSList} ] && makeInputList ${dataorigin}/data/${projectname} ${msext} inputMSList
+[ -z ${inputCFList} ] && makeInputList ${dataorigin}/cfcache/${projectname} ${cfext} inputCFList
+
+
+# Create casa-data.tgz if not provided and copy to <data origin>/apps
+if [ -n "${casa_data}" ]
+then
+    if [ -f "${casa_data}" ]
+    then
+        echo "Copying CASA data package at ${casa_data} to ${dataorigin}/apps/casa-data.tgz."
+        mkdir -p ${dataorigin}/apps
+        cp ${casa_data} ${dataorigin}/apps/casa-data.tgz
+    else
+        echo "${casa_data}: File not found. Trying to create tarball from local CASA installation."
+        local_casa_data=/home/casa/data/distro
+        if [ -d "${local_casa_data}" ]
+        then
+            ln -s ${local_casa_data} casa-data
+            tar czhf ${dataorigin}/apps/casa-data.tgz casa-data
+	    unlink casa-data
+        else
+            echo "Couldn't find local installation of CASA to create casa-data.tgz."
+            cleanup
+            exit 1
+        fi
+    fi
+    chmod a+rx ${dataorigin}/apps/casa-data.tgz
+fi
+
+if [ -n "${libra_bundle}" ]
+then
+    if [ -f "${libra_bundle}" ]
+    then
+        libra_bundle_name=`basename ${libra_bundle}`             
+        echo "Copying libra bundle at ${libra_bundle} to ${dataorigin}/apps/${libra_bundle_name}"
+        mkdir -p ${dataorigin}/apps
+        cp ${libra_bundle} ${dataorigin}/apps
+    else
+        echo "${libra_bundle}: File not found."
+        cleanup
+        exit 1
+    fi
+fi
+
+# Edit permissions if running on NRAO data origin
+if [ -n "${nrao_origin}" ] && ! ${external_origin}
+then
+    chmod a+rx ${dataorigin} ${dataorigin}/apps ${dataorigin}/data ${dataorigin}/cfcache
+    chmod -R a+rx ${dataorigin}/data/${projectname} ${dataorigin}/cfcache/${projectname}
+    chmod a+rx ${dataorigin}/apps/casa-data.tgz ${dataorigin}/apps/${libra_bundle_file}
+fi
+
+# Edit parameter file
+if [ -n "${outputFile}" ]
+then
+    echo "Writing data input parameters to ${dataorigin}/${outputFile}."
+    echo "projectname          = ${projectname}" >  ${dataorigin}/${outputFile}
+    echo "dataorigin           = ${dataorigin}"  >> ${dataorigin}/${outputFile}
+    echo "inputMSList          = ${inputMSList}" >> ${dataorigin}/${outputFile}
+    echo "inputCFList          = ${inputCFList}" >> ${dataorigin}/${outputFile}
+    [ -n "${libra_bundle_name}" ] && echo "libra_bundle_name    = ${libra_bundle_name}" >> ${dataorigin}/${outputFile}
+else
+    echo "Writing workflow configuration parameters to ${projectbin}/${parfile}."
+    cd ${projectbin}
+    if [ -n "${pathAP}" ] && [ -n "${nrao_origin}" ]
+    then
+        dataorigin=`echo ${dataorigin} | sed 's/export\/home\/monte2\/origin\/ardg/nrao-ardg/g'`
+    fi
+    sed -i 's@projectdir.*=.*@'"projectdir           = ${projectname}"'@' ${parfile}
+    sed -i 's@initialdir.*=.*@'"initialdir           = ${HOME}/\$(projectdir)"'@' ${parfile}
+    sed -i 's@dataorigin.*=.*@'"dataorigin           = osdf://${dataorigin}"'@' ${parfile}
+    sed -i 's@imagesdir.*=.*@'"imagesdir            = osdf://${imagesdir}"'@' ${parfile}
+    sed -i 's@msnamelist.*=.*@'"msnamelist           = ${inputMSList}"'@' ${parfile}
+    sed -i 's@cfcachelist.*=.*@'"cfcachelist          = ${inputCFList}"'@' ${parfile}
+    [ -n "${imagename}" ] && sed -i 's@^imagename.*=.*@'"imagename            = ${imagename}"'@' ${parfile}
+    [ -n "${email}" ] && sed -i 's/notify_user.*=.*/'"notify_user          = ${email}"'/' ${parfile}       # using / here to avoid conflict with the @ in the e-mail
+    [ -n "${libra_bundle_name}" ] && sed -i 's@libra_bundle.*=.*@'"libra_bundle         = \$(softwaredir)/${libra_bundle_name}"'@' ${parfile}
+    
+    if [ "${parfile}" != "libra_htclean.def" ]
+    then
+        for file in htclean.dag htclean.htc imagingCycle.dag initialCycle.dag
+        do
+            sed -i 's@libra_htclean.def@'"${parfile}"'@' ${file}
+        done
+    fi
+fi

@@ -54,8 +54,8 @@ TEST(HtcleanTest, Loops) {
   // copy the input .def
   std::filesystem::copy(goldDir/"libra_htclean.def", testDir/"libra_htclean.def", copy_options::recursive);  
   // copy htclean scripts
-  std::filesystem::copy(goldDir/"../../../../frameworks/htclean/libra_htclean.sh", testDir/"libra_htclean.sh", copy_options::recursive);
-  std::filesystem::copy(goldDir/"../../../../frameworks/htclean/runapp.sh", testDir/"runapp.sh", copy_options::recursive);
+  std::filesystem::copy(goldDir/"../../../../install/bin/libra_htclean.sh", testDir/"libra_htclean.sh", copy_options::recursive);
+  std::filesystem::copy(goldDir/"../../../../install/bin/runapp.sh", testDir/"runapp.sh", copy_options::recursive);
   //Step into test dir
   std::filesystem::current_path(testDir);
 
