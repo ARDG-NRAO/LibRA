@@ -27,6 +27,9 @@ create_blank_vis_data_vector(const unsigned nPol, const unsigned nChan, const un
   return hpgVisBuffer;
 }
 #define if_flag_ignore_cond(flag,cond) ((flag)?(flag):(cond))
+
+template <unsigned N>
+void sortByWNdx(HPGVisBufferBucket<N>& bucket, const std::vector<Int>& cfWNdxList);
 //
 // -------------------------------------------------------------------------------
 //
@@ -66,6 +69,8 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
   //  std::array<std::complex<hpg::visibility_fp>, N> vis;
   std::array<std::complex<hpg::vis_fp_t>, N> vis;
   std::array<hpg::vis_fp_t, N> wt;
+
+  std::vector<Int> cfWNdxList;
 
   const casacore::Matrix<double> UVW=casaVBS.uvw_p;
   //cerr << "SHAPE UVW " << UVW.shape() << endl;
@@ -244,6 +249,7 @@ unsigned mRow=0;
 		      hpgVBBucket_p.append(hpg::VisData<N>(vis,wt,frequency,dphaseHPG,hpgUVW,grid_cube,cf_index
 							   ,cf_phase_gradient
 							   ));
+					cfWNdxList.push_back(cfWNdx);
 		      hpgIRow++;
 		    }
 		}
@@ -252,7 +258,12 @@ unsigned mRow=0;
     } // End row-loop
 
   //hpgVB.resize(hpgIRow);
-  if (hpgIRow > 0) hpgVBBucket_p.incrementFills();
+  if (hpgIRow > 0)
+  {
+    hpgVBBucket_p.incrementFills();
+    // Sort the VBBucket by cfWNdx
+    sortByWNdx(hpgVBBucket_p, cfWNdxList);
+  }
   return hpgVBBucket_p.counter();
   //  return hpgVB;
 }
@@ -562,6 +573,31 @@ unsigned mRow=0;
 
   return hpgIRow;
 }
+
+template <unsigned N>
+void sortByWNdx(HPGVisBufferBucket<N>& bucket,
+                      const std::vector<Int>& cfWNdxList)
+{
+    auto& visDataVec = bucket.vbbBuf();
+
+    // Create index array for indirect sorting
+    std::vector<size_t> indices(visDataVec.size());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    // Sort indices based on cfWNdx values
+    std::sort(indices.begin(), indices.end(),
+        [&cfWNdxList](size_t a, size_t b) {
+            return cfWNdxList[a] < cfWNdxList[b];
+        });
+
+    // Reorder visDataVec based on sorted indices
+    std::vector<hpg::VisData<N>> sortedVis(visDataVec.size());
+    for (size_t i = 0; i < indices.size(); ++i) {
+        sortedVis[i] = std::move(visDataVec[indices[i]]);
+    }
+    visDataVec = std::move(sortedVis);
+}
+
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //
 // Unused code below this.  Read it/use it if you need to (even cherry
