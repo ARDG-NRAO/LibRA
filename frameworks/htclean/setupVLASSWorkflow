@@ -1,0 +1,173 @@
+#!/bin/bash
+
+usage()
+{
+    echo "$0 application to setup multiple VLASS imaging workflows using LibRA applications and the HTClean framework."$'\n'\
+         "Usage: $0 [-f <input file> | -d <PIMS directory>] [-o <output file>] [-L <htclean directory>] [-p <parameter file>] [-h]"$'\n'\
+	     "       -f <input file> (optional) set the name of the input file containing the list of PIMS directories"$'\n'\
+         "       -d <PIMS directory> (optional) set the name of the directory where PIMS directories are located"$'\n'\
+         "       -o <output file> (optional) set the name of the output file to save PIMS directory information"$'\n'\
+         "       -L <htclean directory> (optional) set the name of the base htclean directory"$'\n'\
+         "       -p <parameter file> (optional) set the name of the htclean parameter file. Default: libra_htclean.def"$'\n'\
+	     "       -h prints help and exits."$'\n\n'\
+	     "       Example 1: $0 -d /path/to/PIMSdirectory -o myfile.txt"$'\n'\
+         "                  to read PIMS directory information from /path/to/PIMSdirectory and write to output file myfile.txt."$'\n'\
+         "                  Run this command at the DATA ORIGIN server and copy the output file to the HTCondor Access Point (AP)."$'\n'\
+         "       Example 2: $0 -f myfile.txt -L /path/to/htclean"$'\n'\
+         "                  to read PIMS directory information from myfile.txt, create per PIMS directories and copies of the htclean submit files and setup individual (per PIMS) workflow parameters."$'\n'\
+         "                  Run this command at the HTCondor AP, after copying myfile.txt from the DATA ORIGIN."$'\n'\
+         "       Example 3: $0 -d /path/to/PIMSdirectory -L /path/to/htclean"$'\n'\
+         "                  to read PIMS directory information from /path/to/PIMSdirectory, create per PIMS directories and copies of the htclean submit files and setup individual (per PIMS) workflow parameters."$'\n'\
+         "                  Run this command at the HTCondor AP, when the data origin is accessible as a local disk."$'\n'
+
+}
+
+getPIMSFromInputFile()
+{
+    inputPIMS=`cat ${inputFile} | awk '{if (NR>1) print $1}'`
+}
+
+getPIMSFromInputDir()
+{
+    dir0=${PWD}
+
+    inputPIMS=""
+    cd ${inputDir}
+    for tileDir in T*
+    do
+        for PIMSDir in ${tileDir}/J*
+        do
+            inputPIMS="${inputPIMS} ${PIMSDir}"
+        done
+    done
+
+    cd ${dir0}
+}
+
+get_msnamelist()
+{
+    PIMSdir=$1
+    dir0=${PWD}
+    if [ -n "${inputDir}" ]
+    then
+        cd ${inputDir}/${PIMSdir}
+#   Following command commented because SPW numbers are not zero-padded, leading to incosistent ordering
+#   with respect to the (static in libra_htclean.def) CFC list 
+#    msnamelist=`ls *_SPW*.ms.tgz | tr "\n" "," | sed 's/.tgz//g'`    # `tr` to replace line breaks with commas
+#
+#   Following will extract common name of ms and build the mslist in the expected SPW order
+        msbasename=`ls *_SPW*.ms.tgz | tail -1`
+        msbasename=${msbasename%_SPW*}    # notation to remove the part of the string after SPW
+    else
+        msbasename=`grep ${PIMSdir} ${inputFile} | awk '{print $2}'`
+    fi
+
+    msnamelist=""
+    for spw in `seq 0 15`
+    do
+        if [ -z "${msnamelist}" ]
+        then
+            msnamelist=${msbasename}_SPW${spw}.ms
+        else
+            msnamelist=${msnamelist},${msbasename}_SPW${spw}.ms
+        fi
+    done
+    cd ${dir0}
+    echo ${msnamelist}
+}
+
+get_phasecenter()
+{
+    dirname=$1
+    pcfromdir=`echo ${dirname#*/}`    # notation to remove the part of the string before the /
+    pc_AR="${pcfromdir:1:2}:${pcfromdir:3:2}:${pcfromdir:5:2}.000"   # first index is offset, second is length
+    pc_DEC="${pcfromdir:7:3}.${pcfromdir:10:2}.${pcfromdir:12:2}.000"
+    phasecenter="${pc_AR} ${pc_DEC} J2000"
+    echo ${phasecenter}
+}
+
+writeOutputFile()
+{
+    filetext="PIMS                          MS BASENAME"$'\n'
+    for dir in ${inputPIMS}
+    do
+        dir0=${PWD}
+	cd ${inputDir}/${dir}
+        msbasename=`ls *_SPW*.ms.tgz | tail -1`
+        msbasename=${msbasename%_SPW*}    # notation to remove the part of the string after SPW
+        filetext+="${dir}         ${msbasename}"$'\n'
+	cd ${dir0}
+    done
+    echo "${filetext}" > ${outputFile}
+}
+
+writeWorkflowConfig()
+{
+    date=`date +'%Y%m%d'`
+    DAGText=""
+    for dir in ${inputPIMS}
+    do
+        echo $dir
+        mkdir -p $dir
+        if [ -n "${htcleanDir}" ]
+        then
+            inputMSList=`get_msnamelist ${dir}`
+            phasecenter=`get_phasecenter ${dir}`
+            DAGName=`echo ${dir} | sed 's/\//_/g' | sed 's/+/p/g' | sed 's/-/m/g'`
+            cp -r ${htcleanDir} $dir/bin
+	        projectdirbase=`echo ${PWD} | sed 's@'"${HOME}/"'@''@'`
+	        sed -i 's@initialdir.*=.*@'"initialdir           = ${HOME}/\$(projectdir)"'@' ${dir}/bin/${parfile}
+            sed -i 's@projectdir.*=.*@'"projectdir           = ${projectdirbase}/${dir}"'@' ${dir}/bin/${parfile}
+            sed -i 's@imagesdir.*=.*@'"imagesdir            = \$(dataorigin)/imagingdata/\$(projectdir)/working_${date}"'@' ${dir}/bin/${parfile}
+            sed -i 's@msdir.*=.*@'"msdir                = \$(dataorigin)/data/${dir}"'@' ${dir}/bin/${parfile}
+            sed -i 's@msnamelist.*=.*@'"msnamelist           = ${inputMSList}"'@' ${dir}/bin/${parfile}
+            sed -i 's@^imagename.*=.*@'"imagename            = ${DAGName}"'@' ${dir}/bin/${parfile}
+            sed -i 's@phasecenter.*=.*@'"phasecenter          = ${phasecenter}"'@' ${dir}/bin/${parfile}
+            DAGText+="SUBDAG EXTERNAL        ${DAGName}        htclean.dag        DIR ${dir}/bin"$'\n'
+        fi
+    done
+    
+    if [ -z "${htcleanDir}" ]
+    then
+        echo "$0: Exiting now. htcleanDir is not set. Please provide the directory to copy htclean framework from."
+    else
+        echo "${DAGText}" > mPIMS.dag
+    fi
+}
+
+while getopts "f:d:o:L:p:h" option
+do
+    case $option in
+        f) inputFile=${OPTARG}  ;;
+        d) inputDir=${OPTARG}   ;;
+        o) outputFile=${OPTARG} ;;
+        L) htcleanDir=${OPTARG} ;;
+        p) parfile=${OPTARG}    ;;
+        h) usage; exit 0        ;;
+        *) usage; exit 1        ;;
+    esac
+done
+
+# Default parameter file
+[ -z "${parfile}" ] && parfile=libra_htclean.def
+
+# Verify inputs: can't combine '-f' and '-d'
+if [ -n "${inputFile}" ] && [ -n "${inputDir}" ]
+then
+    echo "$0: Invalid inputs. Options '-f' and '-d' can't be combined."
+    exit 1
+else
+    [ -n "${inputFile}" ] && getPIMSFromInputFile
+    [ -n "${inputDir}" ]  && getPIMSFromInputDir
+fi
+
+
+# Write output file or create directory structure
+if [ -n "${outputFile}" ]
+then
+    echo "$0: Writing output file: ${outputFile}"
+    writeOutputFile
+else
+    echo "$0: Creating individual directories per PIMS and copying htclean framework:"
+    writeWorkflowConfig
+fi
