@@ -76,7 +76,7 @@ public:
   casacore::Bool computePrincipalSolution();
   void makeMTScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
+  std::vector<casacore::Float> getActiveSetAspen(const float peakres);
 
 //protected:
 private:
