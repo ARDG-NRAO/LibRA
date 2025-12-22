@@ -332,7 +332,7 @@ Int MTAspMatrixCleaner::mtaspclean()
     // Various ways of stopping
     // matCoeffs should be available now.
     checkMTConvergence(converged, tmpMaximumResidual, minMaximumResidual);
-
+    
     // Break out of minor-cycle loop
     if(converged != 0)
     {
@@ -342,6 +342,15 @@ Int MTAspMatrixCleaner::mtaspclean()
         sf.save();
         break;
     }
+
+    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
+    // Fill the updated residual image for scale 0 back into vecDirty_p
+    for(Int taylor=0; taylor<ntaylor_p; taylor++)
+    {
+      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
+      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
+    }
+
 
     // determine if switch to hogbom or not
     // genie redo this
@@ -415,6 +424,7 @@ Int MTAspMatrixCleaner::mtaspclean()
         itsNumIterNoGoodAspen.push_back(0);
     }
 
+    /* Move forward
     // Update the model and matR from cubeA and matCoeffs
     // also updates flux counters by nterm
     //cout << "update model and rhs" << endl;
@@ -425,7 +435,7 @@ Int MTAspMatrixCleaner::mtaspclean()
     {
       vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
       //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
-    }
+    }*/
 
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
@@ -466,7 +476,7 @@ Int MTAspMatrixCleaner::mtaspclean()
     }
 
     tempScaleSizes.clear();
-    tempScaleSizes = getActiveSetAspen();
+    tempScaleSizes = getActiveSetAspen(itsPeakResidual);
     tempScaleSizes.push_back(0.0); // put 0 scale
     defineAspScales(tempScaleSizes);
   }
@@ -495,7 +505,7 @@ Int MTAspMatrixCleaner::mtaspclean()
 
 
 // ALGLIB
-vector<Float> MTAspMatrixCleaner::getActiveSetAspen()
+vector<Float> MTAspMatrixCleaner::getActiveSetAspen(const float peakres)
 {
   LogIO os(LogOrigin("MTAspMatrixCleaner", "getActiveSetAspen()", WHERE));
 
@@ -509,6 +519,13 @@ vector<Float> MTAspMatrixCleaner::getActiveSetAspen()
   {
   	os << "Switched to hogbom because of frequent small components." << LogIO::POST;
     switchedToHogbom();
+  }
+
+  if(!itsSwitchedToHogbom && (abs(peakres) < itsFusedThreshold))
+  {
+    bool runlong = true;
+    switchedToHogbom(runlong);
+    os << "Run hogbom for the entire cycle b/c peak residual is small enough: " << itsFusedThreshold << LogIO::POST;
   }
 
   if (itsSwitchedToHogbom)
