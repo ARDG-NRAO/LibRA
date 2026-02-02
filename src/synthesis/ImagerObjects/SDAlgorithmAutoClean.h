@@ -52,7 +52,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   public:
     
     // Empty constructor
-    SDAlgorithmAutoClean(casacore::Float autoThreshold, casacore::Int autoMaxiter, casacore::Float autoGain, casacore::Bool autoHogbom, casacore::Float autoTrigger, casacore::Float autoPower, casacore::Int autoXMask, casacore::Int autoYMask);
+    SDAlgorithmAutoClean(casacore::Float autoThreshold, casacore::Int autoMaxiter, casacore::Float autoGain, casacore::Float hogbomGain, casacore::Bool autoHogbom, casacore::Float autoTrigger, casacore::Float autoPower, casacore::Int autoXMask, casacore::Int autoYMask);
     virtual  ~SDAlgorithmAutoClean();
     
     //returns the estimate of memory used in kilobytes (kB);
@@ -72,6 +72,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Float itsautoThreshold;
     casacore::Int itsautoMaxiter;
     casacore::Float itsautoGain;
+    casacore::Float itshogbomGain;
     casacore::Bool itsautoHogbom;
     casacore::Float itsautoTrigger;
     casacore::Float itsautoPower;

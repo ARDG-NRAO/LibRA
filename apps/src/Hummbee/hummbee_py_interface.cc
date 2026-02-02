@@ -39,6 +39,7 @@ PYBIND11_MODULE(hummbee2py, m)
     "autothreshold"_a=0,
     "automaxiter"_a=0,
     "autogain"_a=0,
+    "hogbomgain"_a=0,
     "autohogbom"_a=false,
     "autotrigger"_a=0,
     "autopower"_a=1,

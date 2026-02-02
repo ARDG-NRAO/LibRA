@@ -67,11 +67,11 @@ using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 
-  SDAlgorithmAutoClean::SDAlgorithmAutoClean(Float autoThreshold, Int autoMaxiter, Float autoGain, Bool autoHogbom, Float autoTrigger, Float autoPower, Int autoXMask, Int autoYMask):
+  SDAlgorithmAutoClean::SDAlgorithmAutoClean(Float autoThreshold, Int autoMaxiter, Float autoGain, Float hogbomGain, Bool autoHogbom, Float autoTrigger, Float autoPower, Int autoXMask, Int autoYMask):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(), itsMatTemp(),
     itsCleaner(),
-    itsautoThreshold(autoThreshold), itsautoMaxiter(autoMaxiter), itsautoGain(autoGain), itsautoHogbom(autoHogbom), itsautoTrigger(autoTrigger), itsautoPower(autoPower), itsautoXMask(autoXMask), itsautoYMask(autoYMask)
+    itsautoThreshold(autoThreshold), itsautoMaxiter(autoMaxiter), itsautoGain(autoGain), itshogbomGain(hogbomGain), itsautoHogbom(autoHogbom), itsautoTrigger(autoTrigger), itsautoPower(autoPower), itsautoXMask(autoXMask), itsautoYMask(autoYMask)
     {	
 	itsAlgorithmName=String("autocorrelation");
     }
@@ -174,13 +174,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
        os << LogIO::WARN << "Acceptable autogain values are >= 0. Changing autogain from " << itsautoGain << " to 0." << LogIO::POST;
        itsautoGain = 0.0;
     }
+    if (itshogbomGain < 0)
+    {
+       os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itshogbomGain << " to 0." << LogIO::POST;
+       itshogbomGain = 0.0;
+    }
     if (itsautoPower < 0)
     {
        os << LogIO::WARN << "Acceptable autopower values are >= 0. Changing autopower from " << itsautoPower << " to 0." << LogIO::POST;
        itsautoPower = 1.0;
     }
 
-    itsCleaner.setAutoControl(itsautoThreshold, itsautoMaxiter, itsautoGain, itsautoHogbom, itsautoTrigger, itsautoPower, itsautoXMask, itsautoYMask);
+    itsCleaner.setAutoControl(itsautoThreshold, itsautoMaxiter, itsautoGain, itshogbomGain, itsautoHogbom, itsautoTrigger, itsautoPower, itsautoXMask, itsautoYMask);
 
     if(itsautoHogbom==false){
 	    if(itsImages->doesImageExist(itsImages->getName()+String(".tildeII")) &&

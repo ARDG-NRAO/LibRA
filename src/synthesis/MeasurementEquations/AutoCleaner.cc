@@ -165,6 +165,7 @@ void AutoCleaner::setPsf(const Matrix<Float>& psf){
   itsAutoThreshold=0.0;
   itsAutoMaxiter=0;
   itsAutoGain=0.0;
+  itsHogbomGain=0.0;
   itsAutoHogbom=false;
   itsAutoTrigger=1.0;
   triggerhogbom=0.0;
@@ -403,7 +404,7 @@ Int AutoCleaner::clean(Matrix<Float>& model,
     if(abs(MaximumHogbom) > abs(itsStrengthOptimum)/normcmap || itsAutoHogbom){
 	itsStrengthOptimum = MaximumHogbom;
 	posMaximum = posMaximumHogbom;
-        tempGain=itsGain/max(itsPsf);
+        tempGain=itsHogbomGain/max(itsPsf);
         cleanhogbom=true;
         totalFlux += (itsStrengthOptimum*tempGain);
         os << "Using Hogbom-CLEAN step"<< LogIO::POST;
@@ -428,7 +429,7 @@ Int AutoCleaner::clean(Matrix<Float>& model,
 			os << "We trigger Hogbom step instead, since the MS-CLEAN step got stuck" << LogIO::POST;
 			itsStrengthOptimum = MaximumHogbom;
 			posMaximum = posMaximumHogbom;
-			tempGain=itsGain/max(itsPsf);
+			tempGain=itsHogbomGain/max(itsPsf);
 			cleanhogbom=true;
 			totalFlux += (itsStrengthOptimum*tempGain);
 			os << "Using Hogbom-CLEAN step"<< LogIO::POST;
@@ -495,7 +496,7 @@ Int AutoCleaner::clean(Matrix<Float>& model,
     }
     else{
 	    if(cleanhogbom){
-		    triggerhogbom += itsGain;
+		    triggerhogbom += itsHogbomGain;
 		    Matrix<Float> BIold(BI.shape());
 		    BIold.assign_conforming(BI);
 			Matrix<Float> tildeII_copy1(tildeII.shape()), tildeII_copy2(tildeII.shape());

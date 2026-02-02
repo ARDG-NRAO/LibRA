@@ -346,7 +346,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     rms = rms / num;
 
     // make single optimized scale image
-    os << LogIO::NORMAL3 << "Making optimized scale " << itsOptimumScaleSize << " at location " << itsPositionOptimum << LogIO::POST;
+    os << "Making optimized scale " << itsOptimumScaleSize << " at location " << itsPositionOptimum << LogIO::POST;
 
     if (itsSwitchedToHogbom)
     {
@@ -471,6 +471,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
       os <<LogIO::NORMAL3 << LogIO::POST;
     }
+    
 
     //save the min peak residual
     if (abs(minMaximumResidual) > abs(itsPeakResidual))
@@ -572,8 +573,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         break;
     }
 
-
-
     IPosition blc(itsPositionOptimum - support/2);
     IPosition trc(itsPositionOptimum + support/2 - 1);
     // try 2.5 sigma
@@ -633,7 +632,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     cout << "itsDirty pos " << peakpos << " maxval " << (*itsDirty)(peakpos) << endl;
     cout << "itsPositionOptimum " << itsPositionOptimum << endl;
     cout << " maxPsfSub " << max(fabs(psfSub)) << " maxPsfConvScale " << max(fabs(itsPsfConvScale)) << " itsGain " << itsGain << endl;*/
-    os <<LogIO::NORMAL3 << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
+    os << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
 
     // subtract the peak that we found from the dirty image
     dirtySub -= scaleFactor * psfSub;
@@ -713,7 +712,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	    	switchedToHogbom();
 	    }* /
     }*/
-
     // update peakres
     itsPrevPeakResidual = itsPeakResidual;
     maxVal=0;
@@ -728,7 +726,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         (fabs(itsPeakResidual - itsPrevPeakResidual) < 1e-4)) //peakres rarely changes
       itsNumNoChange += 1;
     //cout << "after: itsDirty optPos " << (*itsDirty)(itsPositionOptimum) << endl;
-
+    
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
     if (itsSwitchedToHogbom)
@@ -775,7 +773,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     defineAspScales(tempScaleSizes);
   }
   // End of iteration
-
    vector<Float> sumFluxByBins(itsBinSizeForSumFlux,0.0);
    vector<Float> rangeFluxByBins(itsBinSizeForSumFlux+1,0.0);
 
@@ -1651,6 +1648,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
   fft.fft0(dirtyFT, *itsDirty);
   itsDirtyConvInitScales.resize(0);
   itsDirtyConvInitScales.resize(itsNInitScales); // 0, 1width, 2width, 4width and 8width
+
   //cout << "itsInitScaleSizes.size() " << itsInitScaleSizes.size() << " itsInitScales.size() " << itsInitScales.size() << " NInitScales # " << itsNInitScales << endl;
   for (int scale=0; scale < itsNInitScales; scale++)
   {
@@ -1674,7 +1672,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
 
   maxDirtyConvInitScales(strengthOptimum, optimumScale, positionOptimum);
 
-  os << LogIO::NORMAL3 << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << LogIO::POST;
+  os << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << LogIO::POST;
   //cout << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << endl;
   // cout << " its itsDirty is " << (*itsDirty)(positionOptimum);
   // cout << " at location " << positionOptimum[0] << " " << positionOptimum[1] << " " << positionOptimum[2];
