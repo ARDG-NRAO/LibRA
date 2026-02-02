@@ -168,7 +168,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }*/
     else if (decpars.algorithm==String("autocorrelation"))
 	  {
-	    itsDeconvolver.reset(new SDAlgorithmAutoClean(decpars.autoThreshold, decpars.autoMaxiter, decpars.autoGain, decpars.autoHogbom, decpars.autoTrigger, decpars.autoPower, decpars.autoXMask, decpars.autoYMask));
+	    itsDeconvolver.reset(new SDAlgorithmAutoClean(decpars.autoThreshold, decpars.autoMaxiter, decpars.autoGain, decpars.hogbomGain, decpars.autoHogbom, decpars.autoTrigger, decpars.autoPower, decpars.autoXMask, decpars.autoYMask));
 	  }
 	else
 	  {

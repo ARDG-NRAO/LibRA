@@ -247,7 +247,7 @@ public:
   casacore::IPosition blcautomask;
   casacore::IPosition trcautomask;
 
-  void setAutoControl(const casacore::Float autoThreshold = 0.0,const casacore::Int autoMaxiter = 0, const casacore::Float autoGain = 0.0, const casacore::Bool autoHogbom = false, const casacore::Float autoTrigger = 1.0, const casacore::Float autoPower = 1.0, const casacore::Int autoXMask = 0, const casacore::Int autoYMask = 0) { itsAutoThreshold = autoThreshold; itsAutoMaxiter = autoMaxiter; itsAutoGain = autoGain; itsAutoHogbom = autoHogbom; itsAutoTrigger = autoTrigger; itsAutoPower = autoPower; itsAutoXMask = autoXMask; itsAutoYMask = autoYMask;}
+  void setAutoControl(const casacore::Float autoThreshold = 0.0,const casacore::Int autoMaxiter = 0, const casacore::Float autoGain = 0.0, const casacore::Float hogbomGain = 0.0, const casacore::Bool autoHogbom = false, const casacore::Float autoTrigger = 1.0, const casacore::Float autoPower = 1.0, const casacore::Int autoXMask = 0, const casacore::Int autoYMask = 0) { itsAutoThreshold = autoThreshold; itsAutoMaxiter = autoMaxiter; itsAutoGain = autoGain; itsHogbomGain = hogbomGain; itsAutoHogbom = autoHogbom; itsAutoTrigger = autoTrigger; itsAutoPower = autoPower; itsAutoXMask = autoXMask; itsAutoYMask = autoYMask;}
 
 protected:
   //friend class MatrixNACleaner;
@@ -350,6 +350,7 @@ private:
   casacore::Float itsAutoThreshold;
   casacore::Int itsAutoMaxiter;
   casacore::Float itsAutoGain;
+  casacore::Float itsHogbomGain;
   casacore::Bool itsAutoHogbom;
   casacore::Float itsAutoTrigger;
   casacore::Float itsAutoPower;

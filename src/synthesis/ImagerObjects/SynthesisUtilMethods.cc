@@ -4033,6 +4033,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
           else 
             err += "autogain must be a float or double";
         }
+        if (inrec.isDefined("hogbomgain"))
+        {
+          if (inrec.dataType("hogbomgain") == TpFloat || inrec.dataType("hogbomgain") == TpDouble)
+            err += readVal(inrec, String("hogbomgain"), hogbomGain);
+          else 
+            err += "hogbomgain must be a float or double";
+        }
         if (inrec.isDefined("autohogbom"))
         {
           if (inrec.dataType("autohogbom") == TpBool)
@@ -4379,6 +4386,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     autoThreshold = 0.0;
     autoMaxiter = 0;
     autoGain = 0.0;
+    hogbomGain = 0.0;
     autoHogbom = false;
     autoTrigger = 1.0;
     autoPower = 1.0;
@@ -4412,6 +4420,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("autothreshold", autoThreshold);
     decpar.define("automaxiter", autoMaxiter);
     decpar.define("autogain", autoGain);
+    decpar.define("hogbomgain", hogbomGain);
     decpar.define("autohogbom", autoHogbom);
     decpar.define("autotrigger", autoTrigger);
     decpar.define("autopower", autoPower);

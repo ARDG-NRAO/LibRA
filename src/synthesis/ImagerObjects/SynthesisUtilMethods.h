@@ -467,6 +467,7 @@ public:
   casacore::Float autoThreshold;
   casacore::Int autoMaxiter;
   casacore::Float autoGain;
+  casacore::Float hogbomGain;
   casacore::Bool autoHogbom;
   casacore::Float autoTrigger;
   casacore::Float autoPower;
