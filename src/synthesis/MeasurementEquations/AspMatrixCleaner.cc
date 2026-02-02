@@ -403,7 +403,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
         
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
         {
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -422,7 +422,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
       }
-      if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
+      if (!itsSwitchedToHogbom && itsNumNoChange >= 2 && itsstopMS)
       {
         os << LogIO::NORMAL3 << "Switched to hogbom at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
         itsNumNoChange = 0;
@@ -474,7 +474,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       os <<LogIO::NORMAL3 << LogIO::POST;
     }
     
-
     //save the min peak residual
     if (abs(minMaximumResidual) > abs(itsPeakResidual))
       minMaximumResidual = abs(itsPeakResidual);
@@ -571,6 +570,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
          << totalFlux <<LogIO::POST;
     }
 
+
     IPosition blc(itsPositionOptimum - support/2);
     IPosition trc(itsPositionOptimum + support/2 - 1);
     // try 2.5 sigma
@@ -601,6 +601,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
     //Matrix<Float> sub = itsPsfConvScale(nullnull+1,support-1);
     //sub.assign_conforming(shift(nullnull,support-2));
+    
     IPosition nullnull(2,0);
     Matrix<Float> shift(psfShape_p);
     shift.assign_conforming(itsPsfConvScale);
@@ -711,6 +712,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	    	switchedToHogbom();
 	    }* /
     }*/
+    
     // update peakres
     itsPrevPeakResidual = itsPeakResidual;
     maxVal=0;
@@ -767,6 +769,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     defineAspScales(tempScaleSizes);
   }
   // End of iteration
+  
    vector<Float> sumFluxByBins(itsBinSizeForSumFlux,0.0);
    vector<Float> rangeFluxByBins(itsBinSizeForSumFlux+1,0.0);
 
@@ -1090,7 +1093,7 @@ void AspMatrixCleaner::setInitScales()
       //If the `largestscale` provided by user is smaller than psf width, 
       //the initial scales would be [0, largestscale, psf_width]. 
       //This is to make WAsp have the same good result as before 
-      itsNInitScales = 3;
+      itsNInitScales = 1;
       itsInitScaleSizes.resize(itsNInitScales);
       itsInitScaleSizes[0] = 0.0f;
       itsInitScaleSizes[1] = itsUserLargestScale;
@@ -1542,9 +1545,13 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
         if (scale > 0)
         {
   	      float normalization;
-  	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      if(itsWaveletTrigger){
+  	      normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      }
   	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
-          normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+	      else{
+          	normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+		}
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -1563,13 +1570,10 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     }
   }
 
-
-
-
   if (optimumScale > 0)
   {
-    //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
-    float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+	  
+    float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
     if(itsWaveletTrigger){
     	normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
     }
@@ -1687,7 +1691,6 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 	double epsx = itsLbfgsEpsX;//1e-3;
 	ae_int_t maxits = itsLbfgsMaxit;//5;
   	minlbfgsstate state;
-  	os << x[0] << "   " << x[1] << LogIO::POST;
   	minlbfgscreate(1, x, state);
   	minlbfgssetcond(state, epsg, epsf, epsx, maxits);
   	minlbfgssetscale(state, s);
