@@ -195,7 +195,9 @@ if [ -z "${FC}" ]; then
     export FC=/usr/bin/gfortran
 fi
 # GNU configure script uses the env variable F77 (for building FFTW package)
-export F77=${FC}
+if [ -z "${F77}" ]; then
+    export F77=${FCC}
+fi
 
 # 
 # Use -DLIBRA_ENABLE_CUDA_BACKEND=OFF for CPU-only build.
