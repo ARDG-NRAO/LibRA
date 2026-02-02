@@ -66,13 +66,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
     itsStopPointMode(stoppointmode),
+    itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
     itsUserLargestScale(largestScale),
     itsMCsetup(true),
     itsPrevPsfWidth(0),
-    itsIsSingle(isSingle)
+    itsIsSingle(isSingle),
+    itsUserLargestScale(largestScale)
   {
     itsAlgorithmName = String("asp");
+    LogIO os(LogOrigin("SDAlgorithmAAspClean", "constructor", WHERE));
   }
 
   SDAlgorithmAAspClean::~SDAlgorithmAAspClean()
@@ -109,7 +112,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (itsPrevPsfWidth != width)
       {
         itsPrevPsfWidth = width;
-        itsCleaner.setInitScaleXfrs(width);
+	if (itsScales.size() < 1)
+        	itsCleaner.setInitScaleXfrs(width);
+	else
+		itsCleaner.loadInitScaleXfrs(itsScales);
       }
 
       itsCleaner.stopPointMode( itsStopPointMode );
@@ -121,6 +127,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //Matrix<Float> tempMat1(itsMatResidual);
       //itsCleaner.setOrigDirty( tempMat1 );
 
+      if (itsFusedThreshold < 0)
+      {
+        os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to -1." << LogIO::POST;
+        itsFusedThreshold = -1.;
+      }
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
     }
@@ -162,28 +173,45 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Matrix<Float> prevModel;
     prevModel = itsMatModel;
 
-    //cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
+    if (itsmfasp){
+	    itsCleaner.startingIteration( 0 );
+	    itsCleaner.MFaspclean( tempModel );
+	    os << "Aspclean finished" << LogIO::POST;
+	    iterdone = itsCleaner.numberIterations();
 
-    // retval
-    //  1 = converged
-    //  0 = not converged but behaving normally
-    // -1 = not converged and stopped on cleaning consecutive smallest scale
-    // -2 = not converged and either large scale hit negative or diverging
-    // -3 = clean is diverging rather than converging
-    itsCleaner.startingIteration( 0 );
-    Int retval = itsCleaner.aspclean( tempModel );
-    iterdone = itsCleaner.numberIterations();
+	    // update residual - this is critical
+	    itsMatResidual = itsCleaner.getterResidual();
 
-    if( retval==-1 ) {os << LogIO::WARN << "AspClean minor cycle stopped on cleaning consecutive smallest scale" << LogIO::POST; }
-    if( retval==-2 ) {os << LogIO::WARN << "AspClean minor cycle stopped at large scale negative or diverging" << LogIO::POST;}
-    if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
+	    peakresidual = itsCleaner.getterPeakResidual();
+	    //cout << "SDAlg: peakres " << peakresidual << endl;
+	    modelflux = sum( itsMatModel );
+    }
 
-    // update residual - this is critical
-    itsMatResidual = itsCleaner.getterResidual();
+    else{
 
-    peakresidual = itsCleaner.getterPeakResidual();
-    //cout << "SDAlg: peakres " << peakresidual << endl;
-    modelflux = sum( itsMatModel );
+	    //cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
+
+	    // retval
+	    //  1 = converged
+	    //  0 = not converged but behaving normally
+	    // -1 = not converged and stopped on cleaning consecutive smallest scale
+	    // -2 = not converged and either large scale hit negative or diverging
+	    // -3 = clean is diverging rather than converging
+	    itsCleaner.startingIteration( 0 );
+	    Int retval = itsCleaner.aspclean( tempModel );
+	    iterdone = itsCleaner.numberIterations();
+
+	    if( retval==-1 ) {os << LogIO::WARN << "AspClean minor cycle stopped on cleaning consecutive smallest scale" << LogIO::POST; }
+	    if( retval==-2 ) {os << LogIO::WARN << "AspClean minor cycle stopped at large scale negative or diverging" << LogIO::POST;}
+	    if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
+
+	    // update residual - this is critical
+	    itsMatResidual = itsCleaner.getterResidual();
+
+	    peakresidual = itsCleaner.getterPeakResidual();
+	    //cout << "SDAlg: peakres " << peakresidual << endl;
+	    modelflux = sum( itsMatModel );
+      }
   }
 
   void SDAlgorithmAAspClean::finalizeDeconvolver()

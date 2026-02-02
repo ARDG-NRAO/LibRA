@@ -401,7 +401,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
         
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
         {
           runlong = true;
           os << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -420,7 +420,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
       }
-      if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
+      if (!itsSwitchedToHogbom && itsNumNoChange >= 2 && itsstopMS)
       {
         os << "Switched to hogbom at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
         itsNumNoChange = 0;
@@ -472,7 +472,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       os <<LogIO::NORMAL3 << LogIO::POST;
     }
     
-
     //save the min peak residual
     if (abs(minMaximumResidual) > abs(itsPeakResidual))
       minMaximumResidual = abs(itsPeakResidual);
@@ -712,6 +711,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	    	switchedToHogbom();
 	    }* /
     }*/
+    
     // update peakres
     itsPrevPeakResidual = itsPeakResidual;
     maxVal=0;
@@ -773,6 +773,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     defineAspScales(tempScaleSizes);
   }
   // End of iteration
+  
    vector<Float> sumFluxByBins(itsBinSizeForSumFlux,0.0);
    vector<Float> rangeFluxByBins(itsBinSizeForSumFlux+1,0.0);
 
@@ -1103,7 +1104,7 @@ void AspMatrixCleaner::setInitScales()
       //If the `largestscale` provided by user is smaller than psf width, 
       //the initial scales would be [0, largestscale, psf_width]. 
       //This is to make WAsp have the same good result as before 
-      itsNInitScales = 3;
+      itsNInitScales = 1;
       itsInitScaleSizes.resize(itsNInitScales);
       itsInitScaleSizes[0] = 0.0f;
       itsInitScaleSizes[1] = itsUserLargestScale;
@@ -1555,7 +1556,9 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
         if (scale > 0)
         {
   	      float normalization;
-  	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      if(itsWaveletTrigger){
+  	      normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      }
   	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
           //normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
           normalization = computePeakNormalization(itsInitScaleSizes[scale]);
@@ -1576,9 +1579,6 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
       positionOptimum = posMaximum[scale];
     }
   }
-
-
-
 
   if (optimumScale > 0)
   {
