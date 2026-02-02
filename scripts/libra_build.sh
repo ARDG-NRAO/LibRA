@@ -183,9 +183,17 @@ fi
 #       GCC 11.4 with CUDA 11.x works.
 #       Not clear what other combinations work/not work.
 #
-export CXX=/usr/bin/g++
-export CC=/usr/bin/gcc
-export FC=/usr/bin/gfortran
+
+# Define compiler variables if they aren't already defined
+if [ -z "${CXX}" ]; then
+    export CXX=/usr/bin/g++
+fi
+if [ -z "${CC}" ]; then
+    export CC=/usr/bin/gcc
+fi
+if [ -z "${FC}" ]; then
+    export FC=/usr/bin/gfortran
+fi
 # GNU configure script uses the env variable F77 (for building FFTW package)
 export F77=${FC}
 
