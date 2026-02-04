@@ -190,18 +190,6 @@ Int MTAspMatrixCleaner::mtaspclean()
     //cout << "cur iter " << itsIteration << " max iter is "<< itsMaxNiter << endl;
     itsIteration++;
 
-    // calculate rms residual
-    float rms = 0.0;
-    // should be masked
-    int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
-    for (int j = blcDirty(1); j <= trcDirty(1); ++j)
-    { 
-      for (int i = blcDirty(0); i <= trcDirty(0); ++i)
-      {
-        rms += pow((matR_p[IND2(0,0)])(i, j), 2);
-      }
-    }
-    rms = rms / num;
 
     // make single optimized scale image
     os << "Making optimized scale " << itsOptimumScaleSize << LogIO::POST;
@@ -264,6 +252,10 @@ Int MTAspMatrixCleaner::mtaspclean()
    // Reconcile box sizes/locations with the image size
    makeBoxesSameSize(blc, trc, blcPsf, trcPsf); 
 
+    // it's important to re-compute matR_p EVERY iteration since opt scales are different
+    // Calculating convolutions of residual images with the optimal scale
+    computeRHS();
+
     // Compute all convolutions and matA, invMatA
     // If matrix is not invertible, return!
     // This is done repeatedly because opt scale is different each time
@@ -272,27 +264,24 @@ Int MTAspMatrixCleaner::mtaspclean()
     if (computeHessianPeak(compPrinSol, usePatch, blcPsf, trcPsf) == -1)
       return -1;
 
-    // Only need to do once for init. The rest of the RHS update is handled by updateRHS
-    // matR = residuals * the opt scale
+
+
+    float rms = 0.0;
+    // should be masked
+    int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
+    for (int j = blcDirty(1); j <= trcDirty(1); ++j)
+    {
+      for (int i = blcDirty(0); i <= trcDirty(0); ++i)
+      {
+        rms += pow((matR_p[IND2(0,0)])(i, j), 2);
+      }
+    }
+    rms = rms / num;
+
     if (ii == itsStartingIter)
     {
-      os << "Calculating convolutions of residual images with the optimal scale" << LogIO::POST;
-      //cout << "Calculating convolutions of residual images with the optimal scale" << endl;
-      computeRHS();
-
-      rms = 0.0;
-      // should be masked
-      num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
-      for (int j = blcDirty(1); j <= trcDirty(1); ++j)
-      {
-        for (int i = blcDirty(0); i <= trcDirty(0); ++i)
-        {
-          rms += pow((matR_p[IND2(0,0)])(i, j), 2);
-        }
-      }
-      rms = rms / num;
       initRMSResidual = rms;
-      //os << "At ii= " << ii << ", initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
+      os << "At ii= " << ii << ", initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
     }
 
     // solve matCoeffs (amplitudes) from invMatA and matR
@@ -381,9 +370,17 @@ Int MTAspMatrixCleaner::mtaspclean()
         }*/
 
         switchedToHogbom(runlong);
+        itsGain = 0.1;
+        //os << "Actually wasp breaks and exits b/c peak residual or optimum strength is small enough: " << itsFusedThreshold << LogIO::POST;
 
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
+
+        // Write back
+        /*sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
+        break;*/
       }
 
       if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
@@ -411,6 +408,14 @@ Int MTAspMatrixCleaner::mtaspclean()
         }*/
 
         switchedToHogbom(runlong);
+        itsGain = 0.1;
+        /*os << "Actually wasp breaks and exits at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
+        // Write back
+        sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
+        break;*/
+
       }
     }
 
@@ -525,6 +530,7 @@ vector<Float> MTAspMatrixCleaner::getActiveSetAspen(const float peakres)
   {
     bool runlong = true;
     switchedToHogbom(runlong);
+    itsGain=0.1;
     os << "Run hogbom for the entire cycle b/c peak residual is small enough: " << itsFusedThreshold << LogIO::POST;
   }
 
@@ -568,6 +574,12 @@ vector<Float> MTAspMatrixCleaner::getActiveSetAspen(const float peakres)
   //cout << " its dirty vecDirty_p[0] is " << (vecDirty_p[0])(positionOptimum);
   //cout << " at location " << positionOptimum[0] << " " << positionOptimum[1] << endl;
 
+  // debug
+  /*Float maxres = 0.0;
+  IPosition maxrespos;
+  findMaxAbsMask((matR_p[IND2(0,0)]), itsInitScaleMasks[0], maxres, maxrespos);
+  os << "DEBUG: matR_p[0] maxres " << fabs(maxres) << ", maxrespos " << maxrespos << endl;*/
+  // end debug
 
   itsStrengthOptimum = strengthOptimum;
   itsPositionOptimum = positionOptimum;
@@ -952,17 +964,18 @@ Int MTAspMatrixCleaner::computeHessianPeak(Bool compPrinSol, Bool usePatch, IPos
   }
 
   // debug info
-  float maxvalue;
-  IPosition peakpos;
+  //float maxvalue;
+  //IPosition peakpos;
   /*findMaxAbs(vecScales_p[0], maxvalue, peakpos);
   cout << "vecScales_p[0] pos " << peakpos << " maxval " << maxvalue << " itsPositionOptimum " << itsPositionOptimum << endl;
   findMaxAbs(vecScales_p[1], maxvalue, peakpos);
   cout << "vecScales_p[1] pos " << peakpos << " maxval " << maxvalue << endl;*/
 
-  findMaxAbs(cubeA_p[IND4(0,0,0,0)], maxvalue, peakpos);
-  //cout << "cubeA_p[0] pos " << peakpos << " maxval " << maxvalue << endl;
-  psfpeak_p = peakpos; //genie trial or norm to make cubeA_p[0](psfpeak_p) 1
-  //cout << "cubeA_p[0](psfpeak_p) " << cubeA_p[0](psfpeak_p) << " (psfpeak_p) " << (psfpeak_p) << endl;
+  //findMaxAbs(cubeA_p[IND4(0,0,0,0)], maxvalue, peakpos);
+  //os << "cubeA_p[0] peakpos " << peakpos << " maxval " << maxvalue << LogIO::POST;
+  // should not need the following since that matches MSMFS which is calculated once at the beginning.
+  // psfpeak_p = peakpos; //genie trial or norm to make cubeA_p[0](psfpeak_p) 1
+  //os << "cubeA_p[0](psfpeak_p) " << cubeA_p[0](psfpeak_p) << " (psfpeak_p) " << (psfpeak_p) << LogIO::POST;
 
   // Construct A, invA for each scale.
   if (itsPositionPeakPsf != IPosition(2,(nx_p/2),(ny_p/2)))
@@ -1121,7 +1134,7 @@ void MTAspMatrixCleaner::updatePeakResidual()
   itsPeakResidual = fabs(rmaxval);
   //cout << "maxres " << maxres << ", maxrespos " << maxrespos << " norma " << (1.0/(matA_p[0])(0,0)) << endl;
   //cout << "current peakres " << itsPeakResidual << endl;
-  os << "current peakres " << itsPeakResidual << LogIO::POST;
+  os << "current peakres " << itsPeakResidual << " at location " << maxrespos << LogIO::POST;
 }
 
 //mtasp
@@ -1189,6 +1202,11 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
  ****************************************/
 Int MTAspMatrixCleaner::updateModelAndRHS(Float loopgain, IPosition blc, IPosition trc, IPosition blcPsf, IPosition trcPsf)
 {
+   /*cout << "itsPositionOptimum : " << itsPositionOptimum << endl;
+   cout << "region around peak residual : " << blc << trc << endl;
+   cout << "around the PSF peak : " << blcPsf << trcPsf << endl;
+   cout << "loopgain " << loopgain << " nscales_p " << nscales_p << endl;*/
+
   // Update the model images
   Matrix<Float> scaleSub = (vecScales_p[1])(blcPsf, trcPsf);
   for(Int taylor=0; taylor<ntaylor_p; taylor++)
