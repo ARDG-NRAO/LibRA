@@ -136,6 +136,16 @@ if [[ -v SPACK_ROOT ]]; then
     # $SPACK_ENV gets defined in an activated env.
     SPACK_ENV_ROOT=$SPACK_ENV/.spack-env/view/
 
+    # If CUDA is installed in SPACK env., setup a symlink to libcuda.so.1 stub.
+    CUDA_LIB=`spack location -i cuda`
+    if [ -z "$CUDA_LIB" ]; then
+	echo "###Info:"
+	echo "###Info: CUDA libs not installed in $SPACK_ENV_ROOT.  Assuming a system installation.";
+	echo "###Info:"
+    else
+	ln -s $SPACK_ENV_ROOT/lib64/stubs/libcuda.so $SPACK_ENV_ROOT/lib64/libcuda.so.1
+    fi
+
     #---------------------------------------------------------
     echo "Checking required packages in SPACK ($SPACK_ROOT)"...
     #
