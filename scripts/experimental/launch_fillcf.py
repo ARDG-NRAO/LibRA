@@ -216,15 +216,15 @@ class FillCFLauncher:
             self.logger.info(f"coyote_app path is now set to absolute path: {self.coyote_app}")
 
         checkfile = self.check_path(self.coyote_app)
-        if checkfile == "directory":
+        if "directory" in checkfile:
             self.logger.warning(f"{self.coyote_app} is a directory. Checking for binary in {self.coyote_app}/bin/coyote")
             checkfile = self.check_path(os.path.join(self.coyote_app, "bin/coyote"))
-            if checkfile == "file":
+            if "file" in checkfile:
                 self.coyote_app = os.path.join(self.coyote_app, "bin/coyote")
                 self.logger.info(f"coyote_app binary found at {self.coyote_app}")
         elif "file (executable)" in checkfile:
-                self.logger.warning(f"coyote_app binary not found in {self.coyote_app}. Please provide the correct path.")
-        elif checkfile == "file":
+                self.logger.info(f"coyote_app binary found in {self.coyote_app}.");
+        elif "file" in checkfile:
             self.logger.info(f"coyote_app binary found at {self.coyote_app}")
             return
         else:
