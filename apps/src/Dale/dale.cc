@@ -244,7 +244,7 @@ namespace Dale
     //
     //---------------------------------------------------
     //
-    string type, subType, targetName, weightName, sumwtName, pbName;
+    string type="", subType="", targetName=imageName, weightName=wtImageName, sumwtName=sowImageName, pbName="";
     
     LogIO logio(LogOrigin("Dale","dale"));
     
@@ -300,7 +300,7 @@ namespace Dale
 	    // 	 << endl;
 	    if (computePB)
 	      {
-		pbName   = imageName + ".pb";
+		pbName = librautils::removeExtension(targetName) + ".pb";
 		compute_pb(pbName, *wImage, *swImage, pblimit, logio);
 	      }
 	  }
