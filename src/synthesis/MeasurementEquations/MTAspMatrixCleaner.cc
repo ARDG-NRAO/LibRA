@@ -93,6 +93,7 @@ MTAspMatrixCleaner::MTAspMatrixCleaner():
   psfntaylor_p(0),
   nx_p(0),
   ny_p(0),
+  itsPrevOptimumScaleSize(0),
   sf("state.txt")
 {
   sf.load();  // read existing state, if any
@@ -253,8 +254,11 @@ Int MTAspMatrixCleaner::mtaspclean()
    makeBoxesSameSize(blc, trc, blcPsf, trcPsf); 
 
     // it's important to re-compute matR_p EVERY iteration since opt scales are different
+    // but to improve efficiency, only computes if scale changes or if it's 1st iteration.
     // Calculating convolutions of residual images with the optimal scale
-    computeRHS();
+    if (ii == itsStartingIter || 
+      itsOptimumScaleSize != itsPrevOptimumScaleSize)
+      computeRHS();
 
     // Compute all convolutions and matA, invMatA
     // If matrix is not invertible, return!
@@ -289,6 +293,20 @@ Int MTAspMatrixCleaner::mtaspclean()
       solveMatrixEqn(ntaylor_p, scale, blc, trc);
     //cout << "matCoeffs_p[IND2(0,0)] " << matCoeffs_p[IND2(0,0)](itsPositionOptimum) << endl;
     //cout << "matCoeffs_p[IND2(0,1)] " << matCoeffs_p[IND2(0,1)](itsPositionOptimum) << endl;
+
+    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
+    //DEBUG
+    /*Float maxres = 0.0;
+    IPosition maxrespos;
+    findMaxAbsMask((matR_p[IND2(0,0)]), itsInitScaleMasks[0], maxres, maxrespos);
+    os << "DEBUG before: maxres " << fabs(maxres) << ", maxrespos " << maxrespos << " rms " << rms << LogIO::POST; */
+    //end DEBUG
+    // Fill the updated residual image for scale 0 back into vecDirty_p
+    for(Int taylor=0; taylor<ntaylor_p; taylor++)
+    {
+      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
+      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
+    }
 
     // updates itsPeakResidual
     updatePeakResidual();
@@ -330,14 +348,6 @@ Int MTAspMatrixCleaner::mtaspclean()
         sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
         sf.save();
         break;
-    }
-
-    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
-    // Fill the updated residual image for scale 0 back into vecDirty_p
-    for(Int taylor=0; taylor<ntaylor_p; taylor++)
-    {
-      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
-      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
     }
 
 
@@ -429,18 +439,6 @@ Int MTAspMatrixCleaner::mtaspclean()
         itsNumIterNoGoodAspen.push_back(0);
     }
 
-    /* Move forward
-    // Update the model and matR from cubeA and matCoeffs
-    // also updates flux counters by nterm
-    //cout << "update model and rhs" << endl;
-    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
-
-    // Fill the updated residual image for scale 0 back into vecDirty_p
-    for(Int taylor=0; taylor<ntaylor_p; taylor++)
-    {
-      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
-      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
-    }*/
 
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
@@ -479,6 +477,8 @@ Int MTAspMatrixCleaner::mtaspclean()
       else
         itsNumHogbomIter -= 1;
     }
+
+    itsPrevOptimumScaleSize = itsOptimumScaleSize;
 
     tempScaleSizes.clear();
     tempScaleSizes = getActiveSetAspen(itsPeakResidual);
@@ -1135,6 +1135,13 @@ void MTAspMatrixCleaner::updatePeakResidual()
   //cout << "maxres " << maxres << ", maxrespos " << maxrespos << " norma " << (1.0/(matA_p[0])(0,0)) << endl;
   //cout << "current peakres " << itsPeakResidual << endl;
   os << "current peakres " << itsPeakResidual << " at location " << maxrespos << LogIO::POST;
+
+  // DEBUG-- itsDirty should be updated with itsDirty->assign(vecDirty_p[0]); 
+  // but it doesn't matter because it's not used when it's not updated.
+  /*Float debug_maxres = 0.0;
+  IPosition debug_maxrespos;
+  findMaxAbsMask(*(itsDirty), itsInitScaleMasks[0], debug_maxres, debug_maxrespos);
+  os << "DEBUG: itsDirty current peakres " << fabs(debug_maxres) << " at location " << debug_maxrespos << LogIO::POST;*/
 }
 
 //mtasp
@@ -1181,12 +1188,13 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
   }
 
   //4. Diverging large scale
-  //If actual value is 50% above the maximum residual. ..good chance it will not recover at this stage
-  if ((abs(itsPeakResidual) - abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-      (abs(itsPeakResidual) - abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
+  //If actual value is 200% above the maximum residual. ..good chance it will not recover at this stage
+  if (
+    (fabs((itsPeakResidual - tmpMaximumResidual)/tmpMaximumResidual) > 2.0) ||
+    (fabs((itsPeakResidual - minMaximumResidual)/minMaximumResidual) > 2.0))
   {
     //cout << "Diverging due to large scale?" << endl;
-    os << "Diverging due to large scale?" << LogIO::POST;
+    os << "Diverging ..." << LogIO::POST;
     os << "itsPeakResidual " << itsPeakResidual << " tmp " << tmpMaximumResidual << " minMaximumResidual " << minMaximumResidual << LogIO::POST;   
     converged = -2;
 

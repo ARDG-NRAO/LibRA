@@ -168,6 +168,7 @@ private:
   casacore::Matrix<casacore::Complex> dirtyFT_p;
   casacore::IPosition blcDirty;
   casacore::IPosition trcDirty;
+  casacore::Float itsPrevOptimumScaleSize;
 
   // h(s) [nx,ny,nscales]
   casacore::Block<casacore::Matrix<casacore::Float> > vecScales_p;
