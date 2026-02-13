@@ -272,6 +272,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	os << "Switching to Hogbom CLEAN is allowed" << LogIO::POST;
 	itsstopMS = true;
 	}
+  Float tempGain;
   
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
@@ -457,8 +458,14 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	      itsNumIterNoGoodAspen.push_back(0);
     }
 
+	//which loop gain to use
+	if (itsOptimumScaleSize == 0.0)
+		tempGain = itsHogbomGain;
+	else
+		tempGain = itsGain;
+
     // Now add to the total flux
-    totalFlux += (itsStrengthOptimum*itsGain);
+    totalFlux += (itsStrengthOptimum*tempGain);
     itsTotalFlux = totalFlux;
 
     if(ii == itsStartingIter)
@@ -588,7 +595,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     // Update the model image
     Matrix<Float> modelSub = model(blc, trc);
     Float scaleFactor;
-    scaleFactor = itsGain * itsStrengthOptimum;
+    scaleFactor = tempGain * itsStrengthOptimum;
     Matrix<Float> scaleSub = (itsScale)(blcPsf,trcPsf);
     modelSub += scaleFactor * scaleSub;
 

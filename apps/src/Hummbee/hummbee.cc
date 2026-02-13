@@ -337,9 +337,9 @@ float Hummbee(
       
       float minpsffraction = 0.05;
       float maxpsffraction = 0.8;
-      float CycleFactor = 1.0;
+      //float CycleFactor = 1.0;
       
-      Float psffraction = MaxPsfSidelobe * CycleFactor;
+      Float psffraction = MaxPsfSidelobe * cyclefactor;//CycleFactor;
       psffraction = casacore::max(psffraction, minpsffraction);
       psffraction = casacore::min(psffraction, maxpsffraction);
       Float cyclethreshold = PeakResidual * psffraction;

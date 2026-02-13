@@ -52,7 +52,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   public:
 
     // Empty constructor
-    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Vector<casacore::Float> waveletScales, casacore::Vector<casacore::Float> waveletAmps, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Bool waveletTrigger = false, casacore::Bool mfasp = false, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
+    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Vector<casacore::Float> waveletScales, casacore::Vector<casacore::Float> waveletAmps, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Bool waveletTrigger = false, casacore::Bool mfasp = false, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
     virtual  ~SDAlgorithmAAspClean();
 
   protected:
@@ -87,6 +87,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Bool itsWaveletTrigger;
     casacore::Bool itsmfasp;
     casacore::Vector<casacore::Float> itsScales;
+    casacore::Float itsHogbomGain;
     casacore::Vector<casacore::Float> itsWaveletScales;
     casacore::Vector<casacore::Float> itsWaveletAmps;
     casacore::Float itsLbfgsEpsF;
