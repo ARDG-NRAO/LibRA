@@ -61,7 +61,7 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Float hogbomGain, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -69,6 +69,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
     itsScales(scales),
+    itsHogbomGain(hogbomGain),
     itsWaveletScales(waveletScales),
     itsWaveletAmps(waveletAmps),
     itsWaveletTrigger(waveletTrigger),
@@ -139,8 +140,14 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to -1." << LogIO::POST;
         itsFusedThreshold = -1.;
       }
+      if (itsHogbomGain < 0)
+	  {
+       os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itsHogbomGain << " to 0." << LogIO::POST;
+       itsHogbomGain = 0.0;
+      }
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
+      itsCleaner.setHogbomGain(itsHogbomGain);
     }
     
     itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
