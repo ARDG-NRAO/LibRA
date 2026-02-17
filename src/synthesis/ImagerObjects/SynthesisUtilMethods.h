@@ -460,6 +460,23 @@ public:
   int nMask;
   bool autoAdjust;
   casacore::Float fusedThreshold;
+  casacore::Vector<casacore::Float> waveletScales;
+  casacore::Vector<casacore::Float> waveletAmps;
+  casacore::Bool waveletTrigger;
+  casacore::Bool mfasp;
+  casacore::Float autoThreshold;
+  casacore::Int autoMaxiter;
+  casacore::Float autoGain;
+  casacore::Float hogbomGain;
+  casacore::Bool autoHogbom;
+  casacore::Float autoTrigger;
+  casacore::Float autoPower;
+  casacore::Int autoXMask;
+  casacore::Int autoYMask;
+  casacore::Float lbfgsEpsF;
+  casacore::Float lbfgsEpsX;
+  casacore::Float lbfgsEpsG;
+  casacore::Int lbfgsMaxit;
   casacore::String specmode;
   casacore::Int largestscale;
   // task deconvolve needs to tell siimagestore that we don't need to check for the sumwt image

@@ -4007,6 +4007,78 @@ namespace casa { //# NAMESPACE CASA - BEGIN
           else 
             err += "fusedthreshold must be a float or double";
         }
+        err += readVal( inrec, String("waveletscales"), waveletScales );
+		err += readVal( inrec, String("waveletamps"), waveletAmps );
+		err += readVal( inrec, String("wavelettrigger"), waveletTrigger );
+		err += readVal( inrec, String("mfasp"), mfasp );
+        //param for the Autocleaner
+        if (inrec.isDefined("autothreshold"))
+        {
+          if (inrec.dataType("autothreshold") == TpFloat || inrec.dataType("autothreshold") == TpFloat)
+            err += readVal(inrec, String("autothreshold"), autoThreshold);
+          else 
+            err += "autothreshold must be a float or double";
+        }
+        if (inrec.isDefined("automaxiter"))
+        {
+          if (inrec.dataType("automaxiter") == TpInt)
+            err += readVal(inrec, String("automaxiter"), autoMaxiter);
+          else 
+            err += "automaxiter must be a integer";
+        }
+        if (inrec.isDefined("autogain"))
+        {
+          if (inrec.dataType("autogain") == TpFloat || inrec.dataType("autogain") == TpDouble)
+            err += readVal(inrec, String("autogain"), autoGain);
+          else 
+            err += "autogain must be a float or double";
+        }
+        if (inrec.isDefined("hogbomgain"))
+        {
+          if (inrec.dataType("hogbomgain") == TpFloat || inrec.dataType("hogbomgain") == TpDouble)
+            err += readVal(inrec, String("hogbomgain"), hogbomGain);
+          else 
+            err += "hogbomgain must be a float or double";
+        }
+        if (inrec.isDefined("autohogbom"))
+        {
+          if (inrec.dataType("autohogbom") == TpBool)
+            err += readVal(inrec, String("autohogbom"), autoHogbom);
+          else 
+            err += "autohogbom must be a bool";
+        }
+        if (inrec.isDefined("autotrigger"))
+        {
+          if (inrec.dataType("autotrigger") == TpFloat || inrec.dataType("autotrigger") == TpDouble)
+            err += readVal(inrec, String("autotrigger"), autoTrigger);
+          else 
+            err += "autotrigger must be a float or double";
+        }
+        if (inrec.isDefined("autopower"))
+        {
+          if (inrec.dataType("autopower") == TpFloat || inrec.dataType("autopower") == TpDouble)
+            err += readVal(inrec, String("autopower"), autoPower);
+          else 
+            err += "autopower must be a float or double";
+        }
+        if (inrec.isDefined("autoxmask"))
+        {
+          if (inrec.dataType("autoxmask") == TpInt)
+            err += readVal(inrec, String("autoxmask"), autoXMask);
+          else 
+            err += "autoxmask must be a integer";
+        }
+        if (inrec.isDefined("autoxmask"))
+        {
+          if (inrec.dataType("autoymask") == TpInt)
+            err += readVal(inrec, String("autoymask"), autoYMask);
+          else 
+            err += "autoymask must be a integer";
+        }
+		err += readVal( inrec, String("lbfgsepsf"), lbfgsEpsF );
+		err += readVal( inrec, String("lbfgsepsx"), lbfgsEpsX );
+		err += readVal( inrec, String("lbfgsepsg"), lbfgsEpsG );
+		err += readVal( inrec, String("lbfgsMaxit"), lbfgsMaxit );
          if (inrec.isDefined("specmode"))
         {
           if(inrec.dataType("specmode") == TpString)
@@ -4307,6 +4379,23 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     interactive=false;
     autoAdjust=False;
     fusedThreshold = 0.0;
+    waveletScales.resize(1); waveletScales[0] = 0.0 ;
+    waveletAmps.resize(1); waveletAmps[0] = 0.0 ;
+    waveletTrigger = false;
+    mfasp = false;
+    autoThreshold = 0.0;
+    autoMaxiter = 0;
+    autoGain = 0.0;
+    hogbomGain = 0.0;
+    autoHogbom = false;
+    autoTrigger = 1.0;
+    autoPower = 1.0;
+    autoXMask = 0;
+    autoYMask = 0;
+    lbfgsEpsF = 0.001;
+    lbfgsEpsX = 0.001;
+    lbfgsEpsG = 0.001;
+    lbfgsMaxit = 5;
     specmode="mfs";
     largestscale = -1;
   }
@@ -4324,6 +4413,23 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("scalebias",scalebias);
     decpar.define("usemask",maskType);
     decpar.define("fusedthreshold", fusedThreshold);
+    decpar.define("waveletscales", waveletScales);
+    decpar.define("waveletamps", waveletAmps);
+    decpar.define("wavelettrigger", waveletTrigger);
+    decpar.define("mfasp", mfasp);
+    decpar.define("autothreshold", autoThreshold);
+    decpar.define("automaxiter", autoMaxiter);
+    decpar.define("autogain", autoGain);
+    decpar.define("hogbomgain", hogbomGain);
+    decpar.define("autohogbom", autoHogbom);
+    decpar.define("autotrigger", autoTrigger);
+    decpar.define("autopower", autoPower);
+    decpar.define("autoxmask", autoXMask);
+    decpar.define("autoymask", autoYMask);
+    decpar.define("lbfgsepsf", lbfgsEpsF);
+    decpar.define("lbfgsepsx", lbfgsEpsX);
+    decpar.define("lbfgsepsg", lbfgsEpsG);
+    decpar.define("lbfgsmaxit", lbfgsMaxit);
     decpar.define("specmode", specmode);
     decpar.define("largestscale", largestscale);
     if( maskList.nelements()==1 && maskList[0]=="") 

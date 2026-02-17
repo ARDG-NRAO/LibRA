@@ -497,6 +497,13 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
 	  vecWork_p[i].resize(gip);
    }
   //
+  
+  casacore::Vector<casacore::Float> Optimums(itsMaxNiter);
+  casacore::Vector<casacore::Float> ScaleSizes(itsMaxNiter);
+  casacore::Vector<casacore::IPosition> Positions(itsMaxNiter);
+  Optimums = 0.0;
+  ScaleSizes = 0.0;
+  //Positions = 0;
 
   itsIteration = itsStartingIter;
   for (Int ii=itsStartingIter; ii < itsMaxNiter; ii++) {
@@ -543,6 +550,10 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
         positionOptimum=posMaximum[scale];
       }
     }
+    
+    Optimums(ii) = itsStrengthOptimum;
+    ScaleSizes(ii) = optimumScale;
+    Positions(ii) = positionOptimum;
 
     // These checks and messages are really only here as an early alert to us if SDAlgorithmBase::deconvolve does not skip all-0 images.
     if (abs(itsStrengthOptimum) == 0) {
@@ -679,7 +690,6 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
     
     Matrix<Float> modelSub=model(blc, trc);
     Matrix<Float> scaleSub=(itsScales[optimumScale])(blcPsf,trcPsf);
-    
  
     // Now do the addition of this scale to the model image....
     modelSub += scaleFactor*scaleSub;
@@ -719,6 +729,32 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
 
   if(!converged) {
     os << "Failed to reach stopping threshold" << LogIO::POST;
+  }
+  
+  write_array(Optimums, std::string("./strengthoptimum"));
+  write_array(ScaleSizes, std::string("./scalesizes"));
+
+  casacore::Vector<casacore::Int> xPositions(itsMaxNiter);
+  casacore::Vector<casacore::Int> yPositions(itsMaxNiter);
+  
+  xPositions = 0;
+  yPositions = 0;
+
+  for (int ii=0; ii < itsMaxNiter; ii++)
+  {
+	if (Optimums(ii) != 0){
+		xPositions(ii) = Positions(ii)(0);
+		yPositions(ii) = Positions(ii)(1);
+	}
+  }
+
+  //write_array(Positions, std::string("./positions"));
+  write_array(xPositions, std::string("./xpositions"));
+  write_array(yPositions, std::string("./ypositions"));
+  
+  for (int ii=0; ii < itsMaxNiter; ii++)
+  {
+	os << xPositions(ii) << " " << yPositions(ii) << " " << Optimums(ii) << " " << ScaleSizes(ii) << LogIO::POST;
   }
 
   return converged;
