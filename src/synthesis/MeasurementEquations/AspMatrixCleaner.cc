@@ -157,7 +157,9 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
   LogIO os(LogOrigin("AspMatrixCleaner", "aspclean()", WHERE));
   os << LogIO::NORMAL1 << "Asp clean algorithm" << LogIO::POST;
-
+  
+  if(itsHogbomGain == 0)
+	itsHogbomGain = itsGain;
 
   //Int scale;
 

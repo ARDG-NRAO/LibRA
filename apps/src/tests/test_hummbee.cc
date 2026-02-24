@@ -52,6 +52,23 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger; 
+  bool mfasp = 0;
+  float autothreshold;
+  int automaxiter;
+  float autogain;
+  float hogbomgain = 0.1;
+  bool autohogbom;
+  float autotrigger;
+  float autopower; 
+  int autoxmask; 
+  int autoymask; 
+  float lbfgsepsf; 
+  float lbfgsepsx; 
+  float lbfgsepsg; 
+  int lbfgsmaxit;
   int nterms=1;
   float gain=0.1;
   float threshold=1e-4;
@@ -68,6 +85,9 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
+                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+                 lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
@@ -134,6 +154,23 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger; 
+  bool mfasp = 0;
+  float autothreshold;
+  int automaxiter;
+  float autogain;
+  float hogbomgain = 0.1;
+  bool autohogbom;
+  float autotrigger;
+  float autopower; 
+  int autoxmask; 
+  int autoymask; 
+  float lbfgsepsf; 
+  float lbfgsepsx; 
+  float lbfgsepsg; 
+  int lbfgsmaxit;
   int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
@@ -152,6 +189,9 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
+                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+                 lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
@@ -222,6 +262,23 @@ TEST(HummbeeTest,  AppLevelWAsp) {
   vector<float> scales;
   float largestscale = 5;
   float fusedthreshold = 0.05;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger; 
+  bool mfasp = 0;
+  float autothreshold;
+  int automaxiter;
+  float autogain;
+  float hogbomgain = 0.1;
+  bool autohogbom;
+  float autotrigger;
+  float autopower; 
+  int autoxmask; 
+  int autoymask; 
+  float lbfgsepsf; 
+  float lbfgsepsx; 
+  float lbfgsepsg; 
+  int lbfgsmaxit;
   int nterms=3;
   float gain=0.6;
   float threshold=0.2;
@@ -236,6 +293,9 @@ TEST(HummbeeTest,  AppLevelWAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
+                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+                 lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
@@ -292,6 +352,23 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0.007;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger; 
+  bool mfasp = 0;
+  float autothreshold;
+  int automaxiter;
+  float autogain;
+  float hogbomgain = 0.1;
+  bool autohogbom;
+  float autotrigger;
+  float autopower; 
+  int autoxmask; 
+  int autoymask; 
+  float lbfgsepsf; 
+  float lbfgsepsx; 
+  float lbfgsepsg; 
+  int lbfgsmaxit;
   int nterms=1;
   float gain=0.2;
   float threshold=2.6e-07;
@@ -311,6 +388,9 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
+                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+                 lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
@@ -339,6 +419,9 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
+                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+                 lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
@@ -380,6 +463,23 @@ TEST(HummbeeTest, UIFactory) {
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger; 
+  bool mfasp = 0;
+  float autothreshold;
+  int automaxiter;
+  float autogain;
+  float hogbomgain = 0.1;
+  bool autohogbom;
+  float autotrigger;
+  float autopower; 
+  int autoxmask; 
+  int autoymask; 
+  float lbfgsepsf; 
+  float lbfgsepsx; 
+  float lbfgsepsg; 
+  int lbfgsmaxit;
   int nterms=1;
   float gain=0.1; 
   float threshold=0.0;
@@ -396,6 +496,9 @@ TEST(HummbeeTest, UIFactory) {
     deconvolver,
     scales,
     largestscale, fusedthreshold,
+    waveletscales, waveletamps, wavelettrigger, mfasp,
+    autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
+    lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
     nterms,
     gain, threshold,
     nsigma,
