@@ -2,18 +2,18 @@
 
 OMP_NUM_THREADS=1
 
-CASABIN=casa
+CASABIN="casa -r 6.1.0-118"
 
 # deconvolver for nemo. wisclean in libra
-HBIN=/home/nemo2/nemo2/mhsieh/libra_ardg/LibRA/install/bin/hummbee
+HBIN=../../install/bin/hummbee
 
 partname="serial"
-imgname="htclean_wasp_jet" 
-parfile="wasp_jet.params"
+imgname="htclean_wasp_G55" 
+parfile="wasp_G55.params"
 ncycle=5
 nparts=1
 restart=0
-BIN=/lustre/aoc/sciops/fmadsen/tickets/scg-136/imaging_tests/bin/
+BIN=pylib/
 GO="\n inp \n go \n";
 GPUENGINE=0
 
@@ -36,8 +36,9 @@ echo "Using CASA binary: "${CASABIN}
 
 # clean .out so we can detect error messages better 
 rm -rf *.out
-rm -rf casa-2025*.log
+rm -rf casa-2026*.log
 rm -rf ${imgname}*
+rm -rf state.txt
 
 if [ "$restart" -eq "0" ]
 then
@@ -91,9 +92,6 @@ then
     echo "Doing the set up gather"
     # normalize the residual
     ${CASABIN} --nologger --nogui -c ${BIN}htclean.py gather ${parfile} serial >& gather_cycle0.out
-    cp -r ${imgname}.residual.tt0 ${imgname}.dirty.tt0.cycle0
-    cp -r ${imgname}.residual.tt1 ${imgname}.dirty.tt1.cycle0
-    cp -r ${imgname}.residual.tt2 ${imgname}.dirty.tt2.cycle0
 
 else
     echo "Doing only the update step..."
@@ -132,9 +130,6 @@ do
 
     # normalized the residual (this changes .sumwt and .model as well)
     ${CASABIN} --nologger --nogui -c ${BIN}htclean.py gather ${parfile} ${partname} >& gather_cycle${i}.out
-    cp -r ${imgname}.residual.tt0 ${imgname}.dirty.tt0.cycle${i}
-    cp -r ${imgname}.residual.tt1 ${imgname}.dirty.tt1.cycle${i}
-    cp -r ${imgname}.residual.tt2 ${imgname}.dirty.tt2.cycle${i}
 
 
     i=$((i+1))
