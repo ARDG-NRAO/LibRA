@@ -148,10 +148,11 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
       itsCleaner.setHogbomGain(itsHogbomGain);
+
     }
     
+    itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
     itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
-    itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6

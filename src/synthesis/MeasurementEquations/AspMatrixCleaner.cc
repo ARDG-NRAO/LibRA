@@ -554,20 +554,20 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       break;
     }*/
     //5. Diverging for some other reason; may just need another CS-style reconciling
-    //if((abs(itsStrengthOptimum)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-    //   (abs(itsPeakResidual)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-    //   (abs(itsPeakResidual)-abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
-    //{
-    //  os << LogIO::NORMAL3 << "Diverging due to unknown reason" << LogIO::POST;
-    //  os << LogIO::NORMAL3 << "tmpMaximumResidual " << abs(tmpMaximumResidual) << " itsStrengthOptimum " << abs(itsStrengthOptimum) << " itsPeakResidual " << abs(itsPeakResidual) << LogIO::POST;
-    //  os << LogIO::NORMAL3 << "minMaximumResidual " << abs(minMaximumResidual) << LogIO::POST;
+    if((abs(itsStrengthOptimum)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
+       (abs(itsPeakResidual)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
+       (abs(itsPeakResidual)-abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
+    {
+      os << LogIO::NORMAL3 << "Diverging due to unknown reason" << LogIO::POST;
+      os << LogIO::NORMAL3 << "tmpMaximumResidual " << abs(tmpMaximumResidual) << " itsStrengthOptimum " << abs(itsStrengthOptimum) << " itsPeakResidual " << abs(itsPeakResidual) << LogIO::POST;
+      os << LogIO::NORMAL3 << "minMaximumResidual " << abs(minMaximumResidual) << LogIO::POST;
 
-    //  converged=-3;
-    //  itsSwitchedToHogbom = false;
-    //  os << LogIO::NORMAL3 << "final rms residual " << rms << ", modelflux " << sum(model) << LogIO::POST;
-//
-    //  break;
-    //}
+      converged=-3;
+      itsSwitchedToHogbom = false;
+      os << LogIO::NORMAL3 << "final rms residual " << rms << ", modelflux " << sum(model) << LogIO::POST;
+
+      break;
+    }
 
     if (itsIteration == itsStartingIter + 1)
       os <<LogIO::NORMAL3 << "iteration    MaximumResidual   CleanedFlux" << LogIO::POST;
@@ -607,11 +607,8 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     Matrix<Float> itsPsfConvScale = Matrix<Float>(psfShape_p);
     fft.fft0(itsPsfConvScale, cWork, false);
     fft.flip(itsPsfConvScale, false, false); //need this if conv with 1 scale; don't need this if conv with 2 scales
-
-    //Matrix<Float> sub = itsPsfConvScale(nullnull+1,support-1);
-    //sub.assign_conforming(shift(nullnull,support-2));
     
-    IPosition nullnull(2,0);
+    /*IPosition nullnull(2,0);
     Matrix<Float> shift(psfShape_p);
     shift.assign_conforming(itsPsfConvScale);
     if (itsdimensionsareeven){
@@ -621,7 +618,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     else{
     	Matrix<Float> sub = itsPsfConvScale(nullnull+2,support-1);
     	sub.assign_conforming(shift(nullnull,support-3));
-    }
+    }*/
 
     Matrix<Float> psfSub = (itsPsfConvScale)(blcPsf, trcPsf);
     Matrix<Float> dirtySub=(*itsDirty)(blc,trc);
@@ -1583,7 +1580,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
   {
 	  
     float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
-    if(itsWaveletTrigger){
+    if(itsWaveletTrigger == false){
     	normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
     }
 
@@ -1693,20 +1690,25 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
         s[i] = tempx[i]; //amp
         s[i+1] = tempx[i+1]; //scale
 	  }
-	
+	 
+
   	//real_1d_array s = "[1,1]";
 	double epsg = itsLbfgsEpsG;//1e-3;
 	double epsf = itsLbfgsEpsF;//1e-3;
 	double epsx = itsLbfgsEpsX;//1e-3;
 	ae_int_t maxits = itsLbfgsMaxit;//5;
+	//double epsg = 1e-3;
+	//double epsf = 1e-3;
+	//double epsx = 1e-3;
+	//ae_int_t maxits = 5;
   	minlbfgsstate state;
   	minlbfgscreate(1, x, state);
   	minlbfgssetcond(state, epsg, epsf, epsx, maxits);
   	minlbfgssetscale(state, s);
 
-	minlbfgssetprecscale(state);
+	//minlbfgssetprecscale(state);
   	minlbfgsreport rep;
-	
+
 	if(itsWaveletTrigger){
 
 		ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
@@ -1722,7 +1724,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 
 		alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
 	}
-	
+
 	minlbfgsresults(state, x, rep);
 	//double *x1 = x.getcontent();
 	//cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
@@ -1754,7 +1756,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
     itsGoodAspCenter = activeSetCenter;
 
     // debug
-    os << LogIO::NORMAL3 << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
+    //os << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
     //cout << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << " at " << itsPositionOptimum << endl;
 
   } // finish bfgs optimization
