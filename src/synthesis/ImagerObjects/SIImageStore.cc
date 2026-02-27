@@ -3488,6 +3488,34 @@ void SIImageStore::regridToModelImage( ImageInterface<Float> &inputimage, Int te
         return True;
 		
   }
+  
+  ///////////////
+
+  void SIImageStore::savematrix(const Matrix<Float>& mat, const String& name){
+            std::shared_ptr<ImageInterface<Float> > imPtr;
+            IPosition useShape( itsParentImageShape );
+	    buildImage(imPtr, useShape, itsParentCoordSys, name) ;
+            {
+            LatticeLocker lock1(*imPtr, FileLocker::Write);
+	    imPtr->set(0.0);
+	    imPtr->flush();
+            imPtr->unlock();
+            }     
+            ArrayLattice<Float> lat(itsPsf->shape());
+            lat.put( mat );
+	    imPtr->copyData( lat );
+  }
+
+  void SIImageStore::loadmatrix(Matrix<Float>& mat, const String& name){
+            std::shared_ptr<ImageInterface<Float> > imPtr;
+            IPosition useShape( itsParentImageShape );
+	    buildImage(imPtr, name) ;
+  
+	    ArrayLattice<Float> lat(itsPsf->shape());
+	    imPtr->copyDataTo( lat );
+	    Array<Float> values=lat.get(true);
+	    mat.assign_conforming(values);
+  }
 	
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

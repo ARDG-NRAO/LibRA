@@ -269,7 +269,7 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
         Float& pbLimit,
         string& deconvolver,
         vector<float>& scales,
-        float& largestscale, float& fusedthreshold,
+        float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom, float& autotrigger, float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
         int& nterms,
         float& gain, float& threshold,
         float& nsigma,
@@ -322,6 +322,23 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       decPars_p.interactive=false;
       decPars_p.autoAdjust=False; //genie
       decPars_p.fusedThreshold = fusedthreshold;
+      decPars_p.waveletScales = Vector<Float>(waveletscales);
+      decPars_p.waveletAmps = Vector<Float>(waveletamps);
+      decPars_p.waveletTrigger = wavelettrigger;
+      decPars_p.mfasp = mfasp;
+      decPars_p.autoThreshold = autothreshold;
+      decPars_p.autoMaxiter = automaxiter;
+      decPars_p.autoGain = autogain;
+      decPars_p.hogbomGain = hogbomgain;
+      decPars_p.autoHogbom = autohogbom;
+      decPars_p.autoTrigger = autotrigger;
+      decPars_p.autoPower = autopower;
+      decPars_p.autoXMask = autoxmask;
+      decPars_p.autoYMask = autoymask;
+      decPars_p.lbfgsEpsF = lbfgsepsf;
+      decPars_p.lbfgsEpsX = lbfgsepsx;
+      decPars_p.lbfgsEpsG = lbfgsepsg;
+      decPars_p.lbfgsMaxit = lbfgsmaxit;
       decPars_p.specmode="mfs"; //deconvolve task does not have this
       decPars_p.largestscale = largestscale;
       decPars_p.scalebias = 0.0;
