@@ -781,7 +781,8 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
    getFluxByBins(vecItsOptimumScaleSize,vecItsStrengthOptimum,itsBinSizeForSumFlux,sumFluxByBins,rangeFluxByBins);
 
-  write_array(Optimums, std::string("./strengthoptimum"));
+  //we will need this later for the MF option, comment for now
+  /*write_array(Optimums, std::string("./strengthoptimum"));
   write_array(ScaleSizes, std::string("./scalesizes"));
 
   casacore::Vector<casacore::Int> xPositions(itsMaxNiter);
@@ -795,7 +796,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
   //write_array(Positions, std::string("./positions"));
   write_array(xPositions, std::string("./xpositions"));
-  write_array(yPositions, std::string("./ypositions"));
+  write_array(yPositions, std::string("./ypositions"));*/
 
   os << " The number of bins for collecting the sum of Flux: " << itsBinSizeForSumFlux << endl;
 
