@@ -548,13 +548,13 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       break;
     }*/
     //5. Diverging for some other reason; may just need another CS-style reconciling
-    //if((abs(itsStrengthOptimum)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-    //   (abs(itsPeakResidual)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-    //   (abs(itsPeakResidual)-abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
-    //{
-    //  os << LogIO::NORMAL3 << "Diverging due to unknown reason" << LogIO::POST;
-    //  os << LogIO::NORMAL3 << "tmpMaximumResidual " << abs(tmpMaximumResidual) << " itsStrengthOptimum " << abs(itsStrengthOptimum) << " itsPeakResidual " << abs(itsPeakResidual) << LogIO::POST;
-    //  os << LogIO::NORMAL3 << "minMaximumResidual " << abs(minMaximumResidual) << LogIO::POST;
+    if((abs(itsStrengthOptimum)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
+       (abs(itsPeakResidual)-abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
+       (abs(itsPeakResidual)-abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
+    {
+      os << LogIO::NORMAL3 << "Diverging due to unknown reason" << LogIO::POST;
+      os << LogIO::NORMAL3 << "tmpMaximumResidual " << abs(tmpMaximumResidual) << " itsStrengthOptimum " << abs(itsStrengthOptimum) << " itsPeakResidual " << abs(itsPeakResidual) << LogIO::POST;
+      os << LogIO::NORMAL3 << "minMaximumResidual " << abs(minMaximumResidual) << LogIO::POST;
 
       converged=-3;
       itsSwitchedToHogbom = false;
@@ -611,17 +611,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     //Hendrik's fix for pixel shifting error
 
     IPosition nullnull(2,0);
-    Matrix<Float> shift(psfShape_p);
-    shift.assign_conforming(itsPsfConvScale);
-    if (itsdimensionsareeven){
-        Matrix<Float> sub = itsPsfConvScale(nullnull+1,support-1);
-        sub.assign_conforming(shift(nullnull,support-2));
-    }
-    else{
-      Matrix<Float> sub = itsPsfConvScale(nullnull+2,support-1);
-      sub.assign_conforming(shift(nullnull,support-3));
-    }
-    //
     Matrix<Float> psfSub = (itsPsfConvScale)(blcPsf, trcPsf);
     Matrix<Float> dirtySub=(*itsDirty)(blc,trc);
     
@@ -1765,7 +1754,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
     itsGoodAspCenter = activeSetCenter;
 
     // debug
-    os << LogIO::NORMAL3 << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
+    //os << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
     //cout << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << " at " << itsPositionOptimum << endl;
 
   } // finish bfgs optimization
