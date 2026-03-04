@@ -26,8 +26,8 @@
 import os
 import sys
 
-pylib_dir = '../pylib'
-
+#pylib_dir = '../pylib'
+pylib_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, pylib_dir)
 from HTCSynthesisImager import HTCSynthesisImager
 
