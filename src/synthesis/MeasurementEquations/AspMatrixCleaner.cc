@@ -29,7 +29,7 @@
 #include <casacore/casa/Arrays/Cube.h>
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/Arrays/MatrixMath.h>
-//#include <casa/Arrays/ArrayIO.h>
+#include <casacore/casa/IO/ArrayIO.h>
 #include <casacore/casa/BasicMath/Math.h>
 #include <casacore/casa/BasicSL/Complex.h>
 #include <casacore/casa/Logging/LogIO.h>
@@ -72,6 +72,7 @@
 
 // for alglib
 #include <synthesis/MeasurementEquations/objfunc_alglib.h>
+#include <synthesis/MeasurementEquations/objfunc_alglib_wavelets.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_lm.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_log.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_beta.h>
@@ -97,6 +98,14 @@ AspMatrixCleaner::AspMatrixCleaner():
   itsPrevPeakResidual(0.0),
   itsOrigDirty( ),
   itsFusedThreshold(0.0),
+  itsWaveletTrigger(false),
+  itsmfasp(false),
+  itsdimensionsareeven(true),
+  itsstopMS(false),
+  itsLbfgsEpsF(0.001),
+  itsLbfgsEpsX(0.001),
+  itsLbfgsEpsG(0.001),
+  itsLbfgsMaxit(5),
   itsNumNoChange(0),
   itsBinSizeForSumFlux(4),
   itsUserLargestScale(-1.0)
@@ -115,6 +124,8 @@ AspMatrixCleaner::AspMatrixCleaner():
   //itsPrevAspAmplitude.resize(0);
   itsUsedMemoryMB = double(HostInfo::memoryUsed()/2014);
   itsNormMethod = casa::refim::SynthesisUtils::getenv("ASP_NORM", itsDefaultNorm);
+  itsWaveletScales.resize(0);
+  itsWaveletAmps.resize(0);
 }
 
 AspMatrixCleaner::~AspMatrixCleaner()
@@ -146,7 +157,9 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
   LogIO os(LogOrigin("AspMatrixCleaner", "aspclean()", WHERE));
   os << LogIO::NORMAL1 << "Asp clean algorithm" << LogIO::POST;
-
+  
+  if(itsHogbomGain == 0)
+	itsHogbomGain = itsGain;
 
   //Int scale;
 
@@ -255,6 +268,17 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   Float initRMSResidual = 1000.0;
   // float initModelFlux = 0.0;
 
+  itsdimensionsareeven = (psfShape_p(0) == 2*(psfShape_p(0)/2));
+  if (itsFusedThreshold == -1.){
+	itsstopMS = false;
+	os << "We never switch to Hogbom" << LogIO::POST;
+        }
+  else{
+	os << "Switching to Hogbom CLEAN is allowed" << LogIO::POST;
+	itsstopMS = true;
+	}
+  Float tempGain;
+  
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
   itsIteration = itsStartingIter; // 0
@@ -284,6 +308,13 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   vector<Float> vecItsOptimumScaleSize;
   vecItsStrengthOptimum.clear();
   vecItsOptimumScaleSize.clear();
+  
+  casacore::Vector<casacore::Float> Optimums(itsMaxNiter);
+  casacore::Vector<casacore::Float> ScaleSizes(itsMaxNiter);
+  casacore::Vector<casacore::IPosition> Positions(itsMaxNiter);
+  Optimums = 0.0;
+  ScaleSizes = 0.0;
+  //Positions = 0;
 
   // calculate rms residual
   float rms = 0.0;
@@ -320,7 +351,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     rms = rms / num;
 
     // make single optimized scale image
-    os << LogIO::NORMAL3 << "Making optimized scale " << itsOptimumScaleSize << " at location " << itsPositionOptimum << LogIO::POST;
+    os << "Making optimized scale " << itsOptimumScaleSize << " at location " << itsPositionOptimum << LogIO::POST;
 
     if (itsSwitchedToHogbom)
     {
@@ -341,6 +372,15 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       vecItsStrengthOptimum.push_back(itsStrengthOptimum);
       vecItsOptimumScaleSize.push_back(itsOptimumScaleSize);
     }
+    
+    if(itsSwitchedToHogbom){
+		Optimums(ii) = 0.0;
+    }
+    else{
+    	Optimums(ii) = itsStrengthOptimum;
+    }
+    ScaleSizes(ii) = itsOptimumScaleSize;
+    Positions(ii) = itsPositionOptimum;
 
     // trigger hogbom when
     // (1) itsStrengthOptimum is small enough & peakres rarely changes or itsPeakResidual is small enough
@@ -366,7 +406,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
         
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
         {
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -385,7 +425,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
       }
-      if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
+      if (!itsSwitchedToHogbom && itsNumNoChange >= 2 && itsstopMS)
       {
         os << LogIO::NORMAL3 << "Switched to hogbom at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
         itsNumNoChange = 0;
@@ -394,7 +434,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
 
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
         {
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -412,7 +452,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       }
     }
 
-    if (!itsSwitchedToHogbom)
+    if (!itsSwitchedToHogbom && itsstopMS)
     {
 	    if (itsNumIterNoGoodAspen.size() >= 10)
 	  	  itsNumIterNoGoodAspen.pop_front(); // only track the past 10 iters
@@ -422,8 +462,14 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	      itsNumIterNoGoodAspen.push_back(0);
     }
 
+	//which loop gain to use
+	if (itsOptimumScaleSize == 0.0)
+		tempGain = itsHogbomGain;
+	else
+		tempGain = itsGain;
+
     // Now add to the total flux
-    totalFlux += (itsStrengthOptimum*itsGain);
+    totalFlux += (itsStrengthOptimum*tempGain);
     itsTotalFlux = totalFlux;
 
     if(ii == itsStartingIter)
@@ -436,7 +482,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
       os <<LogIO::NORMAL3 << LogIO::POST;
     }
-
+    
     //save the min peak residual
     if (abs(minMaximumResidual) > abs(itsPeakResidual))
       minMaximumResidual = abs(itsPeakResidual);
@@ -550,7 +596,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     // Update the model image
     Matrix<Float> modelSub = model(blc, trc);
     Float scaleFactor;
-    scaleFactor = itsGain * itsStrengthOptimum;
+    scaleFactor = tempGain * itsStrengthOptimum;
     Matrix<Float> scaleSub = (itsScale)(blcPsf,trcPsf);
     modelSub += scaleFactor * scaleSub;
 
@@ -561,9 +607,22 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     Matrix<Float> itsPsfConvScale = Matrix<Float>(psfShape_p);
     fft.fft0(itsPsfConvScale, cWork, false);
     fft.flip(itsPsfConvScale, false, false); //need this if conv with 1 scale; don't need this if conv with 2 scales
+    
+    /*IPosition nullnull(2,0);
+    Matrix<Float> shift(psfShape_p);
+    shift.assign_conforming(itsPsfConvScale);
+    if (itsdimensionsareeven){
+        Matrix<Float> sub = itsPsfConvScale(nullnull+1,support-1);
+        sub.assign_conforming(shift(nullnull,support-2));
+    }
+    else{
+    	Matrix<Float> sub = itsPsfConvScale(nullnull+2,support-1);
+    	sub.assign_conforming(shift(nullnull,support-3));
+    }*/
+
     Matrix<Float> psfSub = (itsPsfConvScale)(blcPsf, trcPsf);
     Matrix<Float> dirtySub=(*itsDirty)(blc,trc);
-
+    
     /* debug info
     float maxvalue;
     IPosition peakpos;
@@ -579,7 +638,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     cout << "itsDirty pos " << peakpos << " maxval " << (*itsDirty)(peakpos) << endl;
     cout << "itsPositionOptimum " << itsPositionOptimum << endl;
     cout << " maxPsfSub " << max(fabs(psfSub)) << " maxPsfConvScale " << max(fabs(itsPsfConvScale)) << " itsGain " << itsGain << endl;*/
-    os <<LogIO::NORMAL3 << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
+    os << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
 
     // subtract the peak that we found from the dirty image
     dirtySub -= scaleFactor * psfSub;
@@ -659,7 +718,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	    	switchedToHogbom();
 	    }* /
     }*/
-
+    
     // update peakres
     itsPrevPeakResidual = itsPeakResidual;
     maxVal=0;
@@ -674,7 +733,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         (fabs(itsPeakResidual - itsPrevPeakResidual) < 1e-4)) //peakres rarely changes
       itsNumNoChange += 1;
     //cout << "after: itsDirty optPos " << (*itsDirty)(itsPositionOptimum) << endl;
-
+    
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
     if (itsSwitchedToHogbom)
@@ -686,7 +745,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         os << LogIO::NORMAL3 << "switched back to Asp." << LogIO::POST;
 
         //option 1: use rms residual to detect convergence
-        if (!(initRMSResidual > rms && initRMSResidual/rms < 1.5))
+        if (!(initRMSResidual > rms && initRMSResidual/rms < 1.5) && itsstopMS)
         {
           os << "Reached convergence at iteration "<< ii << " b/c hogbom finished" << LogIO::POST;
           converged = 1;
@@ -716,13 +775,28 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     defineAspScales(tempScaleSizes);
   }
   // End of iteration
-
+  
    vector<Float> sumFluxByBins(itsBinSizeForSumFlux,0.0);
    vector<Float> rangeFluxByBins(itsBinSizeForSumFlux+1,0.0);
 
    getFluxByBins(vecItsOptimumScaleSize,vecItsStrengthOptimum,itsBinSizeForSumFlux,sumFluxByBins,rangeFluxByBins);
 
+  //we will need this later for the MF option, comment for now
+  /*write_array(Optimums, std::string("./strengthoptimum"));
+  write_array(ScaleSizes, std::string("./scalesizes"));
 
+  casacore::Vector<casacore::Int> xPositions(itsMaxNiter);
+  casacore::Vector<casacore::Int> yPositions(itsMaxNiter);
+
+  for (int ii=0; ii < itsMaxNiter; ii++)
+  {
+	xPositions(ii) = Positions(ii)(0);
+	yPositions(ii) = Positions(ii)(1);
+  }
+
+  //write_array(Positions, std::string("./positions"));
+  write_array(xPositions, std::string("./xpositions"));
+  write_array(yPositions, std::string("./ypositions"));*/
 
   os << " The number of bins for collecting the sum of Flux: " << itsBinSizeForSumFlux << endl;
 
@@ -854,8 +928,12 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
-        //iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
+		if(itsWaveletTrigger == false){
+        	iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
+        }
+		else{
+			iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
+		}  
       }
     }
 
@@ -902,10 +980,13 @@ void AspMatrixCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scaleS
         // iscale(i,j) = gbeam(px, py); // this is equivalent to the following with the above gbeam definition
         // This is for 1D, but represents Sanjay's and gives good init scale
         // Note that "amp" is not used in the expression
-        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
-
+        if(itsWaveletTrigger==false){
+			iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		}
         // This is for 2D, gives unit area but bad init scale (always picks 0)
-        // iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		else{
+			iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		}
       }
     }
 
@@ -1125,6 +1206,42 @@ void AspMatrixCleaner::setInitScaleXfrs(const Float width)
     // try 0, width, 2width, 4width and 8width which is also restricted by `largestscale` if provided
     //itsInitScaleSizes = {0.0f, width, 2.0f*width, 4.0f*width, 8.0f*width};
     setInitScales();
+  }
+
+  itsInitScales.resize(itsNInitScales, false);
+  itsInitScaleXfrs.resize(itsNInitScales, false);
+  fft = FFTServer<Float,Complex>(psfShape_p);
+  for (int scale = 0; scale < itsNInitScales; scale++)
+  {
+    itsInitScales[scale] = Matrix<Float>(psfShape_p);
+    makeInitScaleImage(itsInitScales[scale], itsInitScaleSizes[scale]);
+    //cout << "made itsInitScales[" << scale << "] = " << itsInitScaleSizes[scale] << endl;
+    itsInitScaleXfrs[scale] = Matrix<Complex> ();
+    fft.fft0(itsInitScaleXfrs[scale], itsInitScales[scale]);
+  }
+}
+
+void AspMatrixCleaner::loadInitScaleXfrs(const casacore::Vector<casacore::Float> & scales)
+{
+  if(itsInitScales.nelements() > 0)
+    destroyAspScales();
+
+  if (itsSwitchedToHogbom)
+  {
+  	itsNInitScales = 1;
+  	itsInitScaleSizes.resize(itsNInitScales, false);
+    itsInitScaleSizes = {0.0f};
+  }
+  else
+  {
+  	itsNInitScales = scales.size();
+  	itsInitScaleSizes.resize(itsNInitScales, false);
+        Int scale = 0;
+        while (scale < itsNInitScales)
+        {
+	  itsInitScaleSizes[scale] = scales(scale);
+	  scale++;
+        }
   }
 
   itsInitScales.resize(itsNInitScales, false);
@@ -1435,9 +1552,13 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
         if (scale > 0)
         {
   	      float normalization;
-  	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      if(itsWaveletTrigger){
+  	      normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
+	      }
   	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
-          normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+	      else{
+          	normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+		}
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -1458,8 +1579,11 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
 
   if (optimumScale > 0)
   {
-    //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
-    const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+	  
+    float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
+    if(itsWaveletTrigger == false){
+    	normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+    }
 
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
@@ -1500,6 +1624,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
   fft.fft0(dirtyFT, *itsDirty);
   itsDirtyConvInitScales.resize(0);
   itsDirtyConvInitScales.resize(itsNInitScales); // 0, 1width, 2width, 4width and 8width
+
   //cout << "itsInitScaleSizes.size() " << itsInitScaleSizes.size() << " itsInitScales.size() " << itsInitScales.size() << " NInitScales # " << itsNInitScales << endl;
   for (int scale=0; scale < itsNInitScales; scale++)
   {
@@ -1523,7 +1648,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
 
   maxDirtyConvInitScales(strengthOptimum, optimumScale, positionOptimum);
 
-  os << LogIO::NORMAL3 << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << LogIO::POST;
+  os << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << LogIO::POST;
   //cout << "Peak among the smoothed residual image is " << strengthOptimum  << " and initial scale: " << optimumScale << endl;
   // cout << " its itsDirty is " << (*itsDirty)(positionOptimum);
   // cout << " at location " << positionOptimum[0] << " " << positionOptimum[1] << " " << positionOptimum[2];
@@ -1566,28 +1691,51 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
         s[i] = tempx[i]; //amp
         s[i+1] = tempx[i+1]; //scale
 	  }
+	 
 
-	  ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
-    ParamAlglibObj *ptrParam;
-    ptrParam = &optParam;
+  	//real_1d_array s = "[1,1]";
+	double epsg = itsLbfgsEpsG;//1e-3;
+	double epsf = itsLbfgsEpsF;//1e-3;
+	double epsx = itsLbfgsEpsX;//1e-3;
+	ae_int_t maxits = itsLbfgsMaxit;//5;
+	//double epsg = 1e-3;
+	//double epsf = 1e-3;
+	//double epsx = 1e-3;
+	//ae_int_t maxits = 5;
+  	minlbfgsstate state;
+  	minlbfgscreate(1, x, state);
+  	minlbfgssetcond(state, epsg, epsf, epsx, maxits);
+  	minlbfgssetscale(state, s);
 
-	  //real_1d_array s = "[1,1]";
-      //real_1d_array s = "[0.001,10]";
-	  double epsg = 1e-3;
-	  double epsf = 1e-3;
-	  double epsx = 1e-3;
-	  ae_int_t maxits = 5;
-	  minlbfgsstate state;
-	  minlbfgscreate(1, x, state);
-	  minlbfgssetcond(state, epsg, epsf, epsx, maxits);
-	  minlbfgssetscale(state, s);
-	  minlbfgsreport rep;
-	  alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
-	  minlbfgsresults(state, x, rep);
-	  //double *x1 = x.getcontent();
-	  //cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
+	//minlbfgssetprecscale(state);
+  	minlbfgsreport rep;
 
-	  // end alglib bfgs optimization
+	if(itsWaveletTrigger){
+
+		ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
+		ParamAlglibObjWavelet *ptrParam;
+		ptrParam = &optParam;
+
+		alglib::minlbfgsoptimize(state, objfunc_alglib_wavelet, NULL, (void *) ptrParam);
+	}
+	else{
+		ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
+		ParamAlglibObj *ptrParam;
+		ptrParam = &optParam;
+
+		alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
+	}
+
+	minlbfgsresults(state, x, rep);
+	//double *x1 = x.getcontent();
+	//cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
+	
+	// end alglib bfgs optimization
+
+
+
+
+
 
     double amp = x[0]; // i
     double scale = x[1]; // i+1
@@ -1609,7 +1757,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
     itsGoodAspCenter = activeSetCenter;
 
     // debug
-    os << LogIO::NORMAL3 << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
+    //os << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << LogIO::POST;
     //cout << "optimized strengthOptimum " << itsStrengthOptimum << " scale size " << itsOptimumScaleSize << " at " << itsPositionOptimum << endl;
 
   } // finish bfgs optimization
@@ -1627,6 +1775,187 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen()
   }*/
 
   return itsGoodAspActiveSet; // return optimized scale
+}
+
+// ALGLIB
+void AspMatrixCleaner::MFaspclean(Matrix<Float>& model)
+{
+    LogIO os(LogOrigin("AspMatrixCleaner", "MFaspclean", WHERE));
+
+    // the new aspen is always added to the active-set
+    casacore::Vector<casacore::Float> Optimums(itsMaxNiter);
+    casacore::Vector<casacore::Float> ScaleSizes(itsMaxNiter);
+    casacore::Vector<casacore::IPosition> Positions(itsMaxNiter);
+    casacore::Vector<casacore::Int> xPositions(itsMaxNiter);
+    casacore::Vector<casacore::Int> yPositions(itsMaxNiter);
+
+    vector<Float> tempx;
+    vector<IPosition> activeSetCenter;
+
+    //read in amplitudes and scales
+    read_array(Optimums, std::string("./strengthoptimum"));
+    read_array(ScaleSizes, std::string("./scalesizes"));
+    //read_array(Positions, std::string("./positions"));
+    read_array(xPositions, std::string("./xpositions"));
+    read_array(yPositions, std::string("./ypositions"));
+
+    for (int ii=0; ii < itsMaxNiter; ii++)
+    {
+	IPosition pos(2,0);
+	pos(0) = xPositions(ii);
+	pos(1) = yPositions(ii);
+	Positions(ii) = pos;
+    }
+
+    itsMaxNiter = Optimums.size();
+
+    //package information in the correct way
+    for (int ii=0; ii < itsMaxNiter; ii++){
+	tempx.push_back(Optimums(ii));
+	if (ScaleSizes(ii) > 0){
+		tempx.push_back(ScaleSizes(ii));}
+	else{
+		tempx.push_back(1.0);}
+	activeSetCenter.push_back(Positions(ii));
+    }
+
+    // initialize alglib option
+    unsigned int length = tempx.size();
+    real_1d_array x;
+    x.setlength(length);
+
+    real_1d_array s;
+    s.setlength(length);
+
+    // initialize starting point
+    for (unsigned int i = 0; i < length; i+=2)
+	  {
+	      x[i] = tempx[i];
+	      x[i+1] = tempx[i+1];
+
+	      s[i] = tempx[i];
+	      s[i+1] = tempx[i+1];
+	  }
+
+	//real_1d_array s = "[1,1]";
+	double epsg = itsLbfgsEpsG;//1e-3;
+	double epsf = itsLbfgsEpsF;//1e-3;
+	double epsx = itsLbfgsEpsX;//1e-3;
+	ae_int_t maxits = itsLbfgsMaxit;//5;
+	minlbfgsstate state;
+	minlbfgscreate(1, x, state);
+	minlbfgssetcond(state, epsg, epsf, epsx, maxits);
+	minlbfgssetscale(state, s);
+	minlbfgssetprecscale(state);
+	minlbfgsreport rep;
+
+    if(itsWaveletTrigger){
+	  	ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
+    		ParamAlglibObjWavelet *ptrParam;
+    		ptrParam = &optParam;
+
+	  	alglib::minlbfgsoptimize(state, objfunc_alglib_wavelet, NULL, (void *) ptrParam);
+    }
+    else{
+	  	ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
+    		ParamAlglibObj *ptrParam;
+    		ptrParam = &optParam;
+
+	  	alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
+    }
+    minlbfgsresults(state, x, rep);
+
+    // end alglib bfgs optimization
+    for (int ii=0; ii < itsMaxNiter; ii++){
+        double amp = x[2*ii];
+        double scale = x[2*ii+1];
+	itsGoodAspAmplitude.push_back(amp);
+	itsGoodAspActiveSet.push_back(scale);
+	itsGoodAspCenter.push_back(activeSetCenter[ii]);
+    }
+
+    // now perform the CLEANing
+    // Initialization
+    Float totalFlux=0.0;
+    // Define a subregion so that the peak is centered
+    IPosition support(model.shape());
+    support(0) = max(Int(itsInitScaleSizes[itsNInitScales-1] + 0.5), support(0));
+    support(1) = max(Int(itsInitScaleSizes[itsNInitScales-1] + 0.5), support(1));
+    IPosition inc(model.shape().nelements(), 1);
+    Matrix<Float> itsScale = Matrix<Float>(psfShape_p);
+    Matrix<Complex>itsScaleXfr = Matrix<Complex> ();
+    Float maxVal=0;
+    IPosition posmin((*itsDirty).shape().nelements(), 0);
+    Float minVal=0;
+    IPosition posmax((*itsDirty).shape().nelements(), 0);
+
+    //Loop over Asps
+    for(int ii=0; ii < itsMaxNiter; ii++){
+	//Load the Asp parameters
+	itsOptimumScaleSize = itsGoodAspActiveSet[ii];
+	itsStrengthOptimum = itsGoodAspAmplitude[ii];
+	itsPositionOptimum = itsGoodAspCenter[ii];
+
+	//Gain is one, since we substitute the full Asp
+	itsGain = 1.0;
+
+	//Make the scale
+    	makeScaleImage(itsScale, itsOptimumScaleSize, itsStrengthOptimum, itsPositionOptimum);
+    	itsScaleXfr.resize();
+    	fft.fft0(itsScaleXfr, itsScale);
+
+	// Now add to the total flux
+	totalFlux += (itsStrengthOptimum*itsGain);
+	itsTotalFlux = totalFlux;
+
+	//The slicing box
+	IPosition blc(itsPositionOptimum - support/2);
+	IPosition trc(itsPositionOptimum + support/2 - 1);
+
+	LCBox::verify(blc, trc, inc, model.shape());
+	IPosition blcPsf(blc);
+	IPosition trcPsf(trc);
+
+	// Update the model image
+	Matrix<Float> modelSub = model(blc, trc);
+	Float scaleFactor;
+	scaleFactor = itsGain * itsStrengthOptimum;
+	Matrix<Float> scaleSub = (itsScale)(blcPsf,trcPsf);
+	modelSub += scaleFactor * scaleSub;
+
+	// Now update the residual image
+	// PSF * model
+	Matrix<Complex> cWork;
+	cWork = ((*itsXfr)*(itsScaleXfr)); //Asp's
+	Matrix<Float> itsPsfConvScale = Matrix<Float>(psfShape_p);
+	fft.fft0(itsPsfConvScale, cWork, false);
+	fft.flip(itsPsfConvScale, false, false); //need this if conv with 1 scale; don't need this if conv with 2 scales
+
+	IPosition nullnull(2,0);
+	Matrix<Float> shift(psfShape_p);
+	shift.assign_conforming(itsPsfConvScale);
+	Matrix<Float> sub = itsPsfConvScale(nullnull+2,support-1);
+	sub.assign_conforming(shift(nullnull,support-3));
+
+	Matrix<Float> psfSub = (itsPsfConvScale)(blcPsf, trcPsf);
+	Matrix<Float> dirtySub=(*itsDirty)(blc,trc);
+
+	os  << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
+
+	// subtract the peak that we found from the dirty image
+	dirtySub -= scaleFactor * psfSub;
+
+	// update peakres
+	itsPrevPeakResidual = itsPeakResidual;
+	maxVal=0;
+	posmin = 0;
+	minVal=0;
+	posmax = 0;
+	minMaxMasked(minVal, maxVal, posmin, posmax, (*itsDirty), itsInitScaleMasks[0]);
+	itsPeakResidual = (fabs(maxVal) > fabs(minVal)) ? fabs(maxVal) : fabs(minVal);
+	os  << "current peakres " << itsPeakResidual << LogIO::POST; 
+	}  
+    os << "Aspclean finished" << LogIO::POST;
 }
 
 

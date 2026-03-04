@@ -114,6 +114,8 @@ class SIImageStore
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Complex> > backwardGrid(casacore::uInt term=0);
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > sumwt(casacore::uInt term=0);
 
+  virtual void savematrix(const casacore::Matrix<casacore::Float>& mat, const casacore::String &name);
+  virtual void loadmatrix(casacore::Matrix<casacore::Float>& mat, const casacore::String &name);
 
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > alpha(){throw(casacore::AipsError("No Alpha for 1 term"));};
   virtual std::shared_ptr<casacore::ImageInterface<casacore::Float> > beta(){throw(casacore::AipsError("No Beta for 1 term"));};

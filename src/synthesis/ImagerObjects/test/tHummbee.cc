@@ -62,7 +62,7 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 	Float& pbLimit,
   string& deconvolver,
   vector<float>& scales,
-  float& largestscale, float& fusedthreshold,
+  float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom,float& autotrigger,float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
   int& nterms,
   float& gain, float& threshold,
   float& nsigma,
@@ -126,6 +126,23 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
       //InitMap(watchPoints,exposedKeys);
       exposedKeys.push_back("largestscale");
       exposedKeys.push_back("fusedthreshold");
+      exposedKeys.push_back("waveletscales");
+      exposedKeys.push_back("waveletamps");
+      exposedKeys.push_back("wavelettrigger");
+      exposedKeys.push_back("mfasp");
+      exposedKeys.push_back("autothreshold");
+      exposedKeys.push_back("automaxiter");
+      exposedKeys.push_back("autogain");
+      exposedKeys.push_back("hogbomgain");
+      exposedKeys.push_back("autohogbom");
+      exposedKeys.push_back("autotrigger");
+      exposedKeys.push_back("autopower");
+      exposedKeys.push_back("autoxmask");
+      exposedKeys.push_back("autoymask");
+      exposedKeys.push_back("lbfgsepsf");
+      exposedKeys.push_back("lbfgsepsx");
+      exposedKeys.push_back("lbfgsepsg");
+      exposedKeys.push_back("lbfgsmaxit");
       watchPoints["asp"]=exposedKeys;
 
       i=1;clgetSValp("deconvolver", deconvolver, i ,watchPoints);
@@ -136,6 +153,23 @@ void UI(bool restart, int argc, char **argv, string& MSNBuf,
 
       i=1;clgetFValp("largestscale", largestscale,i);
       i=1;clgetFValp("fusedthreshold", fusedthreshold,i);
+      N=0; N=clgetNFValp("waveletscales", waveletscales, N);
+      N=0; N=clgetNFValp("waveletamps", waveletamps, N);
+      i=1;clgetBValp("wavelettrigger", wavelettrigger,i);
+      i=1;clgetBValp("mfasp", mfasp,i);
+      i=1;clgetFValp("autothreshold", autothreshold,i);
+      i=1;clgetIValp("automaxiter", automaxiter,i);
+      i=1;clgetFValp("autogain", autogain,i);
+      i=1;clgetFValp("hogbomgain", hogbomgain,i);
+      i=1;clgetBValp("autohogbom", autohogbom,i);
+      i=1;clgetFValp("autotrigger", autotrigger, i);
+      i=1;clgetFValp("autopower", autopower,i);
+      i=1;clgetIValp("autoxmask", autoxmask,i);
+      i=1;clgetIValp("autoymask", autoymask,i);
+      i=1;clgetFValp("lbfgsepsf", lbfgsepsf,i);
+      i=1;clgetFValp("lbfgsepsx", lbfgsepsx,i);
+      i=1;clgetFValp("lbfgsepsg", lbfgsepsg,i);
+      i=1;clgetIValp("lbfgsmaxit", lbfgsmaxit,i);
 
       i=1;clgetIValp("nterms", nterms,i);
       i=1;clgetFValp("gain", gain,i);
@@ -218,6 +252,23 @@ int main(int argc, char **argv)
   vector<float> scales;
   float largestscale = -1;
   float fusedthreshold = 0;
+  vector<float> waveletscales;
+  vector<float> waveletamps;
+  bool wavelettrigger = 0;
+  bool mfasp = false;
+  float autothreshold = 0;
+  int automaxiter = 0;
+  float autogain = 0;
+  float hogbomgain = 0;
+  bool autohogbom = 0;
+  float autotrigger= 0;
+  float autopower = 1;
+  int autoxmask = 0;
+  int autoymask = 0;
+  float lbfgsepsf = 0.001;
+  float lbfgsepsx = 0.001;
+  float lbfgsepsg = 0.001;
+  int lbfgsmaxit = 5;
   int nterms=2;
   float gain=0.1; 
   float threshold=0.0;
@@ -233,7 +284,7 @@ int main(int argc, char **argv)
      ,doPBCorr, conjBeams, pbLimit, 
     deconvolver,
     scales,
-    largestscale, fusedthreshold,
+    largestscale, fusedthreshold,waveletscales, waveletamps, wavelettrigger, mfasp, autothreshold,automaxiter,autogain,hogbomgain,autohogbom,autotrigger,autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
     nterms,
     gain, threshold,
     nsigma,
@@ -251,7 +302,7 @@ int main(int argc, char **argv)
                  doPBCorr, conjBeams, pbLimit,
                  deconvolver,
                  scales,
-                 largestscale, fusedthreshold,
+                 largestscale, fusedthreshold,waveletscales, waveletamps, wavelettrigger, mfasp, autothreshold,automaxiter,autogain,hogbomgain,autohogbom,autotrigger,autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
                  nterms,
                  gain, threshold,
                  nsigma,
