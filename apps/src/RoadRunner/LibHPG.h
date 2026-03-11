@@ -60,8 +60,11 @@ public:
    * @brief Constructor for the LibHPG class.
    * @param usingHPG A boolean indicating whether to use HPG. Default is true.
    */
+#if KOKKOS_VERSION < 50000
+  //#ifdef LIBRA_NONSTD_KOKKOS_INITIALIZE
   static std::vector<KokkosInterop::K_BACKEND> global_initialized_kokkos_backends;
-
+#endif
+  
   LibHPG(const bool usingHPG=true, std::ostream* os=nullptr):
     init_hpg(usingHPG),hpg_initialized(false),os_p(os)
   {

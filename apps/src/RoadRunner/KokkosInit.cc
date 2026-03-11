@@ -15,6 +15,39 @@
 #include <KokkosInit.h>
 namespace KokkosInterop
 {
+#if KOKKOS_VERSION < 50000
+  //#ifdef LIBRA_NONSTD_KOKKOS_INITIALIZE
+  // This code allows initializing only the requested Kokkos backends.
+  //
+  // The default kokkos::initialize() function initializes *all*
+  // enabled backends, even if only one of them is used at runtime.
+  // This requires that, e.g., if CUDA backend is enabled at compile
+  // time, but only SERIAL backend is used it run time, a CUDA-enabled
+  // actual device be available at runtime (even if it is not used),
+  // or else kokkos::initialize() fails.
+  //
+  // However, the per-backend Kokkos::*::impl_initialize() methods are
+  // not part of the Kokkos public API and therefore not guaranteed to
+  // be supported.  Indeed, with Kokkos 5.x, these are even more
+  // difficult to access, if not impossible.
+  //
+  // Explaination (from the General channel on Kokkkos SLACK) of the
+  // pitfalls of not initializing (at run time) the backends that are
+  // not used:
+  //
+  // "Like if you don't enable cuda in a cuda build all our
+  // default stuff doesn't work. You can't call kokkos_malloc(n) you
+  // have to specify the memory space. Cuda space initialization might
+  // rely on certain host capabikities being available already Certain
+  // ops which you might not recognize as explicitly involving an
+  // execution space may expect certain backends to be initialized,
+  // and we assume they are as soon as kokkos globally is initialized
+  // Kokkos::View<int*> a(ptr, n) would potentially not work if you
+  // don't enable cuda because we use cuda functions to check whether
+  // the ptr is compatible with the defaulted memory space type of a
+  // And there are no seatbelts from our side since we only know a
+  // "kokkos is initialized or not" state ". @crtrott, Nov. 13, 2025
+  //
     std::string kokkos_backend_to_str(const KokkosInterop::K_BACKEND& dev)
     {
       std::string str;
@@ -138,5 +171,6 @@ namespace KokkosInterop
 //       Kokkos::finalize();
 // #endif
     }
+#endif
 };
 

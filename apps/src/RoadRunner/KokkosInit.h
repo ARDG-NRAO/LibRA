@@ -14,7 +14,10 @@
  */
 #ifndef LIBRA_KOKKOSINIT_H
 #define LIBRA_KOKKOSINIT_H
+#define KOKKOS_IMPL_PUBLIC_INCLUDE 1
+//#define LIBRA_NONSTD_KOKKOS_INITIALIZE 0
 #include <Kokkos_Core.hpp>
+#include <Serial/Kokkos_Serial.hpp>
 #include <stdlib.h>
 
   namespace KokkosInterop {
@@ -34,30 +37,31 @@
     kokkos_initialize(const std::vector<KokkosInterop::K_BACKEND>& K_Device);
  
     void kokkos_finalize();
-
+    //#ifdef LIBRA_NONSTD_KOKKOS_INITIALIZE
+#if KOKKOS_VERSION < 50000
 #ifdef KOKKOS_ENABLE_CUDA
     inline bool is_kokkos_cuda_initialized(void)
     {
-	return Kokkos::Cuda::impl_is_initialized();
+      return Kokkos::Cuda::impl_is_initialized();
     };
 #endif
 #ifdef KOKKOS_ENABLE_HIP
     inline bool is_kokkos_hip_initialized(void)
     {
-	return Kokkos::HIP::impl_is_initialized();
+      return Kokkos::HIP::impl_is_initialized();
     };
 #endif
 #ifdef KOKKOS_ENABLE_OPENMP
     inline bool is_kokkos_openmp_initialized(void)
     {
-	return Kokkos::OpenMP::impl_is_initialized();
+      return Kokkos::OpenMP::impl_is_initialized();
     };
 #endif
 
 #ifdef KOKKOS_ENABLE_SERIAL
     inline bool is_kokkos_serial_initialized(void)
     {
-	return Kokkos::Serial::impl_is_initialized();
+      return Kokkos::Serial::impl_is_initialized();
     };
 #endif
 
@@ -200,6 +204,7 @@
 	mark_done();
       }
     };
+#endif
 #endif
   }; //namespace KokkosInterop 
 #endif
