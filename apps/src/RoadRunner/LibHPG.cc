@@ -24,6 +24,8 @@
 //# $Id$
 #define LIBRA_USE_HPG
 #include <LibHPG.h>
+#if KOKKOS_VERSION < 50000
+//#ifdef LIBRA_NONSTD_KOKKOS_INITIALIZE
 std::vector<KokkosInterop::K_BACKEND> LibHPG::global_initialized_kokkos_backends;
 //
 //-------------------------------------------------------------------------
@@ -65,14 +67,18 @@ std::vector<KokkosInterop::K_BACKEND> getHPGDevice()
 
   return hpgDevice;
 }
+#endif
 //
 // Initialize the public list of Kokkos backends initialized by LibHPG.
 //
 bool LibHPG::initialize()
   {
     startTime = std::chrono::steady_clock::now();
+    // int CPP_K_VERSION = KOKKOS_VERSION;
+    // cerr << "############# KOKKOS VERSION = " << CPP_K_VERSION << endl;
 
 #ifdef LIBRA_USE_HPG
+#if KOKKOS_VERSION < 50000
     if (init_hpg)
       {
 	std::vector<KokkosInterop::K_BACKEND> hpgDevices = getHPGDevice();
@@ -119,23 +125,27 @@ bool LibHPG::initialize()
 	hpg_initialized = init_once;
 	return hpg_initialized;
       }
-    //     if (init_hpg)
-    //       {
-    // 	static bool once = [&]
-    // 			   {
-    // 			     assert(!hpg::is_finalized());
-    // 			     if (!hpg::is_initialized())
-    // 			       {
-    // 				 hpg_initialized=hpg::initialize();
-    // 				 // Kokkos::push_finalize_hook([]() {
-    // 				 // 	 cerr << "Kokkos::finalize() called" << endl;
-    // 				 // });
-    // 				 std::atexit(hpg::finalize);
-    // 			       }
-    // 			     return hpg_initialized;
-    // 			   }();
-    //       } 
-    //    assert(hpg::is_intialized);
+#else // else associated with '#if KOKKOS_VERSION >= 50000'
+#warning "KOKKOS_VERSION >= 5.  All enabled Kokkos backends will be initialized at runtime, wheather they are used or not!"
+    if (init_hpg)
+      {
+	static bool once = [&]
+	{
+	  assert(!hpg::is_finalized());
+	  if (!hpg::is_initialized())
+	    {
+	      hpg_initialized=hpg::initialize(true);
+	      // Kokkos::push_finalize_hook([]() {
+	      // 	 cerr << "Kokkos::finalize() called" << endl;
+	      // });
+	      std::atexit(hpg::finalize);
+	    }
+	  return hpg_initialized;
+	}();
+	hpg_initialized=once;
+      } 
+    assert(hpg::is_intialized);
+#endif // endif associated with 'KOKKOS_VERSION >= 50000'
 #else //LIBRA_USE_HPG
     hpg_initialized=true;
 #endif //LIBRA_USE_HPG

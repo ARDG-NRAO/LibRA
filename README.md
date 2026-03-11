@@ -1,5 +1,4 @@
 # LibRA
-
 ![Build & Test](https://github.com/ardg-nrao/libra/actions/workflows/libra.yml/badge.svg)
 
 ## Description
