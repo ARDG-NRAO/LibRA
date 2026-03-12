@@ -1,4 +1,6 @@
 # LibRA
+<a href="https://ascl.net/2601.012"><img src="https://img.shields.io/badge/ascl-2601.012-blue.svg?colorB=262255" alt="ascl:2601.012" /></a> 
+
 ![Build & Test](https://github.com/ardg-nrao/libra/actions/workflows/libra.yml/badge.svg)
 
 ## Description
