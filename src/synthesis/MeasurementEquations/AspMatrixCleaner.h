@@ -188,7 +188,6 @@ protected:
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
   
-  casacore::Bool itsmfasp;
   casacore::Bool itsdimensionsareeven;
   casacore::Bool itsstopMS;
   casacore::Float itsLbfgsEpsF;
