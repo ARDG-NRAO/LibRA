@@ -61,7 +61,7 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmWaveletAspClean::SDAlgorithmWaveletAspClean(Vector<Float> scales, Float hogbomGain, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmWaveletAspClean::SDAlgorithmWaveletAspClean(Vector<Float> scales, Float hogbomGain, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -72,8 +72,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsHogbomGain(hogbomGain),
     itsWaveletScales(waveletScales),
     itsWaveletAmps(waveletAmps),
-    itsWaveletTrigger(waveletTrigger),
-    itsmfasp(mfasp),
     itsLbfgsEpsF(lbfgsEpsF),
     itsLbfgsEpsX(lbfgsEpsX),
     itsLbfgsEpsG(lbfgsEpsG),
@@ -152,7 +150,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     
     itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
-    itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
+    itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps);
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6
@@ -164,12 +162,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     tempMat1.reference(itsMatResidual);
     itsCleaner.setDirty( tempMat1 );
     // InitScaleXfrs and InitScaleMasks should already be set
-    //if (itsmfasp == false){
-	    itsScaleSizes.clear();
-	    itsScaleSizes = itsCleaner.getActiveSetAspen();
-	    itsScaleSizes.push_back(0.0); // put 0 scale
-	    itsCleaner.defineAspScales(itsScaleSizes);
-    //}
+	itsScaleSizes.clear();
+	itsScaleSizes = itsCleaner.getActiveSetAspen();
+	itsScaleSizes.push_back(0.0); // put 0 scale
+	itsCleaner.defineAspScales(itsScaleSizes);
   }
 
 
@@ -190,45 +186,29 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Matrix<Float> prevModel;
     prevModel = itsMatModel;
 
-    /*if (itsmfasp){
-	    itsCleaner.startingIteration( 0 );
-	    itsCleaner.MFaspclean( tempModel );
-	    os << "Aspclean finished" << LogIO::POST;
-	    iterdone = itsCleaner.numberIterations();
+	//cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
 
-	    // update residual - this is critical
-	    itsMatResidual = itsCleaner.getterResidual();
+	// retval
+	//  1 = converged
+	//  0 = not converged but behaving normally
+	// -1 = not converged and stopped on cleaning consecutive smallest scale
+	// -2 = not converged and either large scale hit negative or diverging
+	// -3 = clean is diverging rather than converging
+	itsCleaner.startingIteration( 0 );
+	Int retval = itsCleaner.aspclean( tempModel );
+	iterdone = itsCleaner.numberIterations();
 
-	    peakresidual = itsCleaner.getterPeakResidual();
-	    //cout << "SDAlg: peakres " << peakresidual << endl;
-	    modelflux = sum( itsMatModel );
-    }*/
+	if( retval==-1 ) {os << LogIO::WARN << "AspClean minor cycle stopped on cleaning consecutive smallest scale" << LogIO::POST; }
+	if( retval==-2 ) {os << LogIO::WARN << "AspClean minor cycle stopped at large scale negative or diverging" << LogIO::POST;}
+	if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
 
-    //else{
+	// update residual - this is critical
+	itsMatResidual = itsCleaner.getterResidual();
 
-	    //cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
-
-	    // retval
-	    //  1 = converged
-	    //  0 = not converged but behaving normally
-	    // -1 = not converged and stopped on cleaning consecutive smallest scale
-	    // -2 = not converged and either large scale hit negative or diverging
-	    // -3 = clean is diverging rather than converging
-	    itsCleaner.startingIteration( 0 );
-	    Int retval = itsCleaner.aspclean( tempModel );
-	    iterdone = itsCleaner.numberIterations();
-
-	    if( retval==-1 ) {os << LogIO::WARN << "AspClean minor cycle stopped on cleaning consecutive smallest scale" << LogIO::POST; }
-	    if( retval==-2 ) {os << LogIO::WARN << "AspClean minor cycle stopped at large scale negative or diverging" << LogIO::POST;}
-	    if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
-
-	    // update residual - this is critical
-	    itsMatResidual = itsCleaner.getterResidual();
-
-	    peakresidual = itsCleaner.getterPeakResidual();
-	    //cout << "SDAlg: peakres " << peakresidual << endl;
-	    modelflux = sum( itsMatModel );
-      //}
+	peakresidual = itsCleaner.getterPeakResidual();
+	//cout << "SDAlg: peakres " << peakresidual << endl;
+	modelflux = sum( itsMatModel );
+  
   }
 
   void SDAlgorithmWaveletAspClean::finalizeDeconvolver()
