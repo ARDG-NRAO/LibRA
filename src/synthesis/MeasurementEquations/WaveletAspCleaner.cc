@@ -39,7 +39,6 @@
 #include<synthesis/MeasurementEquations/WaveletAspCleaner.h>
 
 // for alglib
-#include <synthesis/MeasurementEquations/objfunc_alglib.h>
 #include <synthesis/MeasurementEquations/objfunc_alglib_wavelets.h>
 using namespace alglib;
 
@@ -47,46 +46,8 @@ using namespace casacore;
 using namespace std::chrono;
 namespace casa { //# NAMESPACE CASA - BEGIN
 WaveletAspCleaner::WaveletAspCleaner():
-  AspMatrixCleaner(),
-  itsInitScaleSizes(0),
-  //itsAspScaleSizes(0),
-  //itsAspAmplitude(0),
-  itsNInitScales(5),
-  itsPsfWidth(0.0),
-  itsUseZhang(false),
-  itsSwitchedToHogbom(false),
-  itsNumHogbomIter(0),
-  itsNthHogbom(0),
-  itsOptimumScale(0),
-  itsOptimumScaleSize(0.0),
-  itsPeakResidual(1000.0), // temp. should this be changed to MAX?
-  itsPrevPeakResidual(0.0),
-  itsOrigDirty( ),
-  itsFusedThreshold(0.0),
-  itsdimensionsareeven(true),
-  itsstopMS(false),
-  itsLbfgsEpsF(0.001),
-  itsLbfgsEpsX(0.001),
-  itsLbfgsEpsG(0.001),
-  itsLbfgsMaxit(5),
-  itsNumNoChange(0),
-  itsBinSizeForSumFlux(4),
-  itsUserLargestScale(-1.0)
+  AspMatrixCleaner()
 {
-  itsInitScales.resize(0);
-  itsInitScaleXfrs.resize(0);
-  itsDirtyConvInitScales.resize(0);
-  itsInitScaleMasks.resize(0);
-  itsPsfConvInitScales.resize(0);
-  itsNumIterNoGoodAspen.resize(0);
-  //itsAspCenter.resize(0);
-  itsGoodAspActiveSet.resize(0);
-  itsGoodAspAmplitude.resize(0);
-  itsGoodAspCenter.resize(0);
-  //itsPrevAspActiveSet.resize(0);
-  //itsPrevAspAmplitude.resize(0);
-  itsUsedMemoryMB = double(HostInfo::memoryUsed()/2014);
-  itsNormMethod = casa::refim::SynthesisUtils::getenv("ASP_NORM", itsDefaultNorm);
   itsWaveletScales.resize(0);
   itsWaveletAmps.resize(0);
 }
