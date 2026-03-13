@@ -27,7 +27,7 @@
 
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/OS/HostInfo.h>
-#include <synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmSpectralAspClean.h>
 
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/ComponentList.h>
@@ -61,31 +61,39 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Float hogbomGain, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmSpectralAspClean::SDAlgorithmSpectralAspClean(Vector<Float> scales, Float hogbomGain, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
     itsStopPointMode(stoppointmode),
     itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
-    itsUserLargestScale(largestScale),
-    itsMCsetup(true),
+    itsScales(scales),
+    itsHogbomGain(hogbomGain),
+    itsWaveletScales(waveletScales),
+    itsWaveletAmps(waveletAmps),
+    itsWaveletTrigger(waveletTrigger),
+    itsmfasp(mfasp),
+    itsLbfgsEpsF(lbfgsEpsF),
+    itsLbfgsEpsX(lbfgsEpsX),
+    itsLbfgsEpsG(lbfgsEpsG),
+    itsLbfgsMaxit(lbfgsMaxit),
     itsPrevPsfWidth(0),
     itsIsSingle(isSingle),
     itsUserLargestScale(largestScale)
   {
-    itsAlgorithmName = String("asp");
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "constructor", WHERE));
+    itsAlgorithmName = String("spectral_asp");
+    LogIO os(LogOrigin("SDAlgorithmSpectralAspClean", "constructor", WHERE));
   }
 
-  SDAlgorithmAAspClean::~SDAlgorithmAAspClean()
+  SDAlgorithmSpectralAspClean::~SDAlgorithmSpectralAspClean()
   {
 
   }
 
-  void SDAlgorithmAAspClean::initializeDeconvolver()
+  void SDAlgorithmSpectralAspClean::initializeDeconvolver()
   {
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "initializeDeconvolver", WHERE));
+    LogIO os(LogOrigin("SDAlgorithmSpectralAspClean", "initializeDeconvolver", WHERE));
     AlwaysAssert((bool)itsImages, AipsError);
 
     itsImages->residual()->get( itsMatResidual, true );
@@ -144,6 +152,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     
     itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
+    itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6
@@ -155,21 +164,23 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     tempMat1.reference(itsMatResidual);
     itsCleaner.setDirty( tempMat1 );
     // InitScaleXfrs and InitScaleMasks should already be set
-    itsScaleSizes.clear();
-    itsScaleSizes = itsCleaner.getActiveSetAspen(itsImages->getPeakResidualWithinMask());
-    itsScaleSizes.push_back(0.0); // put 0 scale
-    itsCleaner.defineAspScales(itsScaleSizes);
+    /*if (itsmfasp == false){
+	    itsScaleSizes.clear();
+	    itsScaleSizes = itsCleaner.getActiveSetAspen();
+	    itsScaleSizes.push_back(0.0); // put 0 scale
+	    itsCleaner.defineAspScales(itsScaleSizes);
+    }*/
   }
 
 
-  void SDAlgorithmAAspClean::takeOneStep( Float loopgain,
+  void SDAlgorithmSpectralAspClean::takeOneStep( Float loopgain,
 					  Int cycleNiter,
 					  Float cycleThreshold,
 					  Float &peakresidual,
 					  Float &modelflux,
 					  Int &iterdone)
   {
-    LogIO os( LogOrigin("SDAlgorithmAAspClean","takeOneStep", WHERE) );
+    LogIO os( LogOrigin("SDAlgorithmSpectralAspClean","takeOneStep", WHERE) );
 
     Quantity thresh(cycleThreshold, "Jy");
     itsCleaner.setaspcontrol(cycleNiter, loopgain, thresh, Quantity(0.0, "%"));
@@ -179,7 +190,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Matrix<Float> prevModel;
     prevModel = itsMatModel;
 
-    /*if (itsmfasp){
+    //if (itsmfasp){
 	    itsCleaner.startingIteration( 0 );
 	    itsCleaner.MFaspclean( tempModel );
 	    os << "Aspclean finished" << LogIO::POST;
@@ -191,9 +202,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    peakresidual = itsCleaner.getterPeakResidual();
 	    //cout << "SDAlg: peakres " << peakresidual << endl;
 	    modelflux = sum( itsMatModel );
-    }*/
+    //}
 
-    //else{
+    /*else{
 
 	    //cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
 
@@ -217,10 +228,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	    peakresidual = itsCleaner.getterPeakResidual();
 	    //cout << "SDAlg: peakres " << peakresidual << endl;
 	    modelflux = sum( itsMatModel );
-      //}
+      }*/
   }
 
-  void SDAlgorithmAAspClean::finalizeDeconvolver()
+  void SDAlgorithmSpectralAspClean::finalizeDeconvolver()
   {
     (itsImages->residual())->put( itsMatResidual );
     (itsImages->model())->put( itsMatModel );

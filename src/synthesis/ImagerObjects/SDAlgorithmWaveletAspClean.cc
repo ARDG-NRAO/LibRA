@@ -27,7 +27,7 @@
 
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/OS/HostInfo.h>
-#include <synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmWaveletAspClean.h>
 
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/ComponentList.h>
@@ -61,31 +61,39 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Float hogbomGain, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmWaveletAspClean::SDAlgorithmWaveletAspClean(Vector<Float> scales, Float hogbomGain, Vector<Float> waveletScales, Vector<Float> waveletAmps, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Bool waveletTrigger, Bool mfasp, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
     itsStopPointMode(stoppointmode),
     itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
-    itsUserLargestScale(largestScale),
-    itsMCsetup(true),
+    itsScales(scales),
+    itsHogbomGain(hogbomGain),
+    itsWaveletScales(waveletScales),
+    itsWaveletAmps(waveletAmps),
+    itsWaveletTrigger(waveletTrigger),
+    itsmfasp(mfasp),
+    itsLbfgsEpsF(lbfgsEpsF),
+    itsLbfgsEpsX(lbfgsEpsX),
+    itsLbfgsEpsG(lbfgsEpsG),
+    itsLbfgsMaxit(lbfgsMaxit),
     itsPrevPsfWidth(0),
     itsIsSingle(isSingle),
     itsUserLargestScale(largestScale)
   {
-    itsAlgorithmName = String("asp");
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "constructor", WHERE));
+    itsAlgorithmName = String("wavelet_asp");
+    LogIO os(LogOrigin("SDAlgorithmWaveletAspClean", "constructor", WHERE));
   }
 
-  SDAlgorithmAAspClean::~SDAlgorithmAAspClean()
+  SDAlgorithmWaveletAspClean::~SDAlgorithmWaveletAspClean()
   {
 
   }
 
-  void SDAlgorithmAAspClean::initializeDeconvolver()
+  void SDAlgorithmWaveletAspClean::initializeDeconvolver()
   {
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "initializeDeconvolver", WHERE));
+    LogIO os(LogOrigin("SDAlgorithmWaveletAspClean", "initializeDeconvolver", WHERE));
     AlwaysAssert((bool)itsImages, AipsError);
 
     itsImages->residual()->get( itsMatResidual, true );
@@ -144,6 +152,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     }
     
     itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
+    itsCleaner.setWaveletControl(itsWaveletScales, itsWaveletAmps, itsWaveletTrigger, itsmfasp);
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6
@@ -155,21 +164,23 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     tempMat1.reference(itsMatResidual);
     itsCleaner.setDirty( tempMat1 );
     // InitScaleXfrs and InitScaleMasks should already be set
-    itsScaleSizes.clear();
-    itsScaleSizes = itsCleaner.getActiveSetAspen(itsImages->getPeakResidualWithinMask());
-    itsScaleSizes.push_back(0.0); // put 0 scale
-    itsCleaner.defineAspScales(itsScaleSizes);
+    //if (itsmfasp == false){
+	    itsScaleSizes.clear();
+	    itsScaleSizes = itsCleaner.getActiveSetAspen();
+	    itsScaleSizes.push_back(0.0); // put 0 scale
+	    itsCleaner.defineAspScales(itsScaleSizes);
+    //}
   }
 
 
-  void SDAlgorithmAAspClean::takeOneStep( Float loopgain,
+  void SDAlgorithmWaveletAspClean::takeOneStep( Float loopgain,
 					  Int cycleNiter,
 					  Float cycleThreshold,
 					  Float &peakresidual,
 					  Float &modelflux,
 					  Int &iterdone)
   {
-    LogIO os( LogOrigin("SDAlgorithmAAspClean","takeOneStep", WHERE) );
+    LogIO os( LogOrigin("SDAlgorithmWaveletAspClean","takeOneStep", WHERE) );
 
     Quantity thresh(cycleThreshold, "Jy");
     itsCleaner.setaspcontrol(cycleNiter, loopgain, thresh, Quantity(0.0, "%"));
@@ -220,7 +231,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       //}
   }
 
-  void SDAlgorithmAAspClean::finalizeDeconvolver()
+  void SDAlgorithmWaveletAspClean::finalizeDeconvolver()
   {
     (itsImages->residual())->put( itsMatResidual );
     (itsImages->model())->put( itsMatModel );

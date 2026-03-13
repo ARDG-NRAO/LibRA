@@ -104,8 +104,8 @@ public:
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
 
   // Make an image of the specified scale by Gaussian
-  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
-  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
+  virtual void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
+  virtual void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
@@ -117,7 +117,7 @@ public:
   //casacore::Bool setInitScaleMasks(const casacore::Array<casacore::Float> arrmask, const casacore::Float& maskThreshold = 0.99);
   casacore::Bool setInitScaleMasks(const casacore::Matrix<casacore::Float> & mask, const casacore::Float& maskThreshold = 0.99); //diverge from casa6
 
-  void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
+  virtual void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
   std::vector<casacore::Float> getActiveSetAspen(const float peakres);
@@ -230,7 +230,6 @@ protected:
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
-
   casacore::Bool itsdimensionsareeven;
   // for storing variable states when called in hummbee
   StateFile sf;

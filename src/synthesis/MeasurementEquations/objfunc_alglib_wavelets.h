@@ -63,7 +63,7 @@ public:
   casacore::Vector<casacore::Float> getterAmps() { return itsWaveletAmps; }
 };
 
-void objfunc_alglib_wavelet(const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad, void *ptr) 
+inline void objfunc_alglib_wavelet(const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad, void *ptr) 
 {
     // retrieve params for GSL bfgs optimization
     casa::ParamAlglibObjWavelet *MyP = (casa::ParamAlglibObjWavelet *) ptr; //re-cast back to ParamAlglibObj to retrieve images
@@ -182,4 +182,4 @@ void objfunc_alglib_wavelet(const alglib::real_1d_array &x, double &func, alglib
 
 } // end namespace casa
 
-#endif // SYNTHESIS_OBJFUNCALGLIB_H
+#endif // SYNTHESIS_OBJFUNCALGLIB_WAVELETS_H

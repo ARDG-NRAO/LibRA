@@ -72,7 +72,6 @@
 
 // for alglib
 #include <synthesis/MeasurementEquations/objfunc_alglib.h>
-#include <synthesis/MeasurementEquations/objfunc_alglib_wavelets.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_lm.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_log.h>
 //#include <synthesis/MeasurementEquations/objfunc_alglib_beta.h>
@@ -930,12 +929,7 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-		if(itsWaveletTrigger == false){
-        	iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
-        }
-		else{
-			iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
-		}  
+        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
       }
     }*/
     // use template helper function instead
@@ -1584,7 +1578,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
     //const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
     const float normalization = computeScaleNormalization(itsPsfWidth, itsInitScaleSizes[optimumScale]);
-
+    
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
       strengthOptimum *= sqrt(2 * M_PI *itsInitScaleSizes[optimumScale]); // this is needed if we also first normalize and then compare.
@@ -1776,7 +1770,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
 }
 
 // ALGLIB
-void AspMatrixCleaner::MFaspclean(Matrix<Float>& model)
+/*void AspMatrixCleaner::MFaspclean(Matrix<Float>& model)
 {
     LogIO os(LogOrigin("AspMatrixCleaner", "MFaspclean", WHERE));
 
@@ -1954,7 +1948,7 @@ void AspMatrixCleaner::MFaspclean(Matrix<Float>& model)
 	os  << "current peakres " << itsPeakResidual << LogIO::POST; 
 	}  
     os << "Aspclean finished" << LogIO::POST;
-}
+}*/
 
 
 // gsl lbfgs
