@@ -26,8 +26,8 @@
 //#
 //# $Id$
 
-#ifndef SYNTHESIS_SDALGORITHMAASPCLEAN_H
-#define SYNTHESIS_SDALGORITHMAASPCLEAN_H
+#ifndef SYNTHESIS_SDALGORITHMSPECTRALASPCLEAN_H
+#define SYNTHESIS_SDALGORITHMSPECTRALASPCLEAN_H
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Arrays/Matrix.h>
@@ -39,7 +39,7 @@
 #include <casacore/casa/System/PGPlotter.h>
 
 #include <synthesis/ImagerObjects/SDAlgorithmBase.h>
-#include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
+#include <synthesis/MeasurementEquations/SpectralAspCleaner.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -47,13 +47,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class SIMinorCycleController;
 
 
-  class SDAlgorithmAAspClean : public SDAlgorithmBase
+  class SDAlgorithmSpectralAspClean : public SDAlgorithmBase
   {
   public:
 
     // Empty constructor
-    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Bool mfasp = false, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
-    virtual  ~SDAlgorithmAAspClean();
+    SDAlgorithmSpectralAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Vector<casacore::Float> waveletScales, casacore::Vector<casacore::Float> waveletAmps, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Bool waveletTrigger = false, casacore::Bool mfasp = false, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
+    virtual  ~SDAlgorithmSpectralAspClean();
 
   protected:
 
@@ -78,15 +78,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
     casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
 
-    AspMatrixCleaner itsCleaner;
+    SpectralAspCleaner itsCleaner;
     std::vector<casacore::Float> itsScaleSizes;
     casacore::Int itsStopPointMode;
     casacore::Float itsFusedThreshold;
     casacore::Int itsUserLargestScale;
     
+    casacore::Bool itsWaveletTrigger;
     casacore::Bool itsmfasp;
     casacore::Vector<casacore::Float> itsScales;
     casacore::Float itsHogbomGain;
+    casacore::Vector<casacore::Float> itsWaveletScales;
+    casacore::Vector<casacore::Float> itsWaveletAmps;
     casacore::Float itsLbfgsEpsF;
     casacore::Float itsLbfgsEpsX;
     casacore::Float itsLbfgsEpsG;

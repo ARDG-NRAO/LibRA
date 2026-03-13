@@ -67,8 +67,8 @@ public:
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
 
   // Make an image of the specified scale by Gaussian
-  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
-  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
+  virtual void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
+  virtual void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
@@ -80,11 +80,11 @@ public:
   //casacore::Bool setInitScaleMasks(const casacore::Array<casacore::Float> arrmask, const casacore::Float& maskThreshold = 0.99);
   casacore::Bool setInitScaleMasks(const casacore::Matrix<casacore::Float> & mask, const casacore::Float& maskThreshold = 0.99); //diverge from casa6
 
-  void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
+  virtual void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
-  void MFaspclean(casacore::Matrix<casacore::Float> & model);
+  virtual std::vector<casacore::Float> getActiveSetAspen();
+  //void MFaspclean(casacore::Matrix<casacore::Float> & model);
 
   // Juat define the active-set aspen scales
   void defineAspScales(std::vector<casacore::Float>& scaleSizes);
@@ -105,7 +105,6 @@ public:
   void setBinSizeForSumFlux(const casacore::Int binSize = 4) { itsBinSizeForSumFlux = binSize ; } ;
   void getFluxByBins(const std::vector<casacore::Float>& scaleSizes,const std::vector<casacore::Float>& optimum, casacore::Int binSize, std::vector<casacore::Float>&  sumFluxByBins, std::vector<casacore::Float>&  rangeFluxByBins);
 
-  void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps, const casacore::Bool waveletTrigger = false, const casacore::Bool mfasp = false) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps; itsWaveletTrigger=waveletTrigger; itsmfasp=mfasp;}
   void setLBFGSControl(const casacore::Float LbfgsEpsF, const casacore::Float LbfgsEpsX, const casacore::Float LbfgsEpsG, const casacore::Int LbfgsMaxit) { itsLbfgsEpsF = LbfgsEpsF; itsLbfgsEpsX = LbfgsEpsX; itsLbfgsEpsG = LbfgsEpsG; itsLbfgsMaxit = LbfgsMaxit;}
 
 protected:
@@ -189,9 +188,6 @@ protected:
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
   
-  casacore::Vector<casacore::Float> itsWaveletScales;
-  casacore::Vector<casacore::Float> itsWaveletAmps;
-  casacore::Bool itsWaveletTrigger;
   casacore::Bool itsmfasp;
   casacore::Bool itsdimensionsareeven;
   casacore::Bool itsstopMS;

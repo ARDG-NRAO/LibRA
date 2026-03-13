@@ -43,6 +43,8 @@
 #include<synthesis/ImagerObjects/SDAlgorithmMSClean.h>
 #include<synthesis/ImagerObjects/SDAlgorithmMEM.h>
 #include<synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include<synthesis/ImagerObjects/SDAlgorithmWaveletAspClean.h>
+#include<synthesis/ImagerObjects/SDAlgorithmSpectralAspClean.h>
 #include<synthesis/ImagerObjects/SDAlgorithmMTAspClean.h>
 #include<synthesis/ImagerObjects/SDAlgorithmAutoClean.h>
 
