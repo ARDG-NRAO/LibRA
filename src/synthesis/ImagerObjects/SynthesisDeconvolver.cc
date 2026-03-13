@@ -170,7 +170,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (decpars.specmode == String("mfs"))
         isSingle = true;
 
-	  itsDeconvolver.reset(new SDAlgorithmSpectralAspClean(decpars.scales, decpars.hogbomGain, decpars.waveletScales, decpars.waveletAmps, decpars.fusedThreshold, isSingle, decpars.largestscale, -1, decpars.waveletTrigger, decpars.mfasp, decpars.lbfgsEpsF, decpars.lbfgsEpsX, decpars.lbfgsEpsG, decpars.lbfgsMaxit));
+	  itsDeconvolver.reset(new SDAlgorithmSpectralAspClean(decpars.scales, decpars.hogbomGain, decpars.fusedThreshold, isSingle, decpars.largestscale, -1, decpars.lbfgsEpsF, decpars.lbfgsEpsX, decpars.lbfgsEpsG, decpars.lbfgsMaxit));
 	  }
   /*else if (decpars.algorithm==String("asp")) 
     {

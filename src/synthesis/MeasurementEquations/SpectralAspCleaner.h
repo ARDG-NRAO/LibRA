@@ -50,8 +50,6 @@ public:
 
   void MFaspclean(casacore::Matrix<casacore::Float> & model);
 
-  void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps, const casacore::Bool waveletTrigger = false, const casacore::Bool mfasp = false) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps; itsWaveletTrigger=waveletTrigger; itsmfasp=mfasp;}
-
 protected:
 //private:
 
@@ -134,10 +132,6 @@ protected:
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
   
-  casacore::Vector<casacore::Float> itsWaveletScales;
-  casacore::Vector<casacore::Float> itsWaveletAmps;
-  casacore::Bool itsWaveletTrigger;
-  casacore::Bool itsmfasp;
   casacore::Bool itsdimensionsareeven;
   casacore::Bool itsstopMS;
   casacore::Float itsLbfgsEpsF;

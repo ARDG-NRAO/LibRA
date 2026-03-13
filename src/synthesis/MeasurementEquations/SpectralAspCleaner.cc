@@ -40,7 +40,6 @@
 
 // for alglib
 #include <synthesis/MeasurementEquations/objfunc_alglib.h>
-#include <synthesis/MeasurementEquations/objfunc_alglib_wavelets.h>
 using namespace alglib;
 
 using namespace casacore;
@@ -63,8 +62,6 @@ SpectralAspCleaner::SpectralAspCleaner():
   itsPrevPeakResidual(0.0),
   itsOrigDirty( ),
   itsFusedThreshold(0.0),
-  itsWaveletTrigger(false),
-  itsmfasp(false),
   itsdimensionsareeven(true),
   itsstopMS(false),
   itsLbfgsEpsF(0.001),
@@ -89,8 +86,6 @@ SpectralAspCleaner::SpectralAspCleaner():
   //itsPrevAspAmplitude.resize(0);
   itsUsedMemoryMB = double(HostInfo::memoryUsed()/2014);
   itsNormMethod = casa::refim::SynthesisUtils::getenv("ASP_NORM", itsDefaultNorm);
-  itsWaveletScales.resize(0);
-  itsWaveletAmps.resize(0);
 }
 
 SpectralAspCleaner::~SpectralAspCleaner()
@@ -174,20 +169,12 @@ void SpectralAspCleaner::MFaspclean(Matrix<Float>& model)
 	minlbfgssetprecscale(state);
 	minlbfgsreport rep;
 
-    if(itsWaveletTrigger){
-	  	ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
-    		ParamAlglibObjWavelet *ptrParam;
-    		ptrParam = &optParam;
+	ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
+		ParamAlglibObj *ptrParam;
+		ptrParam = &optParam;
 
-	  	alglib::minlbfgsoptimize(state, objfunc_alglib_wavelet, NULL, (void *) ptrParam);
-    }
-    else{
-	  	ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
-    		ParamAlglibObj *ptrParam;
-    		ptrParam = &optParam;
-
-	  	alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
-    }
+	alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
+    
     minlbfgsresults(state, x, rep);
 
     // end alglib bfgs optimization
