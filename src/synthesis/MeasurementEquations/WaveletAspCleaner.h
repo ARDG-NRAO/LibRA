@@ -54,7 +54,7 @@ public:
   void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum) override;
   std::vector<casacore::Float> getActiveSetAspen() override;
   
-  void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps, const casacore::Bool waveletTrigger = false, const casacore::Bool mfasp = false) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps; itsWaveletTrigger=waveletTrigger; itsmfasp=mfasp;}
+  void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps;}
 
 protected:
 //private:
@@ -140,8 +140,6 @@ protected:
   
   casacore::Vector<casacore::Float> itsWaveletScales;
   casacore::Vector<casacore::Float> itsWaveletAmps;
-  casacore::Bool itsWaveletTrigger;
-  casacore::Bool itsmfasp;
   casacore::Bool itsdimensionsareeven;
   casacore::Bool itsstopMS;
   casacore::Float itsLbfgsEpsF;

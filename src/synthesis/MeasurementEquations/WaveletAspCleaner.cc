@@ -63,8 +63,6 @@ WaveletAspCleaner::WaveletAspCleaner():
   itsPrevPeakResidual(0.0),
   itsOrigDirty( ),
   itsFusedThreshold(0.0),
-  itsWaveletTrigger(false),
-  itsmfasp(false),
   itsdimensionsareeven(true),
   itsstopMS(false),
   itsLbfgsEpsF(0.001),
@@ -138,12 +136,8 @@ void WaveletAspCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& s
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-		if(itsWaveletTrigger == false){
-        	iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
-        }
-		else{
-			iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
-		}  
+		iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
+		  
       }
     }
 
@@ -191,13 +185,10 @@ void WaveletAspCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scale
         // iscale(i,j) = gbeam(px, py); // this is equivalent to the following with the above gbeam definition
         // This is for 1D, but represents Sanjay's and gives good init scale
         // Note that "amp" is not used in the expression
-        if(itsWaveletTrigger==false){
-			iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
-		}
+
         // This is for 2D, gives unit area but bad init scale (always picks 0)
-		else{
-			iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
-		}
+		iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		
       }
     }
 
@@ -328,13 +319,8 @@ void WaveletAspCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& opti
         if (scale > 0)
         {
   	      float normalization;
-	      if(itsWaveletTrigger){
   	      normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
-	      }
-  	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
-	      else{
-          	normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
-		}
+	      
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -357,9 +343,6 @@ void WaveletAspCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& opti
   {
 	  
     float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
-    if(itsWaveletTrigger == false){
-    	normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
-    }
 
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
@@ -485,21 +468,11 @@ vector<Float> WaveletAspCleaner::getActiveSetAspen()
 	//minlbfgssetprecscale(state);
   	minlbfgsreport rep;
 
-	if(itsWaveletTrigger){
+	ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
+	ParamAlglibObjWavelet *ptrParam;
+	ptrParam = &optParam;
 
-		ParamAlglibObjWavelet optParam(*itsDirty, activeSetCenter, itsWaveletScales, itsWaveletAmps);
-		ParamAlglibObjWavelet *ptrParam;
-		ptrParam = &optParam;
-
-		alglib::minlbfgsoptimize(state, objfunc_alglib_wavelet, NULL, (void *) ptrParam);
-	}
-	else{
-		ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
-		ParamAlglibObj *ptrParam;
-		ptrParam = &optParam;
-
-		alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
-	}
+	alglib::minlbfgsoptimize(state, objfunc_alglib_wavelet, NULL, (void *) ptrParam);
 
 	minlbfgsresults(state, x, rep);
 	//double *x1 = x.getcontent();
