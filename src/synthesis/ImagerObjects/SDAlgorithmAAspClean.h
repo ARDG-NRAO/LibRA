@@ -52,7 +52,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   public:
 
     // Empty constructor
-    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Bool mfasp = false, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
+    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
     virtual  ~SDAlgorithmAAspClean();
 
   protected:
@@ -84,7 +84,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Float itsFusedThreshold;
     casacore::Int itsUserLargestScale;
     
-    casacore::Bool itsmfasp;
     casacore::Vector<casacore::Float> itsScales;
     casacore::Float itsHogbomGain;
     casacore::Float itsLbfgsEpsF;

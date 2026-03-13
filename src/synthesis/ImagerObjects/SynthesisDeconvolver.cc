@@ -154,7 +154,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (decpars.nTaylorTerms > 1) // wide-band
         itsDeconvolver.reset(new SDAlgorithmMTAspClean(decpars.nTaylorTerms, decpars.fusedThreshold, isSingle, decpars.largestscale));
       else //narrow-band. WAsp can be use for cube imaging as well but for now let AspClean handle that.
-	      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.scales, decpars.hogbomGain, decpars.fusedThreshold, isSingle, decpars.largestscale, -1, decpars.mfasp, decpars.lbfgsEpsF, decpars.lbfgsEpsX, decpars.lbfgsEpsG, decpars.lbfgsMaxit));
+	      itsDeconvolver.reset(new SDAlgorithmAAspClean(decpars.scales, decpars.hogbomGain, decpars.fusedThreshold, isSingle, decpars.largestscale, -1, decpars.lbfgsEpsF, decpars.lbfgsEpsX, decpars.lbfgsEpsG, decpars.lbfgsMaxit));
 	  }
 	else if (decpars.algorithm==String("waveletasp"))
 	  {
