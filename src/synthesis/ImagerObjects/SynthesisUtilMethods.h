@@ -462,8 +462,6 @@ public:
   casacore::Float fusedThreshold;
   casacore::Vector<casacore::Float> waveletScales;
   casacore::Vector<casacore::Float> waveletAmps;
-  casacore::Bool waveletTrigger;
-  casacore::Bool mfasp;
   casacore::Float autoThreshold;
   casacore::Int autoMaxiter;
   casacore::Float autoGain;

@@ -45,6 +45,8 @@
 #include <synthesis/ImagerObjects/SDAlgorithmMSClean.h>
 #include <synthesis/ImagerObjects/SDAlgorithmMEM.h>
 #include <synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmWaveletAspClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmSpectralAspClean.h>
 
 #include <synthesis/ImagerObjects/SDMaskHandler.h>
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
@@ -81,7 +83,7 @@ using namespace casacore;
 float Hummbee(std::string& imageName, std::string& modelImageName,
         std::string& deconvolver,
         std::vector<float>& scales,
-        float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp, float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom,float& autotrigger,float& autopower,int& autoxmask,int& autoymask,float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
+        float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom,float& autotrigger,float& autopower,int& autoxmask,int& autoymask,float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
         int& nterms,
         float& gain, float& threshold,
         float& nsigma,
@@ -95,7 +97,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
   string& imageName, string& modelImageName,
   string& deconvolver,
   vector<float>& scales,
-  float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp, float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom, float& autotrigger,float& autopower,int& autoxmask,int& autoymask,float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
+  float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom, float& autotrigger,float& autopower,int& autoxmask,int& autoymask,float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
   int& nterms,
   float& gain, float& threshold,
   float& nsigma,

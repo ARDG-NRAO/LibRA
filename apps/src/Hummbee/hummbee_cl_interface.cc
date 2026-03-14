@@ -63,7 +63,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
 	Float& pbLimit,*/
   string& deconvolver,
   vector<float>& scales,
-  float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp, float& autothreshold,int& automaxiter,float& autogain,float& hogbomgain, bool& autohogbom, float& autotrigger,float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
+  float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,float& autothreshold,int& automaxiter,float& autogain,float& hogbomgain, bool& autohogbom, float& autotrigger,float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
   int& nterms,
   float& gain, float& threshold,
   float& nsigma,
@@ -131,8 +131,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       exposedKeys.push_back("fusedthreshold");
       exposedKeys.push_back("waveletscales");
       exposedKeys.push_back("waveletamps");
-      exposedKeys.push_back("wavelettrigger");
-      exposedKeys.push_back("mfasp");
       exposedKeys.push_back("autothreshold");
       exposedKeys.push_back("automaxiter");
       exposedKeys.push_back("autogain");
@@ -158,8 +156,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       i=1;clgetFValp("fusedthreshold", fusedthreshold,i);
       N=0; N=clgetNFValp("waveletscales", waveletscales, N);
       N=0; N=clgetNFValp("waveletamps", waveletamps, N);
-      i=1;clgetBValp("wavelettrigger", wavelettrigger,i);
-      i=1;clgetBValp("mfasp", mfasp,i);
       i=1;clgetFValp("autothreshold", autothreshold,i);
       i=1;clgetIValp("automaxiter", automaxiter,i);
       i=1;clgetFValp("autogain", autogain,i);
@@ -239,8 +235,6 @@ int main(int argc, char **argv)
   float fusedthreshold = 0;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger = false;
-  bool mfasp = false;
   float autothreshold = 0;
   int automaxiter = 0;
   float autogain = 0;
@@ -276,7 +270,7 @@ int main(int argc, char **argv)
 	   ,doPBCorr, conjBeams, pbLimit,*/ 
 	 deconvolver,
 	 scales,
-	 largestscale, fusedthreshold,waveletscales, waveletamps, wavelettrigger, mfasp, autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
+	 largestscale, fusedthreshold,waveletscales, waveletamps, autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
 	 nterms,
 	 gain, threshold,
 	 nsigma,
@@ -292,7 +286,7 @@ int main(int argc, char **argv)
 				doPBCorr, conjBeams, pbLimit,*/
 			      deconvolver,
 			      scales,
-			      largestscale, fusedthreshold,waveletscales, waveletamps, wavelettrigger, mfasp, autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
+			      largestscale, fusedthreshold,waveletscales, waveletamps, autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower,autoxmask,autoymask,lbfgsepsf,lbfgsepsx,lbfgsepsg,lbfgsmaxit,
 			      nterms,
 			      gain, threshold,
 			      nsigma,

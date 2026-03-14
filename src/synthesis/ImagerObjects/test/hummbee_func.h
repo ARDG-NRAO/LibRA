@@ -46,6 +46,8 @@
 #include<synthesis/ImagerObjects/SDAlgorithmMSClean.h>
 #include<synthesis/ImagerObjects/SDAlgorithmMEM.h>
 #include<synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include<synthesis/ImagerObjects/SDAlgorithmWaveletAspClean.h>
+#include<synthesis/ImagerObjects/SDAlgorithmSpectralAspClean.h>
 
 #include<synthesis/ImagerObjects/SDMaskHandler.h>
 #include <synthesis/ImagerObjects/SIMinorCycleController.h>
@@ -269,7 +271,7 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
         Float& pbLimit,
         string& deconvolver,
         vector<float>& scales,
-        float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,bool& wavelettrigger, bool& mfasp,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom, float& autotrigger, float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
+        float& largestscale, float& fusedthreshold,vector<float>& waveletscales,vector<float>& waveletamps,float& autothreshold,int& automaxiter,float& autogain, float& hogbomgain,bool& autohogbom, float& autotrigger, float& autopower, int& autoxmask, int& autoymask, float& lbfgsepsf, float& lbfgsepsx, float& lbfgsepsg, int& lbfgsmaxit,
         int& nterms,
         float& gain, float& threshold,
         float& nsigma,
@@ -324,8 +326,6 @@ void Hummbee(bool restartUI, int argc, char **argv, string& MSNBuf,
       decPars_p.fusedThreshold = fusedthreshold;
       decPars_p.waveletScales = Vector<Float>(waveletscales);
       decPars_p.waveletAmps = Vector<Float>(waveletamps);
-      decPars_p.waveletTrigger = wavelettrigger;
-      decPars_p.mfasp = mfasp;
       decPars_p.autoThreshold = autothreshold;
       decPars_p.autoMaxiter = automaxiter;
       decPars_p.autoGain = autogain;

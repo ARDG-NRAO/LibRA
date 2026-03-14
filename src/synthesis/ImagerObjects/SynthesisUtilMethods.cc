@@ -4009,8 +4009,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         }
         err += readVal( inrec, String("waveletscales"), waveletScales );
 		err += readVal( inrec, String("waveletamps"), waveletAmps );
-		err += readVal( inrec, String("wavelettrigger"), waveletTrigger );
-		err += readVal( inrec, String("mfasp"), mfasp );
         //param for the Autocleaner
         if (inrec.isDefined("autothreshold"))
         {
@@ -4381,8 +4379,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     fusedThreshold = 0.0;
     waveletScales.resize(1); waveletScales[0] = 0.0 ;
     waveletAmps.resize(1); waveletAmps[0] = 0.0 ;
-    waveletTrigger = false;
-    mfasp = false;
     autoThreshold = 0.0;
     autoMaxiter = 0;
     autoGain = 0.0;
@@ -4415,8 +4411,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     decpar.define("fusedthreshold", fusedThreshold);
     decpar.define("waveletscales", waveletScales);
     decpar.define("waveletamps", waveletAmps);
-    decpar.define("wavelettrigger", waveletTrigger);
-    decpar.define("mfasp", mfasp);
     decpar.define("autothreshold", autoThreshold);
     decpar.define("automaxiter", autoMaxiter);
     decpar.define("autogain", autoGain);
