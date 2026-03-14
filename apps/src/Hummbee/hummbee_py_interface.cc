@@ -34,8 +34,6 @@ PYBIND11_MODULE(hummbee2py, m)
     "fusedthreshold"_a=0,
     "waveletscales"_a,
     "waveletamps"_a,
-    "wavelettrigger"_a=false,
-    "mfasp"_a=false,
     "autothreshold"_a=0,
     "automaxiter"_a=0,
     "autogain"_a=0,

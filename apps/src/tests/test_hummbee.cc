@@ -54,8 +54,6 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   float fusedthreshold = 0;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger; 
-  bool mfasp = false;
   float autothreshold;
   int automaxiter;
   float autogain;
@@ -85,7 +83,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 waveletscales, waveletamps,
                  autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
                  lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
@@ -156,8 +154,6 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   float fusedthreshold = 0.007;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger; 
-  bool mfasp = false;
   float autothreshold;
   int automaxiter;
   float autogain;
@@ -189,7 +185,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 waveletscales, waveletamps,
                  autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
                  lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
@@ -264,8 +260,6 @@ TEST(HummbeeTest,  AppLevelWAsp) {
   float fusedthreshold = 0.05;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger; 
-  bool mfasp = false;
   float autothreshold;
   int automaxiter;
   float autogain;
@@ -293,7 +287,7 @@ TEST(HummbeeTest,  AppLevelWAsp) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 waveletscales, waveletamps,
                  autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
                  lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
@@ -354,8 +348,6 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   float fusedthreshold = 0.007;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger; 
-  bool mfasp = false;
   float autothreshold;
   int automaxiter;
   float autogain;
@@ -388,7 +380,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 waveletscales, waveletamps,
                  autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
                  lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
@@ -419,7 +411,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
-                 waveletscales, waveletamps, wavelettrigger, mfasp,
+                 waveletscales, waveletamps,
                  autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
                  lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
                  nterms,
@@ -465,8 +457,6 @@ TEST(HummbeeTest, UIFactory) {
   float fusedthreshold = 0;
   vector<float> waveletscales;
   vector<float> waveletamps;
-  bool wavelettrigger; 
-  bool mfasp = false;
   float autothreshold;
   int automaxiter;
   float autogain;
@@ -496,7 +486,7 @@ TEST(HummbeeTest, UIFactory) {
     deconvolver,
     scales,
     largestscale, fusedthreshold,
-    waveletscales, waveletamps, wavelettrigger, mfasp,
+    waveletscales, waveletamps,
     autothreshold, automaxiter, autogain, hogbomgain, autohogbom, autotrigger, autopower, autoxmask, autoymask, 
     lbfgsepsf, lbfgsepsx, lbfgsepsg, lbfgsmaxit,
     nterms,
