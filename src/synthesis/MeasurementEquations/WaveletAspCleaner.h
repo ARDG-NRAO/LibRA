@@ -49,10 +49,12 @@ public:
   ~WaveletAspCleaner();
 
   // Make an image of the specified scale by Gaussian
-  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize) override;
-  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center) override;
-  void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum) override;
   std::vector<casacore::Float> getActiveSetAspen() override;
+  
+  //Normalization Helpers
+  float aspScaleModel(const casacore::Int& i, const casacore::Int& j, const casacore::Float& scaleSize, const casacore::Int& refi, const casacore::Int& refj) override;
+  float aspPeakNormModel(const casacore::Float& width) override;
+  float aspNormalizationModel(const casacore::Float& width1, const casacore::Float& width2) override;
   
   void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps;}
 

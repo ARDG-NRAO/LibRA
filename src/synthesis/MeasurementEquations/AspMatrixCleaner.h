@@ -65,10 +65,15 @@ public:
   // helper functions for ASP
   float getPsfGaussianWidth(casacore::ImageInterface<casacore::Float>& psf);
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
+  
+  //Normalization Helpers
+  virtual float aspScaleModel(const casacore::Int& i, const casacore::Int& j, const casacore::Float& scaleSize, const casacore::Int& refi, const casacore::Int& refj);
+  virtual float aspPeakNormModel(const casacore::Float& width);
+  virtual float aspNormalizationModel(const casacore::Float& width1, const casacore::Float& width2);
 
   // Make an image of the specified scale by Gaussian
-  virtual void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
-  virtual void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
+  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
+  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
@@ -80,7 +85,7 @@ public:
   //casacore::Bool setInitScaleMasks(const casacore::Array<casacore::Float> arrmask, const casacore::Float& maskThreshold = 0.99);
   casacore::Bool setInitScaleMasks(const casacore::Matrix<casacore::Float> & mask, const casacore::Float& maskThreshold = 0.99); //diverge from casa6
 
-  virtual void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
+  void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
   virtual std::vector<casacore::Float> getActiveSetAspen();

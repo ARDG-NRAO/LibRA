@@ -850,6 +850,20 @@ Bool AspMatrixCleaner::destroyInitMasks()
   return true;
 }
 
+float AspMatrixCleaner::aspScaleModel(const Int& i, const Int& j, const Float& scaleSize, const Int& refi, const Int& refj)
+{
+	return (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2));
+}
+
+float AspMatrixCleaner::aspPeakNormModel(const Float& width)
+{
+	return sqrt(2 * M_PI *width);
+}
+
+float AspMatrixCleaner::aspNormalizationModel(const Float& width1, const Float& width2)
+{
+	return sqrt(2 * M_PI / (pow(1.0/width1, 2) + pow(1.0/width2, 2)));
+}
 
 float AspMatrixCleaner::getPsfGaussianWidth(ImageInterface<Float>& psf)
 {
@@ -923,7 +937,7 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
+        iscale(i,j) = aspScaleModel(i, j, scaleSize, refi, refj);
       }
     }
 
@@ -970,7 +984,7 @@ void AspMatrixCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scaleS
         // iscale(i,j) = gbeam(px, py); // this is equivalent to the following with the above gbeam definition
         // This is for 1D, but represents Sanjay's and gives good init scale
         // Note that "amp" is not used in the expression
-		iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		iscale(i,j) = aspScaleModel(i, j, scaleSize, center[0], center[1]);
       }
     }
 
@@ -1536,7 +1550,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
         if (scale > 0)
         {
   	      float normalization;
-          normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+          normalization = aspPeakNormModel(itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -1558,7 +1572,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
   if (optimumScale > 0)
   {
 	  
-    float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+    float normalization = aspNormalizationModel(itsPsfWidth, itsInitScaleSizes[optimumScale]); // this is good.
 
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
