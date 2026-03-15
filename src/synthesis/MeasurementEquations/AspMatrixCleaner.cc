@@ -856,6 +856,20 @@ Bool AspMatrixCleaner::destroyInitMasks()
   return true;
 }
 
+float AspMatrixCleaner::aspScaleModel(const Int& i, const Int& j, const Float& scaleSize, const Int& refi, const Int& refj)
+{
+	return (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2));
+}
+
+float AspMatrixCleaner::aspPeakNormModel(const Float& width)
+{
+	return sqrt(2 * M_PI *width);
+}
+
+float AspMatrixCleaner::aspNormalizationModel(const Float& width1, const Float& width2)
+{
+	return sqrt(2 * M_PI / (pow(1.0/width1, 2) + pow(1.0/width2, 2)));
+}
 
 float AspMatrixCleaner::getPsfGaussianWidth(ImageInterface<Float>& psf)
 {
@@ -929,7 +943,7 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
+        iscale(i,j) = aspScaleModel(i, j, scaleSize, refi, refj);
       }
     }*/
     // use template helper function instead
@@ -977,11 +991,7 @@ void AspMatrixCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scaleS
         // iscale(i,j) = gbeam(px, py); // this is equivalent to the following with the above gbeam definition
         // This is for 1D, but represents Sanjay's and gives good init scale
         // Note that "amp" is not used in the expression
-        if(itsWaveletTrigger==false){
-			iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
-		}
-        // This is for 2D, gives unit area but bad init scale (always picks 0)
-        // iscale(i,j) = (1.0/(2*M_PI*pow(scalefSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+		iscale(i,j) = aspScaleModel(i, j, scaleSize, center[0], center[1]);
       }
     }*/
     // use template helper function
@@ -1549,12 +1559,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
         if (scale > 0)
         {
   	      float normalization;
-	      if(itsWaveletTrigger){
-  	      normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
-	      }
-  	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
-          //normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
-          normalization = computePeakNormalization(itsInitScaleSizes[scale]);
+          normalization = aspPeakNormModel(itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -1578,7 +1583,6 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
     //const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
     const float normalization = computeScaleNormalization(itsPsfWidth, itsInitScaleSizes[optimumScale]);
-    
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
       strengthOptimum *= sqrt(2 * M_PI *itsInitScaleSizes[optimumScale]); // this is needed if we also first normalize and then compare.
