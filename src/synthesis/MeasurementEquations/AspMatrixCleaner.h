@@ -36,6 +36,7 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
