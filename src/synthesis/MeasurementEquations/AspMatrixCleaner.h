@@ -238,6 +238,7 @@ protected:
   casacore::Bool itsdimensionsareeven;
   // for storing variable states when called in hummbee
   StateFile sf;
+
 };
 
 } //# NAMESPACE CASA - END
