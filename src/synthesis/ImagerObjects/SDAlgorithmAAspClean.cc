@@ -130,12 +130,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       // Not used. Kept for unit test
       //Matrix<Float> tempMat1(itsMatResidual);
       //itsCleaner.setOrigDirty( tempMat1 );
-
-      if (itsFusedThreshold < 0)
-      {
-        os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to -1." << LogIO::POST;
-        itsFusedThreshold = -1.;
-      }
       if (itsHogbomGain < 0)
 	  {
        os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itsHogbomGain << " to 0." << LogIO::POST;

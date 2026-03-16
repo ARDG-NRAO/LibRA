@@ -194,7 +194,6 @@ protected:
   casacore::IPosition blcDirty, trcDirty;
   
   casacore::Bool itsdimensionsareeven;
-  casacore::Bool itsstopMS;
   casacore::Float itsLbfgsEpsF;
   casacore::Float itsLbfgsEpsX;
   casacore::Float itsLbfgsEpsG;

@@ -98,7 +98,6 @@ AspMatrixCleaner::AspMatrixCleaner():
   itsOrigDirty( ),
   itsFusedThreshold(0.0),
   itsdimensionsareeven(true),
-  itsstopMS(false),
   itsLbfgsEpsF(0.001),
   itsLbfgsEpsX(0.001),
   itsLbfgsEpsG(0.001),
@@ -264,14 +263,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   // float initModelFlux = 0.0;
 
   itsdimensionsareeven = (psfShape_p(0) == 2*(psfShape_p(0)/2));
-  if (itsFusedThreshold == -1.){
-	itsstopMS = false;
-	os << "We never switch to Hogbom" << LogIO::POST;
-        }
-  else{
-	os << "Switching to Hogbom CLEAN is allowed" << LogIO::POST;
-	itsstopMS = true;
-	}
   Float tempGain;
   
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
@@ -401,7 +392,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
         
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -420,7 +411,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
       }
-      if (!itsSwitchedToHogbom && itsNumNoChange >= 2 && itsstopMS)
+      if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
       {
         os << LogIO::NORMAL3 << "Switched to hogbom at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
         itsNumNoChange = 0;
@@ -429,7 +420,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         bool runlong = false;
 
         //option 1: use rms residual to detect convergence
-        if (initRMSResidual > rms && initRMSResidual/rms < 1.5 && itsstopMS)
+        if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
           os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
@@ -447,7 +438,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       }
     }
 
-    if (!itsSwitchedToHogbom && itsstopMS)
+    if (!itsSwitchedToHogbom)
     {
 	    if (itsNumIterNoGoodAspen.size() >= 10)
 	  	  itsNumIterNoGoodAspen.pop_front(); // only track the past 10 iters
@@ -740,7 +731,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         os << LogIO::NORMAL3 << "switched back to Asp." << LogIO::POST;
 
         //option 1: use rms residual to detect convergence
-        if (!(initRMSResidual > rms && initRMSResidual/rms < 1.5) && itsstopMS)
+        if (!(initRMSResidual > rms && initRMSResidual/rms < 1.5))
         {
           os << "Reached convergence at iteration "<< ii << " b/c hogbom finished" << LogIO::POST;
           converged = 1;
