@@ -1,4 +1,4 @@
-//# SDAlgorithmAAspClean.h: Definition for SDAlgorithmAAspClean
+//# SDAlgorithmMSClean.h: Definition for SDAlgorithmMSClean
 //# Copyright (C) 1996,1997,1998,1999,2000,2002
 //# Associated Universities, Inc. Washington DC, USA.
 //#
@@ -26,8 +26,8 @@
 //#
 //# $Id$
 
-#ifndef SYNTHESIS_SDALGORITHMAASPCLEAN_H
-#define SYNTHESIS_SDALGORITHMAASPCLEAN_H
+#ifndef SYNTHESIS_SDALGORITHMAutoCLEAN_H
+#define SYNTHESIS_SDALGORITHMAutoCLEAN_H
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Arrays/Matrix.h>
@@ -38,8 +38,8 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/System/PGPlotter.h>
 
-#include <synthesis/ImagerObjects/SDAlgorithmBase.h>
-#include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
+#include<synthesis/ImagerObjects/SDAlgorithmBase.h>
+#include <synthesis/MeasurementEquations/AutoCleaner.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -47,59 +47,42 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class SIMinorCycleController;
 
 
-  class SDAlgorithmAAspClean : public SDAlgorithmBase
+  class SDAlgorithmAutoClean : public SDAlgorithmBase 
   {
   public:
-
+    
     // Empty constructor
-    SDAlgorithmAAspClean(casacore::Vector<casacore::Float> scales, casacore::Float hogbomGain, casacore::Float fusedThreshold = 0.0, bool isSingle = true, casacore::Int largestScale = -1, casacore::Int stoppointmode = -1, casacore::Float lbfgsEpsF= 0.001, casacore::Float lbfgsEpsX= 0.001, casacore::Float lbfgsEpsG= 0.001, casacore::Int lbfgsMaxit= 5);
-    virtual  ~SDAlgorithmAAspClean();
-
+    SDAlgorithmAutoClean(casacore::Float autoThreshold, casacore::Int autoMaxiter, casacore::Float autoGain, casacore::Float hogbomGain, casacore::Bool autoHogbom, casacore::Float autoTrigger, casacore::Float autoPower, casacore::Int autoXMask, casacore::Int autoYMask);
+    virtual  ~SDAlgorithmAutoClean();
+    
+    //returns the estimate of memory used in kilobytes (kB);
+    virtual casacore::Long estimateRAM( const std::vector<int>& imsize);
   protected:
-
+    
     // Local functions to be overloaded by various algorithm deconvolvers.
-    virtual void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int &iterdone );
-    virtual void initializeDeconvolver();
-    virtual void finalizeDeconvolver();
-
-
-    /*
-    void findNextComponent( casacore::Float loopgain );
-    void updateModel();
-    void updateResidual();
-    */
-
-    /*
-    casacore::SubImage<casacore::Float> itsResidual, itsPsf, itsModel, itsImage;
-    casacore::Float itsComp;
-    */
-    //casacore::SubImage<casacore::Float> itsResidual, itsPsf, itsModel, itsImage;
+    void takeOneStep( casacore::Float loopgain, casacore::Int cycleNiter, casacore::Float cycleThreshold, 
+		      casacore::Float &peakresidual, casacore::Float &modelflux, casacore::Int &iterdone );
+    void initializeDeconvolver();
+    void finalizeDeconvolver();
 
     casacore::Array<casacore::Float> itsMatPsf, itsMatResidual, itsMatModel;
     casacore::Array<casacore::Float> itsMatMask;  // Make an array if we eventually use multi-term masks...
+    casacore::Array<casacore::Float> itsMatTemp;
 
-    AspMatrixCleaner itsCleaner;
-    std::vector<casacore::Float> itsScaleSizes;
-    casacore::Int itsStopPointMode;
-    casacore::Float itsFusedThreshold;
-    casacore::Int itsUserLargestScale;
-    
-    casacore::Vector<casacore::Float> itsScales;
-    casacore::Float itsHogbomGain;
-    casacore::Float itsLbfgsEpsF;
-    casacore::Float itsLbfgsEpsX;
-    casacore::Float itsLbfgsEpsG;
-    casacore::Int itsLbfgsMaxit;
+    casacore::Float itsautoThreshold;
+    casacore::Int itsautoMaxiter;
+    casacore::Float itsautoGain;
+    casacore::Float itshogbomGain;
+    casacore::Bool itsautoHogbom;
+    casacore::Float itsautoTrigger;
+    casacore::Float itsautoPower;
+    casacore::Int itsautoXMask;
+    casacore::Int itsautoYMask;
 
-    /*
-    casacore::IPosition itsMaxPos;
-    casacore::Float itsPeakResidual;
-    casacore::Float itsModelFlux;
-    */
-    private:
-    casacore::Bool itsMCsetup; // if we should do setup or not   
-    casacore::Float itsPrevPsfWidth;
-    bool itsIsSingle;
+    AutoCleaner itsCleaner;
+
+  private:
+    //casacore::Bool itsMCsetup; 
 
   };
 

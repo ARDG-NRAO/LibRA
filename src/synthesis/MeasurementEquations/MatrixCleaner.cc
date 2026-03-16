@@ -679,7 +679,7 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
     
     Matrix<Float> modelSub=model(blc, trc);
     Matrix<Float> scaleSub=(itsScales[optimumScale])(blcPsf,trcPsf);
-    
+ 
  
     // Now do the addition of this scale to the model image....
     modelSub += scaleFactor*scaleSub;
@@ -720,7 +720,7 @@ Int MatrixCleaner::clean(Matrix<Float>& model,
   if(!converged) {
     os << "Failed to reach stopping threshold" << LogIO::POST;
   }
-
+  
   return converged;
 }
 

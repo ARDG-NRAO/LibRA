@@ -27,7 +27,7 @@
 
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/OS/HostInfo.h>
-#include <synthesis/ImagerObjects/SDAlgorithmAAspClean.h>
+#include <synthesis/ImagerObjects/SDAlgorithmSpectralAspClean.h>
 
 #include <components/ComponentModels/SkyComponent.h>
 #include <components/ComponentModels/ComponentList.h>
@@ -61,7 +61,7 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Float hogbomGain, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmSpectralAspClean::SDAlgorithmSpectralAspClean(Vector<Float> scales, Float hogbomGain, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -78,18 +78,18 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsIsSingle(isSingle),
     itsUserLargestScale(largestScale)
   {
-    itsAlgorithmName = String("asp");
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "constructor", WHERE));
+    itsAlgorithmName = String("spectral_asp");
+    LogIO os(LogOrigin("SDAlgorithmSpectralAspClean", "constructor", WHERE));
   }
 
-  SDAlgorithmAAspClean::~SDAlgorithmAAspClean()
+  SDAlgorithmSpectralAspClean::~SDAlgorithmSpectralAspClean()
   {
 
   }
 
-  void SDAlgorithmAAspClean::initializeDeconvolver()
+  void SDAlgorithmSpectralAspClean::initializeDeconvolver()
   {
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "initializeDeconvolver", WHERE));
+    LogIO os(LogOrigin("SDAlgorithmSpectralAspClean", "initializeDeconvolver", WHERE));
     AlwaysAssert((bool)itsImages, AipsError);
 
     itsImages->residual()->get( itsMatResidual, true );
@@ -130,6 +130,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       // Not used. Kept for unit test
       //Matrix<Float> tempMat1(itsMatResidual);
       //itsCleaner.setOrigDirty( tempMat1 );
+
+      if (itsFusedThreshold < 0)
+      {
+        os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to -1." << LogIO::POST;
+        itsFusedThreshold = -1.;
+      }
       if (itsHogbomGain < 0)
 	  {
        os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itsHogbomGain << " to 0." << LogIO::POST;
@@ -153,22 +159,17 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     tempMat1.reference(itsMatResidual);
     itsCleaner.setDirty( tempMat1 );
     // InitScaleXfrs and InitScaleMasks should already be set
-
-	itsScaleSizes.clear();
-	itsScaleSizes = itsCleaner.getActiveSetAspen();
-	itsScaleSizes.push_back(0.0); // put 0 scale
-	itsCleaner.defineAspScales(itsScaleSizes);
   }
 
 
-  void SDAlgorithmAAspClean::takeOneStep( Float loopgain,
+  void SDAlgorithmSpectralAspClean::takeOneStep( Float loopgain,
 					  Int cycleNiter,
 					  Float cycleThreshold,
 					  Float &peakresidual,
 					  Float &modelflux,
 					  Int &iterdone)
   {
-    LogIO os( LogOrigin("SDAlgorithmAAspClean","takeOneStep", WHERE) );
+    LogIO os( LogOrigin("SDAlgorithmSpectralAspClean","takeOneStep", WHERE) );
 
     Quantity thresh(cycleThreshold, "Jy");
     itsCleaner.setaspcontrol(cycleNiter, loopgain, thresh, Quantity(0.0, "%"));
@@ -178,21 +179,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     Matrix<Float> prevModel;
     prevModel = itsMatModel;
 
-	//cout << "AAspALMS,  matrix shape : " << tempModel.shape() << " array shape : " << itsMatModel.shape() << endl;
-
-	// retval
-	//  1 = converged
-	//  0 = not converged but behaving normally
-	// -1 = not converged and stopped on cleaning consecutive smallest scale
-	// -2 = not converged and either large scale hit negative or diverging
-	// -3 = clean is diverging rather than converging
 	itsCleaner.startingIteration( 0 );
-	Int retval = itsCleaner.aspclean( tempModel );
+	itsCleaner.MFaspclean( tempModel );
+	os << "Aspclean finished" << LogIO::POST;
 	iterdone = itsCleaner.numberIterations();
-
-	if( retval==-1 ) {os << LogIO::WARN << "AspClean minor cycle stopped on cleaning consecutive smallest scale" << LogIO::POST; }
-	if( retval==-2 ) {os << LogIO::WARN << "AspClean minor cycle stopped at large scale negative or diverging" << LogIO::POST;}
-	if( retval==-3 ) {os << LogIO::WARN << "AspClean minor cycle stopped because it is diverging" << LogIO::POST; }
 
 	// update residual - this is critical
 	itsMatResidual = itsCleaner.getterResidual();
@@ -203,7 +193,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   }
 
-  void SDAlgorithmAAspClean::finalizeDeconvolver()
+  void SDAlgorithmSpectralAspClean::finalizeDeconvolver()
   {
     (itsImages->residual())->put( itsMatResidual );
     (itsImages->model())->put( itsMatModel );

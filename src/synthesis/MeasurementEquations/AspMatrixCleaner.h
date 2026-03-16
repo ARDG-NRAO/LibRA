@@ -36,6 +36,7 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
+#include <casacore/images/Images/ImageInterface.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -65,6 +66,11 @@ public:
   // helper functions for ASP
   float getPsfGaussianWidth(casacore::ImageInterface<casacore::Float>& psf);
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
+  
+  //Normalization Helpers
+  virtual float aspScaleModel(const casacore::Int& i, const casacore::Int& j, const casacore::Float& scaleSize, const casacore::Int& refi, const casacore::Int& refj);
+  virtual float aspPeakNormModel(const casacore::Float& width);
+  virtual float aspNormalizationModel(const casacore::Float& width1, const casacore::Float& width2);
 
   // Make an image of the specified scale by Gaussian
   void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
@@ -72,6 +78,7 @@ public:
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
+  void loadInitScaleXfrs(const casacore::Vector<casacore::Float> & scales);
 
   // calculate the convolutions of the psf with the initial scales
   void setInitScalePsfs();
@@ -82,7 +89,8 @@ public:
   void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
+  virtual std::vector<casacore::Float> getActiveSetAspen();
+  //void MFaspclean(casacore::Matrix<casacore::Float> & model);
 
   // Juat define the active-set aspen scales
   void defineAspScales(std::vector<casacore::Float>& scaleSizes);
@@ -90,6 +98,7 @@ public:
   void switchedToHogbom(bool runlong= false);
   void setOrigDirty(const casacore::Matrix<casacore::Float>& dirty);
   void setFusedThreshold(const casacore::Float fusedThreshold = 0.0) { itsFusedThreshold = fusedThreshold; }
+  void setHogbomGain(const casacore::Float hogbomGain = 0.0) { itsHogbomGain = hogbomGain; }
   void setUserLargestScale(const casacore::Int largestScale = -1) { itsUserLargestScale = float(largestScale); }
 
   // setter/getter
@@ -102,6 +111,7 @@ public:
   void setBinSizeForSumFlux(const casacore::Int binSize = 4) { itsBinSizeForSumFlux = binSize ; } ;
   void getFluxByBins(const std::vector<casacore::Float>& scaleSizes,const std::vector<casacore::Float>& optimum, casacore::Int binSize, std::vector<casacore::Float>&  sumFluxByBins, std::vector<casacore::Float>&  rangeFluxByBins);
 
+  void setLBFGSControl(const casacore::Float LbfgsEpsF, const casacore::Float LbfgsEpsX, const casacore::Float LbfgsEpsG, const casacore::Int LbfgsMaxit) { itsLbfgsEpsF = LbfgsEpsF; itsLbfgsEpsX = LbfgsEpsX; itsLbfgsEpsG = LbfgsEpsG; itsLbfgsMaxit = LbfgsMaxit;}
 
 protected:
 //private:
@@ -177,11 +187,18 @@ protected:
   const casacore::Int itsDefaultNorm = 1;
   casacore::Int itsNormMethod;
   casacore::Float itsFusedThreshold;
+  casacore::Float itsHogbomGain;
   unsigned int itsNumNoChange; // number of times peakres rarely changes
   casacore::Int itsBinSizeForSumFlux ;   // number of bins for histogram of the sum of Flux
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
+  
+  casacore::Bool itsdimensionsareeven;
+  casacore::Float itsLbfgsEpsF;
+  casacore::Float itsLbfgsEpsX;
+  casacore::Float itsLbfgsEpsG;
+  casacore::Int itsLbfgsMaxit;
 };
 
 } //# NAMESPACE CASA - END
