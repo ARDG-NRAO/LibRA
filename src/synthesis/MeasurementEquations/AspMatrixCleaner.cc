@@ -296,13 +296,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   vector<Float> vecItsOptimumScaleSize;
   vecItsStrengthOptimum.clear();
   vecItsOptimumScaleSize.clear();
-  
-  casacore::Vector<casacore::Float> Optimums(itsMaxNiter);
-  casacore::Vector<casacore::Float> ScaleSizes(itsMaxNiter);
-  casacore::Vector<casacore::IPosition> Positions(itsMaxNiter);
-  Optimums = 0.0;
-  ScaleSizes = 0.0;
-  //Positions = 0;
 
   // calculate rms residual
   float rms = 0.0;
@@ -361,15 +354,6 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
       vecItsStrengthOptimum.push_back(itsStrengthOptimum);
       vecItsOptimumScaleSize.push_back(itsOptimumScaleSize);
     }
-    
-    if(itsSwitchedToHogbom){
-		Optimums(ii) = 0.0;
-    }
-    else{
-    	Optimums(ii) = itsStrengthOptimum;
-    }
-    ScaleSizes(ii) = itsOptimumScaleSize;
-    Positions(ii) = itsPositionOptimum;
 
     // trigger hogbom when
     // (1) itsStrengthOptimum is small enough & peakres rarely changes or itsPeakResidual is small enough
