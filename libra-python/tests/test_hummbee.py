@@ -80,8 +80,9 @@ class TestHummbee(unittest.TestCase):
         # comparing two files is not a stable test. Commented.
         #self.assertTrue(compare_images_with_tolerance(self.goldDir/"unittest_hummbee_gold2.residual", "unittest_hummbee.residual", tol2))
         r1_result = getchunk("unittest_hummbee", ImageType.RESIDUAL)
-        rgold_result = getchunk(str(self.goldDir/"unittest_hummbee_gold2"), ImageType.RESIDUAL)
-        self.assertAlmostEqual(r1_result[255,287,0,0], rgold_result[255,287,0,0], delta=0.01)
+        #rgold_result = getchunk(str(self.goldDir/"unittest_hummbee_gold2"), ImageType.RESIDUAL)
+        rgold_result = 0.34095
+        self.assertAlmostEqual(r1_result[255,287,0,0], rgold_result, delta=0.01)
 
     # can't do the following because hummbee2py internally 
     # has interaction with casa that conflict when both 

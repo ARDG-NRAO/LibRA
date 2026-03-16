@@ -280,7 +280,7 @@ TEST(AspTest, casacore_asp_cube) {
   EXPECT_NEAR(modelimage(IPosition(4,275,330,0,2)), goldValchan2, tol);
 
   PagedImage<Float> resimage("unittest_hummbee.residual");
-  float resGoldValchan0 = 4.726145;
+  float resGoldValchan0 = 4.614268;
   float resGoldValchan2 = 1.797757;
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,0)), resGoldValchan0, tol);
   EXPECT_NEAR(resimage(IPosition(4,275,330,0,2)), resGoldValchan2, tol);

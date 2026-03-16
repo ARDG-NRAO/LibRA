@@ -36,6 +36,8 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
+#include <libracore/StateFile.h>
+
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -82,7 +84,7 @@ public:
   void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
+  std::vector<casacore::Float> getActiveSetAspen(const float peakres);
 
   // Juat define the active-set aspen scales
   void defineAspScales(std::vector<casacore::Float>& scaleSizes);
@@ -182,6 +184,10 @@ protected:
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
+
+  casacore::Bool itsdimensionsareeven;
+  // for storing variable states when called in hummbee
+  StateFile sf;
 };
 
 } //# NAMESPACE CASA - END
