@@ -39,7 +39,6 @@
 #include <libracore/StateFile.h>
 #include "lbfgs/optimization.h"
 
-
 namespace casa { //# NAMESPACE CASA - BEGIN
 
 
