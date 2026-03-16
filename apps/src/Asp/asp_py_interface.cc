@@ -118,34 +118,7 @@ void Asp2py(
   }
   itsCleaner.setDirty(dirtyMat);
 
-  // InitScaleXfrs and InitScaleMasks should already be set
-  vector<Float> itsScaleSizes;
-  itsScaleSizes.clear();
-  itsScaleSizes = itsCleaner.getActiveSetAspen();
-  itsScaleSizes.push_back(0.0); // put 0 scale
-  itsCleaner.defineAspScales(itsScaleSizes);
-
-  //for (int i = 0; i < itsScaleSizes.size(); i++)
-  //  cout << "itsScale[" << i << "] = " << itsScaleSizes[i] << endl;
-
-
-  // takeOneStep
-  Quantity thresh(threshold, "Jy");
-  itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
-   
-
-  Matrix<T> modelMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      size_t index = i + j * nx;
-      //modelMat(i,j) = model[i][j];
-      modelMat(i,j) = model_ptr[index];
-    }
-  }
   
-
   // get initial peak residual
   T masksum = sum(maskMat);
   bool validMask = ( masksum > 0 );
@@ -171,9 +144,36 @@ void Asp2py(
   {
     startpeakresidual = max(abs(dirtyMat));
   }
-
   //cout << "startpeakresidual " << startpeakresidual << ", masksum " << masksum << endl;
 
+
+  // InitScaleXfrs and InitScaleMasks should already be set
+  vector<Float> itsScaleSizes;
+  itsScaleSizes.clear();
+  itsScaleSizes = itsCleaner.getActiveSetAspen(startpeakresidual);
+  itsScaleSizes.push_back(0.0); // put 0 scale
+  itsCleaner.defineAspScales(itsScaleSizes);
+
+  //for (int i = 0; i < itsScaleSizes.size(); i++)
+  //  cout << "itsScale[" << i << "] = " << itsScaleSizes[i] << endl;
+
+
+  // takeOneStep
+  Quantity thresh(threshold, "Jy");
+  itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
+   
+
+  Matrix<T> modelMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
+  {
+    for (int i = 0; i < size_x; i++)
+    {
+      size_t index = i + j * nx;
+      //modelMat(i,j) = model[i][j];
+      modelMat(i,j) = model_ptr[index];
+    }
+  }
+  
   // retval
   //  1 = converged
   //  0 = not converged but behaving normally
