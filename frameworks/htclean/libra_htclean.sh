@@ -27,15 +27,14 @@
 usage()
 {
     echo "$0 : Script to make images using LibRA components."
-    echo "Usage: $0 -i <imagename> [-n <ncycles>] [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-d] [-h]"$'\n'\
-         "       -i set the basename of the images to be generated (without extension)"$'\n'\
+    echo "Usage: $0 [-n <ncycles>] [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-d] [-h]"$'\n'\
          "       -n (optional) set the maximum number of imaging cycles. Default: 10 "$'\n'\
          "       -p (optional) set the name of the iput parameter file. Default: `basename $0 .sh`.def"$'\n'\
          "       -l (optional) directory to save .log and .def files. Default: save to current directory."$'\n'\
          "       -L (optional) LibRA root directory. Default is <user home directory>/libra."$'\n'\
          "       -d (optional) run as part of a distributed workflow. Default: False"$'\n'\
          "       -h prints help and exits"$'\n\n'\
-	 "       Example: $0 -i test_image -d (for a job that makes test_image.* images and runs on a distributed computing environment.)"$'\n'
+	 "       Example: $0 -d (for a job that uses default paths and input file and runs on a distributed computing environment.)"$'\n'
 }
 
 lsdir()
@@ -121,18 +120,16 @@ OMP_NUM_THREADS=1
 
 # Default parameters
 OSGjob=false
-imagename=""
 ncycle=10
 input_file=`basename $0 .sh`.def
 LIBRAHOME=$(dirname $(readlink -f $0))
 logdir=${PWD}/
 
 # Input arguments
-while getopts "i:l:L:n:p:dh" option
+while getopts "l:L:n:p:dh" option
 do
     case "$option" in
         d) OSGjob=true                            ;;
-        i) imagename=${OPTARG}                    ;;
         l) logdir=${OPTARG}/                      ;;
     	n) ncycle=${OPTARG}                       ;;
     	p) input_file=${OPTARG}                   ;;
@@ -144,6 +141,9 @@ do
     	   exit 1                                 ;;
     esac
 done
+
+# Get imagename from the input parameter file
+eval "`grep imagename.*\= ${input_file} | sed 's/ //g'`"
 
 if [ -n "${imagename}" ]
 then
@@ -189,22 +189,28 @@ echo "Using deconvolution application: "${deconvolutionAPP}
 echo "Using normalization application: "${normalizationAPP}
 echo ""
 
+if [ -e stopIMCyles ]
+then
+    echo "Found file stopIMCyles, indicating that this is a previously used working directory. Please remove this file and any images from previous runs before running $0."
+    exit 1
+fi
+
 if [ "$restart" -eq "0" ]
 then
     # makeWeights
-    ${runApp} ${griddingAPP} weight ${imagename} ${input_file} ${logdir}
+    ${runApp} ${griddingAPP} weight ${input_file} ${logdir}
   
     # makePSF
-    ${runApp} ${griddingAPP} psf ${imagename} ${input_file} ${logdir}
+    ${runApp} ${griddingAPP} psf ${input_file} ${logdir}
 
     # normalize the PSF and make primary beam
-    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t psf
+    ${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t psf
 
     # make dirty image
-    ${runApp} ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -c 0
+    ${runApp} ${griddingAPP} residual ${input_file} ${logdir} -c 0
 
     # normalize the residual
-    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c 0
+    ${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t residual -c 0
 else
     echo "Doing only the update step..."
 fi
@@ -214,25 +220,31 @@ i=$start_index
 while [ ! -f stopIMCycles ] && [ "${i}" -lt "${ncycle}" ]
 do
     # run hummbee for updateModel deconvolution iterations
-    ${runApp} ${deconvolutionAPP} deconvolve ${imagename} ${input_file} ${logdir} -c ${i}
+    ${runApp} ${deconvolutionAPP} deconvolve ${input_file} ${logdir} -c ${i}
 
     # Work around to fix the NOOP in dale. This should be removed when the real code fix is in.
-    sed -i 's/SubType =  normalized/SubType =/' ${imagename}.model/table.info
+    if [ -d "${imagename}.model" ]
+    then
+        sed -i 's/SubType =  normalized/SubType =/' ${imagename}.model/table.info
+    else
+        echo "${imagename}.model not found, possibly due to a failure in previous imaging steps. Check ${input_file}. Exiting now."
+        exit 1
+    fi
 
     # run dale to divide model by weights
-    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t model -c ${i}
+    ${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t model -c ${i}
 
     # run roadrunner for updateDir
-    ${runApp} ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -m ${imagename}.divmodel -c ${i}
+    ${runApp} ${griddingAPP} residual ${input_file} ${logdir} -m ${imagename}.divmodel -c ${i}
 
     # run dale to divide residual by weights
-    ${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c ${i}
+    ${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t residual -c ${i}
      
     i=$((i+1))
 done
 
 # run hummbee for restore
-${runApp} ${deconvolutionAPP} restore ${imagename} ${input_file} ${logdir}
+${runApp} ${deconvolutionAPP} restore ${input_file} ${logdir}
 
 if [ "${OSGjob}" = "True" ]
 then

@@ -23,6 +23,7 @@
 # $Id$
 
 import os
+import shutil
 from GPUMonitor import GPUMonitor
 from setupLibRA import setupLibRA
 from subprocess import Popen,PIPE
@@ -35,18 +36,25 @@ def writeParfile(impars, parfile, logdir = '.'):
         for key,value in impars[parfile].items():
             outfile.write(f'{key:22}= {value}\n')
 
-def runtimeWorkarounds(stage):
-    jobmode = stage['jobmode']
-    if jobmode == jobmode.NORMALIZE:
-        imagename,imext = os.path.splitext(stage['outputImages'][0])
-        if imext == '.divmodel':
-            with open(f'{imagename}.model/table.info','r') as tableinfo:
-                lines = tableinfo.readlines()
-            for line in lines:
-                if 'SubType' in line:
-                    lines.remove(line)
-            with open(f'{imagename}.model/table.info','w') as tableinfo:
-                tableinfo.writelines(lines)
+def runtimeWorkarounds(stage, undo = False):
+    this_mode = stage['jobmode']
+    imagename,imext = os.path.splitext(stage['outputImages'][0])
+    if not undo:
+        if this_mode == jobmode.NORMALIZE:
+            if imext == '.divmodel':
+                with open(f'{imagename}.model/table.info','r') as tableinfo:
+                    lines = tableinfo.readlines()
+                for line in lines:
+                    if 'SubType' in line:
+                        lines.remove(line)
+                with open(f'{imagename}.model/table.info','w') as tableinfo:
+                    tableinfo.writelines(lines)
+        elif this_mode == jobmode.MODEL or this_mode == jobmode.RESTORE:
+            shutil.move(f'{imagename}.sumwt',f'{imagename}.sumwt.noop')
+    else:
+        if this_mode == jobmode.MODEL or this_mode == jobmode.RESTORE:
+            shutil.move(f'{imagename}.sumwt.noop',f'{imagename}.sumwt')
+        
 
 
 class libra_cl_imager(object):
@@ -103,6 +111,7 @@ class libra_cl_imager(object):
             filename = stage['parfile']
             runtimeWorkarounds(stage)
             exitcode = self._clLibRAAppCall(app, filename, logdir = rlogdir)
+            runtimeWorkarounds(stage, undo = True)
             if exitcode != 0:
                 raise RuntimeError(f'Application {app} failed. Return value: {exitcode}.')
             for image in stage['outputImages']:
@@ -160,6 +169,9 @@ class libra_cl_imager(object):
                 processingList.append(
                     {'jobmode' : this_mode,
                      'parfile' : parfile})
+        # the code below fails whem jobmode = gather,normalize and len(parfilelist) (= number of partitions) is an odd number
+        # the current fix in inputArgs.makeUnitParfiles() works for the above mode with a single parameter file,
+        # but was not tested against a wider range of use cases
         elif len(parfileList)%len(jobmodeList) == 0:
             k = len(parfileList)/len(jobmodeList)
             for i,parfile in enumerate(parfileList):
@@ -261,6 +273,9 @@ class libra_cl_imager(object):
             if mode == jobmode.MODEL:
                 appmode = ''
         elif mode in execModes.gather.value:
+            if imext != 'sumwt' and any(x in list(this_impars) for x in ['useStartModel', 'useStartMask']):
+                if any(eval(this_impars[x]) for x in ['useStartModel', 'useStartMask']):
+                    this_impars['overwrite'] = '1'
             # add logics in this mode to set overwrite = 1 when using start model and/or mask
             outputimagename = imagename.split('.')[0] if '.' in imagename else imagename
             imagename = f','.join([f'{imname}.{imext}' for imname in this_impars['gatherimagelist']])

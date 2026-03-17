@@ -23,13 +23,33 @@
 # $Id$
 
 
+# HTCondor configuration
+memResidual          = 20 G
+memModel             = 10 G
+diskModel            = 200 G
+projectdir           = <name of project directory>
+initialdir           = /home/<username>/$(projectdir)
+dataorigin           = osdf:///path-facility/data/<username>
+softwaredir          = $(dataorigin)/apps
+cuda_cap             = 8
+libra_bundle         = $(softwaredir)/libra-$(cuda_cap)x.sh
+imagesdir            = $(dataorigin)/imagingdata/$(projectdir)/working
+cfcachedir           = $(dataorigin)/cfcache/$(projectdir)
+msdir                = $(dataorigin)/data/$(projectdir)
+und_sites_grid       = "FIU-PATH,UTC-Epyc,SIUE-CC-production,LSU-Deep_Bayou,VU-AUGIE,PDX-Coeus"
+notify_user          = 
+
+
 # General Imaging parameters
+useStartModel        = False
+useStartMask         = False
+msnamelist           = <comma separated list, format: msname1.ms,msname2.ms,... - do not include .tgz extension>
+cfcachelist          = <comma separated list, maps directly to msnamelist - do not include .tgz extension>
 imagename            = <basename of image products>
 pblimit              = 0.005
 
 
 # gridding parameters
-vis                  = <name of input MS>
 datacolumn           = data
 sowimageext          = sumwt
 complexgrid          =
@@ -43,7 +63,6 @@ rmode                = none
 robust               = 0.5
 wprojplanes          = 192
 gridder              = awphpg
-cfcache              = <name of cfcache>
 wbawp                = 1
 field                = *
 spw                  = *

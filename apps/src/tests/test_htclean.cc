@@ -16,12 +16,12 @@ namespace test{
   const path goldDir = current_path() / "gold_standard";
 
 // Function to run the shell script
-std::string run_shell_script(const std::string& imagename) {
+std::string run_shell_script() {
     // Ensure that the script is executable
     system("chmod +x ./libra_htclean.sh");
     system("chmod +x ./runapp.sh");
 
-    std::string command = "./libra_htclean.sh -i " + imagename + " -n 3 -p libra_htclean.def -L ../../../../install/bin/ -l LOGS";
+    std::string command = "./libra_htclean.sh -n 3 -p libra_htclean.def -L ../../../../install/bin/ -l LOGS";
     char buffer[128];
     std::string result = "";
     FILE* fp = popen(command.c_str(), "r");
@@ -61,9 +61,8 @@ TEST(HtcleanTest, Loops) {
 
   
 
-  string imagename = "cygA"; 
   // Run the script
-  string output = run_shell_script(imagename);
+  string output = run_shell_script();
 
   // Check that the images are generated
   path p1("cygA.psf");

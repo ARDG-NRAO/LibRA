@@ -230,6 +230,9 @@ class inputArgs(object):
             this_pars = pars[key]
             if any(mode in execModes.gather.value for mode in self.jobmode):
                 this_pars['gatherimagelist'] = this_pars['imagename']
+                # this is a simple fix for the issue in jobmode = gather,normalize with odd number of images
+                # review and test carefully to verify the validity for a wider range of use cases
+                this_pars['imagename'] = this_pars['baseimagename']
             spwRange2List(this_pars)
             if 'spw' in list(this_pars) and type(this_pars['spw']) == list and len(this_pars['spw']) > 0:
                 splitParamList(key, newpars, this_pars, 'spw', self.jobname)
