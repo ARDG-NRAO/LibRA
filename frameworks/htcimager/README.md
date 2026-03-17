@@ -56,3 +56,9 @@ Parameters:
 ## Image Solver implementations
 
 Implementations of image solver for single-term continuum using `htcimager.py` are provided in this repository for use with SLURM and HTCondor, respectively in directories `ImageSolver/Slurm` and `ImageSolver/HTCondor`. Refer to the `README.md` files in those locations for detailed usage information.
+
+
+## To do:
+
+- [ ] Implement support for initial model/mask
+- [ ] Generalize implementation to support the full range of image solver use cases

@@ -32,6 +32,7 @@ class staging(object):
     def __init__(self, scheduler, inputArgs):
         self.scheduler = scheduler
         self.scratchdir = ''
+        self.addStartResidual = []
         
         if scheduler == 'HTCondor':
             self.scratchdir = os.environ['_CONDOR_SCRATCH_DIR']
@@ -55,17 +56,20 @@ class staging(object):
 
         if jobmode.GATHERPSF in inputArgs.jobmode:
             impars = inputArgs.getImagingParameters()
-            startImageCopy = ''
-            try:
-                if any(eval(impars[x]['useStartModel']) for x in list(impars)):
-                    startImageCopy = 'model'
-                elif any(eval(impars[x]['useStartMask']) for x in list(impars)):
-                    startImageCopy = 'mask'
-            except KeyError:
-                print("Parameters 'useStartModel' or 'useStartMask' not present. Continuing without initial mask and model.")
-            finally:
-                pass
-
+            startImage = ['useStartModel', 'useStartMask']
+            for parfile in list(impars):
+                if any(x in list(impars[parfile]) for x in startImage):
+                    imagename = inputArgs.imagelist[0].split('.')[0]
+                    if eval(impars[parfile]['useStartModel']):
+                        self.copyStartImage(imext = 'model', imagename = imagename)
+                        print("Found 'useStartModel = True'.")
+                    elif eval(impars[parfile]['useStartMask']):
+                        self.copyStartImage(imext ='mask', imagename = imagename)
+                        print("Found 'useStartMask = True'.")
+                    else:
+                        print("Parameters 'useStartModel' or 'useStartMask' set to False. Continuing without initial mask and model.")
+                else:
+                    print("Parameters 'useStartModel' or 'useStartMask' not present. Continuing without initial mask and model.")
 
         if scheduler == 'HTCondor':
             self.move_to_workdir()
@@ -85,7 +89,7 @@ class staging(object):
             shutil.move(file, self.scratchdir)
 
     def makeTarballs(self, filelist):
-        outputList = []
+        outputList = self.addStartResidual
         for file in filelist:
             print(f'Creating tarball: {file}.tgz')
             with tarfile.open(f'{file}.tgz', 'x:gz') as tarball:
@@ -93,3 +97,12 @@ class staging(object):
             outputList.append(f'{file}.tgz')
 
         return outputList
+    
+    def copyStartImage(self, imext, imagename):
+        for ext in ['weight', 'psf', 'residual']:
+            shutil.copytree(f'{imagename}.{imext}', f'{imagename}.{ext}')
+
+        with tarfile.open(f'{imagename}.residual.start.tgz', 'x:gz') as tarball:
+            tarball.add(f'{imagename}.residual')
+
+        #self.addStartResidual.append(f'{imagename}.residual.start.tgz')

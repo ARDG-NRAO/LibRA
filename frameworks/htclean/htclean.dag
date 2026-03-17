@@ -39,6 +39,6 @@ PARENT              imagingCycle       CHILD                 makeFinalImages
 
 
 VARS                ALL_NODES          jobmode="$(JOB)"
-VARS                ALL_NODES          input_file="../bin/libra_htclean.def"
+VARS                ALL_NODES          input_file="../bin/libra_htclean_condor.def"
 
 ABORT-DAG-ON        imagingCycle       10

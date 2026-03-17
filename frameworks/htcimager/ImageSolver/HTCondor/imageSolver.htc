@@ -27,9 +27,9 @@ include: imageSolver.def
 
 executable = htcimager.py
 
-# parameters formerly on jackhammer.htc
-job_lease_duration = 1000
-requirements = (PelicanPluginVersion >= "7.19.3")
+# parameters previously on jackhammer.htc
+job_lease_duration = $(disconnected_timeout)
+requirements = (PelicanPluginVersion >= $(min_pelican_version))
 use_oauth_services = nrao
 # because htcimager.py is not in the submit directory
 transfer_executable = false
@@ -47,6 +47,8 @@ request_cpus = 1
 
 +WantIOProxy = True
 +ProjectName = "NRAO_2022_Bhatnagar"
+
+htcimagerfiles = $(htcimagerdir)/htcimager.py,$(htcimagerdir)/GPUMonitor.py,$(htcimagerdir)/customImager.py,$(htcimagerdir)/inputArgs.py,$(htcimagerdir)/jobmode.py,$(htcimagerdir)/libra_cl_imager.py,$(htcimagerdir)/makeImages.py,$(htcimagerdir)/setupLibRA.py,$(htcimagerdir)/staging.py
 
 
 if $(useStartModel)

@@ -26,11 +26,10 @@
 usage()
 {
     echo "$0 : Script to change imaging parameters and start individual imaging steps."
-    echo "Usage: $0 <application> <mode> <imagename> <input file> [-t <imptype>] [-m modelimagename] [-c <index of imaging cycle>] [-l <logdir>] [-h]"$'\n'\
+    echo "Usage: $0 <application> <mode> <input file> [-t <imptype>] [-m modelimagename] [-c <index of imaging cycle>] [-l <logdir>] [-h]"$'\n'\
          "   Required parameters:"$'\n'\
          "       application  : full path to the application executable."$'\n'\
          "       mode         : application specific mode if running roadrunner or hummbee. Set to normalize if running dale."$'\n'\
-         "       imagename    : basename of the image to be generated or processed"$'\n'\
          "       input file   : name of input parameter file"$'\n'\
          "       logdir       : directory to save .log and .def files."$'\n'\
          "   Optional parameters:"$'\n'\
@@ -39,15 +38,14 @@ usage()
          "       -s set modelimagename for model subtraction if running roadrunner with mode=residual."$'\n'\
          "       -c index of the current imaging cycle."$'\n'\
          "       -h prints help and exits"$'\n'\
-         "   Example: $0 /path/to/roadrunner weight my_image my_parameters.def -l /path/to/my_logs (for running roadrunner to compute weights and save logs to given location.)"$'\n\n'
+         "   Example: $0 /path/to/roadrunner weight my_parameters.def -l /path/to/my_logs (for running roadrunner to compute weights and save logs to given location.)"$'\n\n'
 }
 
 app=$1
 mode=$2
-imagename=$3
-input_file=$4
-logdir=$5
-shift 5
+input_file=$3
+logdir=$4
+shift 4
 
 while true
 do
@@ -61,6 +59,9 @@ do
     *) break ;;
     esac
 done
+
+# Get imagename from the input parameter file
+eval "`grep imagename.*\= ${input_file} | sed 's/ //g'`"
 
 case "$mode" in
     weight | psf | residual)
