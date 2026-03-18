@@ -145,7 +145,7 @@ public:
 	   bool& doSPWDataIter,
 	   std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}//NoOp
 	   ):
-    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),sortCols()
+    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),fullFreqList(), sortCols()
   {
     LogIO log_l(LogOrigin("DataBase","DataBase"));
     log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
@@ -160,6 +160,7 @@ public:
 			msSelection,verifyMS);
     spwidList=std::get<0>(lists);
     fieldidList=std::get<1>(lists);
+    populateChanFreqList();
 
     if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
       doSPWDataIter=true;  // Allow user to override the decision
@@ -314,6 +315,7 @@ public:
       selectedMS = MS(theMS(exprNode));
     else
       selectedMS = MeasurementSet(theMS);
+    populateChanFreqList();
 
     // Use the supplied functor to setup the sort columns.  The
     // default is to call the internal
@@ -377,6 +379,44 @@ public:
   Block<Int> sortCols;
 
   Vector<int> spwidList, fieldidList;
-  Vector<double> spwRefFreqList;
+  std::vector<double> spwRefFreqList, fullFreqList;
+
+private:
+  // Expand the MSSelection channel ranges into a flat list of per-channel
+  // frequencies (Hz). This works correctly for any spw= selection expression,
+  // including finer selections like "2:10~30;5:20~30,6~17:10~20".
+  void populateChanFreqList()
+  {
+    fullFreqList.clear();
+    // getChanList()      → [spwId, startChan, stopChan, step] per range
+    // getChanFreqList()  → [spwId, startFreq, stopFreq]       per range (aligned rows)
+    // Both are purely from MSSelection — no MS table access.
+    // For each range, nChan = (stopChan - startChan)/step + 1 gives the
+    // exact channel count; frequencies follow arithmetically from the
+    // range boundaries.
+    Matrix<int>    chanList = msSelection.getChanList();
+    Matrix<double> freqList = msSelection.getChanFreqList(NULL, false);
+
+    LogIO log_l(LogOrigin("DataBase", "populateChanFreqList"));
+    // log_l << "chanList = " << chanList << LogIO::POST;
+    // log_l << "freqList = " << freqList << LogIO::POST;
+
+    for (unsigned int k = 0; k < (unsigned int)chanList.shape()(0); ++k)
+      {
+        int    startChan = chanList(k, 1);
+        int    stopChan  = chanList(k, 2);
+        int    step      = chanList(k, 3);
+        double startFreq = freqList(k, 1);
+        double stopFreq  = freqList(k, 2);
+        int    nChan     = (stopChan - startChan) / step + 1;
+        double freqStep  = (nChan > 1) ? (stopFreq - startFreq) / (nChan - 1) : 0.0;
+        for (int i = 0; i < nChan; ++i)
+          fullFreqList.push_back(startFreq + i * freqStep);
+      }
+
+    // Vector<double> debugFreqList(fullFreqList);
+    // log_l << debugFreqList.size() << " channel frequencies (Hz): "
+    //       << debugFreqList << LogIO::POST;
+  }
 };
 #endif

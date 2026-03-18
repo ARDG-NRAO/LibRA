@@ -436,6 +436,20 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // fieldidList    = db.fieldidList;
       // spwRefFreqList = db.spwRefFreqList;
 
+      // mssFreqSel is used below by setSpwFreqSelection (range boundaries for the FTM).
+      Matrix<Double> mssFreqSel = db.msSelection.getChanFreqList(NULL, true);
+
+      // Compute the reference frequency from all selected channel frequencies.
+      // db.spwRefFreqList is populated during DataBase construction and correctly
+      // expands any spw= selection (including finer selections like "2:10~30;5:20~30").
+      {
+	double refFreqHz = 0;
+	refFreqStr = librautils::computeReferenceFrequency(refFreqStr, db.fullFreqList, refFreqHz);
+	if (refFreqHz > 0)
+	  log_l << "Sky image reference frequency: " << refFreqHz / 1e9 << " GHz" << LogIO::POST;
+	else
+	  log_l << "Sky image reference frequency: " << refFreqStr << LogIO::POST;
+      }
       //
       //-------------------------------------------------------------------
       // Make the empty grid with the sky image coordinates
@@ -505,8 +519,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       CountedPtr<refim::CFCache>  cfc = get<0>(ret);
       CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
       {
-	Matrix<Double> mssFreqSel;
-	mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
+	// Matrix<Double> mssFreqSel;
+	// mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
 	// Send in Freq info.
 	ftm_g->setSpwFreqSelection( mssFreqSel );
 

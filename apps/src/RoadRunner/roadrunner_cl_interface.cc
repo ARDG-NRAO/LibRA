@@ -97,7 +97,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetValp("imsize", ImSize,i);
       i=1;clgetValp("cell", cellSize,i);
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);
+      i=1;clgetSValp("reffreq", refFreqStr,i); // clSetOptions("reffreq",{"mean","median"});
       i=1;clgetSValp("phasecenter", phaseCenter,i);
 
       InitMap(watchPoints,exposedKeys);
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
   string MSNBuf,ftmName=defaultFtmName,
     cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural", sowImageExt,
+    refFreqStr="mean", weighting="natural", sowImageExt, // set to mean here as it always gives the mean of the band
     imagingMode="residual",
     rmode="norm"; // set to "norm" to match rWeightor.h
 

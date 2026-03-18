@@ -36,6 +36,7 @@ set(TEST_SOURCES
   test_restore.cc
   test_htclean.cc
   test_libracoretypes.cc
+  test_librautils.cc
 )
 
 add_executable(LibRATests ${TEST_SOURCES})
