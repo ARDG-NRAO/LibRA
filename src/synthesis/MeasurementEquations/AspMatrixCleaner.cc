@@ -885,7 +885,7 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
 
     // 04/06/2022 Has to make the whole scale image. If only using min/max i/j, 
     // .image looks spotty and not as smooth as before.
-    for (int j = 0; j < ny; j++)
+    /*for (int j = 0; j < ny; j++)
     {
       for (int i = 0; i < nx; i++)
       {
@@ -895,8 +895,9 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
         //iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
       }
-    }
-
+    }*/
+    // use template helper function instead
+    fillScaleImage(iscale, gaussianScaleValue, refi, refj, scaleSize);
   }
 }
 
@@ -931,7 +932,7 @@ void AspMatrixCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scaleS
     //Gaussian2D<Float> gbeam(amp / (2*M_PI), center[0], center[1], scaleSize, 1, 0);
     //Gaussian2D<Float> gbeam(amp / pow(2,scaleSize-1), center[0], center[1], itsInitScaleSizes[scaleSize], 1, 0);
 
-    for (int j = 0; j < ny; j++)
+    /*for (int j = 0; j < ny; j++)
     {
       for (int i = 0; i < nx; i++)
       {
@@ -943,9 +944,11 @@ void AspMatrixCleaner::makeScaleImage(Matrix<Float>& iscale, const Float& scaleS
         iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
 
         // This is for 2D, gives unit area but bad init scale (always picks 0)
-        // iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
+        // iscale(i,j) = (1.0/(2*M_PI*pow(scalefSize,2)))*exp(-(pow(i-center[0],2) + pow(j-center[1],2))*0.5/pow(scaleSize,2));
       }
-    }
+    }*/
+    // use template helper function
+    fillScaleImage(iscale, gaussianScaleValue, center[0], center[1], scaleSize);
 
   }
 }
@@ -1475,7 +1478,8 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
   	      float normalization;
   	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 2); //sanjay's
   	      //normalization = 2 * M_PI / pow(itsInitScaleSizes[scale], 1); // this looks good on M31 but bad on G55
-          normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+          //normalization = sqrt(2 * M_PI *itsInitScaleSizes[scale]); //GSL. Need to recover and re-norm later
+          normalization = computePeakNormalization(itsInitScaleSizes[scale]);
   	      maxima(scale) /= normalization;
         } //sanjay's code doesn't normalize peak here.
          // Norm Method 2 may work fine with GSL with derivatives, but Norm Method 1 is still the preferred approach.
@@ -1497,7 +1501,8 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
   if (optimumScale > 0)
   {
     //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
-    const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+    //const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
+    const float normalization = computeScaleNormalization(itsPsfWidth, itsInitScaleSizes[optimumScale]);
 
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
@@ -1511,9 +1516,23 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
 }
 
 
+void AspMatrixCleaner::runLBFGS(
+    minlbfgsstate &state,
+    real_1d_array &x,
+    minlbfgsreport &rep,
+    const vector<IPosition> &activeSetCenter,
+    FFTServer<Float,Complex> &fft) const
+{
+    ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
+    ParamAlglibObj *ptrParam;
+    ptrParam = &optParam;
+
+    alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
+
+    minlbfgsresults(state, x, rep);
+}
 
 // ALGLIB - gold - not "log"
-
 vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
 {
   LogIO os(LogOrigin("AspMatrixCleaner", "getActiveSetAspen()", WHERE));
@@ -1614,12 +1633,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
         s[i+1] = tempx[i+1]; //scale
 	  }
 
-	  ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
-    ParamAlglibObj *ptrParam;
-    ptrParam = &optParam;
 
-	  //real_1d_array s = "[1,1]";
-      //real_1d_array s = "[0.001,10]";
 	  double epsg = 1e-3;
 	  double epsf = 1e-3;
 	  double epsx = 1e-3;
@@ -1629,8 +1643,13 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
 	  minlbfgssetcond(state, epsg, epsf, epsx, maxits);
 	  minlbfgssetscale(state, s);
 	  minlbfgsreport rep;
-	  alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
-	  minlbfgsresults(state, x, rep);
+
+	  /*ParamAlglibObj optParam(*itsDirty, *itsXfr, activeSetCenter, fft);
+    ParamAlglibObj *ptrParam;
+    ptrParam = &optParam;
+    alglib::minlbfgsoptimize(state, objfunc_alglib, NULL, (void *) ptrParam);
+	  minlbfgsresults(state, x, rep);*/
+    runLBFGS(state, x, rep, activeSetCenter, fft);
 	  //double *x1 = x.getcontent();
 	  //cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
 
