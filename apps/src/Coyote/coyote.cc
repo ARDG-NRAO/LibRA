@@ -316,7 +316,7 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  //  awcf_l->setSpwSelection(spwChanSelFlag_p);
 	  // Replace mssFreqSel with a filtered version of it, filtered
 	  // for the SPW IDs in the stl::vector db.spwidList.tovector().
-	  mssFreqSel.assign(filterByFirstColumn(mssFreqSel,db.spwidList.tovector()));
+	  mssFreqSel.assign(filterByFirstColumn(mssFreqSel,db.spwidList));
 	  awcf_l->setSpwFreqSelection(mssFreqSel);
 
 	  // Get the PA from the MS/VB if UI setting is outside the valid

@@ -101,8 +101,8 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::ImageInterface<casacore::Float>& skyImage,
 	      casacore::Vector<Int>& polMap,
 	      casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l,
-	      casacore::Vector<int>& spwidList,
-	      casacore::Vector<double>& spwRefFreqList,
+	      std::vector<int>& spwidList,
+	      std::vector<double>& spwRefFreqList,
 	      int& nDataPol)
 {
   try
@@ -411,9 +411,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // list of SPW and FIELD IDs are also generated.  All these are
       // currently internal but public members of the DataBase class.
       //
-      Vector<int> spwidList, fieldidList;
-      Vector<double> spwRefFreqList;
-
       //
       // A plug-in lambda function for DataBase to run soon after opening the MS.
       //
@@ -588,14 +585,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       }
 
       int nDataPol;
-      // Extract SPW ref. frequency and the number of polarizations in the
-      // data (nDataPol).
-      {
-	db.vi2_l->originChunks();
-	db.vi2_l->origin();
-	spwRefFreqList.assign(db.vb_l->subtableColumns().spectralWindow().refFrequency().getColumn());
-	nDataPol  = db.vb_l->flagCube().shape()[0];
-      }
+      // Extract the number of polarizations in the data (nDataPol).
+      db.vi2_l->originChunks();
+      db.vi2_l->origin();
+      nDataPol  = db.vb_l->flagCube().shape()[0];
+
       //
       // Finally, the data iteration loops.
       //-----------------------------------------------------------------------------------
@@ -722,7 +716,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 				   std::ref(polMap),
 				   std::ref(cfs2_l),
 				   std::ref(db.spwidList),
-				   std::ref(spwRefFreqList),
+				   std::ref(db.spwRefFreqList),
 				   std::ref(nDataPol));
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
