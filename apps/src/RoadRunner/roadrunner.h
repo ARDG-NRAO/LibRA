@@ -154,8 +154,8 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::ImageInterface<casacore::Float>& skyImage,
 	      casacore::Vector<Int>& polMap,
 	      casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l,
-	      casacore::Vector<int>& spwidList,
-	      casacore::Vector<double>& spwRefFreqList,
+	      std::vector<int>& spwidList,
+	      std::vector<double>& spwRefFreqList,
 	      int& nDataPol);
 
 //--------------------------------------------------------------------------------------------

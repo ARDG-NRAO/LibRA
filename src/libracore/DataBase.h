@@ -53,15 +53,15 @@ using namespace std;
  * @param verifyMS A function to verify the loaded measurement set.
  * @return A tuple containing the spw and field IDs of the selected measurement set.
  */
-inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
-					     const String& spwStr,
-					     const String& fieldStr,
-					     const String& uvDistStr,
-					     MeasurementSet& thems,
-					     MeasurementSet& selectedMS,
-					     MSSelection& msSelection,
-					     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
-					     )
+inline std::tuple<std::vector<int>, std::vector<int> > loadMS(const String& msname,
+							      const String& spwStr,
+							      const String& fieldStr,
+							      const String& uvDistStr,
+							      MeasurementSet& thems,
+							      MeasurementSet& selectedMS,
+							      MSSelection& msSelection,
+							      std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
+							      )
 {
   //MeasurementSet thems;
   if (Table::isReadable(msname))
@@ -77,17 +77,17 @@ inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
   msSelection.setFieldExpr(fieldStr);
   msSelection.setUvDistExpr(uvDistStr);
   selectedMS = MeasurementSet(thems);
-  Vector<int> spwid, fieldid;
+  std::vector<int> spwid, fieldid;
   TableExprNode exprNode=msSelection.toTableExprNode(&thems);
   if (!exprNode.isNull())
     {
       selectedMS = MS(thems(exprNode));
       // TODO: should the following statements be moved outside this
       // block?
-      spwid=msSelection.getSpwList();
-      fieldid=msSelection.getFieldList();
+      spwid=msSelection.getSpwList().tovector();
+      fieldid=msSelection.getFieldList().tovector();
     }
-  return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
+  return std::tuple<std::vector<Int>, std::vector<Int> >{spwid, fieldid};
 }
 
 /**
@@ -162,7 +162,7 @@ public:
     fieldidList=std::get<1>(lists);
     populateChanFreqList();
 
-    if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
+    if (WBAwp && (spwidList.size() > 1) && (nW > 1)) // AW-Projection.
       doSPWDataIter=true;  // Allow user to override the decision
     log_l << "No. of rows selected: " << selectedMS.nrow() << LogIO::POST;
 
@@ -190,7 +190,8 @@ public:
     // call after making the empty sky images below.
     //
     vi2_l = new vi::VisibilityIterator2(selectedMS,vi::SortColumns(sortCols),true,0,timeSpan);
-
+    vb_l=vi2_l->getVisBuffer();
+    spwRefFreqList = vb_l->subtableColumns().spectralWindow().refFrequency().getColumn().tovector();
     // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
     // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
     // vi2_cfsrvr->originChunks();
@@ -216,7 +217,7 @@ public:
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
       std::vector<int> vb_SPWIDList;
       std::unordered_set<double> pa_set;
-      vb_l=vi2_l->getVisBuffer();
+
       vi2_l->originChunks();
       for (vi2_l->originChunks();vi2_l->moreChunks(); vi2_l->nextChunk())
 	{
@@ -255,10 +256,12 @@ public:
 	    << LogIO::POST;
 
       //for(uint i=0; auto id : vb_SPWIDList) spwidList[i++]=id; // Works only in C++-20
-      uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
+      //uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
+      spwidList = vb_SPWIDList;
     }
 
-    log_l << "Selected SPW ID list: " << spwidList << endl;
+    log_l << "Selected SPW ID list: ";
+    for (auto id:spwidList) log_l << id << " "; log_l << LogIO::POST;
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
@@ -378,7 +381,7 @@ public:
   MS theMS, selectedMS;
   Block<Int> sortCols;
 
-  Vector<int> spwidList, fieldidList;
+  std::vector<int> spwidList, fieldidList;
   std::vector<double> spwRefFreqList, fullFreqList;
 
 private:
