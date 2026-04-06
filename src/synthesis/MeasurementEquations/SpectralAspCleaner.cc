@@ -120,10 +120,10 @@ void SpectralAspCleaner::MFaspclean(Matrix<Float>& model)
 	  }
 
 	//real_1d_array s = "[1,1]";
-	double epsg = itsLbfgsEpsG;//1e-3;
-	double epsf = itsLbfgsEpsF;//1e-3;
-	double epsx = itsLbfgsEpsX;//1e-3;
-	ae_int_t maxits = itsLbfgsMaxit;//5;
+	double epsg = 1e-3;
+	double epsf = 1e-3;
+	double epsx = 1e-3;
+	ae_int_t maxits = 5;
 	minlbfgsstate state;
 	minlbfgscreate(1, x, state);
 	minlbfgssetcond(state, epsg, epsf, epsx, maxits);

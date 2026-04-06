@@ -38,6 +38,7 @@
 #include <casacore/casa/Utilities/CountedPtr.h>
 #include <libracore/StateFile.h>
 #include "lbfgs/optimization.h"
+#include <casacore/images/Images/ImageInterface.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -101,15 +102,10 @@ public:
   // helper functions for ASP
   float getPsfGaussianWidth(casacore::ImageInterface<casacore::Float>& psf);
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
-  
-  //Normalization Helpers
-  virtual float aspScaleModel(const casacore::Int& i, const casacore::Int& j, const casacore::Float& scaleSize, const casacore::Int& refi, const casacore::Int& refj);
-  virtual float aspPeakNormModel(const casacore::Float& width);
-  virtual float aspNormalizationModel(const casacore::Float& width1, const casacore::Float& width2);
 
   // Make an image of the specified scale by Gaussian
-  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
-  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
+  virtual void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
+  virtual void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);

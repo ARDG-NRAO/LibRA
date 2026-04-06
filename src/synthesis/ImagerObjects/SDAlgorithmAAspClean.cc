@@ -66,16 +66,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
     itsStopPointMode(stoppointmode),
-    itsMCsetup(true),
     itsFusedThreshold(fusedThreshold),
     itsUserLargestScale(largestScale),
     itsMCsetup(true),
     itsPrevPsfWidth(0),
-    itsIsSingle(isSingle),
-    itsUserLargestScale(largestScale)
+    itsIsSingle(isSingle)
   {
     itsAlgorithmName = String("asp");
-    LogIO os(LogOrigin("SDAlgorithmAAspClean", "constructor", WHERE));
   }
 
   SDAlgorithmAAspClean::~SDAlgorithmAAspClean()
@@ -136,8 +133,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       itsCleaner.setHogbomGain(itsHogbomGain);
 
     }
-    
-    itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
 
     // Parts to be repeated at each minor cycle start....
     //itsCleaner.setInitScaleMasks(itsMatMask); //casa6

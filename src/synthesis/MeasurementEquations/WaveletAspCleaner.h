@@ -38,6 +38,17 @@
 #include <casacore/casa/Utilities/CountedPtr.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
+	
+// Default Gaussian Scale Model
+inline double gaussianScaleValue2D(
+    int i, int j,
+    double cx, double cy,
+    float scaleSize)
+{
+    return (1.0/(2*M_PI*pow(scaleSize,2))) *
+           exp(-(pow(i-cx,2) + pow(j-cy,2)) *
+           0.5 / pow(scaleSize,2));
+}
 
 class WaveletAspCleaner : public AspMatrixCleaner
 {
@@ -47,14 +58,23 @@ public:
 
   // The destructor does nothing special.
   ~WaveletAspCleaner();
-
+  
   // Make an image of the specified scale by Gaussian
-  std::vector<casacore::Float> getActiveSetAspen() override;
+  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize) override;
+  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center) override;
   
   //Normalization Helpers
-  float aspScaleModel(const casacore::Int& i, const casacore::Int& j, const casacore::Float& scaleSize, const casacore::Int& refi, const casacore::Int& refj) override;
-  float aspPeakNormModel(const casacore::Float& width) override;
-  float aspNormalizationModel(const casacore::Float& width1, const casacore::Float& width2) override;
+  float computePeakNormalization(float width) override;
+  float computeScaleNormalization(float width1, float width2) override;
+  
+  //Run algorithm
+  void runLBFGS(
+	alglib::minlbfgsstate &state,
+	alglib::real_1d_array &x,
+	alglib::minlbfgsreport &rep,
+	const std::vector<casacore::IPosition> &activeSetCenter,
+	casacore::FFTServer<casacore::Float,casacore::Complex> &fft) const override;
+
   
   void setWaveletControl(const casacore::Vector<casacore::Float> waveletScales, const casacore::Vector<casacore::Float> waveletAmps) { itsWaveletScales = waveletScales; itsWaveletAmps=waveletAmps;}
 
