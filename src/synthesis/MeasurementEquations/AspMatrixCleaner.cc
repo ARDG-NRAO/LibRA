@@ -29,7 +29,7 @@
 #include <casacore/casa/Arrays/Cube.h>
 #include <casacore/casa/Arrays/ArrayMath.h>
 #include <casacore/casa/Arrays/MatrixMath.h>
-//#include <casacore/Arrays/ArrayIO.h>
+//#include <casa/Arrays/ArrayIO.h>
 #include <casacore/casa/BasicMath/Math.h>
 #include <casacore/casa/BasicSL/Complex.h>
 #include <casacore/casa/Logging/LogIO.h>
@@ -1181,42 +1181,6 @@ void AspMatrixCleaner::setInitScaleXfrs(const Float width)
   }
 }
 
-void AspMatrixCleaner::loadInitScaleXfrs(const casacore::Vector<casacore::Float> & scales)
-{
-  if(itsInitScales.nelements() > 0)
-    destroyAspScales();
-
-  if (itsSwitchedToHogbom)
-  {
-  	itsNInitScales = 1;
-  	itsInitScaleSizes.resize(itsNInitScales, false);
-    itsInitScaleSizes = {0.0f};
-  }
-  else
-  {
-  	itsNInitScales = scales.size();
-  	itsInitScaleSizes.resize(itsNInitScales, false);
-        Int scale = 0;
-        while (scale < itsNInitScales)
-        {
-	  itsInitScaleSizes[scale] = scales(scale);
-	  scale++;
-        }
-  }
-
-  itsInitScales.resize(itsNInitScales, false);
-  itsInitScaleXfrs.resize(itsNInitScales, false);
-  fft = FFTServer<Float,Complex>(psfShape_p);
-  for (int scale = 0; scale < itsNInitScales; scale++)
-  {
-    itsInitScales[scale] = Matrix<Float>(psfShape_p);
-    makeInitScaleImage(itsInitScales[scale], itsInitScaleSizes[scale]);
-    //cout << "made itsInitScales[" << scale << "] = " << itsInitScaleSizes[scale] << endl;
-    itsInitScaleXfrs[scale] = Matrix<Complex> ();
-    fft.fft0(itsInitScaleXfrs[scale], itsInitScales[scale]);
-  }
-}
-
 // calculate the convolutions of the psf with the initial scales
 void AspMatrixCleaner::setInitScalePsfs()
 {
@@ -1602,7 +1566,6 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
   fft.fft0(dirtyFT, *itsDirty);
   itsDirtyConvInitScales.resize(0);
   itsDirtyConvInitScales.resize(itsNInitScales); // 0, 1width, 2width, 4width and 8width
-
   //cout << "itsInitScaleSizes.size() " << itsInitScaleSizes.size() << " itsInitScales.size() " << itsInitScales.size() << " NInitScales # " << itsNInitScales << endl;
   for (int scale=0; scale < itsNInitScales; scale++)
   {
@@ -1669,6 +1632,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
         s[i] = tempx[i]; //amp
         s[i+1] = tempx[i+1]; //scale
 	  }
+
 
 	  double epsg = 1e-3;
 	  double epsf = 1e-3;

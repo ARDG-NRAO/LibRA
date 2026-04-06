@@ -61,7 +61,7 @@
 using namespace casacore;
 namespace casa { //# NAMESPACE CASA - BEGIN
 
-  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Vector<Float> scales, Float hogbomGain, Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode, Float lbfgsEpsF, Float lbfgsEpsX, Float lbfgsEpsG, Int lbfgsMaxit):
+  SDAlgorithmAAspClean::SDAlgorithmAAspClean(Float fusedThreshold, bool isSingle, Int largestScale, Int stoppointmode):
     SDAlgorithmBase(),
     itsMatPsf(), itsMatResidual(), itsMatModel(),
     itsCleaner(),
@@ -109,11 +109,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (itsPrevPsfWidth != width)
       {
         itsPrevPsfWidth = width;
-	if (itsScales.size() < 1)
-        	itsCleaner.setInitScaleXfrs(width);
-	else
-		itsCleaner.loadInitScaleXfrs(itsScales);
-      }
+		itsCleaner.setInitScaleXfrs(width);
+	  }
 
       itsCleaner.stopPointMode( itsStopPointMode );
       itsCleaner.ignoreCenterBox( true ); // Clean full image
@@ -123,15 +120,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       // Not used. Kept for unit test
       //Matrix<Float> tempMat1(itsMatResidual);
       //itsCleaner.setOrigDirty( tempMat1 );
-      if (itsHogbomGain < 0)
-	  {
-       os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itsHogbomGain << " to 0." << LogIO::POST;
-       itsHogbomGain = 0.0;
-      }
+
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
-      itsCleaner.setHogbomGain(itsHogbomGain);
-
     }
 
     // Parts to be repeated at each minor cycle start....
@@ -190,7 +181,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	peakresidual = itsCleaner.getterPeakResidual();
 	//cout << "SDAlg: peakres " << peakresidual << endl;
 	modelflux = sum( itsMatModel );
-
   }
 
   void SDAlgorithmAAspClean::finalizeDeconvolver()

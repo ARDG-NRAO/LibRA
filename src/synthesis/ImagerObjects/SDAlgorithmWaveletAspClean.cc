@@ -118,10 +118,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       if (itsPrevPsfWidth != width)
       {
         itsPrevPsfWidth = width;
-	if (itsScales.size() < 1)
-        	itsCleaner.setInitScaleXfrs(width);
-	else
-		itsCleaner.loadInitScaleXfrs(itsScales);
+        itsCleaner.setInitScaleXfrs(width);
       }
 
       itsCleaner.stopPointMode( itsStopPointMode );
@@ -138,15 +135,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
         os << LogIO::WARN << "Acceptable fusedthreshld values are >= 0. Changing fusedthreshold from " << itsFusedThreshold << " to -1." << LogIO::POST;
         itsFusedThreshold = -1.;
       }
-      if (itsHogbomGain < 0)
-	  {
-       os << LogIO::WARN << "Acceptable hogbomgain values are >= 0. Changing hogbomgain from " << itsHogbomGain << " to 0." << LogIO::POST;
-       itsHogbomGain = 0.0;
-      }
 
       itsCleaner.setFusedThreshold(itsFusedThreshold);
-      itsCleaner.setHogbomGain(itsHogbomGain);
-
     }
     
     //itsCleaner.setLBFGSControl(itsLbfgsEpsF,itsLbfgsEpsX,itsLbfgsEpsG,itsLbfgsMaxit);    
