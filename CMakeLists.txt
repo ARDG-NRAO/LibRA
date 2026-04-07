@@ -22,7 +22,7 @@ message("Top-level WCSLIB_FOUND: ${WCSLIB_FOUND}")
 # message("================ End MODULE_PATH debug ================")
 
 # Load project configuration
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraconfig.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/LibraConfig.cmake)
 
 # Use spack environment if set
 if(LIBRA_USE_SPACK)
