@@ -117,7 +117,7 @@ AspMatrixCleaner::AspMatrixCleaner():
   //itsPrevAspAmplitude.resize(0);
   itsUsedMemoryMB = double(HostInfo::memoryUsed()/2014);
   itsNormMethod = casa::refim::SynthesisUtils::getenv("ASP_NORM", itsDefaultNorm);
-
+  
   sf.load();  // read existing state, if any
   // Read variable
   itsSwitchedToHogbom = sf.getBool("itsSwitchedToHogbom", false);
@@ -262,7 +262,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
   Float initRMSResidual = 1000.0;
   // float initModelFlux = 0.0;
   itsdimensionsareeven = (psfShape_p(0) == 2*(psfShape_p(0)/2));
-
+  
   os <<LogIO::NORMAL3<< "Starting iteration"<< LogIO::POST;
   vector<Float> tempScaleSizes;
   itsIteration = itsStartingIter; // 0
@@ -445,7 +445,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 
       os <<LogIO::NORMAL3 << LogIO::POST;
     }
-
+    
     //save the min peak residual
     if (abs(minMaximumResidual) > abs(itsPeakResidual))
       minMaximumResidual = abs(itsPeakResidual);
@@ -590,7 +590,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     //
     Matrix<Float> psfSub = (itsPsfConvScale)(blcPsf, trcPsf);
     Matrix<Float> dirtySub=(*itsDirty)(blc,trc);
-
+    
     /* debug info
     float maxvalue;
     IPosition peakpos;
@@ -606,7 +606,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     cout << "itsDirty pos " << peakpos << " maxval " << (*itsDirty)(peakpos) << endl;
     cout << "itsPositionOptimum " << itsPositionOptimum << endl;
     cout << " maxPsfSub " << max(fabs(psfSub)) << " maxPsfConvScale " << max(fabs(itsPsfConvScale)) << " itsGain " << itsGain << endl;*/
-    os <<LogIO::NORMAL3 << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
+    os << LogIO::NORMAL3 << "itsStrengthOptimum " << itsStrengthOptimum << LogIO::POST;
 
     // subtract the peak that we found from the dirty image
     dirtySub -= scaleFactor * psfSub;
@@ -686,7 +686,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
 	    	switchedToHogbom();
 	    }* /
     }*/
-
+    
     // update peakres
     itsPrevPeakResidual = itsPeakResidual;
     maxVal=0;
@@ -701,7 +701,7 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
         (fabs(itsPeakResidual - itsPrevPeakResidual) < 1e-4)) //peakres rarely changes
       itsNumNoChange += 1;
     //cout << "after: itsDirty optPos " << (*itsDirty)(itsPositionOptimum) << endl;
-
+    
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
     if (itsSwitchedToHogbom)
@@ -748,14 +748,14 @@ Int AspMatrixCleaner::aspclean(Matrix<Float>& model,
     defineAspScales(tempScaleSizes);
   }
   // End of iteration
-
+  
    vector<Float> sumFluxByBins(itsBinSizeForSumFlux,0.0);
    vector<Float> rangeFluxByBins(itsBinSizeForSumFlux+1,0.0);
 
    getFluxByBins(vecItsOptimumScaleSize,vecItsStrengthOptimum,itsBinSizeForSumFlux,sumFluxByBins,rangeFluxByBins);
 
-
-
+  
+  
   os << " The number of bins for collecting the sum of Flux: " << itsBinSizeForSumFlux << endl;
 
   for (Int ii = 0; ii < itsBinSizeForSumFlux ; ii++)
@@ -892,7 +892,7 @@ void AspMatrixCleaner::makeInitScaleImage(Matrix<Float>& iscale, const Float& sc
         //const int px = i - refi;
         //const int py = j - refj;
         //iscale(i,j) = gbeam(px, py); // gbeam with the above def is equivalent to the following
-        iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
+		iscale(i,j) = (1.0/(sqrt(2*M_PI)*scaleSize))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); //this is for 1D, but represents Sanjay's and gives good init scale
         //iscale(i,j) = (1.0/(2*M_PI*pow(scaleSize,2)))*exp(-(pow(i-refi,2) + pow(j-refj,2))*0.5/pow(scaleSize,2)); // this is for 2D, gives unit area but bad init scale (always picks 0)
       }
     }*/
@@ -1503,7 +1503,7 @@ void AspMatrixCleaner::maxDirtyConvInitScales(float& strengthOptimum, int& optim
     //const float normalization = 2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2)); // sanjay
     //const float normalization = sqrt(2 * M_PI / (pow(1.0/itsPsfWidth, 2) + pow(1.0/itsInitScaleSizes[optimumScale], 2))); // this is good.
     const float normalization = computeScaleNormalization(itsPsfWidth, itsInitScaleSizes[optimumScale]);
-
+    
     // norm method 2 recovers the optimal strength and then normalize it to get the init guess
     if (itsNormMethod == 2)
       strengthOptimum *= sqrt(2 * M_PI *itsInitScaleSizes[optimumScale]); // this is needed if we also first normalize and then compare.
@@ -1653,7 +1653,7 @@ vector<Float> AspMatrixCleaner::getActiveSetAspen(const float peakres)
 	  //double *x1 = x.getcontent();
 	  //cout << "x1[0] " << x1[0] << " x1[1] " << x1[1] << endl;
 
-	  // end alglib bfgs optimization
+	// end alglib bfgs optimization
 
     double amp = x[0]; // i
     double scale = x[1]; // i+1

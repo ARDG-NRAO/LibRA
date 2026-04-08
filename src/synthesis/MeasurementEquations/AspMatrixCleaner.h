@@ -38,7 +38,7 @@
 #include <casacore/casa/Utilities/CountedPtr.h>
 #include <libracore/StateFile.h>
 #include "lbfgs/optimization.h"
-
+#include <casacore/images/Images/ImageInterface.h>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
 
@@ -104,8 +104,8 @@ public:
   void getLargestScaleSize(casacore::ImageInterface<casacore::Float>& psf);
 
   // Make an image of the specified scale by Gaussian
-  void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
-  void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
+  virtual void makeInitScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
+  virtual void makeScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize, const casacore::Float& amp, const casacore::IPosition& center);
 
   void setInitScales();
   void setInitScaleXfrs(const casacore::Float width);
@@ -228,7 +228,7 @@ protected:
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
-
+  
   casacore::Bool itsdimensionsareeven;
   // for storing variable states when called in hummbee
   StateFile sf;
