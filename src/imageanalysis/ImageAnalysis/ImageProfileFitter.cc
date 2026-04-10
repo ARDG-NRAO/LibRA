@@ -734,7 +734,7 @@ void ImageProfileFitter::_fitProfiles(Bool showProgress) {
             goodPlanes = std::vector<Int>(_goodPlanes.size());
             std::transform(
                 _goodPlanes.begin(), _goodPlanes.end(), goodPlanes.begin(),
-                bind2nd(minus<Int>(), imageOff)
+                [imageOff] (Int plane) { return plane - imageOff; }
             );
         }
         std::vector<Int>::iterator iter = goodPlanes.begin();

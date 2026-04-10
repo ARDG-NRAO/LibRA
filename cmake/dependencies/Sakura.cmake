@@ -23,12 +23,16 @@ function(check_and_add_sakura)
             Sakura
             GIT_REPOSITORY ${LIBRA_SAKURA_GIT_REPOSITORY}
             GIT_TAG        ${LIBRA_SAKURA_GIT_TAG}
+            GIT_SHALLOW    TRUE
+            GIT_PROGRESS   TRUE
+            GIT_CONFIG     http.version=HTTP/1.1
             SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/sakura
             BINARY_DIR     ${BUILD_DIR}/sakura
             SOURCE_SUBDIR  libsakura
             CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                            -DCMAKE_INSTALL_LIBDIR=lib
                            -DCMAKE_INSTALL_BINDIR=bin/sakura
+                           ${LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS}
                            -DBUILD_DOC:BOOL=OFF
                            -DPYTHON_BINDING:BOOL=OFF
                            -DSIMD_ARCH=GENERIC

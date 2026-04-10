@@ -134,8 +134,9 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       // Make a name for the temp image that will be unique for multiple
       // instances on different computers but writing to the same
       // directory.
-      char hostname[HOST_NAME_MAX];
-      gethostname(hostname, HOST_NAME_MAX);
+      const int strMax = 255;
+      char hostname[strMax];
+      gethostname(hostname, strMax);
       string imageName=cfCacheName + "/uvgrid.im_" +
 	to_string(getppid()) + "_"+string(hostname);
       bool wTerm = (nW > 1);
@@ -391,4 +392,3 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 //
 //--------------------------------------------------------------------------
 //
-

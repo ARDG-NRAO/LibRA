@@ -66,6 +66,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${WCSLIB_INCLUDE_DIRS}
 )
 
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ${CASACORE_LIBRARIES}
+)
+
+set(LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG "")
+if(NOT APPLE)
+  set(LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG "-Wl,--disable-new-dtags")
+endif()
+
 # Install library and public headers to include/libracore
 install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
@@ -94,7 +103,7 @@ target_link_libraries(testmdspan PRIVATE
   pthread
   m
   c
-  "-Wl,--disable-new-dtags"
+  ${LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG}
 )
 
 add_executable(testLibracoreTypes "${CMAKE_CURRENT_SOURCE_DIR}/testLibracoreTypes.cc")
@@ -115,6 +124,5 @@ target_link_libraries(testLibracoreTypes PRIVATE
   pthread
   m
   c
-  "-Wl,--disable-new-dtags"
+  ${LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG}
 )
-
