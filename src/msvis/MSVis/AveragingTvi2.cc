@@ -1592,8 +1592,12 @@ VbAvg::finalizeBaseline (MsRowAvg * msRowAvg)
 // Functor to divide variables of possibly different types.
 // This is unlike std::divides which requires equal types.
 template <typename L, typename R=L, typename RES=L>
-struct DividesNonZero : public std::binary_function<L,R,RES>
+struct DividesNonZero
 {
+  using first_argument_type = L;
+  using second_argument_type = R;
+  using result_type = RES;
+
   RES operator() (const L& x, const R& y) const
   {
     { return y > 0? RES(x)/y : RES(x); }

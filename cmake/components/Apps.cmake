@@ -54,6 +54,7 @@ ExternalProject_Add(
     ${CMAKE_COMMAND} <SOURCE_DIR>
       -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
       -DCMAKE_INSTALL_LIBDIR=lib
+      ${LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS}
       -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
       -Dcasacore_DIR=${INSTALL_DIR}/lib/cmake/casacore
       -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
@@ -66,6 +67,6 @@ ExternalProject_Add(
       -DWCSLIB_FOUND=${WCSLIB_FOUND}
       ${KOKKOS_WRAPPER_FLAGS}
       ${SPACK_FLAGS}
-  BUILD_COMMAND   make -j${NCORES}
+  BUILD_COMMAND   ${CMAKE_COMMAND} -E env PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig make -j${NCORES}
   INSTALL_COMMAND make install
 )

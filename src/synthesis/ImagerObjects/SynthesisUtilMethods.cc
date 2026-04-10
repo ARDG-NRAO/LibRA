@@ -945,9 +945,12 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
   uLong SynthesisUtilMethods::getAllocatedMemoryInBytes()
   {
-#if defined(AIPS_DARWIN) || defined(AIPS_CRAY_PGI) || __cplusplus <= 199711L
-    // If on mac, or if compiling with < c++11, then use the old function.
-    return (uLong) Memory::allocatedMemoryInBytes();
+#if defined(AIPS_DARWIN)
+    // Modern casacore on Darwin no longer exposes Memory::allocatedMemoryInBytes().
+    // Returning 0 preserves the call site contract without depending on a removed API.
+    return 0;
+#elif defined(AIPS_CRAY_PGI) || __cplusplus <= 199711L
+    return 0;
 #else
     // NOTE: Don't trust mallinfo if you've ever allocated more than 2GB at once. (see mallinfo bugs section)
     //       Prefer malloc_info() over mallinfo().
@@ -4368,4 +4371,3 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
 
 } //# NAMESPACE CASA - END
-
