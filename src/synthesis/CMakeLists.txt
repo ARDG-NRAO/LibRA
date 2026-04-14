@@ -50,8 +50,26 @@ target_link_libraries(${LIB_NAME} PUBLIC ${CASACORE_LIBRARIES})
 if (LIBRA_USE_LIBSAKURA)
   target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 endif()
-# Libhpg dependency - use --as-needed to avoid pulling in GPU deps for apps that don't use gridding
-target_link_libraries(${LIB_NAME} PRIVATE -Wl,--push-state,--as-needed Hpg::hpg -Wl,--pop-state)
+# Libhpg dependency - use GNU ld --as-needed on Linux to avoid pulling in GPU deps
+# for apps that don't use gridding. Apple ld does not support these flags.
+if(APPLE)
+  target_link_libraries(${LIB_NAME} PRIVATE Hpg::hpg)
+
+  # FFT2D.cc calls FFTW APIs directly. On macOS, those symbols are not resolved
+  # through casacore's indirect dylib dependencies, so link FFTW explicitly here.
+  find_library(LIBRA_FFTW3_LIB NAMES fftw3 HINTS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib REQUIRED)
+  find_library(LIBRA_FFTW3F_LIB NAMES fftw3f HINTS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib REQUIRED)
+  find_library(LIBRA_FFTW3_THREADS_LIB NAMES fftw3_threads HINTS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib REQUIRED)
+  find_library(LIBRA_FFTW3F_THREADS_LIB NAMES fftw3f_threads HINTS ${CMAKE_PREFIX_PATH} PATH_SUFFIXES lib REQUIRED)
+  target_link_libraries(${LIB_NAME}
+    PRIVATE
+      ${LIBRA_FFTW3_LIB}
+      ${LIBRA_FFTW3F_LIB}
+      ${LIBRA_FFTW3_THREADS_LIB}
+      ${LIBRA_FFTW3F_THREADS_LIB})
+else()
+  target_link_libraries(${LIB_NAME} PRIVATE -Wl,--push-state,--as-needed Hpg::hpg -Wl,--pop-state)
+endif()
 # Libparafeed dependency
 target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
 

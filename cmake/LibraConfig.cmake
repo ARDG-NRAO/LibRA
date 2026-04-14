@@ -68,6 +68,61 @@ option(Apps_BUILD_TESTS "Enable building of Apps tests" OFF)
 option(LIBRA_USE_SPACK "Enable use of Spack" OFF)
 option(LIBRA_ENABLE_CUDA_BACKEND "Enable CUDA acceleration" ON)
 
+# Propagate the selected toolchain into ExternalProject child builds.
+set(LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS "")
+if(CMAKE_C_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS
+    "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}")
+endif()
+if(CMAKE_CXX_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS
+    "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+endif()
+if(CMAKE_Fortran_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS
+    "-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}")
+endif()
+
+set(LIBRA_EXTERNAL_AUTOTOOLS_COMPILER_ENV "")
+if(CMAKE_C_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_AUTOTOOLS_COMPILER_ENV
+    "CC=${CMAKE_C_COMPILER}")
+endif()
+if(CMAKE_CXX_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_AUTOTOOLS_COMPILER_ENV
+    "CXX=${CMAKE_CXX_COMPILER}")
+endif()
+if(CMAKE_Fortran_COMPILER)
+  list(APPEND LIBRA_EXTERNAL_AUTOTOOLS_COMPILER_ENV
+    "FC=${CMAKE_Fortran_COMPILER}")
+endif()
+
+# Apple Clang needs an explicit libomp toolchain description for OpenMP-aware
+# child builds and autoconf projects.
+if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(LIBRA_OPENMP_ROOT "/opt/homebrew/opt/libomp")
+  set(LIBRA_OPENMP_INCLUDE_DIR "${LIBRA_OPENMP_ROOT}/include")
+  set(LIBRA_OPENMP_LIBRARY "${LIBRA_OPENMP_ROOT}/lib/libomp.dylib")
+  set(LIBRA_OPENMP_FLAG "-Xpreprocessor -fopenmp")
+
+  list(APPEND LIBRA_EXTERNAL_CMAKE_COMPILER_ARGS
+    "-DOpenMP_ROOT=${LIBRA_OPENMP_ROOT}"
+    "-DOpenMP_C_FLAGS=${LIBRA_OPENMP_FLAG}"
+    "-DOpenMP_C_INCLUDE_DIR=${LIBRA_OPENMP_INCLUDE_DIR}"
+    "-DOpenMP_C_LIB_NAMES=omp"
+    "-DOpenMP_CXX_FLAGS=${LIBRA_OPENMP_FLAG}"
+    "-DOpenMP_CXX_INCLUDE_DIR=${LIBRA_OPENMP_INCLUDE_DIR}"
+    "-DOpenMP_CXX_LIB_NAMES=omp"
+    "-DOpenMP_omp_LIBRARY=${LIBRA_OPENMP_LIBRARY}")
+
+  list(APPEND LIBRA_EXTERNAL_AUTOTOOLS_COMPILER_ENV
+    "CPPFLAGS=-I${LIBRA_OPENMP_INCLUDE_DIR}"
+    "CFLAGS=${LIBRA_OPENMP_FLAG}"
+    "CXXFLAGS=${LIBRA_OPENMP_FLAG}"
+    "LDFLAGS=-L${LIBRA_OPENMP_ROOT}/lib"
+    "LIBS=-lomp")
+endif()
+
 # System info
 
 # Set NCORES to total logical cores minus two (minimum 1)
@@ -94,4 +149,3 @@ if(NOT LIBRA_ENABLE_CUDA_BACKEND)
   set(HPG_CUDA_COMPILER_FLAGS "")
   set(KOKKOS_WRAPPER_FLAGS "")
 endif()
-

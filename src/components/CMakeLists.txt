@@ -27,9 +27,8 @@ message("GSL_INCLUDEDIR: " ${GSL_INCLUDEDIR})
 
 # External dependencies
 target_link_libraries(casacpp_components PUBLIC ${CASACORE_LIBRARIES})
-#target_link_libraries(casacpp_components PUBLIC GSL::gsl)
+target_link_libraries(casacpp_components PUBLIC GSL::gsl)
 target_link_libraries(casacpp_components PUBLIC CFITSIO::CFITSIO)
-#target_link_libraries(casacpp_components PUBLIC PkgConfig::GSL)
 
 # Internal dependencies
 add_dependencies(casacpp_components casacpp_casatools casacpp_stdcasa)
