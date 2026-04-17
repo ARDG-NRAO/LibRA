@@ -14,8 +14,8 @@ individual researchers (faculty, students, post-docs) who may benefit
 from a software system with production-quality implementation of the
 core algorithms which are also easy to use, deploy locally and modify
 as necessary.  Therefore, a strong requirement driving this work is
-to keep the interface simple, the software stack shallow and the software
-dependency graph small.
+to keep the interface simple, the software stack shallow and the [software
+dependency graph small](doc/figures/LibRA_Dependency_Graph_2-crop.png).
 
 This repository contains _only_ the
 algorithmically-necessary code, and a build system to compile it into
