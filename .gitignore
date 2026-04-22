@@ -1,4 +1,6 @@
 *~
 /build/
+/build-*/
 /install/
+/dependencies/
 src/synthesis/TransformMachines/test/tBeamCalc.cc.bak

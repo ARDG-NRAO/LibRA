@@ -136,22 +136,19 @@ public:
 		other.vi2 = nullptr;
 	}
 
-	Vi2DataProvider& operator=(Vi2DataProvider&& other) {
-		vi2 = other.vi2;
-		mergedColumns = other.mergedColumns;
-		datasetIndex = other.datasetIndex;
-		datasetChunkOrigin = other.datasetChunkOrigin;
-		followingChunkDatasetIndex = other.followingChunkDatasetIndex;
-		currentChunk = other.currentChunk;
-		component = other.component;
-		use_data_weights = other.use_data_weights;
-		omit_flagged_data = other.omit_flagged_data;
-		data_iterator = other.data_iterator;
-		weights_iterator = other.weights_iterator;
-		mask_iterator = other.mask_iterator;
-		other.vi2 = nullptr;
-		return *this;
-	}
+		Vi2DataProvider& operator=(Vi2DataProvider&& other) {
+			vi2 = std::move(other.vi2);
+			mergedColumns = std::move(other.mergedColumns);
+			datasetIndex = other.datasetIndex;
+			datasetChunkOrigin = other.datasetChunkOrigin;
+			followingChunkDatasetIndex = other.followingChunkDatasetIndex;
+			currentChunk = other.currentChunk;
+			component = other.component;
+			data_iterator = std::move(other.data_iterator);
+			weights_iterator = std::move(other.weights_iterator);
+			mask_iterator = std::move(other.mask_iterator);
+			return *this;
+		}
 
 	// Increment the data provider to the sub-chunk within the dataset.
 	void operator++() {

@@ -45,6 +45,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${WCSLIB_INCLUDE_DIRS}
 )
 
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  ${CASACORE_LIBRARIES}
+)
+
 # Install library and public headers to include/librautils
 install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"

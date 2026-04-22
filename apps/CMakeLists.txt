@@ -74,9 +74,14 @@ find_package(WCSLIB REQUIRED)
 find_package(CFITSIO REQUIRED)
 find_package(Kokkos REQUIRED)
 
-# Lazy binding flags to allow apps to run without GPU on non-CUDA machines
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
+# Lazy binding flags to allow apps to run without GPU on non-CUDA machines.
+# These GNU ld flags are not supported by Apple's linker.
+set(LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG "")
+if(NOT APPLE)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,-z,lazy")
+  set(LIBRA_GNU_DISABLE_NEW_DTAGS_FLAG "-Wl,--disable-new-dtags")
+endif()
 
 # Tier 1: Core CASA libraries (no GPU)
 set(APP_LINK_LIBRARIES_CORE
@@ -163,5 +168,4 @@ set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 # add and build each APP
 add_subdirectory(src)
-
 

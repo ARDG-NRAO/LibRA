@@ -417,7 +417,7 @@ VisibilityProcessor::getInputs (Bool connectedOnly) const
         // Need to negate predicate to get the right results --STL is strange sometimes.
 
         remove_copy_if (vpInputs_p.begin(), vpInputs_p.end(), back_inserter (result),
-                        not1 (mem_fun_ref (& VpPort::isConnectedInput)));
+                        [] (const VpPort & port) { return ! port.isConnectedInput(); });
     }
     else{
         result = vpInputs_p;
@@ -492,7 +492,7 @@ VisibilityProcessor::getOutputs (Bool connectedOnly) const
         // Need to negate predicate to get the right results --STL is strange sometimes.
 
         remove_copy_if (vpOutputs_p.begin(), vpOutputs_p.end(), back_inserter (result),
-                        not1 (mem_fun_ref (& VpPort::isConnectedOutput)));
+                        [] (const VpPort & port) { return ! port.isConnectedOutput(); });
     }
     else{
         result = vpOutputs_p;
@@ -1123,7 +1123,10 @@ VpContainer::validateImpl()
 String
 VpContainer::VpSet::getNames () const
 {
-    String nameList = utilj::join (begin(), end(), mem_fun (& VisibilityProcessor::getName), ",");
+    String nameList = utilj::join (
+        begin(), end(),
+        [] (const VisibilityProcessor * vp) { return vp->getName(); },
+        ",");
 
     return nameList;
 }
@@ -1149,8 +1152,9 @@ String
 VpData::getNames () const
 {
     string names = join (begin(), end(),
-                     compose (mem_fun_ref (& VpPort::getName),
-                              casa::utilj::firstFunctor<VpPort, VbPtr>()),
+                     [] (const std::pair<VpPort, VbPtr> & entry) {
+                         return entry.first.getName();
+                     },
                      ",");
 
     return names;

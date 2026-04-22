@@ -524,7 +524,10 @@ void PVGenerator::_moveRefPixel(
     std::vector<Double> midpoint(end.size());
     // THESE CAN EASILLY BE CHANGED TO ONE PASS WITH C++11 AND LAMBDA FUNCTIONS
     std::transform( end.begin( ), end.end( ), start.begin( ), midpoint.begin( ), std::plus<double>( ) );
-    std::transform( midpoint.begin( ), midpoint.end( ), midpoint.begin( ), std::bind2nd(std::divides<double>(),2.0) );
+    std::transform(
+        midpoint.begin(), midpoint.end(), midpoint.begin(),
+        [] (Double value) { return value / 2.0; }
+    );
     Vector<Double> newRefPix = subCoords.referencePixel();
     auto useExactMidPoint = True;
     if (abs(end[1] - end[0]) > 1) {
@@ -633,5 +636,4 @@ void PVGenerator::_checkWidth(const Int64 xShape, const Int64 yShape) const {
 }
 
 }
-
 
