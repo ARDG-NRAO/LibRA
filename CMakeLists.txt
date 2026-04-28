@@ -41,6 +41,12 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Casacore.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Parafeed.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/Pybind11.cmake)
 
+# Profiling dependencies (only included if profiling is enabled)
+if(LIBRA_ENABLE_NVTX)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/NVTX.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/KokkosTools.cmake)
+endif()
+
 # Build gtest on if tests are enabled
 if(Apps_BUILD_TESTS)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/GTest.cmake)

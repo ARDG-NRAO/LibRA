@@ -26,6 +26,7 @@
 //#
 //# $Id$
 //
+#include <cstdlib>
 #include <synthesis/TransformMachines/SynthesisMath.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>
@@ -50,6 +51,7 @@ namespace casa{
       baselineType_p = new BaselineType();
       needsNewPOPG_p = false;
       needsNewFieldPG_p = false;
+      skipVBRow2CFBMap_p = (std::getenv("LIBRA_SKIP_VBROW2CFBMAP") != nullptr);
       totalCost_p=totalVB_p = 0.0;
       blNeedsNewPOPG_p.resize(0);
       blType_p=0;
@@ -141,7 +143,23 @@ namespace casa{
       //    vbRow2CFMap_p.resize(nPol, nChan, nRow);
       vb2CFBMap_p.resize(nRow);
       cfPhaseGrad_p.resize(nRow);
-      maxCFShape_p.resize(2,0);
+      // maxCFShape_p is updated inside the per-row loop when the CFBuffer changes;
+      // no unconditional reset needed here.
+
+      // Early return when the map is known valid: same field (mosaic pointing stable),
+      // same row count (sizing valid), and at least one prior run.
+      // PA changes are handled by findConvFunction running before setupVBStore and
+      // fully updating the map; the subsequent setupVBStore call is then redundant.
+      // Raw antenna IDs are not checked: mapAntIDToAntType() returns 0 for all VLA
+      // antennas, so the CFBuffer lookup is independent of which antenna pair is in a row.
+      // Enabled via LIBRA_SKIP_VBROW2CFBMAP env var.
+      if (skipVBRow2CFBMap_p
+          && !doPointing_p
+          && !cachedCFBPtr_p.null()
+          && vbRows_p == nRow
+          && cachedFieldId_p == vb.fieldId()[0])
+        return CFDefs::MEMCACHE;
+
       if(cachedFieldId_p != vb.fieldId()[0])
 	{
 	  needsNewFieldPG_p = true;
