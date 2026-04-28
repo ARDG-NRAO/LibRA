@@ -33,6 +33,7 @@
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 #include <libracore/MakeComponents.h>
+#include <librautils/ProfilingTools.h>
 #include <roadrunner.h>
 
 #include <stdexcept>
@@ -55,6 +56,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 	     casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l
 	     )
 {
+  LIBRA_PROFILE_FUNCTION();
   LogIO log_l(LogOrigin("roadrunner","prepCFEngine"));
 
   //casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
@@ -105,10 +107,12 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      std::vector<double>& spwRefFreqList,
 	      int& nDataPol)
 {
+  LIBRA_PROFILE_FUNCTION();
   try
     {
       for(auto ispw : spwidList)
 	{
+	  LIBRA_PROFILE_SCOPE("CFServer::SPW_iteration");
 	  cerr << ".................CFServer................" << endl;
 
 	  //Declare the in-memory CFCache dirty.  Specifically, the memory

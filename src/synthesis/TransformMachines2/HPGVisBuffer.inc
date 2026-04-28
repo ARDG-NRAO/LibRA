@@ -7,6 +7,7 @@
 //#include <synthesis/TransformMachines2/CFBuffer.h>
 #include <synthesis/TransformMachines2/CFDefs.h>
 #include <synthesis/TransformMachines2/FTMachine.h>
+#include <librautils/ProfilingTools.h>
 
 #include <hpg/hpg.hpp>
 //#include <hpg/hpg_indexing.hpp>
@@ -46,13 +47,14 @@ makeHPGVisBuffer(HPGVisBufferBucket<HPGNPOL>& hpgVBBucket_p,
 		 const casacore::Vector<casacore::Int>& chanMap,
 		 const casacore::Vector<casacore::Int>& polMap,
 		 const casa::PolMapType& /*muellerNdx*/,
-		 const casa::PolMapType& muellerVals, 
+		 const casa::PolMapType& muellerVals,
 		 const casacore::Vector<double>& dphase,
 		 const casacore::Vector<casacore::Vector<casacore::Double> >& pointingOffsets,
 		 const hpg::CFSimpleIndexer& cfsi,
 		 bool useFlaggedData=false
 		 )
 {
+  LIBRA_PROFILE_FUNCTION();
   //unsigned nVisChan=endChan - startChan;
   //gunsigned nVisRow=endRow - startRow;
   unsigned targetIMChan, targetIMPol;

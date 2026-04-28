@@ -525,6 +525,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     //    casacore::CountedPtr<CFCache> cfCache_p;
     ParAngleChangeDetector paChangeDetector;
     casacore::Double rotateOTFPAIncr_p, computePAIncr_p;
+    casacore::Bool skipPARotation_p;  // set via LIBRA_SKIP_PA_ROTATION env var
+    casacore::Bool skipFreqInterp_p;  // set via LIBRA_SKIP_FREQ_INTERP env var
 
     casacore::Unit Second, Radian, Day;
     casacore::Array<casacore::Float> l_offsets,m_offsets;

@@ -34,6 +34,7 @@
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/OS/HostInfo.h>
 #include <sstream>
+#include <cstdlib>
 
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/images/Images/ImageInterface.h>
@@ -58,6 +59,16 @@
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <synthesis/TransformMachines2/EVLAAperture.h>
 #include <iomanip>
+
+#ifdef LIBRA_ENABLE_NVTX
+#include <nvtx3/nvToolsExt.h>
+#define LIBRA_NVTX_PUSH(name) nvtxRangePush(name)
+#define LIBRA_NVTX_POP() nvtxRangePop()
+#else
+#define LIBRA_NVTX_PUSH(name)
+#define LIBRA_NVTX_POP()
+#endif
+
 //#define CONVSIZE (1024*2)
 // #define OVERSAMPLING 2
 #define USETABLES 0           // If equal to 1, use tabulated exp() and
@@ -219,11 +230,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     vb2CFBMap_p = new VB2CFBMap();
     po_p = new PointingOffsets();
     po_p->setOverSampling(convSampling);
+    skipPARotation_p = (std::getenv("LIBRA_SKIP_PA_ROTATION") != nullptr);
+    skipFreqInterp_p = (std::getenv("LIBRA_SKIP_FREQ_INTERP") != nullptr);
   }
   //
   //---------------------------------------------------------------
   //
-  AWProjectFT::AWProjectFT(Int nWPlanes, Long icachesize, 
+  AWProjectFT::AWProjectFT(Int nWPlanes, Long icachesize,
 			   CountedPtr<CFCache>& cfcache,
 			   CountedPtr<ConvolutionFunction>& cf,
 			   CountedPtr<VisibilityResamplerBase>& visResampler,
@@ -289,7 +302,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     po_p->setOverSampling(convSampling);
     vb2CFBMap_p->setPOSigmaDev(pointingOffsetSigDev);
     wbAWP_p=convFuncCtor_p->isWBAWP();
-
+    skipPARotation_p = (std::getenv("LIBRA_SKIP_PA_ROTATION") != nullptr);
+    skipFreqInterp_p = (std::getenv("LIBRA_SKIP_FREQ_INTERP") != nullptr);
   }
   //
   //---------------------------------------------------------------
@@ -1173,187 +1187,366 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   // (mem. or disk cache) or will be computed and cached for possible
   // later use.
   //
-  void AWProjectFT::findConvFunction(const ImageInterface<Complex>& image,
-				     const VisBuffer2& vb)
-  {
-    if (!paChangeDetector.changed(vb,0)) return;
-    Int cfSource=CFDefs::NOTCACHED;
-    // Think of a generic call to get the key-values.  And a
-    // overloadable method (or an externally supplied one?) to convert
-    // the values to key-ids.  That will ensure that AWProjectFT
-    // remains the A-Projection algorithm implementation configurable
-    // by the behaviour of the supplied objects.
-    Float pa=getVBPA(vb);
-    //UUU// ok();
-    visResampler_p->setMaps(chanMap, polMap); //UUU Added here.
-    visResampler_p->setFreqMaps(expandedSpwFreqSel_p,expandedSpwConjFreqSel_p);
+  // void AWProjectFT::findConvFunction(const ImageInterface<Complex>& image,
+	// 			     const VisBuffer2& vb)
+  // {
+  //   if (!paChangeDetector.changed(vb,0)) return;
+  //   Int cfSource=CFDefs::NOTCACHED;
+  //   CoordinateSystem ftcoords;
+  //   // Think of a generic call to get the key-values.  And a
+  //   // overloadable method (or an externally supplied one?) to convert
+  //   // the values to key-ids.  That will ensure that AWProjectFT
+  //   // remains the A-Projection algorithm implementation configurable
+  //   // by the behaviour of the supplied objects.
+  //   Float pa=getVBPA(vb);
+  //   //UUU// ok();
+  //   visResampler_p->setMaps(chanMap, polMap); //UUU Added here.
+  //   visResampler_p->setFreqMaps(expandedSpwFreqSel_p,expandedSpwConjFreqSel_p);
 
-    lastPAUsedForWtImg = currentCFPA = pa;
+  //   lastPAUsedForWtImg = currentCFPA = pa;
 
-    //Vector<Vector<Double> > pointingOffset(convFuncCtor_p->findPointingOffset(image,vb, doPointing));
+  //   //Vector<Vector<Double> > pointingOffset(convFuncCtor_p->findPointingOffset(image,vb, doPointing));
 
-    // PO::setOverSampling needs to be called here since
-    // convFuncCtor_p gets that value from a combination of (1)
-    // ATerm_OVERSAMPLING env. variable, (2) ATERM.OVERSAMPLING in
-    // ~/.casa and (3) from existing CFCache.  This setting in the AWP
-    // constructor will only get the default value from ATerm.h
-    po_p->setOverSampling(convFuncCtor_p->getOversampling());
-    // PO::fetchPointingOffset() only updates the internal cache in PO
-    // class.  PO::pullPointingOffset() is required to extract in the
-    // calling class.
-    po_p->fetchPointingOffset(image,vb, doPointing);
+  //   // PO::setOverSampling needs to be called here since
+  //   // convFuncCtor_p gets that value from a combination of (1)
+  //   // ATerm_OVERSAMPLING env. variable, (2) ATERM.OVERSAMPLING in
+  //   // ~/.casa and (3) from existing CFCache.  This setting in the AWP
+  //   // constructor will only get the default value from ATerm.h
+  //   po_p->setOverSampling(convFuncCtor_p->getOversampling());
+  //   // PO::fetchPointingOffset() only updates the internal cache in PO
+  //   // class.  PO::pullPointingOffset() is required to extract in the
+  //   // calling class.
+  //   po_p->fetchPointingOffset(image,vb, doPointing);
 
-    Float dPA = paChangeDetector.getParAngleTolerance().getValue("rad");
-    Quantity dPAQuant = Quantity(paChangeDetector.getParAngleTolerance());
-    // cfSource = visResampler_p->makeVBRow2CFBMap(*cfs2_p,
-    // 						*convFuncCtor_p, 
-    // 						vb,
-    // 					       dPAQuant,
-    // 					       chanMap,polMap,pointingOffset);
-    vb2CFBMap_p->setDoPointing(doPointing);
-    if ((ftmType() == casa::refim::FTMachine::PSF) || (ftmType() == casa::refim::FTMachine::WEIGHT))
-      cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
-					       vb,
-					       dPAQuant,
-					       chanMap,polMap,po_p);
-    else 
-      cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p,
-					       vb,
-					       dPAQuant,
-					       chanMap,polMap,po_p);
+  //   Float dPA = paChangeDetector.getParAngleTolerance().getValue("rad");
+  //   Quantity dPAQuant = Quantity(paChangeDetector.getParAngleTolerance());
+  //   // cfSource = visResampler_p->makeVBRow2CFBMap(*cfs2_p,
+  //   // 						*convFuncCtor_p, 
+  //   // 						vb,
+  //   // 					       dPAQuant,
+  //   // 					       chanMap,polMap,pointingOffset);
+  //   vb2CFBMap_p->setDoPointing(doPointing);
+  //   if ((ftmType() == casa::refim::FTMachine::PSF) || (ftmType() == casa::refim::FTMachine::WEIGHT))
+  //     cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
+	// 				       vb,
+	// 				       dPAQuant,
+	// 				       chanMap,polMap,po_p);
+  //   else 
+  //     cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p,
+	// 				       vb,
+	// 				       dPAQuant,
+	// 				       chanMap,polMap,po_p);
 
-    if (cfSource == CFDefs::NOTCACHED)
-      {
-	PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
-	Vector<Int> visPolMap(vb.correlationTypes());
-	polMat = pop_p->makePolMat(visPolMap,polMap);
-	polIndexMat = pop_p->makePol2CFMat(visPolMap,polMap);
-
+  //   if (cfSource == CFDefs::NOTCACHED)
+  //     {
+	// PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
+	// Vector<Int> visPolMap(vb.correlationTypes());
 	// polMat = pop_p->makePolMat(visPolMap,polMap);
 	// polIndexMat = pop_p->makePol2CFMat(visPolMap,polMap);
 
-	conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
-	conjPolIndexMat = pop_p->makeConjPol2CFMat(visPolMap,polMap);
+	// // polMat = pop_p->makePolMat(visPolMap,polMap);
+	// // polIndexMat = pop_p->makePol2CFMat(visPolMap,polMap);
 
-	convFuncCtor_p->setPolMap(polMap);
-	convFuncCtor_p->setSpwSelection(spwChanSelFlag_p);
-	convFuncCtor_p->setSpwFreqSelection(spwFreqSel_p);
+	// conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
+	// conjPolIndexMat = pop_p->makeConjPol2CFMat(visPolMap,polMap);
 
-	// USEFUL DEBUG MESSAGE
-	//cerr << "Freq. selection: " << expandedSpwFreqSel_p << endl << expandedSpwConjFreqSel_p << endl;
+	// convFuncCtor_p->setPolMap(polMap);
+	// convFuncCtor_p->setSpwSelection(spwChanSelFlag_p);
+	// convFuncCtor_p->setSpwFreqSelection(spwFreqSel_p);
+
+	// // USEFUL DEBUG MESSAGE
+	// //cerr << "Freq. selection: " << expandedSpwFreqSel_p << endl << expandedSpwConjFreqSel_p << endl;
 
 
-	// isDryRun = true;
-	//cerr << "Is Dry Run = " << dryRun() << endl;
-	Bool pleaseDoAlsoFillTheCF=!dryRun();
-	convFuncCtor_p->makeConvFunction(image,vb,wConvSize, 
-					 pop_p, pa, dPA, uvScale, uvOffset,spwFreqSel_p,
-					 *cfs2_p, *cfwts2_p, pleaseDoAlsoFillTheCF);
-	//	log_l << "Converting WTCFs to wide-band versions" << LogIO::POST;
-	//	makeWBCFWt(*cfwts2_p, imRefFreq_p);
+	// // isDryRun = true;
+	// //cerr << "Is Dry Run = " << dryRun() << endl;
+	// Bool pleaseDoAlsoFillTheCF=!dryRun();
+	// convFuncCtor_p->makeConvFunction(image,vb,wConvSize, 
+	// 				 pop_p, pa, dPA, uvScale, uvOffset,spwFreqSel_p,
+	// 				 *cfs2_p, *cfwts2_p, pleaseDoAlsoFillTheCF);
+	// //	log_l << "Converting WTCFs to wide-band versions" << LogIO::POST;
+	// //	makeWBCFWt(*cfwts2_p, imRefFreq_p);
 
-	// cfSource = visResampler_p->makeVBRow2CFMap(*cfs2_p,*convFuncCtor_p, vb,
-	// 					   paChangeDetector.getParAngleTolerance(),
-	// 					   chanMap,polMap);
-      }
-    //
-    // If one-time-operations in the CFCache not yet done, set the
-    // pol. index maps in the CFCache.
-    //
+	// // cfSource = visResampler_p->makeVBRow2CFMap(*cfs2_p,*convFuncCtor_p, vb,
+	// // 					   paChangeDetector.getParAngleTolerance(),
+	// // 					   chanMap,polMap);
+  //     }
+  //   //
+  //   // If one-time-operations in the CFCache not yet done, set the
+  //   // pol. index maps in the CFCache.
+  //   //
+  //   if (!cfCache_p->OTODone())
+  //     {
+	// //Vector<Int> visPolMap(vb.corrType());
+	// Vector<Int> visPolMap(vb.correlationTypes());
+
+	// PolMapType polMat, conjPolMat;
+	// polMat = pop_p->makePolMat(visPolMap,polMap);
+	// conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
+
+	// PolMapType pNdx, cpNdx;
+	// pNdx = pop_p->makePol2CFMat(visPolMap,polMap);
+	// cpNdx = pop_p->makeConjPol2CFMat(visPolMap,polMap);
+    
+	// cfCache_p->initPolMaps(pNdx,cpNdx);
+
+	// if (!cfs2_p.null()) cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+	// if (!cfwts2_p.null()) cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+  //     }
+  //   //
+  //   // Load the average PB (sensitivity pattern) from the cache.  If
+  //   // not found in the cache, make one and cache it.
+  //   //
+  //   //if (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p) == CFDefs::NOTCACHED)
+	// //makeSensitivityImage(vb,image,*avgPB_p);
+
+	// std::tuple<int, double>cubeinfo(1,-1.0);
+  //       double freqofBegChan;
+  //       spectralCoord_p.toWorld(freqofBegChan, 0.0);
+        
+  //       cubeinfo=std::make_tuple(image.shape()(3),freqofBegChan);
+	
+	// if (isAVGPBReady()==false)
+	//   {
+	//     Bool avgPBReady = (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p, cubeinfo) != CFDefs::NOTCACHED);
+    
+	//     if(avgPBReady){
+	//       LatticeExprNode le( max( *avgPB_p ) );
+	//       Float avgPB_max=le.getFloat();
+        
+	//       if(avgPB_max <= 0.0) avgPBReady = false;
+	//     }
+    
+	//     if(!avgPBReady) makeSensitivityImage(vb,image,*avgPB_p);
+	//     verifyShapes(avgPB_p->shape(), image.shape());
+	//   }
+	
+    
+
+  //   if (paChangeDetector.changed(vb,0)) paChangeDetector.update(vb,0);
+  //   //
+  //   // Write some useful info. to the logger.
+  //   //
+  //   if (cfSource != CFDefs::MEMCACHE)
+  //     {
+	// // If dry run, write the uvgrid as an image for later use in
+	// // filling the empty CFCache.  Only the co-ordinate system of
+	// // the uvgrid is required later.
+	// if (dryRun())
+	//   {
+	//     // PagedImage<Complex> thisGrid(lattice->shape(),image.coordinates(), 
+	//     // 				 cfCache_p->getCacheDir()+"/uvgrid.im");
+	//     PagedImage<Complex> thisGrid(image.shape(),image.coordinates(), 
+	// 				 cfCache_p->getCacheDir()+"/uvgrid.im");
+	//   }
+
+	// // cfs2_p->makePersistent(cfCache_p->getCacheDir().c_str());
+	// // cfwts2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","WT");
+
+	// // Save only the CF Cube for the current value of PA (not the
+	// // entire CFStore -- CFs for PA values encountered earlier
+	// // than current value have already need made persistent).
+	// cfs2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","",    Quantity(pa,"rad"),dPAQuant,0,0);
+	// cfwts2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),dPAQuant,0,0);
+	// Double memUsed=cfs2_p->memUsage();
+	// String unit(" KB");
+	// memUsed = (Int)(memUsed/1024.0+0.5);
+	// if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
+
+	// LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
+	// log_l << "Convolution function memory footprint:" 
+	//       << (Int)(memUsed) << unit << " out of a maximum of "
+	//       << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
+	
+	// //
+	// // Initialize any internal maps that may be used later for
+	// // efficient access.
+	// //
+	// cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+	// cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+  //     }
+
+  //   // cfs2_p->makePersistent("test.cf");
+  //   // cfwts2_p->makePersistent("test.wtcf");
+  // }
+  void AWProjectFT::findConvFunction(const ImageInterface<Complex>& image,
+                                   const VisBuffer2& vb)
+{
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction");
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::paChangeDetector_check");
+    // After first-call init (OTODone), skip the PA check entirely if the user
+    // has declared PA is not rotating.  paChangeDetector.changed() costs 2x getPA()
+    // calls per VB; safe to bypass only once CFs are fully loaded and mapped.
+    if (skipPARotation_p && cfCache_p->OTODone()) {
+        LIBRA_NVTX_POP();
+        LIBRA_NVTX_POP();
+        return;
+    }
+    if (!paChangeDetector.changed(vb,0)) {
+        LIBRA_NVTX_POP();
+        LIBRA_NVTX_POP();
+        return;
+    }
+    LIBRA_NVTX_POP();
+    
+    Int cfSource=CFDefs::NOTCACHED;
+    CoordinateSystem ftcoords;
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::getVBPA");
+    Float pa=getVBPA(vb);
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::setMaps");
+    visResampler_p->setMaps(chanMap, polMap);
+    visResampler_p->setFreqMaps(expandedSpwFreqSel_p,expandedSpwConjFreqSel_p);
+    LIBRA_NVTX_POP();
+
+    lastPAUsedForWtImg = currentCFPA = pa;
+
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::setOverSampling");
+    po_p->setOverSampling(convFuncCtor_p->getOversampling());
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::fetchPointingOffset");
+    po_p->fetchPointingOffset(image,vb, doPointing);
+    LIBRA_NVTX_POP();
+
+    Float dPA = paChangeDetector.getParAngleTolerance().getValue("rad");
+    Quantity dPAQuant = Quantity(paChangeDetector.getParAngleTolerance());
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::setDoPointing");
+    vb2CFBMap_p->setDoPointing(doPointing);
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::makeVBRow2CFBMap");
+    if ((ftmType() == casa::refim::FTMachine::PSF) || (ftmType() == casa::refim::FTMachine::WEIGHT))
+        cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p, vb, dPAQuant, chanMap, polMap, po_p);
+    else 
+        cfSource = vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p, vb, dPAQuant, chanMap, polMap, po_p);
+    LIBRA_NVTX_POP();
+
+    if (cfSource == CFDefs::NOTCACHED)
+    {
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::makePolMaps");
+        PolMapType polMat, polIndexMat, conjPolMat, conjPolIndexMat;
+        Vector<Int> visPolMap(vb.correlationTypes());
+        polMat = pop_p->makePolMat(visPolMap,polMap);
+        polIndexMat = pop_p->makePol2CFMat(visPolMap,polMap);
+        conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
+        conjPolIndexMat = pop_p->makeConjPol2CFMat(visPolMap,polMap);
+        LIBRA_NVTX_POP();
+
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::setConvFuncCtor");
+        convFuncCtor_p->setPolMap(polMap);
+        convFuncCtor_p->setSpwSelection(spwChanSelFlag_p);
+        convFuncCtor_p->setSpwFreqSelection(spwFreqSel_p);
+        LIBRA_NVTX_POP();
+
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::makeConvFunction");
+        Bool pleaseDoAlsoFillTheCF=!dryRun();
+        convFuncCtor_p->makeConvFunction(image,vb,wConvSize, 
+                                         pop_p, pa, dPA, uvScale, uvOffset,spwFreqSel_p,
+                                         *cfs2_p, *cfwts2_p, pleaseDoAlsoFillTheCF);
+        LIBRA_NVTX_POP();
+    }
+
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::OTODone_check");
     if (!cfCache_p->OTODone())
-      {
-	//Vector<Int> visPolMap(vb.corrType());
-	Vector<Int> visPolMap(vb.correlationTypes());
+    {
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::initPolMaps");
+        Vector<Int> visPolMap(vb.correlationTypes());
+        PolMapType polMat, conjPolMat;
+        polMat = pop_p->makePolMat(visPolMap,polMap);
+        conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
 
-	PolMapType polMat, conjPolMat;
-	polMat = pop_p->makePolMat(visPolMap,polMap);
-	conjPolMat = pop_p->makeConjPolMat(visPolMap,polMap);
-
-	PolMapType pNdx, cpNdx;
-	pNdx = pop_p->makePol2CFMat(visPolMap,polMap);
-	cpNdx = pop_p->makeConjPol2CFMat(visPolMap,polMap);
-    
-	cfCache_p->initPolMaps(pNdx,cpNdx);
-
-	if (!cfs2_p.null()) cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
-	if (!cfwts2_p.null()) cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
-      }
-    //
-    // Load the average PB (sensitivity pattern) from the cache.  If
-    // not found in the cache, make one and cache it.
-    //
-    //if (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p) == CFDefs::NOTCACHED)
-	//makeSensitivityImage(vb,image,*avgPB_p);
-
-	std::tuple<int, double>cubeinfo(1,-1.0);
-        double freqofBegChan;
-        spectralCoord_p.toWorld(freqofBegChan, 0.0);
+        PolMapType pNdx, cpNdx;
+        pNdx = pop_p->makePol2CFMat(visPolMap,polMap);
+        cpNdx = pop_p->makeConjPol2CFMat(visPolMap,polMap);
         
-        cubeinfo=std::make_tuple(image.shape()(3),freqofBegChan);
-	
-	if (isAVGPBReady()==false)
-	  {
-	    Bool avgPBReady = (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p, cubeinfo) != CFDefs::NOTCACHED);
-    
-	    if(avgPBReady){
-	      LatticeExprNode le( max( *avgPB_p ) );
-	      Float avgPB_max=le.getFloat();
-        
-	      if(avgPB_max <= 0.0) avgPBReady = false;
-	    }
-    
-	    if(!avgPBReady) makeSensitivityImage(vb,image,*avgPB_p);
-	    verifyShapes(avgPB_p->shape(), image.shape());
-	  }
-	
-    
+        cfCache_p->initPolMaps(pNdx,cpNdx);
+        LIBRA_NVTX_POP();
 
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::initMaps");
+        if (!cfs2_p.null()) cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+        if (!cfwts2_p.null()) cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+        LIBRA_NVTX_POP();
+    }
+    LIBRA_NVTX_POP();
+
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::avgPB_handling");
+    std::tuple<int, double>cubeinfo(1,-1.0);
+    double freqofBegChan;
+    spectralCoord_p.toWorld(freqofBegChan, 0.0);
+    cubeinfo=std::make_tuple(image.shape()(3),freqofBegChan);
+    
+    if (isAVGPBReady()==false)
+    {
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::loadAvgPB");
+        Bool avgPBReady = (cfCache_p->loadAvgPB(avgPB_p,sensitivityPatternQualifierStr_p, cubeinfo) != CFDefs::NOTCACHED);
+        LIBRA_NVTX_POP();
+        
+        if(avgPBReady){
+            LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::avgPB_max_check");
+            LatticeExprNode le( max( *avgPB_p ) );
+            Float avgPB_max=le.getFloat();
+            if(avgPB_max <= 0.0) avgPBReady = false;
+            LIBRA_NVTX_POP();
+        }
+        
+        if(!avgPBReady) {
+            LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::makeSensitivityImage");
+            makeSensitivityImage(vb,image,*avgPB_p);
+            LIBRA_NVTX_POP();
+        }
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::verifyShapes");
+        verifyShapes(avgPB_p->shape(), image.shape());
+        LIBRA_NVTX_POP();
+    }
+    LIBRA_NVTX_POP();
+
+    LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::paChangeDetector_update");
     if (paChangeDetector.changed(vb,0)) paChangeDetector.update(vb,0);
-    //
-    // Write some useful info. to the logger.
-    //
+    LIBRA_NVTX_POP();
+
     if (cfSource != CFDefs::MEMCACHE)
-      {
-	// If dry run, write the uvgrid as an image for later use in
-	// filling the empty CFCache.  Only the co-ordinate system of
-	// the uvgrid is required later.
-	if (dryRun())
-	  {
-	    // PagedImage<Complex> thisGrid(lattice->shape(),image.coordinates(), 
-	    // 				 cfCache_p->getCacheDir()+"/uvgrid.im");
-	    PagedImage<Complex> thisGrid(image.shape(),image.coordinates(), 
-					 cfCache_p->getCacheDir()+"/uvgrid.im");
-	  }
+    {
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::persistence_operations");
+        if (dryRun())
+        {
+            LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::dryRun_grid");
+            PagedImage<Complex> thisGrid(image.shape(),image.coordinates(), 
+                                         cfCache_p->getCacheDir()+"/uvgrid.im");
+            LIBRA_NVTX_POP();
+        }
 
-	// cfs2_p->makePersistent(cfCache_p->getCacheDir().c_str());
-	// cfwts2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","WT");
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::makePersistent");
+        cfs2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","",    Quantity(pa,"rad"),dPAQuant,0,0);
+        cfwts2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),dPAQuant,0,0);
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::memUsage_logging");
+        Double memUsed=cfs2_p->memUsage();
+        String unit(" KB");
+        memUsed = (Int)(memUsed/1024.0+0.5);
+        if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
 
-	// Save only the CF Cube for the current value of PA (not the
-	// entire CFStore -- CFs for PA values encountered earlier
-	// than current value have already need made persistent).
-	cfs2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","",    Quantity(pa,"rad"),dPAQuant,0,0);
-	cfwts2_p->makePersistent(cfCache_p->getCacheDir().c_str(),"","WT",Quantity(pa,"rad"),dPAQuant,0,0);
-	Double memUsed=cfs2_p->memUsage();
-	String unit(" KB");
-	memUsed = (Int)(memUsed/1024.0+0.5);
-	if (memUsed > 1024) {memUsed /=1024; unit=" MB";}
+        LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
+        log_l << "Convolution function memory footprint:" 
+              << (Int)(memUsed) << unit << " out of a maximum of "
+              << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::findConvFunction::final_initMaps");
+        cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+        cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
+        LIBRA_NVTX_POP();
+        LIBRA_NVTX_POP(); // persistence_operations
+    }
 
-	LogIO log_l(LogOrigin("AWProjectFT2", "findConvFunction[R&D]"));
-	log_l << "Convolution function memory footprint:" 
-	      << (Int)(memUsed) << unit << " out of a maximum of "
-	      << HostInfo::memoryTotal(true)/1024 << " MB" << LogIO::POST;
-	
-	//
-	// Initialize any internal maps that may be used later for
-	// efficient access.
-	//
-	cfs2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
-	cfwts2_p->initMaps(vb,spwFreqSel_p,imRefFreq_p);
-      }
-
-    // cfs2_p->makePersistent("test.cf");
-    // cfwts2_p->makePersistent("test.wtcf");
-  }
+    LIBRA_NVTX_POP(); // findConvFunction
+}
   //
   //------------------------------------------------------------------------------
   // Vectorized initializeToVis.  See design related comments in the
@@ -1813,6 +2006,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     void AWProjectFT::put(const VisBuffer2& vb, Int /*row*/, Bool dopsf,
 			FTMachine::Type type)
   {
+
+    // LIBRA_NVTX_PUSH("AWProjectFT::put");
     // Take care of translation of Bools to Integer
     makingPSF=dopsf;
 
@@ -1824,7 +2019,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	// std::chrono::time_point<std::chrono::steady_clock> 
 	//   findCFTime=std::chrono::steady_clock::now();
 
+LIBRA_NVTX_PUSH("AWProjectFT::put::findConvFunction");
 	findConvFunction(*image, vb);
+LIBRA_NVTX_POP();
 
 	// std::chrono::duration<double> duration_findCF = std::chrono::steady_clock::now() - findCFTime;
 	// cerr << "    findCF: " << duration_findCF.count() << endl;
@@ -1845,15 +2042,36 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // std::chrono::time_point<std::chrono::steady_clock> 
     //   interpolateFTime=std::chrono::steady_clock::now();
 
+    LIBRA_NVTX_PUSH("AWProjectFT::put::getImagingWeight");
     Matrix<Float> imagingweight;
     getImagingWeight(imagingweight, vb);
+    LIBRA_NVTX_POP();
 
     Cube<Complex> data;
-    //Fortran gridder need the flag as ints 
+    //Fortran gridder need the flag as ints
     Cube<Int> flags;
     Matrix<Float> elWeight;
-
-    interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
+    freqFrameValid_p = false;
+    if (skipFreqInterp_p) {
+      // Bypass interpolateFrequencyTogrid for continuum (imageFreq.nel()==1) when VI2
+      // frequency selection is applied upstream (standard roadrunner setup).
+      // data and weight are direct references — no copy.
+      // flags is shaped to satisfy setupVBStore; values are unused by the HPG path
+      // (HPGVisBuffer.inc reads vb_p->flagCube() directly at the flag gate).
+      // Enabled via LIBRA_SKIP_FREQ_INTERP env var.
+      if      (type == FTMachine::MODEL)     data.reference(vb.visCubeModel());
+      else if (type == FTMachine::CORRECTED) data.reference(vb.visCubeCorrected());
+      else if (type == FTMachine::PSF)       data.resize();
+      else                                   data.reference(vb.visCube()); // OBSERVED + default
+      elWeight.reference(imagingweight);
+      flags.resize(vb.flagCube().shape());
+      flags = 0;
+      flags(vb.flagCube()) = true;
+    } else {
+      LIBRA_NVTX_PUSH("AWProjectFT::put::interpolateFrequencyTogrid");
+      interpolateFrequencyTogrid(vb, imagingweight,data, flags, elWeight, type);
+      LIBRA_NVTX_POP();
+    }
 
     // std::chrono::duration<double> duration_inter = std::chrono::steady_clock::now() - interpolateFTime;
     // cerr << "    interpolate: " << duration_inter.count() << endl;
@@ -1868,15 +2086,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     // std::chrono::time_point<std::chrono::steady_clock> 
     //   uvwTime=std::chrono::steady_clock::now();
-
+    LIBRA_NVTX_PUSH("AWProjectFT::put::UVW_processing");
     Matrix<Double> uvw(negateUV(vb));
     
     Vector<Double> dphase(vb.nRows());
     dphase=0.0;
     doUVWRotation_p=true;
     //rotateUVW(uvw, dphase, vb);
-    girarUVW(uvw, dphase, vb);
-    refocus(uvw, vb.antenna1(), vb.antenna2(), dphase, vb);
+    // girarUVW(uvw, dphase, vb);
+    // refocus(uvw, vb.antenna1(), vb.antenna2(), dphase, vb);
+    LIBRA_NVTX_POP();
     //Here we redo the match or use previous match
 
     // std::chrono::duration<double> duration_uvw = std::chrono::steady_clock::now() - uvwTime;
@@ -1884,28 +2103,36 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     
     //Channel matching for the actual spectral window of buffer
 
+    LIBRA_NVTX_PUSH("AWProjectFT::put::matchChannel");
     matchChannel(vb);
+    LIBRA_NVTX_POP();
     VBStore vbs;
     Vector<Int> gridShape = griddedData2.shape().asVector();
+    LIBRA_NVTX_PUSH("AWProjectFT::put::setupVBStore");
     setupVBStore(vbs,vb, elWeight,data,uvw,flags, dphase,dopsf,gridShape);
+    LIBRA_NVTX_POP();
 
     // std::chrono::duration<double> duration = std::chrono::steady_clock::now() - startTime;
     // cerr << "Prepare VB time: " << duration.count() << endl;
 
     if (useDoubleGrid_p)
       {
+  LIBRA_NVTX_PUSH("AWProjectFT::put::resampleDataToGrid_double");
 	resampleDataToGrid(griddedData2, vbs, vb, dopsf);//, *imagingweight, *data, uvw,flags,dphase,dopsf);
+  LIBRA_NVTX_POP();
 	//storeArrayAsImage(String("cgrid_awp_d.im"), image->coordinates(), griddedData2);
       }
     else
       {
+        LIBRA_NVTX_PUSH("AWProjectFT::put::resampleDataToGrid_single");
 	resampleDataToGrid(griddedData, vbs, vb, dopsf);//, *imagingweight, *data, uvw,flags,dphase,dopsf);
+  LIBRA_NVTX_POP();
 	// String msg("WTH");
 	// isVBNaN(vb,msg);
 	//storeArrayAsImage(String("cgrid_awp_s.im"), image->coordinates(), griddedData);
       }
-  }
-
+   }
+  
   std::shared_ptr<std::complex<double>> AWProjectFT::getGridPtr(size_t& size) const
   {
     return visResampler_p->getGridPtr(size);
@@ -2555,33 +2782,40 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   //-------------------------------------------------------------------------
   //  
   void AWProjectFT::setupVBStore(VBStore& vbs,
-				 const VisBuffer2& vb, 
-				 const Matrix<Float>& imagingweight,
-				 const Cube<Complex>& visData,
-				 const Matrix<Double>& uvw,
-				 const Cube<Int>& flagCube,
-				 const Vector<Double>& dphase,
-				 const Bool& dopsf,
-				 const Vector<Int>& /*gridShape*/)
-  {
-    //    LogIO log_l(LogOrigin("AWProjectFT2", "setupVBStore[R&D]"));
-
-    //    Vector<Int> ConjCFMap, CFMap;
-
+                               const VisBuffer2& vb, 
+                               const Matrix<Float>& imagingweight,
+                               const Cube<Complex>& visData,
+                               const Matrix<Double>& uvw,
+                               const Cube<Int>& flagCube,
+                               const Vector<Double>& dphase,
+                               const Bool& dopsf,
+                               const Vector<Int>& /*gridShape*/)
+{
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore");
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::basic_setup");
     vbs.vb_p = &vb;
     vbs.wbAWP_p=wbAWP_p;
     vbs.ftmType_p=ftmType_p;
     vbs.nWPlanes_p = nWPlanes_p;
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::makeCFPolMap");
     makeCFPolMap(vb,cfStokes_p,CFMap_p);
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::makeConjPolMap");
     makeConjPolMap(vb,CFMap_p,ConjCFMap_p);
-
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::visResampler_setup");
     visResampler_p->setParams(uvScale,uvOffset,dphase);
     visResampler_p->setMaps(chanMap, polMap);
     visResampler_p->setCFMaps(CFMap_p, ConjCFMap_p);
     visResampler_p->setFreqMaps(expandedSpwFreqSel_p,expandedSpwConjFreqSel_p);
-    //
-    // Set up VBStore object to point to the relavent info. of the VB.
-    //
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::vbs_data_assignment");
     vbs.imRefFreq_p = imRefFreq_p;
     vbs.nRow_p = vb.nRows();
     vbs.beginRow_p = 0;
@@ -2589,70 +2823,92 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     vbs.spwID_p = vb.spectralWindows()(0);
     vbs.nDataPol_p  = flagCube.shape()[0];
     vbs.nDataChan_p = flagCube.shape()[1];
-
     vbs.antenna1_p.reference(vb.antenna1());
     vbs.antenna2_p.reference(vb.antenna2());
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::getPA");
     vbs.paQuant_p = Quantity(getPA(vb),"rad");
-    //    vbs.corrType_p.reference(vb.corrType());
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::reference_assignments");
     vbs.corrType_p.reference(vb.correlationTypes());
-    //    vbs.uvw_p.reference(uvw);
     vbs.uvw_p=uvw;
     vbs.imagingWeight_p.reference(imagingweight);
     vbs.visCube_p.reference(visData);
-    //    vbs.freq_p.reference(interpVisFreq_p);
     vbs.freq_p.reference(vb.getFrequencies(0));
-    //    vbs.rowFlag_p.assign(vb.flagRow());  
     vbs.rowFlag_p.reference(vb.flagRow());
-    if(!usezero_p) 
-      for (Int rownr=0; rownr<vbs.nRow_p; rownr++) 
-	if(vb.antenna1()(rownr)==vb.antenna2()(rownr)) vbs.rowFlag_p(rownr)=true;
-
-    // Really nice way of converting a Cube<Int> to Cube<Bool>.
-    // However the VBS objects should ultimately be references
-    // directly to bool cubes.
-    //  vbs.rowFlag.resize(rowFlags.shape());  vbs.rowFlag  = false; vbs.rowFlag(rowFlags) = true;
-    vbs.flagCube_p.resize(flagCube.shape());  vbs.flagCube_p = false; vbs.flagCube_p(flagCube!=0) = true;
-    vbs.conjBeams_p=conjBeams_p;
-
-    //timer_p.mark();
-
-    auto setCFBMap = [this,&vbs,&vb](casacore::CountedPtr<CFStore2> cfs_l)
-		     {
-		       cfs_l->invokeGC(vbs.spwID_p);
-		       vb2CFBMap_p->setDoPointing(doPointing);
-		       vb2CFBMap_p->makeVBRow2CFBMap(*cfs_l,
-						     vb,
-						     paChangeDetector.getParAngleTolerance(),
-						     chanMap,polMap,po_p);
-		     };
-
-    po_p->fetchPointingOffset(*image, vb, doPointing);
-    if (makingPSF || (vbs.ftmType_p==casa::refim::FTMachine::WEIGHT))
-      {
-	setCFBMap(cfwts2_p);
-      }
-    else
-      {
-	// If the Wt. CFs are still in the memory, clear them.  They
-	// won't be required again (though with the silly check below,
-	// if the in-memory Wt. CFs are less than 1KB, they will be
-	// left in memory).
-	setCFBMap(cfs2_p);
-      }
-    // 
-    // Trigger the computation of phase gradiant corresponding to the
-    // field offset (from the VB) w.r.t. the image phase center.
-    //
-    //
-    // For AzElApertures, this rotates the CFs.
-    //
-    convFuncCtor_p->prepareConvFunction(vb,*vb2CFBMap_p);
+    LIBRA_NVTX_POP();
     
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::zero_baseline_flagging");
+    if(!usezero_p) 
+        for (Int rownr=0; rownr<vbs.nRow_p; rownr++) 
+            if(vb.antenna1()(rownr)==vb.antenna2()(rownr)) vbs.rowFlag_p(rownr)=true;
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::flagCube_conversion");
+    vbs.flagCube_p.resize(flagCube.shape());  
+    vbs.flagCube_p = false; 
+    vbs.flagCube_p(flagCube!=0) = true;
+    vbs.conjBeams_p=conjBeams_p;
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::fetchPointingOffset");
+    po_p->fetchPointingOffset(*image, vb, doPointing);
+    LIBRA_NVTX_POP();
+    
+    if (makingPSF || (vbs.ftmType_p==casa::refim::FTMachine::WEIGHT)){
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::PSF_branch");
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::cfwts2_invokeGC");
+        cfwts2_p->invokeGC(vbs.spwID_p);
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::vb2CFBMap_setDoPointing");
+        vb2CFBMap_p->setDoPointing(doPointing);
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::makeVBRow2CFBMap_cfwts");
+        vb2CFBMap_p->makeVBRow2CFBMap(*cfwts2_p,
+                                      vb,
+                                      paChangeDetector.getParAngleTolerance(),
+                                      chanMap,polMap,po_p);
+        LIBRA_NVTX_POP();
+        LIBRA_NVTX_POP(); // PSF_branch
+    }
+    else
+    {
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::data_branch");
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::cfs2_invokeGC");
+        cfs2_p->invokeGC(vbs.spwID_p);
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::vb2CFBMap_setDoPointing");
+        vb2CFBMap_p->setDoPointing(doPointing);
+        LIBRA_NVTX_POP();
+        
+        LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::makeVBRow2CFBMap_cfs");
+        vb2CFBMap_p->makeVBRow2CFBMap(*cfs2_p, vb,
+                                      paChangeDetector.getParAngleTolerance(),
+                                      chanMap,polMap,po_p);
+        LIBRA_NVTX_POP();
+        LIBRA_NVTX_POP(); // data_branch
+    }
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::prepareConvFunction");
+    convFuncCtor_p->prepareConvFunction(vb,*vb2CFBMap_p);
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::final_setup");
     vbs.accumCFs_p=((vbs.uvw_p.nelements() == 0) && dopsf);
     visResampler_p->setVB2CFMap(vb2CFBMap_p);
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_PUSH("AWProjectFT::setupVBStore::initializeDataBuffers");
     visResampler_p->initializeDataBuffers(vbs);
-  }
-
+    LIBRA_NVTX_POP();
+    
+    LIBRA_NVTX_POP(); // setupVBStore
+}
   //
   //---------------------------------------------------------------
   //
