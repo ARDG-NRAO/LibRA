@@ -30,6 +30,7 @@
 #include <synthesis/TransformMachines2/AWVisResamplerHPG.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines/SynthesisMath.h>
+#include <librautils/ProfilingTools.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/casa/OS/Timer.h>
@@ -270,12 +271,24 @@ namespace casa{
     hpgVBBucket_p.moveSOBuf();
 
     sendPartialBucket(std::string("data points from the spillover buffer"));
-    
-    hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
-    hpgGridder_p->apply_grid_fft();
-    hpgGridder_p->shift_grid(ShiftDirection::BACKWARD);
-    
-    GatherGrids(griddedData,sumwt);
+
+    {
+      LIBRA_PROFILE_SCOPE("HPG::shift_grid_forward");
+      hpgGridder_p->shift_grid(ShiftDirection::FORWARD);
+    }
+    {
+      LIBRA_PROFILE_SCOPE("HPG::apply_grid_fft");
+      hpgGridder_p->apply_grid_fft();
+    }
+    {
+      LIBRA_PROFILE_SCOPE("HPG::shift_grid_backward");
+      hpgGridder_p->shift_grid(ShiftDirection::BACKWARD);
+    }
+
+    {
+      LIBRA_PROFILE_SCOPE("HPG::GatherGrids");
+      GatherGrids(griddedData,sumwt);
+    }
     
     if (isHPGCustodian_p) hpg::finalize();
     
@@ -628,6 +641,7 @@ namespace casa{
 				     const uint& sizeofVisData,
 				     const bool& do_degrid)
   {
+    LIBRA_PROFILE_FUNCTION();
     //
     // If the VBBucket is full, shrink() it remove any unfilled space
     // in the bucket, send the rest of the buffer to the gridder, and
@@ -655,15 +669,21 @@ namespace casa{
 	hpg::opt_t<hpg::Error> err;
 
 	if (do_degrid)
-	  err = hpgGridder_p->degrid_grid_visibilities(
+	  {
+	    LIBRA_PROFILE_SCOPE("HPG::degrid_grid_visibilities");
+	    err = hpgGridder_p->degrid_grid_visibilities(
 						       hpg::Device::OpenMP,
 						       std::move(VBBucket.vbbBuf())
 						       );
+	  }
 	else
-	  err = hpgGridder_p->grid_visibilities(
+	  {
+	    LIBRA_PROFILE_SCOPE("HPG::grid_visibilities");
+	    err = hpgGridder_p->grid_visibilities(
 						hpg::Device::OpenMP,
 						std::move(VBBucket.vbbBuf())
 						);
+	  }
 	assert(VBBucket.size()==0);
 	VBBucket.reset();
 	    

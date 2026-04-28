@@ -44,6 +44,7 @@
 #include <msvis/MSVis/VisibilityIterator2.h>
 #include <casacore/casa/System/ProgressMeter.h>
 #include <msvis/MSVis/VisBuffer2.h>
+#include <librautils/ProfilingTools.h>
 //#include <hpg/hpg.hpp>
 
 using namespace std;
@@ -119,11 +120,13 @@ public:
 	 std::function<void(const int&)>& cfSentNotifier
 	 )
   {
+    LIBRA_PROFILE_FUNCTION();
     int vol=0,nRows=0;
     double dataIO_time=0.0;
 
     for (vi2->origin(); vi2->more(); vi2->next())
       {
+	LIBRA_PROFILE_SCOPE("DataIterator::vb_processing");
 	auto ret=dataConsumer(vb,vi2);
 	vol += ret[0]; // Vis volume in bytes
 	dataIO_time += ret[1];
@@ -167,8 +170,9 @@ public:
 	   std::function<void(int&, int& )> waitForCFReady=[](int&, int&){},//NoOp
 	   std::function<void(const int&)> cfSentNotifier= [](const int&){} //NoOp
 	   )
-    
+
   {
+    LIBRA_PROFILE_FUNCTION();
     unsigned long vol=0,nRows=0;
     int nVB=0;
     int spwNdx=0;
@@ -179,6 +183,7 @@ public:
 
     for (vi2->originChunks();vi2->moreChunks(); vi2->nextChunk())
       {
+  	LIBRA_PROFILE_SCOPE("DataIterator::chunk_iteration");
   	vi2->origin(); // So that the global vb is valid
 
 	waitForCFReady(nVB,spwNdx);

@@ -24,6 +24,12 @@
 # HPG external project
 include(ExternalProject)
 
+# Conditionally enable HPG NVTX profiling
+set(HPG_NVTX_FLAG "")
+if(LIBRA_ENABLE_NVTX)
+  set(HPG_NVTX_FLAG "-DHpg_ENABLE_NVTX=ON")
+endif()
+
 ExternalProject_Add(
   Hpg
   GIT_REPOSITORY ${LIBRA_HPG_GIT_REPOSITORY}
@@ -40,6 +46,7 @@ ExternalProject_Add(
                     ${HPG_CUDA_COMPILER_FLAGS}
                     -DHpg_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=ON ${HPG_CUDA_ENABLE_FLAGS}
                     ${KOKKOS_WRAPPER_FLAGS}
+                    ${HPG_NVTX_FLAG}
                     -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos ${CCACHE_LAUNCHER}
   BUILD_COMMAND   make -j ${NCORES}
   INSTALL_COMMAND make install

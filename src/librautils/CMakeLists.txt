@@ -15,6 +15,7 @@
 
 set(LIBRAUTILS_PUBLIC_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/ProfilingTools.h
 )
 
 add_library(librautils SHARED
@@ -34,7 +35,14 @@ target_include_directories(librautils PUBLIC
   ${WCSLIB_INCLUDE_DIRS}
 )
 
-install(TARGETS librautils
+# Link NVTX if profiling is enabled
+if(LIBRA_ENABLE_NVTX)
+  target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
+  message(STATUS "librautils: NVTX profiling enabled")
+endif()
+
+# Install library and public headers to include/librautils
+install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
   PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/librautils"
 )

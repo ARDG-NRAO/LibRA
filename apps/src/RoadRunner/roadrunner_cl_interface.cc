@@ -37,6 +37,7 @@
 //
 
 #include <roadrunner.h>
+#include <librautils/ProfilingTools.h>
 //
 //-------------------------------------------------------------------------
 //
@@ -212,6 +213,7 @@ static const string defaultFtmName = "awproject";
 #ifndef ROADRUNNER_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
+  LIBRA_PROFILE_FUNCTION();
   //
   // -------------------------------------- Just the UI -------------------------------------------------------------------
   //

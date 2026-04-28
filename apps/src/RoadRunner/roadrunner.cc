@@ -33,6 +33,7 @@
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 #include <libracore/MakeComponents.h>
+#include <librautils/ProfilingTools.h>
 #include <roadrunner.h>
 
 #include <stdexcept>
@@ -55,6 +56,7 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
 	     casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l
 	     )
 {
+  LIBRA_PROFILE_FUNCTION();
   LogIO log_l(LogOrigin("roadrunner","prepCFEngine"));
 
   //casa::refim::MakeCFArray mkCF(mndx,conj_mndx);
@@ -106,13 +108,17 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      int& nDataPol,
 	      LogIO& os)
 {
+  LIBRA_PROFILE_FUNCTION();
   try
     {
       os.origin(LogOrigin("roadrunner","CFServer"));
       for(auto ispw : spwidList)
 	{
-	  os << ".................CFServer................" << LogIO::POST;
 
+
+
+	  LIBRA_PROFILE_SCOPE("CFServer::SPW_iteration");
+	  os << ".................CFServer................" << LogIO::POST;
 	  //Declare the in-memory CFCache dirty.  Specifically, the memory
 	  //accessed by the dcfa_sptr_g point should be considered dirty and
 	  //remain so till prepCFEngine returns.
