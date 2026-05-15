@@ -2,13 +2,104 @@
 #include <RoadRunner/LibHPG.h>
 #include <RoadRunner/roadrunner.h>
 #include <tests/test_utils.h>
-
 using namespace std;
 using namespace std::filesystem;
 
 namespace test{
   const path goldDir = current_path() / "gold_standard";
 
+
+// UIFactory and UIThrow must run before any Roadrunner() call -- parafeed's
+TEST(RoadrunnerTest, UIFactory) {
+    // The Factory Settings.
+  int argc = 2;
+  char arg0[] = "./roadrunner";
+  char arg1[] = "help=noprompt";
+  char* argv[] = {arg0, arg1};
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName="test", modelImageName,cmplxGridName="", stokes="I",
+    weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="norm";
+
+  string phaseCenter = "J2000 19h57m44.44s  040d35m46.3s";
+
+  string refFreqStr="3.0e9";
+  float cellSize=0.025;
+  float robust=0.0;
+  int NX=4000, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+  cfCache="test";
+  UI(restartUI, argc, (char **)argv, interactive,
+     MSNBuf,imageName, modelImageName, dataColumnName,
+     sowImageExt, cmplxGridName, NX, nW, cellSize,
+     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+     doSPWDataIter);
+
+  EXPECT_EQ(NX, 4000);
+  EXPECT_FLOAT_EQ(cellSize, 0.025f);
+  EXPECT_EQ(cfCache, "test");
+  EXPECT_EQ(imageName, "test");
+  EXPECT_EQ(refFreqStr, "3.0e9");
+}
+
+TEST(RoadrunnerTest, UIThrow) {
+  int argc = 2;
+  char arg0[] = "./roadrunner";
+  char arg1[] = "help=noprompt";
+  char* argv[] = {arg0, arg1};
+
+  string MSNBuf,ftmName="awphpg",
+    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
+    imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
+    refFreqStr="3.0e9", weighting="natural", sowImageExt,
+    imagingMode="residual",rmode="none";
+
+  float cellSize=0;
+  float robust=0.0;
+  int NX=0, nW=1;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool doPointing=false;
+  bool normalize=false;
+  bool doPBCorr= true;
+  bool conjBeams= true;
+  float pbLimit=1e-3;
+  bool doSPWDataIter=false;
+  vector<float> posigdev = {300.0,300.0};
+  bool interactive = false;
+
+  try {
+    UI(restartUI, argc, argv, interactive,
+       MSNBuf,imageName, modelImageName, dataColumnName,
+       sowImageExt, cmplxGridName, NX, nW, cellSize,
+       stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
+       ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
+       doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
+       doSPWDataIter);
+    FAIL() << "Expected an exception to be thrown";
+  }
+  catch (const std::exception& e) {
+    std::cout << "Caught exception: " << typeid(e).name() << " - " << e.what() << std::endl;
+    SUCCEED();
+  }
+  catch (...) {
+    std::cout << "Caught unknown exception type" << std::endl;
+    SUCCEED();
+  }
+}
 
 TEST(RoadrunnerTest, InitializeTest) {
   // Create a LibHPG object
@@ -364,90 +455,6 @@ TEST(RoadrunnerTest, Interface_rmode_minus2) {
   remove_all(testDir);
 }
 
-TEST(RoadrunnerTest, UIFactory) {
-    // The Factory Settings.
-  int argc = 1;
-  const char* argv[] = {"./roadrunner"};
-
-
-  string MSNBuf,ftmName="awphpg",
-    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
-    imageName="test", modelImageName,cmplxGridName="", stokes="I",
-    weighting="natural", sowImageExt,
-    imagingMode="residual",rmode="norm";
-
-  string phaseCenter = "J2000 19h57m44.44s  040d35m46.3s";
-
-  string refFreqStr="3.0e9"; 
-  float cellSize=0.025;
-  float robust=0.0;
-  int NX=4000, nW=1;
-  bool WBAwp=true;
-  bool restartUI=false;
-  bool doPointing=false;
-  bool normalize=false;
-  bool doPBCorr= true;
-  bool conjBeams= true;
-  float pbLimit=1e-3;
-  bool doSPWDataIter=false;
-  vector<float> posigdev = {300.0,300.0};
-  bool interactive = false;
-  cfCache="test";
-  UI(restartUI, argc, (char **)argv, interactive,
-     MSNBuf,imageName, modelImageName, dataColumnName,
-     sowImageExt, cmplxGridName, NX, nW, cellSize,
-     stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-     ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-     doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-     doSPWDataIter);
-}
-
-
-TEST(RoadrunnerTest, UIThrow) {
-  int argc = 1;
-  char* argv[] = {"./roadrunner"};
-
-  string MSNBuf,ftmName="awphpg",
-    cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="data",
-    imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural", sowImageExt,
-    imagingMode="residual",rmode="none";
-
-  float cellSize=0;
-  float robust=0.0;
-  int NX=0, nW=1;
-  bool WBAwp=true;
-  bool restartUI=false;
-  bool doPointing=false;
-  bool normalize=false;
-  bool doPBCorr= true;
-  bool conjBeams= true;
-  float pbLimit=1e-3;
-  bool doSPWDataIter=false;
-  vector<float> posigdev = {300.0,300.0};
-  bool interactive = false;
-
-  try {
-        UI(restartUI, argc, argv, interactive,
-              MSNBuf,imageName, modelImageName, dataColumnName,
-            sowImageExt, cmplxGridName, NX, nW, cellSize,
-            stokes, refFreqStr, phaseCenter, weighting, rmode, robust,
-            ftmName,cfCache, imagingMode, WBAwp,fieldStr,spwStr,uvDistStr,
-            doPointing,normalize,doPBCorr, conjBeams, pbLimit, posigdev,
-            doSPWDataIter);
-        FAIL() << "Expected an exception to be thrown";
-    }
-    catch (const std::exception& e) {
-        // This will catch any std::exception derived class
-        std::cout << "Caught exception: " << typeid(e).name() << " - " << e.what() << std::endl;
-        SUCCEED();
-    }
-    catch (...) {
-        std::cout << "Caught unknown exception type" << std::endl;
-        SUCCEED();
-    }
-
-}
 
 
 };

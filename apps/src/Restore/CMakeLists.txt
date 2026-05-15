@@ -33,11 +33,9 @@ if(BUILD_PYWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_py_interf
   install(TARGETS ${APP_NAME}2py LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
-# Optional: Build CLI interface library for tests (commented by default)
-# Uncomment if tests need to call CLI interface functions directly
-# if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
-#   add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
-#   target_compile_definitions(${APP_NAME}_cl_interface PRIVATE ${APP_NAME_UPPER}_LIBRARY_BUILD)
-#   target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_NAME}_lib "-Wl,--disable-new-dtags")
-#   install(TARGETS ${APP_NAME}_cl_interface LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
-# endif()
+if(BUILD_TESTING AND Apps_BUILD_TESTS_PYTHON)
+  find_program(PYTHON_EXECUTABLE python)
+  add_test(NAME test_${APP_NAME}_python
+    COMMAND ${PYTHON_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/test_${APP_NAME}.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/tests)
+endif()

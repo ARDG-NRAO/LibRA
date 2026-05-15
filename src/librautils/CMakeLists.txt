@@ -12,32 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-cmake_minimum_required(VERSION 3.18)
-set(CMAKE_CXX_STANDARD 17)
-project(librautils)
-
-find_package(WCSLIB REQUIRED)
-
-
-
-
-# List of public headers
 set(LIBRAUTILS_PUBLIC_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/utils.h
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(librautils SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/utils.cc
   ${LIBRAUTILS_PUBLIC_HEADERS}
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(librautils PROPERTIES
   PUBLIC_HEADER "${LIBRAUTILS_PUBLIC_HEADERS}"
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(librautils PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_INSTALL_PREFIX}/include/casacore
@@ -45,8 +34,22 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${WCSLIB_INCLUDE_DIRS}
 )
 
-# Install library and public headers to include/librautils
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS librautils
   LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
   PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/librautils"
 )
+
+if(BUILD_TESTING)
+  add_executable(test_librautils ${CMAKE_CURRENT_SOURCE_DIR}/test_librautils.cc)
+  target_include_directories(test_librautils PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_INSTALL_PREFIX}/include
+  )
+  target_link_libraries(test_librautils PRIVATE
+    GTest::gtest_main librautils stdc++fs ${CASACORE_LIBRARIES})
+  add_test(NAME test_librautils COMMAND test_librautils
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  install(TARGETS test_librautils
+    RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/tests")
+endif()

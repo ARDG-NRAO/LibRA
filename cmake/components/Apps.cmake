@@ -32,7 +32,7 @@ find_package(WCSLIB REQUIRED)
 # Build dependency list based on enabled features
 set(APPS_DEPENDS Casacpp Hpg Parafeed Casacore Pybind11)
 set(APPS_CMAKE_PREFIX_PATH ${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos)
-if(LIBRA_BUILD_TESTING)
+if(BUILD_TESTING)
   list(APPEND APPS_DEPENDS GTest)
   set(APPS_CMAKE_PREFIX_PATH ${APPS_CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/GTest)
 endif()
@@ -59,7 +59,7 @@ ExternalProject_Add(
       -DKokkos_DIR=${INSTALL_DIR}/lib/cmake/Kokkos
       -DCMAKE_MODULE_PATH=<SOURCE_DIR>/../cmake/modules
       -DCMAKE_PREFIX_PATH=${APPS_CMAKE_PREFIX_PATH}
-      -DApps_BUILD_TESTS=${Apps_BUILD_TESTS}
+      -DBUILD_TESTING=${BUILD_TESTING}
       -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
       -DWCSLIB_INCLUDE_DIRS=${WCSLIB_INCLUDE_DIRS}
       -DWCSLIB_LIBRARIES=${WCSLIB_LIBRARIES}

@@ -1,4 +1,4 @@
 [submodule "apps/src/tests/gold_standard"]
 	path = apps/src/tests/gold_standard
-	url = ../libra-data.git
+	url = gitlab@gitlab.nrao.edu:ardg/libra-data.git
 	branch = main

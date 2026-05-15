@@ -34,9 +34,18 @@ if(BUILD_PYWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_py_interf
 endif()
 
 
-if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
-  add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
-  target_compile_definitions(${APP_NAME}_cl_interface PRIVATE ${APP_NAME_UPPER}_LIBRARY_BUILD)
-  target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_NAME}_lib "-Wl,--disable-new-dtags")
-  install(TARGETS ${APP_NAME}_cl_interface LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+if(BUILD_TESTING)
+  add_executable(test_${APP_NAME}
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_${APP_NAME}.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc)
+  target_include_directories(test_${APP_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_SOURCE_DIR}/src/tests)
+  target_compile_definitions(test_${APP_NAME} PRIVATE SUBMS_LIBRARY_BUILD)
+  target_link_libraries(test_${APP_NAME}
+    GTest::gtest_main stdc++fs ${APP_NAME}_lib)
+  add_test(NAME test_${APP_NAME} COMMAND test_${APP_NAME}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/tests)
+  install(TARGETS test_${APP_NAME}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/tests")
 endif()

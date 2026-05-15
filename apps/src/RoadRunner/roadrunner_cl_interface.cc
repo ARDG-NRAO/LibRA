@@ -261,6 +261,7 @@ int main(int argc, char **argv)
   catch(clError& er)
     {
       cerr << er.what() << endl;
+      if (er.Severity() <= CL_FATAL) return -er.Severity();
     }
   catch(AipsError& er)
     {
