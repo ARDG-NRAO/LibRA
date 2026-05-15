@@ -16,19 +16,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up CCache
-        run: |
-          export CCACHE_BASEDIR="$PWD"
-          export CCACHE_DIR="$PWD/ccache"
-          export CCACHE_COMPILERCHECK=content
-          ccache --zero-stats || true
-          ccache --show-stats || true
-          git clean -ffdx
-
       - name: Sync and update submodules
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
+
+      - name: Set up CCache
+        run: |
+          echo "CCACHE_BASEDIR=$PWD" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$PWD/ccache" >> $GITHUB_ENV
+          echo "CCACHE_COMPILERCHECK=content" >> $GITHUB_ENV
+          git clean -ffdx
+          ccache --zero-stats || true
+          ccache --show-stats || true
 
       - name: Compile the code
         run: |
@@ -49,15 +49,21 @@ jobs:
 
       - name: Run unit tests
         run: |
-          echo $PWD
           base_path=$PWD
-          echo "Entering $PWD/apps/src/tests to run apps unit tests"
-          cd ${base_path}/apps/src/tests
           export LD_LIBRARY_PATH=${base_path}/install/lib:$LD_LIBRARY_PATH
-          ${base_path}/build/Libra/apps/src/tests/LibRATests --gtest_output="xml:report.xml"
+          mkdir -p ${base_path}/reports
+          # Top-level build/Libra/CTestTestfile.cmake recurses into both src/ and
+          # apps/ ExternalProject build trees. -R '^test_' picks up the new-style
+          # gtest binaries (test_dale, test_libracoretypes, ...) and skips the
+          # legacy t<Name> tests in src/.
+          ctest --test-dir ${base_path}/build/Libra \
+                -R '^test_' \
+                --output-on-failure \
+                --output-junit "${base_path}/reports/cpp_ctest_report.xml"
 
       - name: Upload test report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Test Report
-          path: ${{ github.workspace }}/build/Libra/apps/src/tests/report.xml
+          path: ${{ github.workspace }}/reports/cpp_ctest_report.xml

@@ -21,7 +21,8 @@ std::string run_shell_script() {
     system("chmod +x ./libra_htclean.sh");
     system("chmod +x ./runapp.sh");
 
-    std::string command = "./libra_htclean.sh -n 3 -p libra_htclean.def -L ../../../../install/bin/ -l LOGS";
+    std::string command = std::string("./libra_htclean.sh -n 3 -p libra_htclean.def -L ")
+                          + LIBRA_INSTALL_BIN + "/ -l LOGS";
     char buffer[128];
     std::string result = "";
     FILE* fp = popen(command.c_str(), "r");
@@ -44,7 +45,8 @@ TEST(HtcleanTest, Loops) {
   // Create a unique directory for this test case
   path testDir = current_path() / testName;
 
-  // create dir AppLevelSNRPSF
+  // Clear any leftover dir from a previous failed run (CI starts clean; local may not).
+  std::filesystem::remove_all(testDir);
   std::filesystem::create_directory(testDir);
 
   //copy over CYGTST.corespiral.ms from gold_standard to AppLevelSNRPSF
@@ -54,8 +56,9 @@ TEST(HtcleanTest, Loops) {
   // copy the input .def
   std::filesystem::copy(goldDir/"libra_htclean.def", testDir/"libra_htclean.def", copy_options::recursive);  
   // copy htclean scripts
-  std::filesystem::copy(goldDir/"../../../../install/bin/libra_htclean.sh", testDir/"libra_htclean.sh", copy_options::recursive);
-  std::filesystem::copy(goldDir/"../../../../install/bin/runapp.sh", testDir/"runapp.sh", copy_options::recursive);
+  const path installBin = LIBRA_INSTALL_BIN;
+  std::filesystem::copy(installBin/"libra_htclean.sh", testDir/"libra_htclean.sh", copy_options::recursive);
+  std::filesystem::copy(installBin/"runapp.sh", testDir/"runapp.sh", copy_options::recursive);
   //Step into test dir
   std::filesystem::current_path(testDir);
 

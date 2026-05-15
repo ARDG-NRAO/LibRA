@@ -22,6 +22,100 @@ namespace test{
     // return std::filesystem::remove_all(path);
   // }
 
+// UIFactory and UIThrow must run before any Hummbee() call -- parafeed's
+// argv strings must be mutable (strtok writes into them).
+TEST(HummbeeTest, UIFactory) {
+  // The Factory Settings.
+  int argc = 2;
+  char arg0[] = "./hummbee";
+  char arg1[] = "help=noprompt";
+  char* argv[] = {arg0, arg1};
+
+  string imageName, modelImageName, deconvolver="hogbom", specmode="mfs";
+  bool restartUI=false;
+  vector<float> scales;
+  float largestscale = -1;
+  float fusedthreshold = 0;
+  int nterms=1;
+  float gain=0.1;
+  float threshold=0.0;
+  float nsigma=0.0;
+  int cycleniter=-1;
+  float cyclefactor=1.0;
+  vector<string> mask;
+  bool interactive = false;
+  bool doPBCorr = false;
+  string imagingMode;
+
+  UI(restartUI, argc, (char **)argv, interactive,
+     imageName, modelImageName,
+     deconvolver,
+     scales,
+     largestscale, fusedthreshold,
+     nterms,
+     gain, threshold,
+     nsigma,
+     cycleniter, cyclefactor,
+     mask, specmode,
+     doPBCorr,
+     imagingMode);
+
+  EXPECT_EQ(deconvolver, "hogbom");
+  EXPECT_EQ(specmode, "mfs");
+  EXPECT_FLOAT_EQ(gain, 0.1f);
+  EXPECT_EQ(cycleniter, -1);
+  EXPECT_FLOAT_EQ(nsigma, 0.0f);
+}
+
+TEST(HummbeeTest, UIThrow) {
+  // nsigma > 0 with no .pb file triggers a fatal error
+  int argc = 3;
+  char arg0[] = "./hummbee";
+  char arg1[] = "help=noprompt";
+  char arg2[] = "nsigma=1.0";
+  char* argv[] = {arg0, arg1, arg2};
+
+  string imageName="test", modelImageName, deconvolver="hogbom", specmode="mfs";
+  bool restartUI=false;
+  vector<float> scales;
+  float largestscale = -1;
+  float fusedthreshold = 0;
+  int nterms=1;
+  float gain=0.1;
+  float threshold=0.0;
+  float nsigma=1.0;
+  int cycleniter=-1;
+  float cyclefactor=1.0;
+  vector<string> mask;
+  bool interactive = false;
+  bool doPBCorr = false;
+  string imagingMode;
+
+  try {
+    UI(restartUI, argc, (char **)argv, interactive,
+       imageName, modelImageName,
+       deconvolver,
+       scales,
+       largestscale, fusedthreshold,
+       nterms,
+       gain, threshold,
+       nsigma,
+       cycleniter, cyclefactor,
+       mask, specmode,
+       doPBCorr,
+       imagingMode);
+    FAIL() << "Expected an exception to be thrown";
+  }
+  catch (const std::exception& e) {
+    std::cout << "Caught exception: " << typeid(e).name() << " - " << e.what() << std::endl;
+    SUCCEED();
+  }
+  catch (...) {
+    std::cout << "Caught unknown exception type" << std::endl;
+    SUCCEED();
+  }
+}
+
 TEST(HummbeeTest, CheckGoldStandardDirectory) {
     EXPECT_TRUE(directoryExists(goldDir));
   }
@@ -367,42 +461,5 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
 
 }
 
-
-TEST(HummbeeTest, UIFactory) {
-    // The Factory Settings.
-  int argc = 1;
-  const char* argv[] = {"./hummbee"};
-
-  // The Factory Settings.
-  string imageName, modelImageName, deconvolver="hogbom", specmode="mfs";
-  bool restartUI=false;
-
-  vector<float> scales;
-  float largestscale = -1;
-  float fusedthreshold = 0;
-  int nterms=1;
-  float gain=0.1; 
-  float threshold=0.0;
-  float nsigma=0.0;
-  int cycleniter=-1;
-  float cyclefactor=1.0;
-  vector<string> mask; 
-  bool interactive = false;
-  bool doPBCorr = false;
-  string imagingMode;
-
-  UI(restartUI, argc, (char **)argv, interactive,
-    imageName, modelImageName, 
-    deconvolver,
-    scales,
-    largestscale, fusedthreshold,
-    nterms,
-    gain, threshold,
-    nsigma,
-    cycleniter, cyclefactor,
-    mask, specmode,
-    doPBCorr,
-    imagingMode);
-}
 
 };

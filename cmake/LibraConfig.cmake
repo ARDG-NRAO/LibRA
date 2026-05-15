@@ -54,6 +54,7 @@ set(LIBRA_GTEST_GIT_REPOSITORY    "https://github.com/google/googletest.git")
 set(LIBRA_GTEST_GIT_TAG           "v1.14.0")
 set(LIBRA_MEASURES_FTP            "ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar")
 set(LIBRA_MEASURES_HTTPS          "https://www.astron.nl/iers/WSRT_Measures.ztar")
+set(LIBRA_MEASURES_NRAO_MIRROR    "https://casa.nrao.edu/download/casaconfig/iers")
 set(LIBRA_EXODUS_GIT_REPOSITORY   "https://github.com/preshanth/exodus_sbfork.git")
 set(LIBRA_EXODUS_GIT_TAG          "master")
 set(LIBRA_EXODUS_BUNDLE_NAME      "libra_apps.sh")
@@ -64,9 +65,15 @@ option(USE_CCACHE "Enable use of ccache for compilation" OFF)
 option(LIBRA_USE_LIBSAKURA "Enable use of Sakura library" OFF)
 option(LIBRA_USE_EXODUS "Enable use of Exodus" OFF)
 option(CASACORE_DATA_DOWNLOAD "Enable download of casacore data" ON)
-option(Apps_BUILD_TESTS "Enable building of Apps tests" OFF)
+option(BUILD_TESTING "Build and register C++ test suite (gmake test / ctest)" OFF)
+option(Apps_BUILD_TESTS_PYTHON "Build and register Python pytest tests" OFF)
 option(LIBRA_USE_SPACK "Enable use of Spack" OFF)
 option(LIBRA_ENABLE_CUDA_BACKEND "Enable CUDA acceleration" ON)
+
+# Backward-compat alias: -DApps_BUILD_TESTS=ON still works
+if(Apps_BUILD_TESTS AND NOT BUILD_TESTING)
+  set(BUILD_TESTING ON CACHE BOOL "Build and register C++ test suite" FORCE)
+endif()
 
 # System info
 

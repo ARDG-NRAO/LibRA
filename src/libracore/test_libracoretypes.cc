@@ -3,6 +3,7 @@
 #include <libracore/Cube.h>
 #include <libracore/Matrix.h>
 #include <libracore/Vector.h>
+#include <libracore/imageInterface.h>
 
 using namespace std;
 
@@ -259,9 +260,33 @@ TEST_F(LibracoreTypesTest, VectorOps)
     auto Vmdspan = vec3.getMdspan();
 
     EXPECT_EQ(Vmdspan(1), 4);
-    
 }
 
+TEST(MdspanConversionTest, RoundTripMdspanCasamatrix)
+{
+    constexpr int n_rows = 2;
+    constexpr int n_cols = 5;
+    int data[] = {
+        1,  2,  3,  4,  5,
+        6,  7,  8,  9, 10
+    };
 
+    auto md = libracore::col_major_mdspan<int>(data, n_rows, n_cols);
 
+    casacore::Matrix<int> matrix(n_rows, n_cols, 0);
+    libracore::mdspan2casamatrix<int>(md, matrix);
+
+    for (int i = 0; i < n_rows; ++i)
+        for (int j = 0; j < n_cols; ++j)
+            EXPECT_EQ(matrix(i, j), md(i, j));
+
+    auto data_b = std::make_unique<int[]>(n_rows * n_cols);
+    auto md2 = libracore::col_major_mdspan<int>(data_b.get(), n_rows, n_cols);
+    libracore::casamatrix2mdspan<int>(matrix, md2);
+
+    for (int i = 0; i < n_rows; ++i)
+        for (int j = 0; j < n_cols; ++j)
+            EXPECT_EQ(md2(i, j), matrix(i, j));
 }
+
+} // namespace test

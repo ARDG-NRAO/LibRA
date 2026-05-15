@@ -161,6 +161,12 @@ set(CMAKE_INSTALL_RPATH "${DEPLIB}")
 set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 
 
+# enable_testing() must be at the project root so ctest run from this
+# binary dir discovers tests registered in subdirectories (apps/src/...).
+if(BUILD_TESTING)
+  enable_testing()
+endif()
+
 # add and build each APP
 add_subdirectory(src)
 

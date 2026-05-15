@@ -29,7 +29,7 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/install/data)
 if(CASACORE_DATA_DOWNLOAD)
   ExternalProject_Add(
     DataDownload
-    DOWNLOAD_COMMAND bash -c "curl ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || curl ${LIBRA_MEASURES_HTTPS} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -"
+    DOWNLOAD_COMMAND bash -c "curl -f ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || curl -f ${LIBRA_MEASURES_HTTPS} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || (NRAO_FILE=\$(curl -sf ${LIBRA_MEASURES_NRAO_MIRROR}/ | grep -oE 'NRAO_Measures_[0-9]+-[0-9]+\\.ztar' | sort | tail -1) && [ -n \"\$NRAO_FILE\" ] && curl -f ${LIBRA_MEASURES_NRAO_MIRROR}/\$NRAO_FILE | tar -C ${CMAKE_SOURCE_DIR}/install/data -xf -)"
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

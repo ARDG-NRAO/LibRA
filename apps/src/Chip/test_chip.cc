@@ -56,8 +56,12 @@ TEST(ChipTest, AppLevelPSF) {
 
 TEST(ChipTest, UIFactory) {
     // The Factory Settings.
-  int argc = 1;
-  const char* argv[] = {"./chip"};
+  int argc = 4;
+  char arg0[] = "./chip";
+  char arg1[] = "help=noprompt";
+  char arg2[] = "imagename=test";
+  char arg3[] = "outputimage=testout";
+  char* argv[] = {arg0, arg1, arg2, arg3};
 
   std::vector<std::string> imageName={"notEmpty"};
   string outputImage="notEmpty", stats="none";
@@ -65,7 +69,7 @@ TEST(ChipTest, UIFactory) {
   bool restartUI=false, interactive=false;
 
   
-  UI(restartUI, argc, (char **)argv, interactive, 
+  UI(restartUI, argc, argv, interactive,
     imageName, outputImage, overWrite,
     resetOutputImage, stats);
 

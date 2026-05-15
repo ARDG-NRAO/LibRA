@@ -24,8 +24,12 @@
 # Path and directory setup for LibRA
 
 # Path and directory variables moved from libraconfig.cmake
-set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
+set(BUILD_DIR ${CMAKE_BINARY_DIR})
+# Default the install prefix to <repo>/install, but honor -DCMAKE_INSTALL_PREFIX
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/install CACHE PATH "Install prefix" FORCE)
+endif()
+set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBRA_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 

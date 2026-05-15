@@ -47,6 +47,95 @@ using namespace std;
 
 namespace test{
 
+// UIFactory and UIThrow must run before any Coyote() call -- parafeed's
+// argv strings must be mutable (strtok writes into them).
+TEST(CoyoteTest, UIFactory) {
+  // The Factory Settings.
+  int argc = 2;
+  char arg0[] = "./coyote";
+  char arg1[] = "help=noprompt";
+  char* argv[] = {arg0, arg1};
+
+  string MSNBuf="", cfCache="test", fieldStr="", spwStr="*",
+    phaseCenter="", stokes="I",
+    refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
+    mode="dryrun";
+  std::vector<std::string> cfList;
+  float cellSize=0.025;
+  int NX=1400, nW=1, cfBufferSize=1, cfOversampling=20;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool conjBeams=true;
+  bool psTerm=false;
+  bool aTerm=true;
+  float pa=-200.0;
+  float dpa=360.0;
+  bool interactive=false;
+
+  UI(restartUI, argc, (char **)argv, interactive,
+     MSNBuf,
+     telescopeName,
+     NX, cellSize, stokes, refFreqStr, nW,
+     cfCache, WBAwp,
+     psTerm, aTerm, mType, pa, dpa,
+     fieldStr, spwStr, phaseCenter, conjBeams,
+     cfBufferSize, cfOversampling,
+     cfList,
+     mode);
+
+  EXPECT_EQ(telescopeName, "EVLA");
+  EXPECT_EQ(cfCache, "test");
+  EXPECT_FLOAT_EQ(cellSize, 0.025f);
+  EXPECT_EQ(NX, 1400);
+  EXPECT_EQ(mode, "dryrun");
+}
+
+TEST(CoyoteTest, UIThrow) {
+  // Missing cfcache triggers a fatal error
+  int argc = 2;
+  char arg0[] = "./coyote";
+  char arg1[] = "help=noprompt";
+  char* argv[] = {arg0, arg1};
+
+  string MSNBuf="", cfCache="", fieldStr="", spwStr="*",
+    phaseCenter="", stokes="I",
+    refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
+    mode="dryrun";
+  std::vector<std::string> cfList;
+  float cellSize=0.025;
+  int NX=1400, nW=1, cfBufferSize=1, cfOversampling=20;
+  bool WBAwp=true;
+  bool restartUI=false;
+  bool conjBeams=true;
+  bool psTerm=false;
+  bool aTerm=true;
+  float pa=-200.0;
+  float dpa=360.0;
+  bool interactive=false;
+
+  try {
+    UI(restartUI, argc, (char **)argv, interactive,
+       MSNBuf,
+       telescopeName,
+       NX, cellSize, stokes, refFreqStr, nW,
+       cfCache, WBAwp,
+       psTerm, aTerm, mType, pa, dpa,
+       fieldStr, spwStr, phaseCenter, conjBeams,
+       cfBufferSize, cfOversampling,
+       cfList,
+       mode);
+    FAIL() << "Expected an exception to be thrown";
+  }
+  catch (const std::exception& e) {
+    std::cout << "Caught exception: " << typeid(e).name() << " - " << e.what() << std::endl;
+    SUCCEED();
+  }
+  catch (...) {
+    std::cout << "Caught unknown exception type" << std::endl;
+    SUCCEED();
+  }
+}
+
   // Global absolute location of the test dir
   std::string testDir=string(fs::current_path())+"/CoyoteDryRun";
   //
@@ -89,45 +178,6 @@ namespace test{
   //
   //-----------------------------------------------------------------------------------------
   //
-
-  TEST(CoyoteTest, UIFactory) {
-    // The Factory Settings.
-    int argc = 1;
-    const char* argv[] = {"./coyote"};
-
-    // The Factory Settings.
-    string MSNBuf="", cfCache="test", fieldStr="", spwStr="*",
-      imageName,cmplxGridName="",phaseCenter, stokes="I",
-      refFreqStr="3.0e9", telescopeName="EVLA", mType="diagonal",
-      mode="dryrun";
-    std::vector<std::string> cfList;
-  
-    float cellSize=0.025;//refFreq=3e09, freqBW=3e9;
-    int NX=1400, nW=1, cfBufferSize=1, cfOversampling=20;
-    bool WBAwp=true;
-    bool restartUI=false;
-    bool doPointing=false;
-    bool normalize=false;
-    bool conjBeams= true;
-    bool psTerm = false;
-    bool aTerm = true;
-    float pa=-200.0, // Get PA from the MS
-      dpa=360.0; // Don't rotate CFs for PA
-  
-    bool interactive = false;
-
-    UI(restartUI, argc, (char **)argv, interactive, 
-       MSNBuf,
-       telescopeName,
-       NX, cellSize, stokes, refFreqStr, nW,
-       cfCache, WBAwp,
-       psTerm, aTerm, mType, pa, dpa,
-       fieldStr, spwStr, phaseCenter, conjBeams,
-       cfBufferSize, cfOversampling,
-       cfList,
-       mode);
-
-  }
 
   TEST(CoyoteTest, CoyoteDryRun) {
     std::string targetTestMS=testDir+"/"+msName;
