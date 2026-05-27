@@ -548,9 +548,9 @@ namespace casa{
 					 nVisPerBucket_p);
 
     
-    log_l << "Resizing HPGVB Bucket: " << nVisPerBucket_p << " visibilities" << LogIO::POST;
-
     hpgVBBucket_p.resize(nVisPerBucket_p);
+
+    log_l << "Resized HPGVB Bucket: " << hpgVBBucket_p.size() << " visibilities " << LogIO::POST;
 
     log_l << "Gridder initialized..." << LogIO::POST;
     bool do_degrid;
@@ -608,7 +608,7 @@ namespace casa{
     // No. of chanels. Polarization is handles as a separate index in
     // HPG format (quite a convoluted way to hold a simple Cube!)
     //
-    uint NVis = vbs.vb_p->nRows()*vbs.nDataChan_p;
+    uint NVis = vbs.vb_p->nRows()*vbs.nDataChan_p*vbs.nDataPol_p;
     if (hpgGridder_p==NULL) do_degrid = createHPG(NVis,nx,ny,nGridPol, nGridChan,
 						  mVals, mNdx, conjMVals, conjMNdx);
 
