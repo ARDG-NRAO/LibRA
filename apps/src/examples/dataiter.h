@@ -30,8 +30,7 @@
 #ifndef DATAITER_H
 #define DATAITER_H
 
-#include <cl.h> // C++ized version
-#include <clinteract.h>
+#include <parafeed.h>
 //
 //================================================================================
 //

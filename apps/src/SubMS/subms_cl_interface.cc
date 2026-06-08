@@ -23,9 +23,7 @@
 // # $Id$
 
 
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <subms.h>
 
 

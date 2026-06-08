@@ -29,8 +29,7 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-#include <cl.h> // C++ized version
-#include <clinteract.h>
+#include <parafeed.h>
 #ifdef CONTACT_USE_MPI
 # include <mpi.h>
 #endif

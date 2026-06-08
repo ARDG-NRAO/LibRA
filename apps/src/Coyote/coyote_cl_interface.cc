@@ -29,9 +29,7 @@
  * @file coyote.cc
  * @brief This file contains the implementation of the UI function.
  */
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <coyote.h>
 
 //#include <synthesis/TransformMachines2/AWConvFunc.h>
