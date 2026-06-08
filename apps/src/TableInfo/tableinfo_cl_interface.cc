@@ -30,9 +30,7 @@
 // # $Id$
 
 
-#include <cl.h>
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <tableinfo.h>
 
 
