@@ -75,13 +75,14 @@ build-job:
     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
     - ccache --show-stats || true
     - git clean -ffdx
-    # Create temporary Python virtual environment for building outside the Libra path
-    - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
+    # Persistent Python virtual environment, reused across pipelines on this
+    # runner.
+    - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
     - python3.11 --version
-    - python3.11 -m venv "${BUILD_VENV_DIR}"
+    - if [ ! -d "${BUILD_VENV_DIR}" ]; then python3.11 -m venv "${BUILD_VENV_DIR}"; fi
     - source "${BUILD_VENV_DIR}/bin/activate"
-    - pip install --upgrade pip setuptools wheel
-    - pip install pytest numpy
+    - pip install --upgrade pip setuptools wheel # prevents pip and setuptools warnings.
+    - pip install --upgrade pytest numpy # checks latest pytest and numpy which are deps.
     - python --version
     - which python
   script:
@@ -124,7 +125,7 @@ test-job:
 
     export LD_LIBRARY_PATH="${base_path}/install/lib:${LD_LIBRARY_PATH:-}"
     export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
-    export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
+    export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
     source "${BUILD_VENV_DIR}/bin/activate"
     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
     echo "PYTHONPATH: $PYTHONPATH"
@@ -170,8 +171,7 @@ test-job:
     echo "CMake version: $(cmake --version)"
     echo "ccache stats:"
     ccache --show-stats || true
-    echo "=== Cleaning up venv ==="
-    rm -rf "${CI_BUILDS_DIR}/build_venv_${CI_PIPELINE_ID}"
+    echo "=== Persistent venv retained for reuse across pipelines ==="
     rm -rf ${base_path}/reports
     rm -rf ${base_path}/cpp_test_dir
   timeout: 1h
