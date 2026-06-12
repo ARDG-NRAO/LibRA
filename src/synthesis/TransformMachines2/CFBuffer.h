@@ -408,7 +408,7 @@ using namespace casa::vi;
 	      const casacore::Vector<casacore::Double>& wValues,
 	      const PolMapType& muellerElements);
     
-    casacore::IPosition getShape() {return cfCells_p.shape();}
+    casacore::IPosition storageShape() {return cfCells_p.shape();}
 
     int getMaxCFSize();
     bool finitePointingOffsets();

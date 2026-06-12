@@ -50,7 +50,7 @@ using namespace std;
  * @class LibHPG
  * @brief Manages the HPG initialize/finalize scope.
  *
- * This class is responsible for initializing and finalizing the HPG library. 
+ * This class is responsible for initializing and finalizing the HPG library.
  * It also reports the time elapsed between construction and destruction.
  */
 class LibHPG
@@ -64,14 +64,17 @@ public:
   //#ifdef LIBRA_NONSTD_KOKKOS_INITIALIZE
   static std::vector<KokkosInterop::K_BACKEND> global_initialized_kokkos_backends;
 #endif
-  
+
   LibHPG(const bool usingHPG=true, std::ostream* os=nullptr):
     init_hpg(usingHPG),hpg_initialized(false),os_p(os)
   {
     if (!initialize())
       {
+	int CPP_K_VERSION = KOKKOS_VERSION;
+	// cerr << "############# KOKKOS VERSION = " << CPP_K_VERSION << endl;
 	LogIO log_l(LogOrigin("LibHPG","LibHPG"));
-	log_l << "Failed to initialized HPG" << LogIO::EXCEPTION << LogIO::POST;
+	log_l << "Failed to initialized HPG (Kokkos version: " << CPP_K_VERSION << ")"
+	      << LogIO::EXCEPTION << LogIO::POST;
       };
   }
   /**
@@ -85,7 +88,7 @@ public:
   // hpg::initialize() method was called.
   //
   bool hpg_intialize_called() {return hpg_initialized;}
-  
+
   //
   // @brief Return the total time elasped since the class constructor was called.
   //

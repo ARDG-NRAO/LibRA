@@ -109,7 +109,8 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		   const Int& nGridPol, const Int& nDataPol,
 		   const Vector<Int>& polMap,
 		   Vector<Int>& wNdxList,
-		   Vector<Int>& spwNdxList);
+		   Vector<Int>& spwNdxList,
+		   double paTolernace=360.0);
       
     private:
       PolMapType mndx_p, conj_mndx_p;

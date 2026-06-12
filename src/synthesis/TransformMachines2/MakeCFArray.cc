@@ -59,6 +59,14 @@ namespace casa{
       Array<Complex> *convFuncV;
       CFCell *cfcell;
       //
+      // The following issue is handled now, by determining the
+      // largest CF in the HPG data structure Group and padding
+      // smaller CFs with zero. This allows all required CFs to be in
+      // the same group.  Leaving the comment below to jog the memory
+      // and inform how this is fixed in the code that calls this
+      // function.
+      //
+      //
       // Forcing pndx to 1 effectively disables squint correction.  This was required since the CFs
       // per pol may have different sizes (due to numerical noise).  CFs for all pol in this case can't
       // set in the same Group of a CFArray.
@@ -67,41 +75,48 @@ namespace casa{
 
       //cerr << "CFC indexes(w,f,p),mRow: " << wndx << " " << fndx << " " << pndx << " " << mRow << endl;
       cfcell=&(*(cfb.getCFCellPtr(fndx,wndx,pndx)));
-      
+
       convFuncV = &(*cfcell->getStorage());
       support(0)=support(1)=cfcell->xSupport_p;
-      
+
       // Get the pointer to the CFCell storage (a single CF)
       //    if ((convFuncV = &(*cfcell->getStorage())) == NULL)
       if (convFuncV == NULL)
 	throw(SynthesisFTMachineError("cfcell->getStorage() == null"));
-      
-      // Load the CF if it not already loaded.  If a new CF is loaded,
-      // check if it needs to be rotated.
-      //      cerr << cfcell->fileName_p << " " << endl;
+
+      // Load the CF if it is not already loaded.  This should also work
+      // if the CFS (and CFCell) are in-memory already. If a new CF is
+      // loaded, check if it needs to be rotated.
       if (convFuncV->shape().product() == 0)
 	{
 	  Array<Complex>  tt=SynthesisUtils::getCFPixels(cfb.getCFCacheDir(), cfcell->fileName_p);
 	  cfcell->setStorage(tt);
-	  
+
 	  //cerr << (cfcell->isRotationallySymmetric_p?"o":"+");
-	  
+
 	  // No rotation necessary if the CF is rotationally symmetric
 	  // SB: Disabled for HPG testing.
 	  //
-	  // if (!(cfcell->isRotationallySymmetric_p))
-	  //   {
-	  //     CFCell *baseCFC=NULL;
-	  //     // Rotate only if the difference between CF PA and VB PA
-	  //     // is greater than paTolerance.
-	  //     SynthesisUtils::rotate2(vbPA, *baseCFC, *cfcell, paTolerance);
-	  //   }
+	  if (!(cfcell->isRotationallySymmetric_p))
+	    {
+	      CFCell *baseCFC=NULL; // This is not yet used inside
+				    // rotate2().  The intention is to
+				    // keep a copy of un-rotated CF
+				    // and always use that to rotate
+				    // to the desired PA.  This
+				    // reduces numerical noise in
+				    // rotation.
+
+	      // Rotate only if the difference between CF PA and VB PA
+	      // is greater than paTolerance.
+	      SynthesisUtils::rotate2(vbPA, *baseCFC, *cfcell, paTolerance);
+	    }
 	  convFuncV = &(*cfcell->getStorage());
 	}
       //      cerr << convFuncV->shape() << " ";
-      
+
       cfShape.assign(convFuncV->shape().asVector());
-      
+
       // Always extract the Mueller element value from mNdx.  mNdx
       // carries the direct mapping between Mueller Matrix and
       // Visibility vector.
@@ -145,7 +160,7 @@ namespace casa{
 	       hpg::CFSimpleIndexer,   // The corresponding CFSI.  This should be used in AWVRHPG to fill hpg::VisData
 	       std::shared_ptr<hpg::RWDeviceCFArray>, // The RWDeviceCFArray.  Use it if reloadCFs==true
 	       std::vector<int>
-	       > 
+	       >
     MakeCFArray::makeRWDArray(const bool& wbAWP, const int& user_wprojplanes,
 			     const ImageInterface<Float>& skyImage,
 			     const Vector<int>& polMap,
@@ -218,28 +233,29 @@ namespace casa{
 			      const Int& nGridPol, const Int& nDataPol,
 			      const Vector<Int>& polMap,
 			      Vector<Int>& wNdxList,
-			      Vector<Int>& spwNdxList)
+			      Vector<Int>& spwNdxList,
+			      double paTolerance)
     {
       LogIO log_l(LogOrigin("MakeCFArray","makeRWDCFA_p"));
-      
-      
+
+
       Int nWCF=1, nFreqCF, nPolCF;
       Vector<float> sampling(2);
       Vector<Int> support(2), cfShape;
       Vector<Double> wVals, fVals; PolMapType mVals, mNdx, conjMVals, conjMNdx;
-      
+
       Double cfRefFreq,dataWVal=0,fIncr, wIncr;
-      
+
       cfb.getCoordList(fVals,wVals,mNdx, mVals, conjMNdx, conjMVals, fIncr, wIncr);
-      
+
       nWCF = wNdxList.nelements();
       nFreqCF = spwNdxList.nelements();
-      
+
       // Get the oversampling parameter.
       {
     	Float s;
     	int dummyWNdx=0;
-	
+
     	int refSpw;
     	SynthesisUtils::stdNearestValue(fVals.tovector(),
     					imRefFreq,//vbs.imRefFreq_p,
@@ -247,11 +263,11 @@ namespace casa{
     	// cerr << "RefSpw, W, F, RefFreq: "
     	//      << refSpw << " " << wVals.nelements() << " " << fVals.nelements() << " " << imRefFreq
     	//      << endl;
-	
+
     	cfb.getParams(cfRefFreq, s, support(0), support(1),refSpw,dummyWNdx,0);
     	sampling(0) = sampling(1) = SynthesisUtils::nint(s);
       }
-      
+
       nPolCF=0;
       std::map<int,int> p2m;
       unsigned nCF;
@@ -273,18 +289,18 @@ namespace casa{
     	      // the Mueller matrix.  In effect, this ignores symmetries
     	      // in the Mueller matrix elements, which can (should?) be
     	      // exploited to reduce memory footprint.
-    	      // SB: nPolCF += conjMNdx[r].shape()(0); 
+    	      // SB: nPolCF += conjMNdx[r].shape()(0);
 	      //    	      cerr  << mNdx[r] << endl;
     	    }
     	  nPolCF = p2m.size();
     	  log_l << "CFBuffer shape (nF x nW x nPol): " << nFreqCF << " x " << nWCF << " x " << nPolCF << LogIO::POST;
-	  
+
     	  nCF = nWCF * nFreqCF;
     	  log_l << "Setting cfArray size: " << "nCF: " << nCF << " x " << nPolCF << " sampling: " << sampling(0) << LogIO::POST;
-	  
+
     	  cfArrayShape.setSize((unsigned)(nCF),(unsigned)sampling(0));
     	}
-      
+
 
       // Reference for call signature
       // CFSimpleIndexer(
@@ -304,7 +320,7 @@ namespace casa{
       for (auto r : mndx_p) nMuellerElements = max(nMuellerElements,max(r));
       nMuellerElements++; // mndx_p has 0-based indices
       log_l << "No. of Mueller elements: " << nMuellerElements << LogIO::POST;
-      
+
       auto getMaxCFShape = [&cfb](Vector<int>& mRow,
 					const int& rowN,const int& fNdx, const int& wNdx) -> IPosition
 			   {
@@ -330,9 +346,9 @@ namespace casa{
     	  for(int iW=0; iW < nWCF; iW++)   // CASA CF W-index
     	    {
     	      for(int ipol=0; ipol < nDataPol; ipol++)  // CASA CF Pol-index
-    		{  
+    		{
     		  Int targetIMPol=polMap(ipol);
-    		  if ((targetIMPol>=0) && (targetIMPol<nGridPol)) 
+    		  if ((targetIMPol>=0) && (targetIMPol<nGridPol))
     		    {
 		      Vector<int> mRow = mndx_p[targetIMPol];
 		      int fNdx=spwNdxList[iFreq],wNdx=wNdxList[iW];
@@ -382,7 +398,7 @@ namespace casa{
       std::shared_ptr<hpg::RWDeviceCFArray> rwDCFArray = hpg::get_value(std::move(err_or_val));
       //-------------------------------------------------------------------------------------------------
 
-      double paTolerance = 360.0;
+      //double paTolerance = 360.0;
       iGrp=0; // HPG Group index
 
       // cerr << endl << "--------------------------------" << endl;
@@ -406,7 +422,7 @@ namespace casa{
     	  for(int iW=0; iW < nWCF; iW++)   // CASA CF W-index
     	    {
     	      for(int ipol=0; ipol < nDataPol; ipol++)  // CASA CF Pol-index
-    		{  
+    		{
     		  Int targetIMPol=polMap(ipol);
 
     		  if ((targetIMPol >= 0) && (targetIMPol < nGridPol))

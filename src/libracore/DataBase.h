@@ -32,6 +32,8 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
+using namespace casa;
+using namespace casa::refim;
 using namespace casacore;
 using namespace std;
 
@@ -82,11 +84,12 @@ inline std::tuple<std::vector<int>, std::vector<int> > loadMS(const String& msna
   if (!exprNode.isNull())
     {
       selectedMS = MS(thems(exprNode));
-      // TODO: should the following statements be moved outside this
-      // block?
-      spwid=msSelection.getSpwList().tovector();
-      fieldid=msSelection.getFieldList().tovector();
     }
+  //
+  // Extra ID lists with current selection
+  //
+  spwid=msSelection.getSpwList().tovector();
+  fieldid=msSelection.getFieldList().tovector();
   return std::tuple<std::vector<Int>, std::vector<Int> >{spwid, fieldid};
 }
 
@@ -261,7 +264,8 @@ public:
     }
 
     log_l << "Selected SPW ID list: ";
-    for (auto id:spwidList) log_l << id << " "; log_l << LogIO::POST;
+    for (auto id:spwidList) log_l << id << " ";
+    log_l << LogIO::POST;
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };

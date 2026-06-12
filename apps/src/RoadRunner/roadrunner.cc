@@ -461,9 +461,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //      cerr << "PC = " << oss << endl;
 
       TempImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
-						  cmplxGridName, startModelImageName,
-						  imSize, cellSize, phaseCenter,
-						  stokes, refFreqStr, mode);
+						 imSize, cellSize, phaseCenter,
+						 stokes, refFreqStr, mode);
       PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
 
       //      cgrid.table().markForDelete();

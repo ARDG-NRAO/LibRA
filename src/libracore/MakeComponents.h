@@ -286,7 +286,7 @@ makeTheChanSelMap(MSSelection& mss)
 //-------------------------------------------------------------------------
 //
 /**
- * @fn PagedImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2, const MeasurementSet& selectedMS, MSSelection& msSelection, const String& imageName, const String& startModelImageName, const Vector<Int>& imSize, const float& cellSize, const String& phaseCenter, const String& stokes, const String& refFreq)
+ * @fn TempImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2, const MeasurementSet& selectedMS, MSSelection& msSelection, const String& imageName, const String& startModelImageName, const Vector<Int>& imSize, const float& cellSize, const String& phaseCenter, const String& stokes, const String& refFreq)
  * @brief Creates an empty sky image.
  * @param vi2 A reference to the VisibilityIterator2 object.
  * @param selectedMS A reference to the selected MeasurementSet.
@@ -298,16 +298,15 @@ makeTheChanSelMap(MSSelection& mss)
  * @param phaseCenter The phase center.
  * @param stokes The Stokes parameters.
  * @param refFreq The reference frequency.
- * @return A PagedImage object representing the empty sky image.
+ * @return A TempImage object representing the empty sky image.
  */
 inline TempImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
-				      const MeasurementSet& selectedMS,
-				      MSSelection& msSelection,
-				      const String& imageName, const String& startModelImageName,
-				      const Vector<Int>& imSize, const float& cellSize,
-				      const String& phaseCenter, const String& stokes,
-				      const String& refFreq,
-				      const String& mode)
+					    const MeasurementSet& selectedMS,
+					    MSSelection& msSelection,
+					    const Vector<Int>& imSize, const float& cellSize,
+					    const String& phaseCenter, const String& stokes,
+					    const String& refFreq,
+					    const String& mode)
 {
   Vector<Quantity> qCellSize(2);
   for (int i=0;i<2;i++)
@@ -331,8 +330,8 @@ inline TempImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
 
   SynthesisParamsGrid gridParams;
   SynthesisParamsImage imageParams;
-  imageParams.imageName=imageName;
-  imageParams.startModel=startModelImageName;
+  //  imageParams.imageName=imageName;
+  //  imageParams.startModel=startModelImageName;
   imageParams.imsize=imSize;
   imageParams.cellsize=qCellSize;
   imageParams.phaseCenter = mphaseCenter;
@@ -365,187 +364,4 @@ inline TempImage<Complex> makeEmptySkyImage(VisibilityIterator2& vi2,
   //  return PagedImage<Complex>(imshape, csys, imageParams.imageName+".tmp");
   return TempImage<Complex>(imshape, csys);
 }
-
-// // Get from UI
-// //-------------------------------
-// string cmplxGridName;
-// string phaseCenter; 
-// string stokes;
-// string refFreqStr;
-// string mode;
-// string weighting;
-// string cfCache;
-// string imageNamePrefix;
-// string imagingMode;
-
-// int imSize; 
-// int NX, nW;
-
-// float cellSize;
-// float robust;
-// float pbLimit;
-// vector<float> posigdev;
-
-// bool WBAwp;
-// bool doPointing;
-// bool normalize;
-// bool doPBCorr;
-// bool conjBeams;
-// bool doSPWDataIter;
-// bool aTermOn;
-// bool psTermOn;
-// bool mTermOn;
-// //-------------------------------
-
-
-
-// PagedImage<Complex> cgrid;
-// PagedImage<Float> skyImage;
-
-// void run(const DataBase& db, const UI& ui)
-// {
-
-//       //
-//       //-------------------------------------------------------------------
-//       // Make the empty grid with the sky image coordinates
-//       //
-//       Vector<Int> imSize(2,NX);
-//       String mode="mfs", startModelImageName="";
-
-//       cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
-// 			      cmplxGridName, startModelImageName,
-// 			      imSize, cellSize, phaseCenter,
-// 			      stokes, refFreqStr, mode);
-//       skyImage = PagedImage<Float>(cgrid.shape(),cgrid.coordinates(), imageName);
-
-//       cgrid.table().markForDelete();
-
-//       // Setup the weighting scheme in the supplied VI2
-//       weightor(*(db.vi2_l),
-// 	       cgrid.coordinates(), // CSys of the sky image
-// 	       cgrid.shape(),       // X-Y shape of the sky image
-// 	       weighting,
-// 	       rmode,
-// 	       casacore::Quantity(0.0, "Jy"),  // noise
-// 	       robust);
-
-//       // remove all images except the reduced one on the root rank
-//       if (!isRoot)
-// 	skyImage.table().markForDelete();
-
-//       StokesImageUtil::From(cgrid, skyImage);
-//       if(db.vb_l->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
-//       else StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
-
-//       //-------------------------------------------------------------------
-//       // Create the AWP FTMachine.  The AWProjectionFT is construed
-//       // with the re-sampler depending on the ftmName (AWVisResampler
-//       // for ftmName='awproject' or AWVisResamplerHPG for
-//       // ftmName='awphpg')
-//       //
-//       MPosition loc;
-//       MeasTable::Observatory(loc, MSColumns(db.selectedMS).observation().telescopeName()(0));
-//       Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
-
-//       auto ret = 
-// 	createAWPFTMachine(ftmName, modelImageName, ftm_g,
-// 			   String("EVLA"),
-// 			   loc, cfCache,
-// 			   //cfBufferSize, cfOversampling,
-// 			   WBAwp,nW,
-// 			   useDoublePrec,
-// 			   aTermOn,
-// 			   psTermOn,
-// 			   mTermOn,
-// 			   doPointing,
-// 			   doPBCorr,
-// 			   conjBeams,
-// 			   pbLimit,
-// 			   posigdev,
-// 			   imageNamePrefix,
-// 			   imagingMode
-// 			   );
-//       CountedPtr<refim::CFCache>  cfc = get<0>(ret);
-//       CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
-//       {
-// 	Matrix<Double> mssFreqSel;
-// 	mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
-// 	// Send in Freq info.
-// 	ftm_g->setSpwFreqSelection( mssFreqSel );
-
-// 	doPSF=(ftm_g->ftmType()==casa::refim::FTMachine::PSF);
-//       }
-
-//       //-------------------------------------------------------------------
-//       // Iterate over the MS, trigger the gridding.
-//       //
-//       cgrid.set(Complex(0.0));
-//       Matrix<Float> weight;
-//       db.vi2_l->originChunks();
-//       db.vi2_l->origin();
-
-//       // If no normalization is requested, AWProjectWBFT should not grid
-//       // for .weight image.
-//       //
-//       // This de-couples calculations for .weight, .psf, .residual, which
-//       // can now be done independently and in any order.
-//       //
-//       // The run for .residual image also save the sumwt image, since that
-//       // matches what production CASA does.  Which SoW out of .weight,
-//       // .psf, or .residual runs is the appropriate one is unresolved.
-//       // Probably all should be used, but this needs to be carefully
-//       // worked out.
-//       if (!normalize) ftm_g->setPBReady(true);
-
-//       if (imagingMode=="predict")
-// 	ftm_g->initializeToVis(cgrid,*(db.vb_l));
-//       else
-// 	ftm_g->initializeToSky(cgrid, weight, *(db.vb_l));
-
-//       // barrier needed for accurate elapsed time measurement
-//       // mpi_barrier(MPI_COMM_WORLD);
-//       timer.mark();
-
-//       CountedPtr<casa::refim::CFStore2> cfs2_l;
-//       if (!cfc.null())
-// 	{
-// 	  if (doPSF || (imagingMode=="weight"))
-// 	    cfs2_l =  CountedPtr<casa::refim::CFStore2>(&cfc->memCacheWt2_p[0],false);//new CFStore2;
-// 	  else
-// 	    cfs2_l = CountedPtr<casa::refim::CFStore2>(&(cfc->memCache2_p)[0],false);//new CFStore2;
-// 	}
-
-//       Vector<int> chanMap, polMap;
-//       visResampler->getMaps(chanMap, polMap);
-//       int nGridPlanes = skyImage.shape()[2]; 
-//       PolMapType mndx, conj_mndx;
-//       {
-// 	auto ret = makeMNdx(std::string("stokesI.mndx"), polMap, nGridPlanes);
-// 	mndx      = std::get<0>(ret);
-// 	conj_mndx = std::get<1>(ret);
-
-// 	auto prt = [](std::string tag, PolMapType& p) -> void
-// 		   {
-// 		     cerr << tag << endl;
-// 		     for( auto row : p)
-// 		       {
-// 			 for (auto col : row) cerr << col << " ";
-// 			 cerr << endl;
-// 		       }
-// 		   };
-// 	prt(std::string("mndx:"),mndx);
-// 	prt(std::string("cmndx:"),conj_mndx);
-//       }
-
-//       int nDataPol;
-//       // Extract SPW ref. frequency and the number of polarizations in the
-//       // data (nDataPol).
-//       {
-// 	db.vi2_l->originChunks();
-// 	db.vi2_l->origin();
-// 	spwRefFreqList.assign(db.vb_l->subtableColumns().spectralWindow().refFrequency().getColumn());
-// 	nDataPol  = db.vb_l->flagCube().shape()[0];
-//       }
-
-// }
 #endif
