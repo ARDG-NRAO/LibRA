@@ -1,0 +1,61 @@
+import argparse
+import glob
+import os
+import sys
+import subprocess
+
+def check_path(path, path_name):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"The {path} does not exist. Please provide a valid path for {path_name}")
+
+def worker(cfs, start, end, cfcache_dir, coyote_app, task_id):
+    with open(f'logs/{task_id}.txt', 'w') as f:
+        f.write(f"Starting index: {start} \n")
+        f.write(f"Ending index: {end-1} \n")
+        f.write(f"Number of cfs: {len(cfs)} \n")
+        for cf in cfs:
+            f.write(cf + '\n')
+    command = [f'{coyote_app}', 'help=noprompt', 'mode=fillcf', f'cfcache={cfcache_dir}', f'cflist={",".join(cfs)}']
+    print("Running command:", " ".join(command))
+    subprocess.run(command)
+
+def distribute_tasks(n_processes, task_id, cfs, cfcache_dir, coyote_app):
+    # Distribute tasks among processes
+    base, remainder = divmod(len(cfs), n_processes)
+    quantities = [base + 1 if i < remainder else base for i in range(n_processes)]
+
+    # Determine start and end indices for this task
+    start = sum(quantities[:task_id])
+    end = start + quantities[task_id]
+
+    # Process cfs
+    worker(cfs[start:end], start, end, cfcache_dir, coyote_app, task_id)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process the parallel cf filling under HTCondor.')
+    parser.add_argument('--coyote_app', required=True, help='Path to the coyote_app binary')
+    parser.add_argument('--cfcache_dir', required=True, help='cfcache_dir path')
+    parser.add_argument('--nprocs', type=int, required=True, help='Number of processes')
+    parser.add_argument('--task_id', type=int, default=None,
+                        help='Task index, pass $(Process) from the condor submit file. '
+                             'Falls back to CONDOR_PROCESS env var, then 0.')
+
+    args = parser.parse_args()
+
+    # Check if the cfcache_dir exists
+    check_path(args.cfcache_dir, 'cfcache_dir')
+
+    # Check if the coyote_app exists
+    check_path(args.coyote_app, 'coyote_app')
+
+    # Get all cfs in the cfcache_dir
+    cfs = sorted([os.path.basename(f) for f in glob.glob(os.path.join(args.cfcache_dir, 'CF*.im')) if os.path.isdir(f)])
+
+    # Get the task_id: HTCondor has no equivalent of SLURM_ARRAY_TASK_ID by default,
+    # so it is passed in via arguments = ... $(Process) in the submit file.
+    task_id = args.task_id
+    if task_id is None:
+        task_id = int(os.getenv('CONDOR_PROCESS', '0'))
+
+    # Distribute tasks among processes
+    distribute_tasks(args.nprocs, task_id, cfs, cfcache_dir=args.cfcache_dir, coyote_app=args.coyote_app)
