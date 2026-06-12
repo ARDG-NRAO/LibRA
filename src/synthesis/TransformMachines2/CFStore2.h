@@ -138,7 +138,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     casacore::Vector<casacore::Int>& getAnt1List() {return ant1_p;};
     casacore::Vector<casacore::Int>& getAnt2List() {return ant2_p;};
     casacore::Vector<casacore::Quantity> getPAList() {return pa_p;};
-    casacore::IPosition getShape() {return storage_p.shape();}
+    casacore::IPosition shape() {return storage_p.shape();}
 
 
   protected:

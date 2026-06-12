@@ -209,7 +209,7 @@ namespace casa{
   //
   void CFStore2::primeTheCFB()
   {
-    IPosition shp=getShape();
+    IPosition shp=shape();
     for (Int i=0; i<shp(0); i++)
       for (Int j=0; j<shp(1); j++)
 	getCFBuffer(i,j)->primeTheCache();
@@ -228,7 +228,7 @@ namespace casa{
   //
   void CFStore2::initPolMaps(PolMapType& polMap, PolMapType& conjPolMap)
   {
-    IPosition shp=getShape();
+    IPosition shp=shape();
     for (Int i=0; i<shp(0); i++)
       for (Int j=0; j<shp(1); j++)
 	getCFBuffer(i,j)->initPolMaps(polMap, conjPolMap);

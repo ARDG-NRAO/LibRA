@@ -88,10 +88,10 @@ PagedImage<Complex> makeEmptySkyImage4CF(VisibilityIterator2& vi2,
 /// @param stokes is the Stokes parameter.
 /// @param mType is the Muller parameter.
 /// @return 
-CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
-					  Vector<casacore::Stokes::StokesTypes> visPolMap,
-					  Vector<int> polMap,
-					  std::string &stokes, std::string &mType);
+// CountedPtr<refim::PolOuterProduct> setPOP(vi::VisBuffer2 &vb2,
+// 					  Vector<casacore::Stokes::StokesTypes> visPolMap,
+// 					  Vector<int> polMap,
+// 					  std::string &stokes, std::string &mType);
 
 /// @brief This function returns the fileList of CFs to fill.
 /// @param cfCacheName is the name of the CF cache.

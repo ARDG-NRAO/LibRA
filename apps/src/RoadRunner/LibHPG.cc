@@ -74,9 +74,10 @@ std::vector<KokkosInterop::K_BACKEND> getHPGDevice()
 bool LibHPG::initialize()
   {
     startTime = std::chrono::steady_clock::now();
-    // int CPP_K_VERSION = KOKKOS_VERSION;
+    int CPP_K_VERSION = KOKKOS_VERSION;
     // cerr << "############# KOKKOS VERSION = " << CPP_K_VERSION << endl;
 
+    if (!init_hpg) hpg_initialized=true;
 #ifdef LIBRA_USE_HPG
 #if KOKKOS_VERSION < 50000
     if (init_hpg)
@@ -115,7 +116,8 @@ bool LibHPG::initialize()
 				 if (kokkos_initialized) std::atexit(KokkosInterop::kokkos_finalize);
 			       }
 			     else
-			       log_l << "Kokkos initialization failed" << LogIO::EXCEPTION << LogIO::POST;
+			       log_l << "Kokkos initialization failed (Kokkos version: " << CPP_K_VERSION << ")"
+				     << LogIO::EXCEPTION << LogIO::POST;
 			     return hpg_initialized;
 			   }();
 	// To be re-enterant in a single process, derive the status of
@@ -143,7 +145,12 @@ bool LibHPG::initialize()
 	  return hpg_initialized;
 	}();
 	hpg_initialized=once;
-      } 
+	if (hpg_initialized)
+	  log_l << "All Kokkos backends initialized, wheather they are used or not!"
+		<< " (Kokkos version: " << CPP_K_VERSION << ")"
+		<< LogIO::POST;
+
+      }
     assert(hpg::is_intialized);
 #endif // endif associated with 'KOKKOS_VERSION >= 50000'
 #else //LIBRA_USE_HPG

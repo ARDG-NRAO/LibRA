@@ -49,7 +49,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <casacore/scimath/Mathematics/ConvolveGridder.h>
+//#include <casacore/scimath/Mathematics/ConvolveGridder.h>
 #include <casacore/lattices/Lattices/LatticeCache.h>
 #include <casacore/lattices/Lattices/ArrayLattice.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
@@ -361,6 +361,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual void makeSensitivityImage(const vi::VisBuffer2& vb, 
 				      const casacore::ImageInterface<casacore::Complex>& imageTemplate,
 				      casacore::ImageInterface<casacore::Float>& sensitivityImage);
+    virtual void makeSensitivityImage(const VisBuffer2&, //vb
+				      const ImageInterface<DComplex>&, /*imageTemplate*/
+				      ImageInterface<Float>& /*sensitivityImage*/) {};
 
     //
     // Given the sky image (Fourier transform of the visibilities),

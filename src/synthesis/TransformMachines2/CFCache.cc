@@ -161,7 +161,7 @@ namespace casa{
     LogOrigin logOrigin("CFCache2", "summarize");
     LogIO log_l(logOrigin);
 
-    IPosition cfsShp=memStore[0].getShape();
+    IPosition cfsShp=memStore[0].shape();
     Int ipol=0;
 
     if (cfsInfo)
@@ -181,7 +181,7 @@ namespace casa{
       for(Int iPA=0; iPA<cfsShp(0); iPA++)
 	{
 	  CFBuffer& cfb=memStore[0](iPA,iBL);
-	  IPosition cfbShp=cfb.getShape();
+	  IPosition cfbShp=cfb.storageShape();
 	  for (Int iw=0; iw<cfbShp[1]; iw++)
 	    {
 	      log_l << "Support Size (w:"<< iw << ", PA:" << iPA << ", BL:" << iBL << ", C:*): ";
@@ -214,13 +214,13 @@ namespace casa{
       {
 	log_l << "Loading misc info from CFs.  " << LogIO::POST;
 	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
-	log_l << "CFStore shape: " << memCache2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << shape("CF") << LogIO::POST;
       }
     if (cfWtFileNames.nelements() > 0)
       {
 	log_l << "Loading misc info from WTCFs. " << LogIO::POST;
 	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, true, selectedPA, dPA, verbose);
-	log_l << "CFStore shape: " << memCacheWt2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << shape("WTCF") << LogIO::POST;
       }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();
@@ -275,8 +275,6 @@ namespace casa{
     //
     // Lambda function to fill CFs with a given prefix.
     //
-    memCache2_p.resize(1);
-    memCacheWt2_p.resize(1);
     auto fillCF_l = [&](CFStoreCacheType2& memCache2_l, casacore::String& cfprefix)
 		    {
 		      fillCFSFromDisk(dirObj,cfprefix, memCache2_l, true, selectedPA, dPA, verbose);
@@ -286,11 +284,30 @@ namespace casa{
 		      return 0.0;//memCache2_l[0].memUsage();
 		    };
 
-    if (prefix == "CFS*") memUsed0 = fillCF_l(memCache2_p, prefix);
-    else if (prefix == "WTCFS*") memUsed1 = fillCF_l(memCacheWt2_p, prefix);
+    if (prefix == "CFS*")
+      {
+	memCache2_p.resize(1);
+	memUsed0 = fillCF_l(memCache2_p, prefix);
+      }
+    else if (prefix == "WTCFS*")
+      {
+	memCacheWt2_p.resize(1);
+	memUsed1 = fillCF_l(memCacheWt2_p, prefix);
+      }
     else // Load both, CFS* and WTCFS* if prefix is blank or of unexpected value
       {
-	casacore::String s="CFS*";
+	memCache2_p.resize(1);
+	memCacheWt2_p.resize(1);
+	//
+	// If the CFCache on disk is empty, the first call to
+	// fillCF_l() will throw the CFISEmpty exception via
+	// fillCFSFromDisk() and the second call to fillCF_l() will
+	// not be made. The client code must resolve this exception.
+	// Like in CFCacheHelper::constrcutCFS() with mode="dryrun",
+	// where this exception is expected and ignored.
+	//
+	casacore::String s;
+	s="CFS*";
 	memUsed0 = fillCF_l(memCache2_p, s);
 	s="WTCFS*";
 	memUsed1 = fillCF_l(memCacheWt2_p, s);
