@@ -80,11 +80,11 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
     {
       casa::refim::MyCFArray cfArray;
       cfShapeList = std::get<4>(ret);
-      cerr << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << endl;
-      cerr //<< "CF W list: " << wNdxList << endl
-	   << "CF SPW List: " << spwNdxList << endl
-	   << "CF Shapes: ";
-      for(auto s : cfShapeList) cerr << s << " "; cerr << endl;
+      log_l << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << LogIO::POST;
+      log_l //<< "CF W list: " << wNdxList << endl
+	<< "CF SPW List: " << spwNdxList << LogIO::POST
+	<< "CF Shapes: ";
+      for(auto s : cfShapeList) log_l << s << " "; log_l << LogIO::POST;
       cfsi_g = get<2>(ret);
 
       dcf_sptr = std::get<3>(ret);
@@ -103,13 +103,15 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l,
 	      std::vector<int>& spwidList,
 	      std::vector<double>& spwRefFreqList,
-	      int& nDataPol)
+	      int& nDataPol,
+	      LogIO& os)
 {
   try
     {
+      os.origin(LogOrigin("roadrunner","CFServer"));
       for(auto ispw : spwidList)
 	{
-	  cerr << ".................CFServer................" << endl;
+	  os << ".................CFServer................" << LogIO::POST;
 
 	  //Declare the in-memory CFCache dirty.  Specifically, the memory
 	  //accessed by the dcfa_sptr_g point should be considered dirty and
@@ -122,8 +124,7 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	  // uses two threads), this can be made reliable.
 	  double spwRefFreq = spwRefFreqList[ispw];//spwRefFreqList[ispw];
 	  // int vbSPWID=(vb_g)->spectralWindows()(0);
-	  // cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
-	  cerr << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+	  os << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << " conjBeams: " << mkCF.conjBeams() << LogIO::POST;
 	  auto ret = prepCFEngine(mkCF,
 				  WBAwp, nW,
 				  //vbSPWID,
@@ -137,10 +138,10 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 
 	  thcoord.setCFReady(true);
 	  thcoord.Notify_CFReady();
-	  cerr << ".................CFServer waitForCFSent................" << endl;
+	  os << ".................CFServer waitForCFSent................" << LogIO::POST;
 	  if (thcoord.isEoD())
 	    {
-	      cerr << ".................EoD detected (CFServer exiting)................" << endl;
+	      os << ".................EoD detected (CFServer exiting)................" << LogIO::POST;
 	      return;
 	    }
 	  thcoord.waitForCFSent();
@@ -341,11 +342,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 {
   // LogFilter filter(LogMessage::NORMAL);
   // LogSink::globalSink().filter(filter);
-  LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
   RRReturnType rrr;
 
   try
     {
+      LogIO log_l(LogOrigin("roadrunner","Roadrunner"));
       // set the default of rmode to be "norm"
       if (rmode =="")
         rmode = "norm";
@@ -570,13 +571,13 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	mndx      = std::get<0>(ret);
 	conj_mndx = std::get<1>(ret);
 
-	auto prt = [](std::string tag, PolMapType& p) -> void
+	auto prt = [&log_l](std::string tag, PolMapType& p) -> void
 		   {
-		     cerr << tag << endl;
+		     log_l << tag << LogIO::POST;
 		     for( auto row : p)
 		       {
-			 for (auto col : row) cerr << col << " ";
-			 cerr << endl;
+			 for (auto col : row) log_l << col << " ";
+			 log_l << LogIO::POST;
 		       }
 		   };
 	prt(std::string("mndx:"),mndx);
@@ -703,7 +704,13 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  std::string HPGDeviceName_p;
 	  hpg::Device HPGDevice_p;
 	  std::tie(HPGDeviceName_p, HPGDevice_p) = static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice();
-	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p);
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p, conjBeams);
+
+	  // To get messages from ThreadCoordinator, pass &cerr (or
+	  // any other ostream*) to the constructor.
+	  //
+	  // TODO: LogIO.output(), which returns the internal ostream
+	  // pointer, does not work. Why?
 	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
@@ -716,7 +723,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 				   std::ref(cfs2_l),
 				   std::ref(db.spwidList),
 				   std::ref(db.spwRefFreqList),
-				   std::ref(nDataPol));
+				   std::ref(nDataPol),
+				   std::ref(log_l));
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
 	  // since the call to .waitForCFReady_or_EoD() in the
@@ -778,11 +786,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    };
 	  //-------------------------------------------------------------------------------------------
 	  auto notifyCFSent =
-	    [&thcoord](const int& nVB)
+	    [&thcoord,&log_l](const int& nVB)
 	    {
 	      if ((nVB==0) && (!thcoord.isEoD()))
 		{
-		  cerr << "gridderEngine: CFSent notification" << endl;
+		  log_l << "gridderEngine: CFSent notification" << LogIO::POST;
 		  thcoord.setCFSent(true);
 		  thcoord.newCF=false;
 		  thcoord.Notify_CFSent();
@@ -817,7 +825,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //-----------------------------------------------------------------------------------
 
       rrr[CUMULATIVE_GRIDDING_ENGINE_TIME]=griddingEngine_time;
-      cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
+      log_l << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << LogIO::POST;
       unsigned long allVol=vol;
       //log_l << "Total rows processed: " << allVol << LogIO::POST;
 
@@ -936,14 +944,12 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       rrr[DATA_VOLUME] = visResampler->getDataVolume();
       rrr[MAKEVB_TIME] = getMakeHPGVBTime(visResampler);
     }
+  // Looks like AipsError is now derived from std::exception.  Nice.
   catch (std::exception& stdErr)
     {
+      LogIO log_l(LogOrigin("roadrunner","Roadrunner"));
       log_l << stdErr.what() << LogIO::SEVERE;
     }
-  // Looks like AipsError is now derived from std::exception.  Nice.
-  // catch(AipsError& er)
-  //   {
-  //     log_l << er.what() << LogIO::SEVERE;
-  //   }
+
   return rrr;
 }

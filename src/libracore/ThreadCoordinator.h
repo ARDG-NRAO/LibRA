@@ -50,8 +50,10 @@ namespace libracore
     /**
      * @brief Constructor for the ThreadCoordinator class.
      */
-    ThreadCoordinator() : eod(false), RS_ready(false), CF_ready(false), CF_Sent(false), newCF(false),
-                          dcfa_sptr(), RS_mut(), CF_mut(), CFSent_mut(), RS_cv(), CF_cv(), CFSent_cv()
+    ThreadCoordinator(std::ostream* myos=nullptr) :
+      eod(false), RS_ready(false), CF_ready(false), CF_Sent(false), newCF(false),
+      dcfa_sptr(), RS_mut(), CF_mut(), CFSent_mut(), RS_cv(), CF_cv(), CFSent_cv(),
+      os(myos)
     {
     }
     /**
@@ -70,8 +72,10 @@ namespace libracore
       if (eod)
         return eod;
       std::unique_lock<std::mutex> lok(CF_mut);
+
       if (!CF_ready)
-        cerr << "...........Main thread waiting for CFReady..........." << CF_ready << " " << eod << endl;
+	if (os != nullptr)
+	  *os << "...........Main thread waiting for CFReady..........." << CF_ready << " " << eod << endl;
       CF_cv.wait(lok, [this]
                  { return CF_ready || eod; });
       // CF_ready = false;
@@ -209,6 +213,7 @@ namespace libracore
     std::condition_variable RS_cv;
     std::condition_variable CF_cv;
     std::condition_variable CFSent_cv;
+    std::ostream* os;
   };
 };
 #endif

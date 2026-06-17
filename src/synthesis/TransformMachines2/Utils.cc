@@ -1473,6 +1473,7 @@ namespace casa
 				     const casacore::Vector<double>& fVals,
 				     const bool& wbAWP, const uint& wprojplanes,
 				     const double& imRefFreq, const double& spwRefFreq,
+				     const bool conjBeams,
 				     const int vbSPW,
 				     casacore::Vector<int>& wNdxList,
 				     casacore::Vector<int>& spwNdxList)
@@ -1494,23 +1495,25 @@ namespace casa
       int tspw=(wprojplanes == 1)?-1:vbSPW;
       
       // Make list of SPW-CF indexes
-      int nSPWCFs=fVals.nelements();
       if (wbAWP==true)
 	{
 	  // If a valid SPW ID is given, translate it to the spwNdx for the nearest SPW
 	  if ((tspw>=0))// && (vbSPW <nSPWCFs))
 	    {
+	      // WB AWP case
 	      int refSPW;
-	      std::vector<double> stdList(nSPWCFs);
-	      for (int i=0; i<nSPWCFs; i++) stdList[i] = fVals[i];
-	      //Double refCFFreq =
-	      SynthesisUtils::stdNearestValue(stdList, spwRefFreq, refSPW);
+	      double freq=spwRefFreq;
+	      if (conjBeams) freq=SynthesisUtils::conjFreq(spwRefFreq,imRefFreq);
+	      //SynthesisUtils::stdNearestValue(fVals.tovector(), spwRefFreq, refSPW);
+	      SynthesisUtils::stdNearestValue(fVals.tovector(), freq, refSPW);
 	      
 	      spwNdxList.resize(1);
 	      spwNdxList[0]=refSPW;
 	    }
 	  else
 	    {
+	      // WB A-only case.
+	      int nSPWCFs=fVals.nelements();
 	      spwNdxList.resize(nSPWCFs);
 	      for(int i=0;i<nSPWCFs;i++) spwNdxList[i] = i;
 	    }
@@ -1519,10 +1522,7 @@ namespace casa
 	{
 	  // For wbAWP=F, pick up the CF closest to the image reference frequency
 	  int refSPW;
-	  std::vector<double> stdList(nSPWCFs);
-	  for (int i=0; i<nSPWCFs; i++) stdList[i] = fVals[i];
-	  //Double refCFFreq =
-	  SynthesisUtils::stdNearestValue(stdList, imRefFreq, refSPW);
+	  SynthesisUtils::stdNearestValue(fVals.tovector(), imRefFreq, refSPW);
 	  
 	  spwNdxList.resize(1);
 	  spwNdxList[0]=refSPW;

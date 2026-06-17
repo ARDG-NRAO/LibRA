@@ -133,6 +133,7 @@ namespace casa{
 			 const uint& user_wprojplanes,
 			 const ImageInterface<Float>& skyImage,
 			 const double& spwRefFreq,
+			 const bool conjBeams,
 			 const int vbSPW,
 			 Vector<Int>& wNdxList, Vector<Int>& spwNdxList)
     {
@@ -149,7 +150,7 @@ namespace casa{
       fVals = cfb.getFreqList();
       wVals = cfb.getWList();
       SynthesisUtils::makeAWLists(wVals, fVals, wbAWP, user_wprojplanes, imRefFreq, spwRefFreq,
-				  vbSPW, wNdxList, spwNdxList);
+				  conjBeams, vbSPW, wNdxList, spwNdxList);
       return imRefFreq;
     }
     //
@@ -197,6 +198,7 @@ namespace casa{
 
 	  double imRefFreq_l = makeAWLists_p(cfb_l, wbAWP,  user_wprojplanes,
 					     skyImage, spwRefFreq,
+					     conjBeams_p,
 					     vbSpw_l,
 					     wNdxList, spwNdxList);
 
