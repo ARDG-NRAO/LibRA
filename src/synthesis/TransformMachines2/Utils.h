@@ -216,8 +216,10 @@ namespace casa
 		       const casacore::Vector<double>& fVals,
 		       const bool& wbAWP, const uint& nw,
 		       const double& imRefFreq, const double& spwRefFreq,
+		       const bool conjBeams,
 		       const int vbSPW,
-		       casacore::Vector<int>& wNdxList, casacore::Vector<int>& spwNdxList);
+		       casacore::Vector<int>& wNdxList,
+		       casacore::Vector<int>& spwNdxList);
       //
       // A decision if new CFs are to be paged in for the AW line of
       // resamplers (AWVisResampler, AWVisResamplerHPG). This

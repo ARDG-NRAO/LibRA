@@ -132,9 +132,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual ~AWVisResamplerHPG()
     {
-      //LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
+      LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
       //log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
-      cerr << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << endl;
+      
+      log_l << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << LogIO::POST;
     };
 
     virtual String name(){return String("HPGResampler");};

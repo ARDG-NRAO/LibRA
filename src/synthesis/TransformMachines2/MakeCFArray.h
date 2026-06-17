@@ -66,6 +66,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 			 const uint& user_wprojplanes,
 			 const ImageInterface<Float>& skyImage,
 			 const double& spwRefFreq,
+			 const bool conjBeams,
 			 const int vbSPW,
 			 Vector<Int>& wNdxList, Vector<Int>& spwNdxList);
     //
@@ -75,9 +76,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     class MakeCFArray
     {
     public:
-      MakeCFArray(const PolMapType& mndx, const PolMapType& conj_mndx, const hpg::Device& HPGDevice_l)
+      MakeCFArray(const PolMapType& mndx, const PolMapType& conj_mndx, const hpg::Device& HPGDevice_l,
+		  const bool conjBeams)
 	:mndx_p(mndx), conj_mndx_p(conj_mndx), cachedVBSpw_p(-1), cachedFieldID_p(-1),
-	 initialized_p(false),HPGDevice_p(HPGDevice_l) {};
+	 initialized_p(false),conjBeams_p(conjBeams),HPGDevice_p(HPGDevice_l) {};
       ~MakeCFArray() {};
       
       //
@@ -111,12 +113,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 		   Vector<Int>& wNdxList,
 		   Vector<Int>& spwNdxList,
 		   double paTolernace=360.0);
-      
+
+      bool conjBeams() {return conjBeams_p;};
     private:
       PolMapType mndx_p, conj_mndx_p;
       int cachedVBSpw_p;
       int cachedFieldID_p;
-      bool initialized_p;
+      bool initialized_p, conjBeams_p;
       hpg::Device HPGDevice_p;
     };
   } //# NAMESPACE refim - END

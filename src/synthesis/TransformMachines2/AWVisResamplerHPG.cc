@@ -136,26 +136,26 @@ namespace casa{
       
       size_t max_visibilities_batch_size = nVisPerBucket;
 
-      cerr << "Mueller indexes: initgridder2: " << endl;
-      cerr << "M: " << endl;
+      log_l<< "Mueller indexes: initgridder2: " << LogIO::POST;
+      log_l<< "M: " << LogIO::POST;
       for(unsigned ir=0;ir<mueller_indexes.size();ir++)
 	{
 	  for(unsigned ic=0;ic<mueller_indexes[ir].size();ic++)
 	    {	
 	      //		  mueller_indexes[ir][ic] = 1;
-	      cerr << mueller_indexes[ir][ic] << " ";
+	      log_l<< mueller_indexes[ir][ic] << " ";
 	    }
-	  cerr << endl;
+	  log_l << LogIO::POST;
 	}
-      cerr << "M*: " << endl;
+      log_l << "M*: " << LogIO::POST;
       for(unsigned ir=0;ir<conjugate_mueller_indexes.size();ir++)
 	{
 	  for(unsigned ic=0;ic<conjugate_mueller_indexes[ir].size();ic++)
 	    {
 	      //		  conjugate_mueller_indexes[ir][ic] = 0;
-	      cerr << conjugate_mueller_indexes[ir][ic] << " ";
+	      log_l << conjugate_mueller_indexes[ir][ic] << " ";
 	    }
-	  cerr << endl;
+	  log_l << LogIO::POST;
 	}
       
       // 	  mueller_indexes.resize(N);  conjugate_mueller_indexes.resize(N);
