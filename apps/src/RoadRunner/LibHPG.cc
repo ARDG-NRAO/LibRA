@@ -1,5 +1,5 @@
 //# LibHPG.h: Definition of the LibHPG class and the getHPGDevice() function
-//# Copyright (C) 2025
+//# Copyright (C) 2025, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
