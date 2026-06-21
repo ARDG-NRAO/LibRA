@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // # TheadCoordinator.h: Definition of the ThreadCoordinator class
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it

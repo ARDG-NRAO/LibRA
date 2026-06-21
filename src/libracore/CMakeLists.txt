@@ -1,4 +1,5 @@
-# Copyright 2021 Associated Universities, Inc. Washington DC, USA.
+# Copyright 2021, 2026
+# Associated Universities, Inc. Washington DC, USA.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
