@@ -50,7 +50,14 @@ endif()
 # Build gtest on if tests are enabled
 if(BUILD_TESTING)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/GTest.cmake)
-  # Materialize gold standard reference data submodule
+  # Materialize gold standard reference data submodule.
+  # Force the public https URL and sync it into .git/config first, so clones
+  # that were initialized against the SSH URL (which needs a key, e.g. in
+  # containers/CI) are redirected to the anonymously-cloneable mirror.
+  execute_process(
+    COMMAND git submodule sync apps/src/tests/gold_standard
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
   execute_process(
     COMMAND git submodule update --init apps/src/tests/gold_standard
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
