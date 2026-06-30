@@ -37,12 +37,12 @@ target_include_directories(librautils PUBLIC
 
 # Link NVTX if profiling is enabled
 if(LIBRA_ENABLE_NVTX)
-  target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
+  target_link_libraries(librautils PUBLIC NVTX::nvtx)
   message(STATUS "librautils: NVTX profiling enabled")
 endif()
 
 # Install library and public headers to include/librautils
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS librautils
   LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
   PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/librautils"
 )
