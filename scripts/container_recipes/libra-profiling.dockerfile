@@ -35,13 +35,19 @@ RUN dnf -y clean all \
     && dnf -y install {gtest,readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3,openmpi,python38}-devel \
     && mv /data/readline.pc /usr/lib64/pkgconfig/ \
     && cd /data/ \
-    && git clone --recursive -b ${LIBRA_BRANCH} https://github.com/ARDG-NRAO/LibRA.git libra
+    && git clone -b ${LIBRA_BRANCH} https://github.com/ARDG-NRAO/LibRA.git libra \
+    && cd libra \
+    # Fetch the gold_standard test-data submodule over public https (the
+    # upstream .gitmodules may still point at the SSH URL, which needs a key).
+    && git config -f .gitmodules submodule.apps/src/tests/gold_standard.url https://gitlab.nrao.edu/ardg/libra-data.git \
+    && git submodule sync apps/src/tests/gold_standard \
+    && git submodule update --init apps/src/tests/gold_standard
 RUN . /opt/rh/gcc-toolset-13/enable \
     && cd libra \
     && mkdir -p build && cd build \
     && cmake -DLIBRA_ENABLE_NVTX=ON \
              -DKokkos_CUDA_ARCH_NAME=${Kokkos_CUDA_ARCH} \
-             -DBUILD_TESTING=OFF .. \
+             -DBUILD_TESTING=ON .. \
     && make
 
 COPY start.sh /data/
