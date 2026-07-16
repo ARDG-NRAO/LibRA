@@ -1,5 +1,5 @@
 //# test_coyote.cc: Regression test in GTest framework for the Coyote()
-//# Copyright (C) 2024
+//# Copyright (C) 2024, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This program is free software; you can redistribute it and/or modify it
@@ -281,13 +281,6 @@ TEST(CoyoteTest, UIThrow) {
 
   TEST(CoyoteTest, CoyoteFillCF) {
 
-    // char *CASAPATH = std::getenv("CASAPATH");
-    // if (CASAPATH == nullptr)
-    //   {
-    //   //      throw(AipsError("CASAPATH for CoyoteFillCF test not defined"));
-    //   cout  << "[INFO] CASAPATH for CoyoteFillCF test not defined" << endl;
-    //   }
-    // else
       {
 	fs::current_path(test::testDir);
 
@@ -305,13 +298,51 @@ TEST(CoyoteTest, UIThrow) {
 
 	//for(auto cf : cfList) cerr << cf << " "; cerr << endl;
 
-	// string mode_l="fillcf";
-	// Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
-	//        WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
-	//        conjBeams, cfBufferSize, cfOversampling, cfList, mode_l);
+	//
+	// The following test for mode=fillcf is disabled if CASAPATH
+	// evn. variable is not set.
+	//
+	char *CASAPATH = std::getenv("CASAPATH");
+	if (CASAPATH == nullptr)
+	  {
+	    //      throw(AipsError("CASAPATH for CoyoteFillCF test not defined"));
+	    cout  << "[WARN] CASAPATH for CoyoteFillCF test not defined. " << endl
+		  << "[WARN] Disabing the test for filling the CFs. " << endl;
+	  }
+	else
+	  {
+	    string mode_l="fillcf";
+	    //
+	    // To keep the runtime reasonable, we assumee that if a few
+	    // CFs are filled, the machinary works properly and will be
+	    // able to fill the rest of the CFs in an actual run.
+	    //
+	    std::vector<std::string> cfList_l={"CFS_0_0_CF_0_0_0.im","CFS_0_0_CF_0_0_1.im"};
+	    cerr << cfList_l.size() << endl;
+	    Coyote(msName, telescopeName, NX, cellSize, stokes, refFreqStr, nW, cfCacheName,
+		   WBAwp, aTerm, psTerm, mType, pa, dpa, fieldStr, spwStr, phaseCenter,
+		   conjBeams, cfBufferSize, cfOversampling, cfList_l, mode_l);
 
-	// Add assertions here to verify the behavior of the Coyote function in fillcf mode
-	
+	    // Add assertions here to verify the behavior of the Coyote function in fillcf mode
+	    for(auto cf : cfList_l)
+	      {
+		int support;
+		{
+		  SynthesisUtils::ImageInformation<casacore::Complex> imInfo(cfCacheName+"/"+cf);
+		  imInfo.getMiscInfo().get("Xsupport",support);
+		  EXPECT_EQ(support, 9);
+		  imInfo.getMiscInfo().get("Ysupport",support);
+		  EXPECT_EQ(support, 9);
+		}
+		{
+		  SynthesisUtils::ImageInformation<casacore::Complex> imInfo(cfCacheName+"/WT"+cf);
+		  imInfo.getMiscInfo().get("Xsupport",support);
+		  EXPECT_EQ(support, 15);
+		  imInfo.getMiscInfo().get("Ysupport",support);
+		  EXPECT_EQ(support, 15);
+		}
+	      }	
+	  }
 	// Set the current working directory back to the parent dir
         current_path("..");
 

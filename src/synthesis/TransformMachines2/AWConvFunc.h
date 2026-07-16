@@ -40,6 +40,7 @@
 #include <synthesis/TransformMachines2/WTerm.h>
 #include <synthesis/TransformMachines2/ATerm.h>
 #include <casacore/images/Images/ImageInterface.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/images/Images/TempImage.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>
@@ -102,13 +103,15 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				  const casacore::Bool psTermOn,
 				  const casacore::Bool aTermOn,
 				  const casacore::Bool conjBeams,
+				  SynthesisUtils::ImageInformation<Complex> ImInfo=SynthesisUtils::ImageInformation<Complex>(),
 				  const casacore::Bool makePersistent=true);
     static void fillConvFuncBuffer2(CFBuffer& cfb, CFBuffer& cfWtb,
 				    const casacore::Int& nx, const casacore::Int& ny,
 				    const casacore::ImageInterface<casacore::Complex>* skyImage,
 				    const CFCStruct& miscInfo,
 				    PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
-				    casacore::Bool conjBeams);
+				    casacore::Bool conjBeams,
+				    SynthesisUtils::ImageInformation<Complex>& ImInfo);
 
     virtual casacore::Bool makeAverageResponse(const VisBuffer2& vb, 
 				     const casacore::ImageInterface<casacore::Complex>& image,

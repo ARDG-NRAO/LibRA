@@ -48,6 +48,7 @@
 #include <casacore/casa/System/Aipsrc.h>
 #include <msvis/MSVis/VisibilityIterator2.h>
 
+using namespace std;
 using namespace casacore;
 namespace casa
 {
@@ -988,14 +989,18 @@ namespace casa
     }
     
     
-    Double SynthesisUtils::nearestValue(const Vector<Double>& list, const Double& val, Int& index)
+    Double SynthesisUtils::nearestValue(const Vector<double>& list, const double& val, int& index)
     {
-      Vector<Double> diff = fabs(list - val);
-      Double minVal=1e20; 
-      Int i=0;
+      Vector<double> diff = fabs(list - val);
+      double minVal=std::numeric_limits<double>::max();
+      int i=0;
       
-      for (index=0;index<(Int)diff.nelements();index++)
-	if (diff[index] < minVal) {minVal=diff[index];i=index;}
+      for (index=0;index<(Int)list.nelements();index++)
+	{
+	  double diff = fabs(list[index] - val);
+
+	  if (diff < minVal) {minVal=diff;i=index;}
+	}
       index=i;
       return list(index);
       
@@ -1019,21 +1024,27 @@ namespace casa
     }
     
     template <class T>
-    T SynthesisUtils::stdNearestValue(const vector<T>& list, const T& val, Int& index)
+    T SynthesisUtils::stdNearestValue(const vector<T>& list, const T& val, int& index)
     {
       // auto const it = std::lower_bound(list.begin(), list.end(), val);
       // if (it == list.begin()) return list[0];
       // else return list[*(it-1)];
       
-      vector<T> diff=list;
-      for (uInt i=0;i<list.size();i++)
-	diff[i] = fabs(list[i] - val);
+      // vector<T> diff=list;
+      // for (uInt i=0;i<list.size();i++)
+      //  	diff[i] = fabs(list[i] - val);
       
-      T minVal=std::numeric_limits<T>::max();//1e20; 
-      Int i=0;
+      T minVal=std::numeric_limits<T>::max();
+      int i=0;
+
+      for (index=0;index<(int)list.size();index++)
+	{
+	  T diff = fabs(list[index] - val);
+	  if (diff < minVal) {minVal=diff;i=index;}
+	}
       
-      for (index=0;index<(Int)diff.size();index++)
-	if (diff[index] < minVal) {minVal=diff[index];i=index;}
+      // for (index=0;index<(int)list.size();index++)
+      // 	if (fabs(list[index] - val) < minVal) {minVal=list[index];i=index;}
       index=i;
       return list[index];
     }
@@ -1331,6 +1342,43 @@ namespace casa
       catch(AipsError& x)
 	{
 	  throw(AipsError(String("Error in SynthesisUtils::getCFParams(): ")
+			  +x.getMesg()));
+	}
+    };
+    
+    
+    casacore::TableRecord SynthesisUtils::getCFParams(ImageInformation<casacore::Complex>& imInfo,
+						      casacore::IPosition& cfShape,
+						      casacore::CoordinateSystem& coordSys, 
+						      casacore::Double& sampling,
+						      casacore::Double& paVal,
+						      casacore::Int& xSupport, casacore::Int& ySupport,
+						      casacore::Double& fVal, casacore::Double& wVal, casacore::Int& mVal,
+						      casacore::Double& conjFreq, casacore::Int& conjPoln)
+    {
+      try
+	{
+	  casacore::TableRecord miscinfo=imInfo.getMiscInfo();
+	  coordSys = imInfo.getCoordinateSystem();
+	  cfShape = imInfo.getImShape();
+	  
+	  miscinfo.get("ParallacticAngle", paVal);
+	  miscinfo.get("MuellerElement", mVal);
+	  miscinfo.get("WValue", wVal);
+	  miscinfo.get("Xsupport", xSupport);
+	  miscinfo.get("Ysupport", ySupport);
+	  miscinfo.get("Sampling", sampling);
+	  miscinfo.get("ConjFreq", conjFreq);
+	  miscinfo.get("ConjPoln", conjPoln);
+
+	  casacore::Int index= coordSys.findCoordinate(casacore::Coordinate::SPECTRAL);
+	  casacore::SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
+	  fVal=static_cast<Float>(spCS.referenceValue()(0));
+	  return miscinfo;
+	}
+      catch(AipsError& x)
+	{
+	  throw(AipsError(String("Error in SynthesisUtils::getCFParams(const ImageInformation<Complex>&,...): ")
 			  +x.getMesg()));
 	}
     };
@@ -1672,7 +1720,9 @@ namespace casa
 	  Table tab(newtab,1);
 	}
     }
-
+    //
+    //-------------------------------------------------------------------------------------
+    //
     void SynthesisUtils::saveAsRecord(const casacore::CoordinateSystem& csys,
 				      const casacore::IPosition&,//imShape,
 				      const casacore::String& fileName,
@@ -1696,6 +1746,9 @@ namespace casa
 
       writeRecord(fileName, csysRec);
     }
+    //
+    //-------------------------------------------------------------------------------------
+    //
     void SynthesisUtils::readFromRecord(casacore::CoordinateSystem& csys,
 					casacore::IPosition&,// imShape,
 					const casacore::String& fileName,
@@ -1714,7 +1767,9 @@ namespace casa
       // 	for(auto x :tt->list(log_l,MDoppler::RADIO,dummy,dummy)) cerr << x << endl;
       // }
     }
-
+    //
+    //-------------------------------------------------------------------------------------
+    //
     casacore::Quantity SynthesisUtils::makeFreqQuantity(const casacore::String& freqStr,
 							const casacore::String& unit)
     {
@@ -1735,7 +1790,9 @@ namespace casa
       // Return a casacore::Quantity in the specified unit
       return Quantity(freq.getValue(unit),unit);
     }
-
+    //
+    //-------------------------------------------------------------------------------------
+    //
     template
     std::vector<Double>::iterator SynthesisUtils::Unique(std::vector<Double>::iterator first, std::vector<Double>::iterator last);
     template

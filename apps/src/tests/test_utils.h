@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -23,22 +23,22 @@
 // # $Id$
 #pragma once
 
-#include <filesystem>
+// #include <filesystem>
 #include <gtest/gtest.h>
 #include <unistd.h>  // for gethostname()
 
 
 
-inline  bool directoryExists(const std::string& path) {
-    std::filesystem::path dir(path);
-    return std::filesystem::is_directory(dir);
-}
-inline  bool create_directory(const std::filesystem::path& path) {
-    return std::filesystem::create_directory(path);
-}
-inline  bool remove_directory(const std::filesystem::path& path) {
-    return std::filesystem::remove_all(path);
-}
+// inline  bool directoryExists(const std::string& path) {
+//     std::filesystem::path dir(path);
+//     return std::filesystem::is_directory(dir);
+// }
+// inline  bool create_directory(const std::filesystem::path& path) {
+//     return std::filesystem::create_directory(path);
+// }
+// inline  bool remove_directory(const std::filesystem::path& path) {
+//     return std::filesystem::remove_all(path);
+// }
 
 inline  bool IsGpuHost003() {
     char hostname[256];

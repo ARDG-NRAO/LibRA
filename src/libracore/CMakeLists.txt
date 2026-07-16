@@ -28,10 +28,14 @@ set(LIBRACORE_PUBLIC_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/Cube.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Matrix.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Vector.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreUtils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreError.h
 )
 
 add_library(libracore SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreUtils.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreError.cc
   ${LIBRACORE_PUBLIC_HEADERS}
 )
 

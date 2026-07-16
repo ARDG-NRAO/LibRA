@@ -1,6 +1,6 @@
 # -*- mode: cmake -*-
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2022 CASA project
+# Copyright (C) 2022, 2026
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Library General Public License as published by
@@ -73,3 +73,5 @@ endif()
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # the top level source directory, so that we can find all the includes
 target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SOURCE_DIR})
+
+target_link_libraries(${LIB_NAME} PUBLIC stdc++fs)

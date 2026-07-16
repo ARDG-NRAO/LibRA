@@ -156,8 +156,7 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l,
 	      std::vector<int>& spwidList,
 	      std::vector<double>& spwRefFreqList,
-	      int& nDataPol,
-	      LogIO& os);
+	      int& nDataPol);
 
 //--------------------------------------------------------------------------------------------
 // Place-holder functions to build the appropriate Mueller index

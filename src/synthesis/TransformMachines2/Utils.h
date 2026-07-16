@@ -42,6 +42,7 @@
 #include <casacore/images/Images/TempImage.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Logging/LogIO.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <iostream>
 
 // Code for filterByFirstColumn() largly contributed by
@@ -182,6 +183,19 @@ namespace casa
 
       void rotate2(const double& actualPA, CFCell& baseCFC, CFCell& cfc, const double& rotAngleIncr);
       
+      casacore::Record readRecord(const casacore::String& fileName);
+      void writeRecord(const casacore::String& fileName,
+		      const casacore::Record& rec);
+
+      void saveAsRecord(const casacore::CoordinateSystem& csys,
+			const casacore::IPosition& imShape,
+			const casacore::String& fileName,
+			const casacore::String& keyName);
+      void readFromRecord(casacore::CoordinateSystem& csys,
+			  casacore::IPosition& imShape,
+			  const casacore::String& fileName,
+			  const casacore::String& keyName);
+
       casacore::TableRecord getCFParams(const casacore::String& dirName,const casacore::String& fileName,
 					casacore::IPosition& cfShape,
 					casacore::Array<casacore::Complex>& pixelBuffer,
@@ -193,6 +207,15 @@ namespace casa
 					casacore::Double& conjFreq, casacore::Int& conjPoln,
 					casacore::Bool loadPixels,
 					casacore::Bool loadMiscInfo=true); 
+
+      casacore::TableRecord getCFParams(ImageInformation<casacore::Complex>& imInfo,
+					casacore::IPosition& cfShape,
+					casacore::CoordinateSystem& coordSys, 
+					casacore::Double& sampling,
+					casacore::Double& paVal,
+					casacore::Int& xSupport, casacore::Int& ySupport,
+					casacore::Double& fVal, casacore::Double& wVal, casacore::Int& mVal,
+					casacore::Double& conjFreq, casacore::Int& conjPoln);
 
       casacore::Vector<casacore::String> parseBandName(const casacore::String& fullName);
 
@@ -240,18 +263,6 @@ namespace casa
 		    casacore::Vector<int>& polMap,
 		    casacore::Vector<casacore::Stokes::StokesTypes>& visPolMap_p);
 
-      casacore::Record readRecord(const casacore::String& fileName);
-      void writeRecord(const casacore::String& fileName,
-		      const casacore::Record& rec);
-
-      void saveAsRecord(const casacore::CoordinateSystem& csys,
-			const casacore::IPosition& imShape,
-			const casacore::String& fileName,
-			const casacore::String& keyName);
-      void readFromRecord(casacore::CoordinateSystem& csys,
-			  casacore::IPosition& imShape,
-			  const casacore::String& fileName,
-			  const casacore::String& keyName);
       casacore::Quantity makeFreqQuantity(const casacore::String& freqStr,
 					  const casacore::String& unit);
     }

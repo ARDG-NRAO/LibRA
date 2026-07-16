@@ -101,7 +101,8 @@ set(APP_LINK_LIBRARIES_CORE
   GSL::gsl
   GSL::gslcblas
   m
-  c)
+  c
+  stdc++fs)
 
 # Tier 2: Add MS processing (no GPU)
 set(APP_LINK_LIBRARIES_MS
