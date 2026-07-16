@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# CFCacheHelper.h: Definition for CFCacheHelper functions
-//# Copyright (C) 2021
+//# Copyright (C) 2021, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -37,6 +37,8 @@
 #include <synthesis/TransformMachines2/AWConvFunc.h>
 #include <libracore/DataBase.h>
 
+#include <stdexcept>
+
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
@@ -62,7 +64,8 @@ namespace casa
 			    Vector<double>& uvOffset,
 			    const bool& psTerm,
 			    const bool& aTerm,
-			    const bool& conjBeams);
+			    const bool& conjBeams,
+			    ImageInformation<Complex> imInfo=ImageInformation<Complex>());
 
       void makeCFS_inmemory(DataBase& db,
 			    CountedPtr<casa::refim::CFStore2> cfs2_l,
@@ -77,9 +80,9 @@ namespace casa
 			    std::string mType="");
 
       std::tuple<CountedPtr<casa::refim::CFStore2>,
-		 CountedPtr<casa::refim::CFStore2>>
+		 CountedPtr<casa::refim::CFStore2>,
+		 std::exception_ptr>
       constructCFS(refim::CFCache* cfCacheObj,
-		   const std::string& cfCacheName,
 		   const std::vector<std::string>& cfList,
 		   const std::vector<std::string>& wtCFList,
 		   const std::string& mode,

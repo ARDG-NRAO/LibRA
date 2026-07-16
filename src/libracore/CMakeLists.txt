@@ -1,4 +1,5 @@
-# Copyright 2021 Associated Universities, Inc. Washington DC, USA.
+# Copyright 2021, 2026
+# Associated Universities, Inc. Washington DC, USA.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +28,14 @@ set(LIBRACORE_PUBLIC_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/Cube.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Matrix.h
   ${CMAKE_CURRENT_SOURCE_DIR}/Vector.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreUtils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreError.h
 )
 
 add_library(libracore SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/imageInterface.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreUtils.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/LibracoreError.cc
   ${LIBRACORE_PUBLIC_HEADERS}
 )
 

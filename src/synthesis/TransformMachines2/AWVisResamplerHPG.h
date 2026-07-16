@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# AWVisResamplerHPG.h: Definition of the AWVisResamplerHPG class
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -132,9 +132,10 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 
     virtual ~AWVisResamplerHPG()
     {
-      //LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
+      LogIO log_l(LogOrigin("AWVisResamplerHPG[R&D]","~AWVisResamplerHPG"));
       //log_l << "Gridding time: " << griddingTime << " sec" << LogIO::POST;
-      cerr << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << endl;
+      
+      log_l << "Cumulative time in makeHPGV: " << mkHPGVB_duration.count() << " sec" << LogIO::POST;
     };
 
     virtual String name(){return String("HPGResampler");};

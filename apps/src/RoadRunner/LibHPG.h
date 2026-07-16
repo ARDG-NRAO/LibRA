@@ -1,5 +1,5 @@
 //# LibHPG.h: Definition of the LibHPG class
-//# Copyright (C) 2025
+//# Copyright (C) 2025, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -106,15 +106,19 @@ public:
    */
   ~LibHPG()
   {
-    if (os_p != nullptr)
-      (*os_p) << "LibHPG: Total runtime: "
-	      << std::fixed << std::setprecision(2)
-	      << runtime() << " sec" << std::endl;
+    LogIO log_l(LogOrigin("LibHPG","~LibHPG"));
+    log_l.output() << std::fixed << std::setprecision(2);
+    log_l << "LibHPG: Total runtime: "
+	  << runtime() << " sec" << LogIO::WARN;
+    // if (os_p != nullptr)
+    //   (*os_p) << "LibHPG: Total runtime: "
+    // 	      << std::fixed << std::setprecision(2)
+    // 	      << runtime() << " sec" << std::endl;
   };
 
   std::chrono::time_point<std::chrono::steady_clock> startTime;
   bool init_hpg;
   bool hpg_initialized;
-  std::ostream *os_p;
+  std::ostream* os_p;
 };
 #endif

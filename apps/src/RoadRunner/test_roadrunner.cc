@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -25,6 +25,7 @@
 #include <RoadRunner/LibHPG.h>
 #include <RoadRunner/roadrunner.h>
 #include <tests/test_utils.h>
+#include <libracore/LibracoreUtils.h>
 using namespace std;
 using namespace std::filesystem;
 

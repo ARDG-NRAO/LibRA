@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -25,9 +25,11 @@
 #include <Hummbee/hummbee.h>
 #include <gtest/gtest.h>
 #include <tests/test_utils.h>
+#include <tests/test_utils.h>
+#include <libracore/LibracoreUtils.h>
 using namespace std;
 using namespace std::filesystem;
-
+using namespace libracore::utils;
 
 namespace test{
   const path goldDir = current_path() / "gold_standard";
@@ -140,7 +142,7 @@ TEST(HummbeeTest, UIThrow) {
 }
 
 TEST(HummbeeTest, CheckGoldStandardDirectory) {
-    EXPECT_TRUE(directoryExists(goldDir));
+  EXPECT_TRUE(libracore::utils::directoryExists(goldDir));
   }
 
 TEST(HummbeeTest, AppLevelCubeAsp) {
@@ -221,7 +223,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   // Set the current working directory back to the parent dir
   current_path(testDir.parent_path());
 
-  remove_directory(testDir);
+  libracore::utils::remove_directory(testDir);
 }
 
 TEST(HummbeeTest,  AppLevelMfsAsp) {
@@ -298,7 +300,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   // Set the current working directory back to the parent dir
   current_path(testDir.parent_path());
 
-  remove_directory(testDir);
+  libracore::utils::remove_directory(testDir);
 
 }
 

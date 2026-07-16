@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# ImageInformation.h: Definition of ImageInformation.cc
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -33,272 +33,170 @@
 #include <casacore/casa/Exceptions/Error.h>
 #include <casacore/images/Images/ImageInterface.h>
 #include <casacore/images/Images/ImageOpener.h>
-//#include <ms/MeasurementSets/MeasurementSet.h>
-#include <synthesis/TransformMachines2/Utils.h>
 #include <casacore/images/Images/TempImage.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <iostream>
 
 namespace casa
 {
-  namespace refim {
-    //-----------------------------------------------------------------------------------------------------------------------
-    class ImageInformationError : public casacore::AipsError
+  namespace refim
+  {
+    namespace SynthesisUtils
     {
-    public:
-      ImageInformationError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
-	casacore::AipsError(message,c)
-      {};
-      ~ImageInformationError () noexcept {};
-    };
-
-    class ImageInformationSaveError : public ImageInformationError
-    {
-    public:
-      ImageInformationSaveError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
-	ImageInformationError(message,c)
-      {};
-      ~ImageInformationSaveError () noexcept {};
-    };
-
-    class ImageInformationRecordNotFoundError : public ImageInformationError
-    {
-    public:
-      ImageInformationRecordNotFoundError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
-	ImageInformationError(message,c)
-      {};
-      ~ImageInformationRecordNotFoundError () noexcept {};
-    };
-    //-----------------------------------------------------------------------------------------------------------------------
-    
-
-    template <class T>
-    class ImageInformation
-    {
-    public:
-      ImageInformation():
-	cimg_p(NULL),
-	coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
-	imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
-	miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
-	coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
-	inMemory_p(false),isPersistent_p(false)
-      {};
-      //
-      //------------------------------------------------------------------------
-      // Constructor to read existing records save by this class
-      //
-      ImageInformation(const casacore::String& targetPath):
-	cimg_p(NULL),
-	coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
-	imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
-	miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
-	coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
-	inMemory_p(false),isPersistent_p(false)
+      //-----------------------------------------------------------------------------------------------------------------------
+      class ImageInformationError : public casacore::AipsError
       {
-	initPaths(targetPath);
+      public:
+	ImageInformationError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	  casacore::AipsError(message,c)
+	{};
+	~ImageInformationError () noexcept {};
       };
-      //
-      //------------------------------------------------------------------------
-      // Constructor to write and read records saved by this class
-      // This creates an in-memory-only object
-      ImageInformation(casacore::ImageInterface<T>& cimg,
-		       const casacore::String& targetPath):
-	cimg_p(&cimg),
-	coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
-	imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
-	miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
-	coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
-	inMemory_p(true),isPersistent_p(false)
+      
+      class ImageInformationSaveError : public ImageInformationError
       {
-	initPaths(targetPath);
+      public:
+	ImageInformationSaveError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	  ImageInformationError(message,c)
+	{};
+	~ImageInformationSaveError () noexcept {};
       };
-      //
-      //------------------------------------------------------------------------
-      //
-      void initPaths(const casacore::String& targetPath)
+      
+      class ImageInformationRecordNotFoundError : public ImageInformationError
       {
-	coordSysRecFileName = targetPath+'/'+coordSysFileName;
-	imInfoRecFileName=targetPath+'/'+imInfoFileName;
-	miscInfoRecFileName=targetPath+'/'+miscInfoFileName;
-      }
-      //
-      //------------------------------------------------------------------------
-      //
-      bool isInMemory() {return inMemory_p;}
-      bool isPersistent() {return isPersistent_p;}
-      //------------------------------------------------------------------------
-      // Saving makes the object both in memory and persistent
-      //
-      void save()
+      public:
+	ImageInformationRecordNotFoundError (const casacore::String& message, const casacore::AipsError::Category c=casacore::AipsError::GENERAL):
+	  ImageInformationError(message,c)
+	{};
+	~ImageInformationRecordNotFoundError () noexcept {};
+      };
+      //-----------------------------------------------------------------------------------------------------------------------
+      
+      
+      template <typename T>
+      class ImageInformation
       {
-	if (cimg_p == NULL)
-	  throw(ImageInformationSaveError("ImageInformation::save():  "
-					  "Use ImageInformation(ImageInterface&, String&) "
-					  "ctor to save image information"));
+      public:
+	ImageInformation():
+	  cimg_p(NULL),
+	  coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
+	  imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
+	  miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
+	  coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
+	  inMemory_p(false),isPersistent_p(false),isCached_p(false),
+	  imShape_p(), coordinateSystem_p(), miscInfo_p()
+	{};
 	//
-	// Save image coordinate system as a casacore::Record
+	//------------------------------------------------------------------------
+	// Constructor to read existing records save by this class
 	//
-	SynthesisUtils::saveAsRecord(cimg_p->coordinates(),
-				     cimg_p->shape(),
-				     coordSysRecFileName,
-				     coordSysKey);
+	ImageInformation(const casacore::String& targetPath, bool load_miscinfo=true):
+	  cimg_p(NULL),
+	  coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
+	  imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
+	  miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
+	  coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
+	  inMemory_p(false),isPersistent_p(false),isCached_p(false),
+	  imShape_p(), coordinateSystem_p(), miscInfo_p()
+	{
+	  initPaths(targetPath);
+	  imShape_p=getImShape();
+	  coordinateSystem_p=getCoordinateSystem();
+	  if (load_miscinfo) miscInfo_p=getMiscInfo();
+	  isCached_p=true;
+	};
+	//------------------------------------------------------------------------
+	// Constructor to write and read records saved by this class
+	// This creates an in-memory-only object
+	ImageInformation(casacore::ImageInterface<T>& cimg):
+	  cimg_p(&cimg),
+	  coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
+	  imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
+	  miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
+	  coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
+	  inMemory_p(true),isPersistent_p(false),isCached_p(false),
+	  imShape_p(), coordinateSystem_p(), miscInfo_p()
+	{
+	  imShape_p=getImShape();
+	  coordinateSystem_p=getCoordinateSystem();
+	  miscInfo_p=getMiscInfo();
+	  isCached_p=true;
+	};
 	//
-	// Save cimg.shape() as a casacore::Record
+	//------------------------------------------------------------------------
+	// Constructor to write and read records saved by this class
+	// This creates an in-memory-only object
+	ImageInformation(casacore::ImageInterface<T>& cimg,
+			 const casacore::String& targetPath):
+	  cimg_p(&cimg),
+	  coordSysFileName("cgrid_csys.rec"),coordSysKey("cgrid_csys"),
+	  imInfoFileName("iminfo.rec"), imShapeKey("imshape"),
+	  miscInfoFileName("miscInfo.rec"), miscInfoKey("miscInfo"),
+	  coordSysRecFileName(), imInfoRecFileName(), miscInfoRecFileName(),
+	  inMemory_p(true),isPersistent_p(false),isCached_p(false),
+	  imShape_p(), coordinateSystem_p(), miscInfo_p()
+	{
+	  initPaths(targetPath);
+	  imShape_p=getImShape();
+	  coordinateSystem_p=getCoordinateSystem();
+	  miscInfo_p=getMiscInfo();
+	  isCached_p=true;
+	};
 	//
-	casacore::RecordDesc imInfoDesc;
-	// Add image shape to the record.
-	imInfoDesc.addField(imShapeKey,casacore::TpArrayInt);
-	casacore::Vector<int> shp=cimg_p->shape().asVector();
-	
-	casacore::Record imInfoRec(imInfoDesc);
-	int imsId=imInfoDesc.fieldNumber(imShapeKey);
-	imInfoRec.define(imsId,shp);
-	SynthesisUtils::writeRecord(imInfoRecFileName, imInfoRec);
-	
+	//------------------------------------------------------------------------
 	//
-	// Save miscinfo
+	~ImageInformation() {};
 	//
-	casacore::TableRecord miscinfo= cimg_p->miscInfo();
-	if (miscinfo.nfields() > 0)
-	  {
-	    SynthesisUtils::writeRecord(miscInfoRecFileName,
-					miscinfo);
-	  }
+	//------------------------------------------------------------------------
+	//
+	void initPaths(const casacore::String& targetPath)
+	{
+	  coordSysRecFileName = targetPath+'/'+coordSysFileName;
+	  imInfoRecFileName=targetPath+'/'+imInfoFileName;
+	  miscInfoRecFileName=targetPath+'/'+miscInfoFileName;
+	}
+	//
+	//------------------------------------------------------------------------
+	//
+	bool isInMemory() {return inMemory_p;}
+	bool isPersistent() {return isPersistent_p;}
+	//------------------------------------------------------------------------
+	// Saving makes the object both in memory and persistent
+	//
+	void save(const casacore::String& targetPath);
+	void save();
+	void save(const casacore::CoordinateSystem& coordinates,
+		  const casacore::IPosition& shape,
+		  const casacore::Record& miscinfo);
+	//
+	//------------------------------------------------------------------------
+	//
+	casacore::CoordinateSystem getCoordinateSystem();
+	casacore::Vector<int> getImShape();
+	casacore::TableRecord getMiscInfo();
+	//
+	//------------------------------------------------------------------------
+	//
+	// inline double getPAValue() {getMiscInfo().get("ParallacticAngle", paVal);
+	// miscinfo.get("MuellerElement", mVal);
+	// miscinfo.get("WValue", wVal);
+	// miscinfo.get("Xsupport", xSupport);
+	// miscinfo.get("Ysupport", ySupport);
+	// miscinfo.get("Sampling", sampling);
+	// miscinfo.get("ConjFreq", conjFreq);
+	// miscinfo.get("ConjPoln", conjPoln);
+      private:
+	casacore::ImageInterface<T> *cimg_p;
+	casacore::String coordSysFileName,  coordSysKey;
+	casacore::String imInfoFileName, imShapeKey;
+	casacore::String miscInfoFileName,  miscInfoKey;
+	casacore::String coordSysRecFileName, imInfoRecFileName, miscInfoRecFileName;
+	bool inMemory_p,isPersistent_p,isCached_p;
 
-	// The info has been made persistent on the disk. The get*() functions
-	// can return the info from the persistent copy.
-	inMemory_p=true;
-	isPersistent_p=true;
-      }
-      //
-      //------------------------------------------------------------------------
-      //
-      void save(const casacore::CoordinateSystem& coordinates,
-		const casacore::IPosition& shape,
-		const casacore::Record& miscinfo)
-      {
-	//
-	// Save image coordinate system as a casacore::Record
-	//
-	SynthesisUtils::saveAsRecord(coordinates,
-				     shape,
-				     coordSysRecFileName,
-				     coordSysKey);
-	//
-	// Save cimg.shape() as a casacore::Record
-	//
-	casacore::RecordDesc imInfoDesc;
-	// Add image shape to the record.
-	imInfoDesc.addField(imShapeKey,casacore::TpArrayInt);
-	casacore::Vector<int> shp=shape.asVector();
-	
-	casacore::Record imInfoRec(imInfoDesc);
-	int imsId=imInfoDesc.fieldNumber(imShapeKey);
-	imInfoRec.define(imsId,shp);
-	SynthesisUtils::writeRecord(imInfoRecFileName, imInfoRec);
-	
-	//
-	// Save miscinfo
-	//
-	if (miscinfo.nfields() > 0)
-	  {
-	    SynthesisUtils::writeRecord(miscInfoRecFileName,
-					miscinfo);
-	  }
-      }
-      //
-      //------------------------------------------------------------------------
-      //
-      casacore::CoordinateSystem getCoordinateSystem()
-      {
-	if (inMemory_p) return cimg_p->coordinates();
-	//
-	// Use the supplied filename as-is here.  The logic to
-	// modify the name for reading as a Record or a Table
-	// are in SynthesisUtils::read/writeRecord.  At this level,
-	// the interface is via casacore::Record only.
-	//
-	casacore::String fileName = coordSysRecFileName;
-	// if (!fileExists(fileName.c_str()))
-	//   {
-	//     fileName = coordSysRecFileName + casacore::String(".tab");
-	//     if (!fileExists(fileName.c_str()))
-	//       throw(ImageInformationRecordNotFoundError("ImageInformation::getCoordinateSystem(): "+fileName+" does not exist."));
-	//   }
-
-	casacore::IPosition dummyImShape;
-	casacore::CoordinateSystem csys;
-	
-	SynthesisUtils::readFromRecord(csys,
-				     dummyImShape,
-				     fileName,
-				     coordSysKey);
-	return csys;
-	
+	casacore::Vector<int> imShape_p;
+	casacore::CoordinateSystem coordinateSystem_p;
+	casacore::TableRecord miscInfo_p;
       };
-      //
-      //------------------------------------------------------------------------
-      //
-      casacore::Vector<int> getImShape()
-      {
-	if (inMemory_p) return cimg_p->shape().asVector();
-	//
-	// Use the supplied filename as-is here.  The logic to
-	// modify the name for reading as a Record or a Table
-	// are in SynthesisUtils::read/writeRecord.  At this level,
-	// the interface is via casacore::Record only.
-	//
-	casacore::String fileName=imInfoRecFileName;
-	casacore::TableRecord imInfo = casacore::TableRecord(SynthesisUtils::readRecord(fileName));
-	casacore::Vector<int> imShape;
-	imInfo.get(imShapeKey,imShape);
-	return imShape;
-      };
-      //
-      //------------------------------------------------------------------------
-      //
-      casacore::TableRecord getMiscInfo()
-      {
-	if (inMemory_p) return cimg_p->miscInfo();
-	//
-	// Use the supplied filename as-is here.  The logic to
-	// modify the name for reading as a Record or a Table
-	// are in SynthesisUtils::read/writeRecord.  At this level,
-	// the interface is via casacore::Record only.
-	//
-	casacore::String fileName=miscInfoRecFileName;
-	return casacore::TableRecord(SynthesisUtils::readRecord(fileName));
-      }
-      //
-      //------------------------------------------------------------------------
-      //
-      ~ImageInformation() {};
-      //
-      //------------------------------------------------------------------------
-      //
-    private:
-      casacore::ImageInterface<T> *cimg_p;
-      casacore::String coordSysFileName,  coordSysKey;
-      casacore::String imInfoFileName, imShapeKey;
-      casacore::String miscInfoFileName,  miscInfoKey;
-      casacore::String coordSysRecFileName, imInfoRecFileName, miscInfoRecFileName;
-      bool inMemory_p,isPersistent_p;
-      //
-      //------------------------------------------------------------------------
-      //
-      // inline bool fileExists(const char* name)
-      // {
-      // 	if (FILE *file = fopen(name, "r"))
-      // 	  {
-      // 	    fclose(file);
-      // 	    return true;
-      // 	  }
-      // 	else
-      // 	  {
-      // 	    return false;
-      // 	  }
-      // };
     };
   };
 };

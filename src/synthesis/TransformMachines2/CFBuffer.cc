@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# CFBuffer.cc: Implementation of the CFBuffer class
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -570,7 +570,8 @@ namespace casa{
 	for (Int c=0;c<nchan;c++)
 	  {
 	    Double freq=fmin+c*finc;
-	    Double conjFreq=sqrt(2*imRefFreq*imRefFreq - freq*freq);
+	    // Double conjFreq=sqrt(2*imRefFreq*imRefFreq - freq*freq);
+	    Double conjFreq=SynthesisUtils::conjFreq(freq,imRefFreq);
 	    freqNdxMap_p[spw][c]=nearestFreqNdx(freq);
 	    conjFreqNdxMap_p[spw][c]=nearestFreqNdx(conjFreq);
 	  }

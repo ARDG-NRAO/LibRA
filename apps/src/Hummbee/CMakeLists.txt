@@ -1,4 +1,4 @@
-# Copyright (C) 2021
+# Copyright (C) 2021, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -37,7 +37,7 @@ file(GLOB APP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${APP_HEADERS} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
 
 add_library(${APP_NAME}_lib SHARED ${APP_SOURCES})
-target_link_libraries(${APP_NAME}_lib PUBLIC ${APP_LINK_LIBRARIES_LIBRA} casacpp_synthesis)
+target_link_libraries(${APP_NAME}_lib PUBLIC ${APP_LINK_LIBRARIES_LIBRA} casacpp_synthesis stdc++fs)
 set_target_properties(${APP_NAME}_lib PROPERTIES OUTPUT_NAME ${APP_NAME})
 install(TARGETS ${APP_NAME}_lib LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 
