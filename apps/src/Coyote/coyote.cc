@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // # Coyote.cc: Definition of the Coyote functions
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -106,13 +106,15 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       // Instantiate the CFCache object, initialize it and extract the
       // CFStore objects from it (the CFC in-memory model).
       //
-      CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
+      CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache(cfCacheName.c_str());
       CountedPtr<casa::refim::CFStore2> cfs2_l=nullptr, cfswt2_l=nullptr;
       try
 	{
-	  std::tie(cfs2_l, cfswt2_l) =
-	    casa::refim::SynthesisUtils::constructCFS(cfCacheObj_l.get(), cfCacheName,
+	  std::exception_ptr excpt;
+	  std::tie(cfs2_l, cfswt2_l, excpt) =
+	    casa::refim::SynthesisUtils::constructCFS(cfCacheObj_l.get(), //get the raw pointer
 				    cfList, wtCFList, mode, pa, dpa);
+	  if (excpt != nullptr) std::rethrow_exception(excpt);
 	}
       catch (CFSupportZero &e)
       	{
@@ -122,6 +124,10 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       	  // resolution code.
       	  log_l << e.what() << LogIO::POST;
       	}
+      catch (CFCIsEmpty &e)
+	{
+	  log_l << "A new CFCache will be made" << LogIO::POST;
+	}
       //
       //-------------------------------------------------------------------------------------------------
       //
@@ -163,8 +169,8 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // etc.), save in a record and make it persistent in the
 	  // CFCache.
 	  //
-	  ImageInformation<Complex> imInfo(cgrid,casacore::String(cfCacheName));
-	  imInfo.save();
+	  SynthesisUtils::ImageInformation<Complex> imInfo(cgrid);
+	  imInfo.save(casacore::String(cfCacheName));
 
 	  //-------------------------------------------------------------------------------------------------
 	  casa::refim::SynthesisUtils::makeCFS_inmemory(db, cfs2_l, cfswt2_l, *awcf_l,
@@ -182,9 +188,17 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
 	  // CF (the IsFilled=1 entry in CFS*/miscInfo.rec) will be
 	  // left untouched.
 	  //
+	  // Construct the ImageInformation object. It will be used
+	  // as-is if a constructor that loads the complex grid info
+	  // is used.  If it is not loaded with the grid info., or not
+	  // supplied as an argument, an attempt will be made in
+	  // fillCFS_inmemory() to load the info from the cfCacheName.
+	  //
+	  SynthesisUtils::ImageInformation<Complex> imInfo;
 	  casa::refim::SynthesisUtils::fillCFS_inmemory(cfCacheName,
-				      cfs2_l, cfswt2_l, uvOffset,
-				      psTerm, aTerm, conjBeams);
+							cfs2_l, cfswt2_l, uvOffset,
+							psTerm, aTerm, conjBeams,
+							imInfo);
 	}
       //
       // Save the contents of the in-memory CFStore on the disk.
@@ -199,8 +213,9 @@ void Coyote(//bool &restartUI, int &argc, char **argv,
       //
       if (!cfCacheName.empty())
 	{
-	  cfs2_l->makePersistent(cfCacheName.c_str(),"","", true);
-	  cfswt2_l->makePersistent(cfCacheName.c_str(),"","WT",true);
+	  bool useThreads=true;
+	  cfs2_l->makePersistent(cfCacheName.c_str(),"","", useThreads);
+	  cfswt2_l->makePersistent(cfCacheName.c_str(),"","WT",useThreads);
 	}
       //
       //------------------------------------------------------------------------------------------------------

@@ -76,7 +76,8 @@ namespace casa
 			    Vector<double>& uvOffset,
 			    const bool& psTerm,
 			    const bool& aTerm,
-			    const bool& conjBeams)
+			    const bool& conjBeams,
+			    ImageInformation<Complex> imInfo)
       {
 	//
 	// mode="fillcf" case.  The list of CFs in the CFC are
@@ -94,6 +95,7 @@ namespace casa
 				      dummyUVScale, uvOffset,dummyvbFreqSel,
 				      *cfs2_l,*cfswt2_l,
 				      psTerm,aTerm, conjBeams,
+				      imInfo,
 				      makePersistent);
 
 	// Report some stats.
@@ -181,10 +183,9 @@ namespace casa
       // Options for whichCFC are MAKE_CFCFS, MAKE_WTCFS and MAKE_BOTHCFS
       //
       std::tuple<CountedPtr<casa::refim::CFStore2>,
-		 CountedPtr<casa::refim::CFStore2>>
-      //  constructCFS(CountedPtr<refim::CFCache> cfCacheObj,
+		 CountedPtr<casa::refim::CFStore2>,
+		 std::exception_ptr>
       constructCFS(refim::CFCache* cfCacheObj,
-		   const std::string& cfCacheName,
 		   const std::vector<std::string>& cfList,
 		   const std::vector<std::string>& wtCFList,
 		   const std::string& mode,
@@ -196,13 +197,9 @@ namespace casa
 	// Instantiate the CFCache object, initialize it and extract the
 	// CFStore objects from it (the CFC in-memory model).
 	//
-	//      CountedPtr<refim::CFCache> cfCacheObj_l = new refim::CFCache();
-	// try
-	//   {
+	std::exception_ptr CFCIsEmptyPtr_l = nullptr;
 	if (cfCacheObj == nullptr)
 	  throw(AipsError("CFCacheHelper::constructCFS(): cfCacheObj is a null pointer"));
-
-	cfCacheObj->setCacheDir(cfCacheName.data());
 
 	if (mode == "dryrun")
 	  {
@@ -230,11 +227,9 @@ namespace casa
 	      }
 	    catch (CFCIsEmpty& e)
 	      {
-		// Ignore the exception.  Empty CFs will be created in
-		// the section below after the CFStore objects (which
-		// encapsulate the in-memory model of the CFCache) are
-		// derived.
-		//cerr << "The CFCache (\"" << cfCacheName << "\") is empty.  Building a new one." << LogIO::POST;
+		// Capture the exception and return the pointer to it.
+		// The resolution can be done up the call stack.
+		CFCIsEmptyPtr_l = std::current_exception();
 	      }
 	  }
 	else if (mode == "fillcf")
@@ -252,8 +247,8 @@ namespace casa
 	    int verbose=0;
 	    cfCacheObj->setLazyFill(refim::SynthesisUtils::getenv("CFCache.LAZYFILL",1)==1);
 
-	    cfCacheObj->initCacheFromList2(cfCacheName,
-					   casacore::Vector<casacore::String>(cfList), //cfNames,
+	    cfCacheObj->initCacheFromList2(std::string(cfCacheObj->getCacheDir().c_str()),//cfCacheName,
+					   casacore::Vector<casacore::String>(cfList),
 					   casacore::Vector<casacore::String>(wtCFList),
 					   pa,dpa,
 					   verbose);
@@ -287,7 +282,7 @@ namespace casa
 	      throw(AipsError("CFCacheHelper::constructCFS(): CFStore pointer for WTCFs is a null pointer"));
 	  }
 
-	return std::make_tuple(cfs2_l, cfswt2_l);
+	return std::make_tuple(cfs2_l, cfswt2_l,CFCIsEmptyPtr_l);
       }
 
     }; // End SynthesisUtils namespace
