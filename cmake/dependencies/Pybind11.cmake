@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -28,7 +28,7 @@ ExternalProject_Add(
   Pybind11
   GIT_REPOSITORY ${LIBRA_PYBIND11_GIT_REPOSITORY}
   GIT_TAG        ${LIBRA_PYBIND11_GIT_TAG}
-  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/pybind11
+  SOURCE_DIR     ${LIBRA_DEPENDENCIES_DIR}/pybind11
   BINARY_DIR     ${BUILD_DIR}/pybind11
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                  -DCMAKE_INSTALL_LIBDIR=lib
