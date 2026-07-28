@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -48,9 +48,9 @@ ExternalProject_Add(
   Casacore
   GIT_REPOSITORY ${LIBRA_CASACORE_GIT_REPOSITORY}
   GIT_TAG        ${LIBRA_CASACORE_GIT_TAG}
-  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/casacore
+  SOURCE_DIR     ${LIBRA_DEPENDENCIES_DIR}/casacore
   BINARY_DIR     ${BUILD_DIR}/casacore
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/dependencies/casacore
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${LIBRA_DEPENDENCIES_DIR}/casacore
                     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
                     -DCMAKE_INSTALL_LIBDIR=lib

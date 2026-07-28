@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -36,7 +36,7 @@ ExternalProject_Add(
   FFTW_source
   URL             ${LIBRA_FFTW_URL}
   ${DOWNLOAD_EXTRACT_TIMESTAMP_KW}
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
+  SOURCE_DIR      ${LIBRA_DEPENDENCIES_DIR}/FFTW
   CONFIGURE_COMMAND ""
   BUILD_COMMAND    ""
   INSTALL_COMMAND  ""
@@ -46,7 +46,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   FFTW_double
   DOWNLOAD_COMMAND ""
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
+  SOURCE_DIR      ${LIBRA_DEPENDENCIES_DIR}/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW_double
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E sleep 2 && <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
   BUILD_COMMAND   make -j ${NCORES}
@@ -58,7 +58,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   FFTW_float
   DOWNLOAD_COMMAND ""
-  SOURCE_DIR      ${CMAKE_SOURCE_DIR}/dependencies/FFTW
+  SOURCE_DIR      ${LIBRA_DEPENDENCIES_DIR}/FFTW
   BINARY_DIR      ${BUILD_DIR}/FFTW_float
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E sleep 2 && <SOURCE_DIR>/configure --enable-shared --enable-threads --enable-openmp --enable-float --prefix=${INSTALL_DIR} --bindir=${INSTALL_DIR}/bin/fftw --libdir=${INSTALL_DIR}/lib
   BUILD_COMMAND   make -j ${NCORES}

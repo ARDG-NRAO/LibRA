@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -70,6 +70,7 @@ macro(print_libra_summary)
   message("   --- Paths ---")
   message("   Top Level Dir:    ${TOP_LEVEL_DIR}")
   message("   Build Dir:        ${BUILD_DIR}")
+  message("   Dependencies Dir: ${LIBRA_DEPENDENCIES_DIR}")
   message("   Install Dir:      ${INSTALL_DIR}")
   message("   Modules Dir:      ${LIBRA_MODULES_DIR}")
   message("   Python Venv Dir:  ${LIBRA_PYTHON_VENV_DIR}")

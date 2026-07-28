@@ -90,6 +90,12 @@ CMAKE OPTIONS:
         Specify GPU architecture for GPU+CPU build
         Example: -DKokkos_CUDA_ARCH_NAME=AMPERE80
 
+    -DCMAKE_INSTALL_PREFIX=<DIR>
+       Specify the location where the build artifacts are saved
+       (libraries, include files, binaries, etc.). Default is
+       ${CMAKE_CURRENT_SOURCE_DIR} (i.e., "install" directory in the
+       root of the source tree)
+
     Any other CMake options can be passed and will be forwarded to cmake
 
 EXAMPLES:
