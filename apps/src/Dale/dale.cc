@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -41,9 +41,9 @@
 namespace Dale
 {
   void printImageMax(const string& imType,
-		     const ImageInterface<Float>& target,
-		     const ImageInterface<Float>& weight,
-		     const ImageInterface<Float>& sumwt,
+		     const ImageInterface<float>& target,
+		     const ImageInterface<float>& weight,
+		     const ImageInterface<float>& sumwt,
 		     LogIO& logio,
 		     const string& when)
   {
@@ -172,7 +172,7 @@ namespace Dale
 	if (imType == "residual") newIM = target / SoW;
 	
 	LatticeExpr<T> ratio, deno;
-	Float scalepb = 1.0;
+	float scalepb = 1.0;
 	if (imType == "residual")
 	  {
 	    deno = sqrt(abs(normWt)) * itsPBScaleFactor;
@@ -216,7 +216,7 @@ namespace Dale
   //-------------------------------------------------------------------------
   //
   template <class T>
-  PagedImage<T>* checkAndOpen(const string& name)
+  std::unique_ptr<PagedImage<T>> checkAndOpen(const string& name)
   {
     if (! librautils::imageExists(name))
       throw(AipsError("Image " + name + " does not exist."));
@@ -224,7 +224,9 @@ namespace Dale
     LatticeBase *imPtr;
     
     imPtr = ImageOpener::openImage (name);
-    return dynamic_cast<PagedImage<T>*>(imPtr);
+
+    std::unique_ptr<PagedImage<T>> sptr(dynamic_cast<PagedImage<T>*>(imPtr));
+    return sptr;
   }
   //
   //-------------------------------------------------------------------------
@@ -272,11 +274,11 @@ namespace Dale
 	    throw(AipsError("imagename does not point to an image."));
 	}
 	// checking if all necessary images exist before opening
-	PagedImage<Float>* targetImage = checkAndOpen<float>(targetName);
+        std::unique_ptr<PagedImage<float>> targetImage = checkAndOpen<float>(targetName);
 	if (! librautils::isNormalized<float>(*targetImage))
 	  {
-	    PagedImage<Float>* wImage = checkAndOpen<float>(weightName);
-	    PagedImage<Float>* swImage = checkAndOpen<float>(sumwtName);
+            std::unique_ptr<PagedImage<float>> wImage = checkAndOpen<float>(weightName);
+            std::unique_ptr<PagedImage<float>> swImage = checkAndOpen<float>(sumwtName);
 	
 	    //PagedImage<float> pw(*wImage);
 	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
