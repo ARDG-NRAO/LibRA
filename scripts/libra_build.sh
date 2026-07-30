@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2024
+# Copyright (C) 2024, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -95,6 +95,10 @@ CMAKE OPTIONS:
        (libraries, include files, binaries, etc.). Default is
        ${CMAKE_CURRENT_SOURCE_DIR} (i.e., "install" directory in the
        root of the source tree)
+
+     -DLIBRA_DEPENDENCIES_DIR=<DIR>
+       Specify the location of the directory for LiBRA direct
+       dependencies.  Default is <SOURCE_DIR>/dependencies
 
     Any other CMake options can be passed and will be forwarded to cmake
 
@@ -219,5 +223,7 @@ fi
 # Use -DLIBRA_ENABLE_CUDA_BACKEND=OFF for CPU-only build.
 # Use -DKokkos_CUDA_ARCH_NAME=<GPU ARCH NAME> to build for GPU and CPU.
 #
-$CMAKE -S .. -B ../build -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} -DCMAKE_Fortran_COMPILER=${FC} "$@"
-$CMAKE --build ../build
+#$CMAKE -S .. -B ../build -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} -DCMAKE_Fortran_COMPILER=${FC} "$@"
+#$CMAKE --build ../build
+$CMAKE -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} -DCMAKE_Fortran_COMPILER=${FC} "$@"
+$CMAKE --build .
