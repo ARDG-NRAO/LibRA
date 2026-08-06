@@ -34,6 +34,7 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <synthesis/ImagerObjects/SIImageStore.h>
+#include <casacore/images/Images/PagedImage.h>
 
 #include <casacore/scimath/Fitting/NonLinearFitLM.h>
 #include <casacore/scimath/Functionals/Gaussian2D.h>
@@ -133,6 +134,32 @@ py::array_t<float> getchunk(const string& imageName, ImageType type)
     return result;
 }
 
+// Open any casa image directly by path (works for multi-term .tt0/.tt1
+// images, which SIImageStore-based getchunk cannot open). Returns the pixel
+// array with casacore's native axis order (x, y, pol, chan), matching
+// casatools' ia.getchunk().
+py::array_t<float> getchunkFromPath(const string& imagePath)
+{
+    casacore::PagedImage<casacore::Float> img(imagePath);
+    casacore::Array<casacore::Float> arr;
+    img.get(arr, false);
+
+    const auto shape = arr.shape();
+    casacore::Bool deleteIt;
+    const float* data = arr.getStorage(deleteIt);
+
+    std::vector<py::ssize_t> dims, strides;
+    py::ssize_t stride = sizeof(float);
+    for (size_t i = 0; i < shape.nelements(); ++i) {
+        dims.push_back(static_cast<py::ssize_t>(shape(i)));
+        strides.push_back(stride);
+        stride *= shape(i);
+    }
+    py::array_t<float> result(dims, strides, data);  // copies
+    arr.freeStorage(data, deleteIt);
+    return result;
+}
+
 
 // Binding code
 PYBIND11_MODULE(utilities2py, m) {
@@ -147,5 +174,10 @@ PYBIND11_MODULE(utilities2py, m) {
 
     m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
           py::arg("imageName"), py::arg("type"));
+    m.def("getchunkfrompath", &getchunkFromPath,
+          "Retrieve the pixel array of any casa image by path "
+          "(axis order x, y, pol, chan)",
+          py::arg("imagePath"));
+
 }
 
