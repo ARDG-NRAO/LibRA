@@ -48,6 +48,7 @@ ExternalProject_Add(
   Casacpp
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/src/
   DOWNLOAD_COMMAND ""
+  BUILD_ALWAYS    TRUE
   BINARY_DIR      ${BUILD_DIR}/Libra/src
   DEPENDS         ${CASACPP_DEPENDS}
   CONFIGURE_COMMAND
