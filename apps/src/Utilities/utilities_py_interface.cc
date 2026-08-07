@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -138,15 +138,17 @@ py::array_t<float> getchunk(const string& imageName, ImageType type)
 // images, which SIImageStore-based getchunk cannot open). Returns the pixel
 // array with casacore's native axis order (x, y, pol, chan), matching
 // casatools' ia.getchunk().
-py::array_t<float> getchunkFromPath(const string& imagePath)
+
+template <class T>
+py::array_t<T> getchunkFromPath(const string& imagePath)
 {
-    casacore::PagedImage<casacore::Float> img(imagePath);
-    casacore::Array<casacore::Float> arr;
+    casacore::PagedImage<T> img(imagePath);
+    casacore::Array<T> arr;
     img.get(arr, false);
 
     const auto shape = arr.shape();
     casacore::Bool deleteIt;
-    const float* data = arr.getStorage(deleteIt);
+    const T* data = arr.getStorage(deleteIt);
 
     std::vector<py::ssize_t> dims, strides;
     py::ssize_t stride = sizeof(float);
@@ -155,29 +157,42 @@ py::array_t<float> getchunkFromPath(const string& imagePath)
         strides.push_back(stride);
         stride *= shape(i);
     }
-    py::array_t<float> result(dims, strides, data);  // copies
+    py::array_t<T> result(dims, strides, data);  // copies
     arr.freeStorage(data, deleteIt);
     return result;
 }
 
-
 // Binding code
 PYBIND11_MODULE(utilities2py, m) {
-    py::enum_<ImageType>(m, "ImageType")
-        .value("PSF", PSF)
-        .value("RESIDUAL", RESIDUAL)
-        .value("MODEL", MODEL)
-        .value("MASK", MASK)
-        .value("PB", PB)
-        .value("IMAGE", IMAGE)
-        .export_values();
+  py::enum_<ImageType>(m, "ImageType")
+    .value("PSF", PSF)
+    .value("RESIDUAL", RESIDUAL)
+    .value("MODEL", MODEL)
+    .value("MASK", MASK)
+    .value("PB", PB)
+    .value("IMAGE", IMAGE)
+    .export_values();
 
-    m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
-          py::arg("imageName"), py::arg("type"));
-    m.def("getchunkfrompath", &getchunkFromPath,
-          "Retrieve the pixel array of any casa image by path "
-          "(axis order x, y, pol, chan)",
-          py::arg("imagePath"));
+  m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
+        py::arg("imageName"), py::arg("type"));
 
+  m.def("getchunkfrompath", &getchunkFromPath<float>,
+        "Retrieve the pixel array of any single-precision casa image by path "
+        "(axis order x, y, pol, chan)",
+        py::arg("imagePath"));
+
+  m.def("getchunkfrompath_d", &getchunkFromPath<double>,
+        "Retrieve the pixel array of any double-precision casa image by path "
+        "(axis order x, y, pol, chan)",
+        py::arg("imagePath"));
+
+  m.def("getchunkfrompath_c", &getchunkFromPath<casacore::Complex>,
+        "Retrieve the pixel array of any complex-valued single-precision casa image by path "
+        "(axis order x, y, pol, chan)",
+        py::arg("imagePath"));
+
+  m.def("getchunkfrompath_dc", &getchunkFromPath<casacore::DComplex>,
+        "Retrieve the pixel array of any complex-valued double-precision casa image by path "
+        "(axis order x, y, pol, chan)",
+        py::arg("imagePath"));
 }
-
