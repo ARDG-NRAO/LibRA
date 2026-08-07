@@ -151,7 +151,7 @@ py::array_t<T> getchunkFromPath(const string& imagePath)
     const T* data = arr.getStorage(deleteIt);
 
     std::vector<py::ssize_t> dims, strides;
-    py::ssize_t stride = sizeof(float);
+    py::ssize_t stride = sizeof(T);
     for (size_t i = 0; i < shape.nelements(); ++i) {
         dims.push_back(static_cast<py::ssize_t>(shape(i)));
         strides.push_back(stride);
@@ -160,6 +160,29 @@ py::array_t<T> getchunkFromPath(const string& imagePath)
     py::array_t<T> result(dims, strides, data);  // copies
     arr.freeStorage(data, deleteIt);
     return result;
+}
+
+// The four getchunkFromPath<T>() instantiations differ only in their return
+// type, so neither C++ overloading nor pybind11's argument-based overload
+// resolution can pick between them.  Dispatch instead on the pixel type
+// recorded in the image on disk, and hand Python back a NumPy array whose
+// dtype matches it.
+
+py::object getchunkFromPathAuto(const string& imagePath)
+{
+    switch (casacore::imagePixelType(imagePath)) {
+        case casacore::TpFloat:
+            return getchunkFromPath<float>(imagePath);
+        case casacore::TpDouble:
+            return getchunkFromPath<double>(imagePath);
+        case casacore::TpComplex:
+            return getchunkFromPath<casacore::Complex>(imagePath);
+        case casacore::TpDComplex:
+            return getchunkFromPath<casacore::DComplex>(imagePath);
+        default:
+            throw std::invalid_argument("Unsupported pixel type in image "
+                                        + imagePath);
+    }
 }
 
 // Binding code
@@ -176,23 +199,10 @@ PYBIND11_MODULE(utilities2py, m) {
   m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
         py::arg("imageName"), py::arg("type"));
 
-  m.def("getchunkfrompath", &getchunkFromPath<float>,
-        "Retrieve the pixel array of any single-precision casa image by path "
-        "(axis order x, y, pol, chan)",
-        py::arg("imagePath"));
-
-  m.def("getchunkfrompath_d", &getchunkFromPath<double>,
-        "Retrieve the pixel array of any double-precision casa image by path "
-        "(axis order x, y, pol, chan)",
-        py::arg("imagePath"));
-
-  m.def("getchunkfrompath_c", &getchunkFromPath<casacore::Complex>,
-        "Retrieve the pixel array of any complex-valued single-precision casa image by path "
-        "(axis order x, y, pol, chan)",
-        py::arg("imagePath"));
-
-  m.def("getchunkfrompath_dc", &getchunkFromPath<casacore::DComplex>,
-        "Retrieve the pixel array of any complex-valued double-precision casa image by path "
-        "(axis order x, y, pol, chan)",
+  m.def("getchunkfrompath", &getchunkFromPathAuto,
+        "Retrieve the pixel array of any casa image by path (axis order "
+        "x, y, pol, chan).  The dtype of the returned array follows the "
+        "pixel type of the image on disk (float32, float64, complex64 or "
+        "complex128).",
         py::arg("imagePath"));
 }
