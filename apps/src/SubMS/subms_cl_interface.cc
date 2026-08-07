@@ -23,9 +23,7 @@
 // # $Id$
 
 
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <subms.h>
 
 
@@ -50,7 +48,6 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   //else
   // clRetry();
-  REENTER:
   try
     {
       int i;
@@ -94,6 +91,7 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
 //
 //-------------------------------------------------------------------------
 //
+#ifndef SUBMS_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -176,3 +174,4 @@ int main(int argc, char **argv)
     }
   if (restartUI) RestartUI(RENTER);
 }
+#endif // SUBMS_LIBRARY_BUILD

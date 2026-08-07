@@ -1,5 +1,5 @@
 //# roadrunner.cc: Driver for the AWProject class of FTMachines
-//# Copyright (C) 2021
+//# Copyright (C) 2021, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This program is free software; you can redistribute it and/or modify it
@@ -28,24 +28,23 @@
 //
 //================================================================================
 //
-#define ROADRUNNER_USE_HPG
+#define LIBRA_USE_HPG
 #include <libracore/rWeightor.h>
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 #include <libracore/MakeComponents.h>
 #include <roadrunner.h>
-#include <librautils/utils.h>
-
-#include <stdexcept>
 
 std::exception_ptr CFServerThreadExceptionPtr_g = nullptr;
-
 
 CountedPtr<refim::FTMachine> ftm_g;
 hpg::CFSimpleIndexer cfsi_g({1,false},{1,false},{1,true},{1,true}, 1);
 std::shared_ptr<hpg::RWDeviceCFArray> dcfa_sptr_g;
 bool isRoot=true;
 
+//
+//---------------------------------------------------------------------------------------
+//
 std::tuple<bool, std::shared_ptr<hpg::RWDeviceCFArray>>
 prepCFEngine(casa::refim::MakeCFArray& mkCF,
 	     bool WBAwp, int nW,
@@ -81,10 +80,11 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
     {
       casa::refim::MyCFArray cfArray;
       cfShapeList = std::get<4>(ret);
-      cerr << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << endl;
-      cerr << "CF W list: " << wNdxList << endl << "CF SPW List: " << spwNdxList << endl
-	   << "CF Shapes: ";
-      for(auto s : cfShapeList) cerr << s << " "; cerr << endl;
+      log_l << "Make CF Array run time: " << runtimeMkCF.count() << " sec" << LogIO::POST;
+      log_l //<< "CF W list: " << wNdxList << endl
+	<< "CF SPW List: " << spwNdxList << LogIO::POST
+	<< "CF Shapes: ";
+      for(auto s : cfShapeList) log_l << s << " "; log_l << LogIO::POST;
       cfsi_g = get<2>(ret);
 
       dcf_sptr = std::get<3>(ret);
@@ -93,23 +93,25 @@ prepCFEngine(casa::refim::MakeCFArray& mkCF,
     }
   return std::make_tuple(newCF,dcf_sptr);
 }
-
-
+//
+//---------------------------------------------------------------------------------------
+//
 void CFServer(libracore::ThreadCoordinator& thcoord,
 	      casa::refim::MakeCFArray& mkCF,
 	      bool& WBAwp, int& nW,
 	      casacore::ImageInterface<casacore::Float>& skyImage,
 	      casacore::Vector<Int>& polMap,
 	      casacore::CountedPtr<casa::refim::CFStore2>& cfs2_l,
-	      casacore::Vector<int>& spwidList,
-	      casacore::Vector<double>& spwRefFreqList,
+	      std::vector<int>& spwidList,
+	      std::vector<double>& spwRefFreqList,
 	      int& nDataPol)
 {
   try
     {
+      LogIO os(LogOrigin("roadrunner","CFServer"));
       for(auto ispw : spwidList)
 	{
-	  cerr << ".................CFServer................" << endl;
+	  os << ".................CFServer................" << LogIO::POST;
 
 	  //Declare the in-memory CFCache dirty.  Specifically, the memory
 	  //accessed by the dcfa_sptr_g point should be considered dirty and
@@ -122,8 +124,10 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 	  // uses two threads), this can be made reliable.
 	  double spwRefFreq = spwRefFreqList[ispw];//spwRefFreqList[ispw];
 	  // int vbSPWID=(vb_g)->spectralWindows()(0);
-	  // cerr << "iSPW: " << ispw << ", VB SPWID: " << vbSPWID  << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
-	  cerr << "iSPW: " << ispw << ", SPW Ref. Freq. (Hz): " << spwRefFreq << endl;
+	  os << "iSPW: " << ispw
+	     << ", SPW Ref. Freq. (Hz): " << spwRefFreq
+	     << " conjBeams: " << mkCF.conjBeams()
+	     << LogIO::POST;
 	  auto ret = prepCFEngine(mkCF,
 				  WBAwp, nW,
 				  //vbSPWID,
@@ -137,10 +141,10 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
 
 	  thcoord.setCFReady(true);
 	  thcoord.Notify_CFReady();
-	  cerr << ".................CFServer waitForCFSent................" << endl;
+	  os << ".................CFServer waitForCFSent................" << LogIO::POST;
 	  if (thcoord.isEoD())
 	    {
-	      cerr << ".................EoD detected (CFServer exiting)................" << endl;
+	      os << ".................EoD detected (CFServer exiting)................" << LogIO::POST;
 	      return;
 	    }
 	  thcoord.waitForCFSent();
@@ -175,8 +179,9 @@ void CFServer(libracore::ThreadCoordinator& thcoord,
       thcoord.setEoD(true);
     }
 }
-
-
+//
+//---------------------------------------------------------------------------------------
+//
 std::vector<std::vector<int>>
 readMNdxText(const string& fileName)
 {
@@ -187,7 +192,7 @@ readMNdxText(const string& fileName)
   if (!ifs)
     throw(AipsError(String("Error in reading file "+fileName)));
 
-  auto split = [] (const std::string &s) -> std::vector<int> 
+  auto split = [] (const std::string &s) -> std::vector<int>
     {
      std::vector<int> elems;
      std::istringstream iss(s);
@@ -208,9 +213,9 @@ readMNdxText(const string& fileName)
 
   return mat;
 }
-
-
-
+//
+//---------------------------------------------------------------------------------------
+//
 std::tuple<PolMapType, PolMapType>
 makeMNdx(const string& fileName,
 	 const Vector<int>& polMap,
@@ -308,7 +313,9 @@ makeMNdx(const string& fileName,
 
   return make_tuple(mndx,conj_mndx);
 }
-
+//
+//---------------------------------------------------------------------------------------
+//
 double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBase>& vr)
 {
   if (vr->name()=="HPGResampler")
@@ -316,6 +323,30 @@ double getMakeHPGVBTime(casacore::CountedPtr<casa::refim::VisibilityResamplerBas
   return 0.0;
 }
 
+//
+//---------------------------------------------------------------------------------------
+//
+// Get the return value from the provided std::future<T>.  Issue a
+// message if the associated thread is still running.
+//
+auto get_async_status(std::shared_future<
+		      std::tuple<CountedPtr<casa::refim::CFStore2>,
+		      CountedPtr<casa::refim::CFStore2>,
+		      std::exception_ptr>>& future_status,
+		      LogIO& log_l)
+{
+    using namespace std::chrono_literals;
+    // Non-blocking check to find if the thread is still running
+    if (future_status.wait_for(0ms) == std::future_status::timeout)
+      log_l << "Waiting for the CFS ctor thread to finish..." << LogIO::POST;
+    else
+      log_l << "CFS is ready!" << LogIO::POST;
+
+    return future_status.get();
+};
+
+//
+//---------------------------------------------------------------------------------------
 // The return value is of type ReturnType, which is a std::map<int, double>.  The structure of the map is as follows.
 // Enums for the key (the first tempalate-type) is
 // ReturnType(CUMULATIVE_GRIDDING_ENGINE_TIME) --> Total time taken by the Gridding/deGridding kernel (griddingEngine_time).
@@ -341,11 +372,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 {
   // LogFilter filter(LogMessage::NORMAL);
   // LogSink::globalSink().filter(filter);
-  LogIO log_l(LogOrigin("roadrunner","Roadrunner_func"));
   RRReturnType rrr;
 
   try
     {
+      LogIO log_l(LogOrigin("roadrunner","Roadrunner"));
       // set the default of rmode to be "norm"
       if (rmode =="")
         rmode = "norm";
@@ -380,7 +411,6 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       // And hpg::finalize() is called when this instance goes out of
       // scope.
       LibHPG libhpg(ftmName=="awphpg",&std::cerr);
-      //  std::atexit(tpl_finalize);
 
       bool const doSow = sowImageExt != "";
       // to prevent using the same image name by all ranks, we insert
@@ -406,35 +436,92 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       }
       // The scope below has the scientific code. That's where runtime
       // exceptions will happen.  So enclose it in a try-catch clause.
+      //---------------------------------------------------------------------------------------
+      // Construct the CFCache and CFSes.
+      //
+      CountedPtr<refim::CFCache> cfc(new refim::CFCache(cfCache.c_str()));
+
+      casa::refim::SynthesisUtils::CFCHelperCodes whichCFS=casa::refim::SynthesisUtils::CFCHelperCodes::MAKE_CFCFS;
+      if (imagingMode == "psf" || imagingMode=="weight" )
+	whichCFS=casa::refim::SynthesisUtils::CFCHelperCodes::MAKE_WTCFS;
+
+      // Initialize the CFC and construct the in-memory CFSes.  The CFSes
+      // can be extracted from CFC at any point after this call.
+      std::vector<std::string> blank={""};
+      double pa=360.0, dpa=400.0;
+      refim::CFCache* cfCacheObj=cfc.get();
+      std::string cfcMode="dryrun";
+
+      std::future<std::tuple<CountedPtr<casa::refim::CFStore2>,
+			     CountedPtr<casa::refim::CFStore2>,
+			     std::exception_ptr>> cfsCtor_ret =
+	std::async(std::launch::async,
+		   &casa::refim::SynthesisUtils::constructCFS,
+		   std::ref(cfCacheObj), std::ref(blank),std::ref(blank),
+		   std::ref(cfcMode), std::ref(pa), std::ref(dpa),
+		   std::ref(whichCFS));
+      std::shared_future<std::tuple<CountedPtr<casa::refim::CFStore2>,
+				    CountedPtr<casa::refim::CFStore2>,
+				    std::exception_ptr>>
+	shared_cfsCtor_ret = cfsCtor_ret.share();
+
+      log_l << "Started CFS ctor in a thread..." << LogIO::POST;
+      //
+      // Simulate the catch block for exceptions thrown immediately
+      // from a constructCFS() in a separate thread, giving it
+      // sufficient time (1s) to start execution.
+      //
+      {
+	// Blocking check to find if the thread is still running.
+	if (shared_cfsCtor_ret.wait_for(1s) != std::future_status::timeout)
+	  {
+	    auto ret=shared_cfsCtor_ret.get();
+	    if (std::get<2>(ret) != nullptr) std::rethrow_exception(std::get<2>(ret));
+	  }
+      };
+
+      //---------------------------------------------------------------------------------------
+
       //-------------------------------------------------------------------
       // Load the selected MS.  The original ms (thems), the selected
       // MS and the MSSelection objects are modified.  The selected
       // list of SPW and FIELD IDs are also generated.  All these are
       // currently internal but public members of the DataBase class.
       //
-      Vector<int> spwidList, fieldidList;
-      Vector<double> spwRefFreqList;
 
       //
       // A plug-in lambda function for DataBase to run soon after opening the MS.
       //
-      auto verifyMS=[&dataCol_l,&dataColumnName,&imagingMode](const MeasurementSet& ms)
-		    {
-		      if (
-			  ((dataCol_l == casa::refim::FTMachine::MODEL) && !(ms.tableDesc().isColumn("MODEL_DATA"))) ||
-			  ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
-			  ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
-			  )
-			throw(AipsError("MS verification error: The requested data column (\""+dataColumnName+"\") for mode="+imagingMode+" not found.  Bailing out."));
-		    };
+      auto verifyMS=
+	[&dataCol_l,&dataColumnName,&imagingMode](const MeasurementSet& ms)
+	{
+	  if (
+	      ((dataCol_l == casa::refim::FTMachine::MODEL) && !(ms.tableDesc().isColumn("MODEL_DATA"))) ||
+	      ((dataCol_l == casa::refim::FTMachine::CORRECTED) && !(ms.tableDesc().isColumn("CORRECTED_DATA"))) ||
+	      ((dataCol_l == casa::refim::FTMachine::OBSERVED) && !(ms.tableDesc().isColumn("DATA")))
+	      )
+	    throw(AipsError("MS verification error: "
+			    "The requested data column (\""+dataColumnName+"\") for mode="
+			    +imagingMode+" not found.  Bailing out."));
+	};
 
       DataBase db(MSNBuf, fieldStr, spwStr, uvDistStr, WBAwp, nW,
 		  doSPWDataIter,verifyMS);
 
-      // spwidList      = db.spwidList;
-      // fieldidList    = db.fieldidList;
-      // spwRefFreqList = db.spwRefFreqList;
+      // mssFreqSel is used below by setSpwFreqSelection (range boundaries for the FTM).
+      Matrix<Double> mssFreqSel = db.msSelection.getChanFreqList(NULL, true);
 
+      // Compute the reference frequency from all selected channel frequencies.
+      // db.spwRefFreqList is populated during DataBase construction and correctly
+      // expands any spw= selection (including finer selections like "2:10~30;5:20~30").
+      {
+	double refFreqHz = 0;
+	refFreqStr = librautils::computeReferenceFrequency(refFreqStr, db.fullFreqList, refFreqHz);
+	if (refFreqHz > 0)
+	  log_l << "Sky image reference frequency: " << refFreqHz / 1e9 << " GHz" << LogIO::POST;
+	else
+	  log_l << "Sky image reference frequency: " << refFreqStr << LogIO::POST;
+      }
       //
       //-------------------------------------------------------------------
       // Make the empty grid with the sky image coordinates
@@ -449,11 +536,9 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //      cerr << "PC = " << oss << endl;
 
       TempImage<Complex> cgrid=makeEmptySkyImage(*(db.vi2_l), db.selectedMS, db.msSelection,
-						  cmplxGridName, startModelImageName,
-						  imSize, cellSize, phaseCenter,
-						  stokes, refFreqStr, mode);
+						 imSize, cellSize, phaseCenter,
+						 stokes, refFreqStr, mode);
       PagedImage<Float> skyImage(cgrid.shape(),cgrid.coordinates(), imageName);
-
       //      cgrid.table().markForDelete();
 
       // Setup the weighting scheme in the supplied VI2
@@ -470,9 +555,19 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	skyImage.table().markForDelete();
 
       StokesImageUtil::From(cgrid, skyImage);
-      if(db.vb_l->polarizationFrame()==MSIter::Linear) StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
-      else StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
+      if(db.vb_l->polarizationFrame()==MSIter::Linear)
+	StokesImageUtil::changeCStokesRep(cgrid,StokesImageUtil::LINEAR);
+      else
+	StokesImageUtil::changeCStokesRep(cgrid, StokesImageUtil::CIRCULAR);
 
+      //-------------------------------------------------------------------
+      // Wait for CFS ctor thread to finish...
+      //
+      {
+	//auto ret=cfsCtor_ret.get();
+	auto ret=get_async_status(shared_cfsCtor_ret,log_l);
+	if (std::get<2>(ret) != nullptr) std::rethrow_exception(std::get<2>(ret));
+      }
       //-------------------------------------------------------------------
       // Create the AWP FTMachine.  The AWProjectionFT is construed
       // with the re-sampler depending on the ftmName (AWVisResampler
@@ -481,12 +576,14 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //
       MPosition loc;
       MeasTable::Observatory(loc, MSColumns(db.selectedMS).observation().telescopeName()(0));
-      Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false, doPSF=false;
+      Bool useDoublePrec=true, aTermOn=true, psTermOn=false, mTermOn=false,
+	doPSF=(imagingMode=="psf");
 
-      auto ret = 
+      CountedPtr<refim::VisibilityResamplerBase> visResampler =
 	createAWPFTMachine(ftmName, modelImageName, ftm_g,
+			   cfc,
 			   String("EVLA"),
-			   loc, cfCache,
+			   loc,
 			   //cfBufferSize, cfOversampling,
 			   WBAwp,nW,
 			   useDoublePrec,
@@ -501,15 +598,13 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 			   imageNamePrefix,
 			   imagingMode
 			   );
-      CountedPtr<refim::CFCache>  cfc = get<0>(ret);
-      CountedPtr<refim::VisibilityResamplerBase> visResampler = get<1>(ret);
       {
-	Matrix<Double> mssFreqSel;
-	mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
+	// Matrix<Double> mssFreqSel;
+	// mssFreqSel  = db.msSelection.getChanFreqList(NULL,true);
 	// Send in Freq info.
 	ftm_g->setSpwFreqSelection( mssFreqSel );
 
-	doPSF=(ftm_g->ftmType()==casa::refim::FTMachine::PSF);
+	if (doPSF) assert((ftm_g->ftmType()==casa::refim::FTMachine::PSF));
       }
 
       //-------------------------------------------------------------------
@@ -544,28 +639,26 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       CountedPtr<casa::refim::CFStore2> cfs2_l;
       if (!cfc.null())
 	{
-	  if (doPSF || (imagingMode=="weight"))
-	    cfs2_l =  CountedPtr<casa::refim::CFStore2>(&cfc->memCacheWt2_p[0],false);//new CFStore2;
-	  else
-	    cfs2_l = CountedPtr<casa::refim::CFStore2>(&(cfc->memCache2_p)[0],false);//new CFStore2;
+	  if (doPSF || (imagingMode=="weight")) cfs2_l =  cfc->getWTCFS();
+	  else cfs2_l = cfc->getCFS();
 	}
 
       Vector<int> chanMap, polMap;
       visResampler->getMaps(chanMap, polMap);
-      int nGridPlanes = skyImage.shape()[2]; 
+      int nGridPlanes = skyImage.shape()[2];
       PolMapType mndx, conj_mndx;
       {
 	auto ret = makeMNdx(std::string("stokesI.mndx"), polMap, nGridPlanes);
 	mndx      = std::get<0>(ret);
 	conj_mndx = std::get<1>(ret);
 
-	auto prt = [](std::string tag, PolMapType& p) -> void
+	auto prt = [&log_l](std::string tag, PolMapType& p) -> void
 		   {
-		     cerr << tag << endl;
+		     log_l << tag << LogIO::POST;
 		     for( auto row : p)
 		       {
-			 for (auto col : row) cerr << col << " ";
-			 cerr << endl;
+			 for (auto col : row) log_l << col << " ";
+			 log_l << LogIO::POST;
 		       }
 		   };
 	prt(std::string("mndx:"),mndx);
@@ -573,14 +666,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       }
 
       int nDataPol;
-      // Extract SPW ref. frequency and the number of polarizations in the
-      // data (nDataPol).
-      {
-	db.vi2_l->originChunks();
-	db.vi2_l->origin();
-	spwRefFreqList.assign(db.vb_l->subtableColumns().spectralWindow().refFrequency().getColumn());
-	nDataPol  = db.vb_l->flagCube().shape()[0];
-      }
+      // Extract the number of polarizations in the data (nDataPol).
+      db.vi2_l->originChunks();
+      db.vi2_l->origin();
+      nDataPol  = db.vb_l->flagCube().shape()[0];
+
       //
       // Finally, the data iteration loops.
       //-----------------------------------------------------------------------------------
@@ -620,7 +710,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    // Predict the data into the VB (presumably the name get()
 	    // means "get the data from the complex grid into the VB")
 	    ftm_g->get(*vb_l,0);
-	    
+
 	    // Write the VB to the specific data column.  Predicted data
 	    // in the in-memory model is always in the VB::visCubeModel.
 	    // So always make that persistent in the specified column of
@@ -655,7 +745,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    // means "put the data from the VB into the complex grid")
 	    ftm_g->put(*vb_l,-1,doPSF);
 	  }
-      
+
 	std::vector<double> ret={(double)dataCube.shape().product()*sizeof(Complex), thisIOTime.count()};
 	return ret;
       };
@@ -667,7 +757,8 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //
       if (ftm_g->name() != "AWProjectWBFTHPG")
 	{
-	  auto ret = di.dataIter(db.vi2_l, db.vb_l,dataConsumerFTM);
+	  auto ret = di.dataIter(db.vi2_l, db.vb_l,
+				 dataConsumerFTM);
 	  griddingEngine_time += ret[2];
 	  dataIO_time += ret[3];
 	  vol += ret[1];
@@ -694,12 +785,21 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	  // AWVisResamplerHPG.
 	  std::string HPGDeviceName_p;
 	  hpg::Device HPGDevice_p;
-	  std::tie(HPGDeviceName_p, HPGDevice_p) = static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice();
-	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p);
+	  std::tie(HPGDeviceName_p, HPGDevice_p) =
+	    static_cast<refim::AWVisResamplerHPG &>(*visResampler).getHPGDevice();
+	  casa::refim::MakeCFArray mkCF(mndx,conj_mndx, HPGDevice_p, conjBeams);
+
+	  // To get messages from ThreadCoordinator, pass &cerr (or
+	  // any other ostream*) to the constructor.
+	  //
+	  // TODO: LogIO.output(), which returns the internal ostream
+	  // pointer, does not work. Why? SB: Probably because LogIO
+	  // is not thread-safe.
 	  libracore::ThreadCoordinator thcoord;
 	  thcoord.newCF=false;
 
-	  auto cfPrep = std::async(&CFServer,
+	  auto cfPrep = std::async(std::launch::async,
+				   &CFServer,
 				   std::ref(thcoord),
 				   std::ref(mkCF),
 				   std::ref(WBAwp), std::ref(nW),
@@ -707,7 +807,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 				   std::ref(polMap),
 				   std::ref(cfs2_l),
 				   std::ref(db.spwidList),
-				   std::ref(spwRefFreqList),
+				   std::ref(db.spwRefFreqList),
 				   std::ref(nDataPol));
 	  // First set of CFs have to be ready before proceeding. The
 	  // ThreadCoordinator state after this remains CFReady=true,
@@ -770,11 +870,11 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 	    };
 	  //-------------------------------------------------------------------------------------------
 	  auto notifyCFSent =
-	    [&thcoord](const int& nVB)
+	    [&thcoord,&log_l](const int& nVB)
 	    {
 	      if ((nVB==0) && (!thcoord.isEoD()))
 		{
-		  cerr << "gridderEngine: CFSent notification" << endl;
+		  log_l << "gridderEngine: CFSent notification" << LogIO::POST;
 		  thcoord.setCFSent(true);
 		  thcoord.newCF=false;
 		  thcoord.Notify_CFSent();
@@ -785,7 +885,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	  try
 	    {
-	      auto ret = di.dataIter(db.vi2_l, db.vb_l, 
+	      auto ret = di.dataIter(db.vi2_l, db.vb_l,
 				     dataConsumerFTM,
 				     waitForCFReady,
 				     notifyCFSent);
@@ -809,7 +909,7 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       //-----------------------------------------------------------------------------------
 
       rrr[CUMULATIVE_GRIDDING_ENGINE_TIME]=griddingEngine_time;
-      cerr << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << endl;
+      log_l << "Cumulative time in griddingEngine: " << griddingEngine_time << " sec" << LogIO::POST;
       unsigned long allVol=vol;
       //log_l << "Total rows processed: " << allVol << LogIO::POST;
 
@@ -879,10 +979,12 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
 
 	  rrr[SOW]=sow(IPosition(4,0,0,0,0));
 	  {
+	    // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
 	    std::stringstream sowStr;
-	    sowStr << "main: Sum of weights: " << std::setprecision((std::numeric_limits<long double>::digits10 + 1)) << sow(IPosition(4,0,0,0,0)) << endl;
-	    //log_l << "main: Sum of weights: " << sow << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
-	    log_l << sowStr.str() << LogIO::POST; // casacore::LogIO is not inherited from std::streams!  Can't use std::setprecision().
+	    sowStr << "main: Sum of weights: "
+		   << std::setprecision((std::numeric_limits<long double>::digits10 + 1))
+		   << sow(IPosition(4,0,0,0,0)) << endl;
+	    log_l << sowStr.str() << LogIO::POST;
 	  }
 
 	  // Save the SoW as an image.
@@ -928,14 +1030,12 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       rrr[DATA_VOLUME] = visResampler->getDataVolume();
       rrr[MAKEVB_TIME] = getMakeHPGVBTime(visResampler);
     }
+  // Looks like AipsError is now derived from std::exception.  Nice.
   catch (std::exception& stdErr)
     {
+      LogIO log_l(LogOrigin("roadrunner","Roadrunner"));
       log_l << stdErr.what() << LogIO::SEVERE;
     }
-  // Looks like AipsError is now derived from std::exception.  Nice.
-  // catch(AipsError& er)
-  //   {
-  //     log_l << er.what() << LogIO::SEVERE;
-  //   }
+
   return rrr;
 }

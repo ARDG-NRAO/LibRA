@@ -26,27 +26,22 @@
 usage()
 {
     echo "$0 : Script to make a normalized image using LibRA components."
-    echo "Usage: $0 -i <imagename> [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-h]"$'\n'\
-         "       -i set the basename of the images to be generated (without extension)"$'\n'\
+    echo "Usage: $0 [-p <input file>] [-l <logdir>] [-L <LibRA root>] [-h]"$'\n'\
          "       -p (optional) set the name of the iput parameter file. Default: `basename $0 .sh`.def"$'\n'\
          "       -l (optional) directory to save .log and .def files. Default: save to current directory."$'\n'\
          "       -L (optional) LibRA root directory. Default is <user home directory>/libra."$'\n'\
          "       -h prints help and exits"$'\n\n'\
-	 "       Example: $0 -i ksg1_natural_norm -L <PATH TO LIBRA APP BINARIES> -l logs.4K_natural -p imaging.def"$'\n'
+	 "       Example: $0 -L <PATH TO LIBRA APP BINARIES> -l logs.4K_natural -p imaging.def"$'\n'
 }
-if [ $# -eq 0 ] 
-then 
-	usage
-	exit 0
-fi
 
-# Default is where this script resides
-LIBRAHOME=$(dirname $(readlink -f $0));
+# Default parameters
+input_file=`basename $0 .sh`.def
+LIBRAHOME=$(dirname $(readlink -f $0))
+logdir=${PWD}/
 
-while getopts "i:l:L:p:h" option
+while getopts "l:L:p:h" option
 do
     case "$option" in
-        i) imagename=${OPTARG}                    ;;
         l) logdir=${OPTARG}/                      ;;
     	p) input_file=${OPTARG}                   ;;
     	L) LIBRAHOME=${OPTARG}                    ;;
@@ -71,16 +66,16 @@ echo "Using normalization application: "${normalizationAPP}
 echo ""
 
 # # makeWeights
-${runApp} ${griddingAPP} weight ${imagename} ${input_file} ${logdir}
+${runApp} ${griddingAPP} weight ${input_file} ${logdir}
 
 # # # makePSF
-${runApp} ${griddingAPP} psf ${imagename} ${input_file} ${logdir}
+${runApp} ${griddingAPP} psf ${input_file} ${logdir}
 
 # # # normalize the PSF and make primary beam
-${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t psf
+${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t psf
 
 # # # make dirty image
-${runApp} ${griddingAPP} residual ${imagename} ${input_file} ${logdir} -c 0
+${runApp} ${griddingAPP} residual ${input_file} ${logdir} -c 0
 
 # # # normalize the residual
-${runApp} ${normalizationAPP} normalize ${imagename} ${input_file} ${logdir} -t residual -c 0
+${runApp} ${normalizationAPP} normalize ${input_file} ${logdir} -t residual -c 0

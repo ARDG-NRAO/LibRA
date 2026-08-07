@@ -29,8 +29,7 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-#include <cl.h> // C++ized version
-#include <clinteract.h>
+#include <parafeed.h>
 #ifdef CONTACT_USE_MPI
 # include <mpi.h>
 #endif
@@ -88,7 +87,6 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       }
   // else
   //   clRetry();
- REENTER:
       try
     {
       SMap watchPoints; VString exposedKeys;
@@ -180,7 +178,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
     }
 }
 
-
+#ifndef HUMMBEE_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -264,3 +262,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
+#endif // HUMMBEE_LIBRARY_BUILD

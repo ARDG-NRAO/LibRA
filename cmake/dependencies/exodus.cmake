@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -56,6 +56,7 @@ if (LIBRA_USE_EXODUS)
     Exodus_source
     GIT_REPOSITORY ${LIBRA_EXODUS_GIT_REPOSITORY}
     GIT_TAG        ${LIBRA_EXODUS_GIT_TAG}
+    UPDATE_DISCONNECTED TRUE
     SOURCE_DIR     ${LIBRA_EXODUS_SOURCE_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND    ""

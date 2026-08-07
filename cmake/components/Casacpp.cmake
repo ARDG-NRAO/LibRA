@@ -32,6 +32,13 @@ else()
   set(SAKURA_DEPENDENCE "")
 endif()
 
+set(CASACPP_DEPENDS Casacore ${SAKURA_DEPENDENCE} Hpg Parafeed Pybind11)
+set(CASACPP_CMAKE_PREFIX_PATH ${INSTALL_DIR}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos)
+if(BUILD_TESTING)
+  list(APPEND CASACPP_DEPENDS GTest)
+  set(CASACPP_CMAKE_PREFIX_PATH ${CASACPP_CMAKE_PREFIX_PATH}:${INSTALL_DIR}/lib/cmake/GTest)
+endif()
+
 # Debug output
 message(STATUS "Casacpp.cmake: WCSLIB_FOUND = ${WCSLIB_FOUND}")
 message(STATUS "Casacpp.cmake: WCSLIB_INCLUDE_DIRS = ${WCSLIB_INCLUDE_DIRS}")
@@ -41,8 +48,9 @@ ExternalProject_Add(
   Casacpp
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/src/
   DOWNLOAD_COMMAND ""
+  BUILD_ALWAYS    TRUE
   BINARY_DIR      ${BUILD_DIR}/Libra/src
-  DEPENDS         Casacore ${SAKURA_DEPENDENCE} Hpg Parafeed Pybind11
+  DEPENDS         ${CASACPP_DEPENDS}
   CONFIGURE_COMMAND
     PKG_CONFIG_PATH=${INSTALL_DIR}/lib/pkgconfig
     ${CMAKE_COMMAND} <SOURCE_DIR>
@@ -50,11 +58,15 @@ ExternalProject_Add(
     -DCMAKE_INSTALL_LIBDIR=lib
     -DCMAKE_INSTALL_BINDIR=bin/casacpp
     -DCMAKE_CXX_FLAGS=-I${INSTALL_DIR}/include
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+    -DCMAKE_BUILD_RPATH_USE_ORIGIN=TRUE
+    -DCMAKE_INSTALL_RPATH=${INSTALL_DIR}/lib
     -DHpg_DIR=${INSTALL_DIR}/lib/cmake/Hpg/
     -Dparafeed_DIR=${INSTALL_DIR}/lib/cmake/parafeed/
     ${KOKKOS_WRAPPER_FLAGS}
     -DCMAKE_MODULE_PATH=<SOURCE_DIR>/../cmake/modules
-    -DCMAKE_PREFIX_PATH=${INSTALL_DIR}:${INSTALL_DIR}/lib/cmake/Hpg:${INSTALL_DIR}/lib/cmake/parafeed:${INSTALL_DIR}/lib/cmake/Kokkos
+    -DCMAKE_PREFIX_PATH=${CASACPP_CMAKE_PREFIX_PATH}
+    -DBUILD_TESTING=${BUILD_TESTING}
     -DCASACORE_ROOT_DIR=${INSTALL_DIR}
     -DCMAKE_BUILD_TYPE=${CASA_BUILD_TYPE}
     -DGSL_INCLUDE_DIR=${GSL_INCLUDE_DIRS}

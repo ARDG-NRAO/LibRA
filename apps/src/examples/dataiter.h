@@ -30,8 +30,7 @@
 #ifndef DATAITER_H
 #define DATAITER_H
 
-#include <cl.h> // C++ized version
-#include <clinteract.h>
+#include <parafeed.h>
 //
 //================================================================================
 //
@@ -43,6 +42,7 @@
 #include <libracore/DataIterations.h>
 #include <libracore/DataBase.h>
 
+std::exception_ptr CFServerThreadExceptionPtr_g = nullptr;
 
 // Data column to use for the data fidelity term in a solver.
 casa::refim::FTMachine::Type dataCol_l=casa::refim::FTMachine::OBSERVED;

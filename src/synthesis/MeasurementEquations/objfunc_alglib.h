@@ -11,7 +11,7 @@
 #include <casacore/scimath/Mathematics/FFTServer.h>
 #include <casacore/scimath/Functionals/Gaussian2D.h>
 
-#include "lbfgs/optimization.h"
+//#include "lbfgs/optimization.h"
 
 #ifndef isnan
 #define isnan(x) std::isnan(x)

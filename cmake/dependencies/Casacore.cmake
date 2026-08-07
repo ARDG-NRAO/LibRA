@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -29,7 +29,7 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/install/data)
 if(CASACORE_DATA_DOWNLOAD)
   ExternalProject_Add(
     DataDownload
-    DOWNLOAD_COMMAND bash -c "curl ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || curl ${LIBRA_MEASURES_HTTPS} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf -"
+    DOWNLOAD_COMMAND bash -c "curl -f ${LIBRA_MEASURES_FTP} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || curl -f ${LIBRA_MEASURES_HTTPS} | tar -C ${CMAKE_SOURCE_DIR}/install/data -xzf - || (NRAO_FILE=\$(curl -sf ${LIBRA_MEASURES_NRAO_MIRROR}/ | grep -oE 'NRAO_Measures_[0-9]+-[0-9]+\\.ztar' | sort | tail -1) && [ -n \"\$NRAO_FILE\" ] && curl -f ${LIBRA_MEASURES_NRAO_MIRROR}/\$NRAO_FILE | tar -C ${CMAKE_SOURCE_DIR}/install/data -xf -)"
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
@@ -48,9 +48,10 @@ ExternalProject_Add(
   Casacore
   GIT_REPOSITORY ${LIBRA_CASACORE_GIT_REPOSITORY}
   GIT_TAG        ${LIBRA_CASACORE_GIT_TAG}
-  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/casacore
+  UPDATE_DISCONNECTED TRUE
+  SOURCE_DIR     ${LIBRA_DEPENDENCIES_DIR}/casacore
   BINARY_DIR     ${BUILD_DIR}/casacore
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}/dependencies/casacore
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR>
                     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR}
                     -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
                     -DCMAKE_INSTALL_LIBDIR=lib

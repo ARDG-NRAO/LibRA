@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -41,9 +41,9 @@
 namespace Dale
 {
   void printImageMax(const string& imType,
-		     const ImageInterface<Float>& target,
-		     const ImageInterface<Float>& weight,
-		     const ImageInterface<Float>& sumwt,
+		     const ImageInterface<float>& target,
+		     const ImageInterface<float>& weight,
+		     const ImageInterface<float>& sumwt,
 		     LogIO& logio,
 		     const string& when)
   {
@@ -146,7 +146,7 @@ namespace Dale
   // residual = residual / (Sow * (sqrt(weight) * itsPBScaleFactor))
   // model = model / (sqrt(weight) / itsPBScaleFactor)
   {
-    string targetName = imageName + "." + imType;
+    //string targetName = imageName + "." + imType;
     
     IPosition pos(4,0,0,0,0);
     float SoW = sumwt.getAt(pos);
@@ -172,13 +172,13 @@ namespace Dale
 	if (imType == "residual") newIM = target / SoW;
 	
 	LatticeExpr<T> ratio, deno;
-	Float scalepb = 1.0;
+	float scalepb = 1.0;
 	if (imType == "residual")
 	  {
 	    deno = sqrt(abs(normWt)) * itsPBScaleFactor;
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	       << "Dividing " << targetName << " by [ sqrt(weightimage) * "
+	       << "Dividing " << imageName << " by [ sqrt(weightimage) * "
 	       << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
 	    logio << os.str() << LogIO::POST;
 	    
@@ -190,7 +190,7 @@ namespace Dale
 	    
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
-	       << "Dividing " << targetName << " by [ sqrt(weightimage) / "
+	       << "Dividing " << imageName << " by [ sqrt(weightimage) / "
 	       << itsPBScaleFactor << " ] to get to flat sky model before prediction.";
 	    logio << os.str() << LogIO::POST;
 	    
@@ -205,7 +205,7 @@ namespace Dale
           target.copyData(ratio);
 	else
 	  {
-	    string newModelName = imageName + ".divmodel";
+	    string newModelName = librautils::removeExtension(imageName) + ".divmodel";
 	    PagedImage<T> tmp(normWt.shape(), weight.coordinates(), newModelName);
 	    tmp.copyData(ratio);
 	    printImageMax(imType, tmp, weight, sumwt, logio, "after");
@@ -216,7 +216,7 @@ namespace Dale
   //-------------------------------------------------------------------------
   //
   template <class T>
-  PagedImage<T>* checkAndOpen(const string& name)
+  std::unique_ptr<PagedImage<T>> checkAndOpen(const string& name)
   {
     if (! librautils::imageExists(name))
       throw(AipsError("Image " + name + " does not exist."));
@@ -224,7 +224,9 @@ namespace Dale
     LatticeBase *imPtr;
     
     imPtr = ImageOpener::openImage (name);
-    return dynamic_cast<PagedImage<T>*>(imPtr);
+
+    std::unique_ptr<PagedImage<T>> sptr(dynamic_cast<PagedImage<T>*>(imPtr));
+    return sptr;
   }
   //
   //-------------------------------------------------------------------------
@@ -244,7 +246,7 @@ namespace Dale
     //
     //---------------------------------------------------
     //
-    string type, subType, targetName, weightName, sumwtName, pbName;
+    string type="", subType="", targetName=imageName, weightName=wtImageName, sumwtName=sowImageName, pbName="";
     
     LogIO logio(LogOrigin("Dale","dale"));
     
@@ -258,11 +260,11 @@ namespace Dale
 	    logio << "Running normalization for " << targetName << LogIO::POST;
 	  }
 	else
-	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf and residual."));
+	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf, residual or model."));
 	
 	// Use a convention for image names only if the names aren't provided.
-	if (weightName == "") weightName   = librautils::removeExtension(imageName) + ".weight";
-	if (sumwtName  == "") sumwtName    = librautils::removeExtension(imageName) + ".sumwt";
+	if (weightName == "") weightName   = librautils::removeExtension(targetName) + ".weight";
+	if (sumwtName  == "") sumwtName    = librautils::removeExtension(targetName) + ".sumwt";
 	
 	{
 	  Table table(targetName,TableLock(TableLock::AutoNoReadLocking));
@@ -272,11 +274,11 @@ namespace Dale
 	    throw(AipsError("imagename does not point to an image."));
 	}
 	// checking if all necessary images exist before opening
-	PagedImage<Float>* targetImage = checkAndOpen<float>(targetName);
+        std::unique_ptr<PagedImage<float>> targetImage = checkAndOpen<float>(targetName);
 	if (! librautils::isNormalized<float>(*targetImage))
 	  {
-	    PagedImage<Float>* wImage = checkAndOpen<float>(weightName);
-	    PagedImage<Float>* swImage = checkAndOpen<float>(sumwtName);
+            std::unique_ptr<PagedImage<float>> wImage = checkAndOpen<float>(weightName);
+            std::unique_ptr<PagedImage<float>> swImage = checkAndOpen<float>(sumwtName);
 	
 	    //PagedImage<float> pw(*wImage);
 	    //	string wtype=PagedImage<float>(*wImage).table().tableInfo().type();
@@ -288,7 +290,7 @@ namespace Dale
 		  << endl;
 	
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	    normalize<float>(imageName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
+	    normalize<float>(targetName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
 	    librautils::setNormalized<float>(*targetImage);
@@ -300,7 +302,7 @@ namespace Dale
 	    // 	 << endl;
 	    if (computePB)
 	      {
-		pbName   = imageName + ".pb";
+		pbName = librautils::removeExtension(targetName) + ".pb";
 		compute_pb(pbName, *wImage, *swImage, pblimit, logio);
 	      }
 	  }

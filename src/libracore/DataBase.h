@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# DataBase.h: Definition of the DataBase class
-//# Copyright (C) 2021
+//# Copyright (C) 2021, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -32,6 +32,8 @@
 #include <msvis/MSVis/VisBuffer2.h>
 #include <msvis/MSVis/ViFrequencySelection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
+using namespace casa;
+using namespace casa::refim;
 using namespace casacore;
 using namespace std;
 
@@ -53,15 +55,15 @@ using namespace std;
  * @param verifyMS A function to verify the loaded measurement set.
  * @return A tuple containing the spw and field IDs of the selected measurement set.
  */
-inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
-					     const String& spwStr,
-					     const String& fieldStr,
-					     const String& uvDistStr,
-					     MeasurementSet& thems,
-					     MeasurementSet& selectedMS,
-					     MSSelection& msSelection,
-					     std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
-					     )
+inline std::tuple<std::vector<int>, std::vector<int> > loadMS(const String& msname,
+							      const String& spwStr,
+							      const String& fieldStr,
+							      const String& uvDistStr,
+							      MeasurementSet& thems,
+							      MeasurementSet& selectedMS,
+							      MSSelection& msSelection,
+							      std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}
+							      )
 {
   //MeasurementSet thems;
   if (Table::isReadable(msname))
@@ -77,17 +79,18 @@ inline std::tuple<Vector<Int>, Vector<Int> > loadMS(const String& msname,
   msSelection.setFieldExpr(fieldStr);
   msSelection.setUvDistExpr(uvDistStr);
   selectedMS = MeasurementSet(thems);
-  Vector<int> spwid, fieldid;
+  std::vector<int> spwid, fieldid;
   TableExprNode exprNode=msSelection.toTableExprNode(&thems);
   if (!exprNode.isNull())
     {
       selectedMS = MS(thems(exprNode));
-      // TODO: should the following statements be moved outside this
-      // block?
-      spwid=msSelection.getSpwList();
-      fieldid=msSelection.getFieldList();
     }
-  return std::tuple<Vector<Int>, Vector<Int> >{spwid, fieldid};
+  //
+  // Extra ID lists with current selection
+  //
+  spwid=msSelection.getSpwList().tovector();
+  fieldid=msSelection.getFieldList().tovector();
+  return std::tuple<std::vector<Int>, std::vector<Int> >{spwid, fieldid};
 }
 
 /**
@@ -145,7 +148,7 @@ public:
 	   bool& doSPWDataIter,
 	   std::function<void(const MeasurementSet& )> verifyMS=[](const MeasurementSet&){}//NoOp
 	   ):
-    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),sortCols()
+    msSelection(),theMS(),selectedMS(),spwidList(),fieldidList(),spwRefFreqList(),fullFreqList(), sortCols()
   {
     LogIO log_l(LogOrigin("DataBase","DataBase"));
     log_l << "Opening the MS (\"" << MSNBuf << "\"), applying data selection, "
@@ -160,8 +163,9 @@ public:
 			msSelection,verifyMS);
     spwidList=std::get<0>(lists);
     fieldidList=std::get<1>(lists);
+    populateChanFreqList();
 
-    if (WBAwp && (spwidList.nelements() > 1) && (nW > 1)) // AW-Projection.
+    if (WBAwp && (spwidList.size() > 1) && (nW > 1)) // AW-Projection.
       doSPWDataIter=true;  // Allow user to override the decision
     log_l << "No. of rows selected: " << selectedMS.nrow() << LogIO::POST;
 
@@ -189,7 +193,8 @@ public:
     // call after making the empty sky images below.
     //
     vi2_l = new vi::VisibilityIterator2(selectedMS,vi::SortColumns(sortCols),true,0,timeSpan);
-
+    vb_l=vi2_l->getVisBuffer();
+    spwRefFreqList = vb_l->subtableColumns().spectralWindow().refFrequency().getColumn().tovector();
     // vi2_cfsrvr = new vi::VisibilityIterator2(subMS,vi::SortColumns(sortCols),true,0,timeSpan);
     // vb_cfsrvr=vi2_cfsrvr->getVisBuffer();
     // vi2_cfsrvr->originChunks();
@@ -215,7 +220,7 @@ public:
       log_l << "Getting SPW ID list using VI..." << LogIO::POST;
       std::vector<int> vb_SPWIDList;
       std::unordered_set<double> pa_set;
-      vb_l=vi2_l->getVisBuffer();
+
       vi2_l->originChunks();
       for (vi2_l->originChunks();vi2_l->moreChunks(); vi2_l->nextChunk())
 	{
@@ -254,10 +259,13 @@ public:
 	    << LogIO::POST;
 
       //for(uint i=0; auto id : vb_SPWIDList) spwidList[i++]=id; // Works only in C++-20
-      uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
+      //uint i=0; for(auto id : vb_SPWIDList) spwidList[i++]=id;
+      spwidList = vb_SPWIDList;
     }
 
-    log_l << "Selected SPW ID list: " << spwidList << endl;
+    log_l << "Selected SPW ID list: ";
+    for (auto id:spwidList) log_l << id << " ";
+    log_l << LogIO::POST;
     // Global VB (seems to be needed for multi-threading)
     vb_l=vi2_l->getVisBuffer();
   };
@@ -314,6 +322,7 @@ public:
       selectedMS = MS(theMS(exprNode));
     else
       selectedMS = MeasurementSet(theMS);
+    populateChanFreqList();
 
     // Use the supplied functor to setup the sort columns.  The
     // default is to call the internal
@@ -376,7 +385,45 @@ public:
   MS theMS, selectedMS;
   Block<Int> sortCols;
 
-  Vector<int> spwidList, fieldidList;
-  Vector<double> spwRefFreqList;
+  std::vector<int> spwidList, fieldidList;
+  std::vector<double> spwRefFreqList, fullFreqList;
+
+private:
+  // Expand the MSSelection channel ranges into a flat list of per-channel
+  // frequencies (Hz). This works correctly for any spw= selection expression,
+  // including finer selections like "2:10~30;5:20~30,6~17:10~20".
+  void populateChanFreqList()
+  {
+    fullFreqList.clear();
+    // getChanList()      → [spwId, startChan, stopChan, step] per range
+    // getChanFreqList()  → [spwId, startFreq, stopFreq]       per range (aligned rows)
+    // Both are purely from MSSelection — no MS table access.
+    // For each range, nChan = (stopChan - startChan)/step + 1 gives the
+    // exact channel count; frequencies follow arithmetically from the
+    // range boundaries.
+    Matrix<int>    chanList = msSelection.getChanList();
+    Matrix<double> freqList = msSelection.getChanFreqList(NULL, false);
+
+    LogIO log_l(LogOrigin("DataBase", "populateChanFreqList"));
+    // log_l << "chanList = " << chanList << LogIO::POST;
+    // log_l << "freqList = " << freqList << LogIO::POST;
+
+    for (unsigned int k = 0; k < (unsigned int)chanList.shape()(0); ++k)
+      {
+        int    startChan = chanList(k, 1);
+        int    stopChan  = chanList(k, 2);
+        int    step      = chanList(k, 3);
+        double startFreq = freqList(k, 1);
+        double stopFreq  = freqList(k, 2);
+        int    nChan     = (stopChan - startChan) / step + 1;
+        double freqStep  = (nChan > 1) ? (stopFreq - startFreq) / (nChan - 1) : 0.0;
+        for (int i = 0; i < nChan; ++i)
+          fullFreqList.push_back(startFreq + i * freqStep);
+      }
+
+    // Vector<double> debugFreqList(fullFreqList);
+    // log_l << debugFreqList.size() << " channel frequencies (Hz): "
+    //       << debugFreqList << LogIO::POST;
+  }
 };
 #endif

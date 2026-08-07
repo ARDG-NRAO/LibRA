@@ -1,0 +1,74 @@
+# HTCondor configuration
+memResidual          = 26 G
+memModel             = 10 G
+diskModel            = 50 G
+projectdir           = project/name 
+initialdir           = /home/<username>/$(projectdir)
+dataorigin           = osdf:///nrao-ardg/users/<username>
+softwaredir          = $(dataorigin)/apps
+cuda_cap             = 8
+libra_bundle         = libra.$(cuda_cap)x.sh
+imagesdir            = osdf:///path-facility/data/<username>/imagingdata/$(projectdir)/working
+cfcachedir           = $(dataorigin)/cfcache
+msdir                = $(dataorigin)/data/vlass/T23t17/J161533+503000
+und_sites_grid       = "FIU-PATH,UTC-Epyc,SIUE-CC-production,LSU-Deep_Bayou,VU-AUGIE,PDX-Coeus"
+notify_user          = fmadsen@nrao.edu
+htcimagerdir         = /home/<username>/libra/frameworks/htcimager
+wantOSPool           = True
+NRPexclusive         = False
+disconnected_timeout = 2500
+min_pelican_version  = "7.22"
+
+
+# General Imaging parameters
+useStartModel        = False
+useStartMask         = False
+msnamelist           = <comma separated list>
+cfcachelist          = <comma separated list>
+baseimagename        = <image name>
+pblimit              = 0.1
+
+
+# gridding parameters
+datacolumn           = data
+sowimageext          = sumwt
+complexgrid          =
+imsize               = 16384
+cell                 = 0.6
+stokes               = I
+reffreq              = 3.0GHz
+phasecenter          = 16:15:33.000 +50.30.00.000 J2000
+weighting            = natural
+rmode                = none
+robust               = 0
+wprojplanes          = 32
+gridder              = awphpg
+wbawp                = 1
+field                = *
+spw                  = *
+uvrange              =
+pbcor                = 1
+conjbeams            = 1
+usepointing          = 0
+pointingoffsetsigdev =
+
+# deconvolution parameters
+deconvolver          = hogbom
+scales               = 
+largestscale         = -1
+fusedthreshold       = 0
+nterms               = 1
+cycleniter           = 500
+nsigma               = 5
+gain                 = 0.1
+threshold            = 
+cyclefactor          = 1
+mask                 = 
+specmode             = mfs
+
+# normalization parameters
+normtype             = flatnoise
+imtype               = 
+psfcutoff            = 0.35
+resetimages          = 1
+computepb            = 0

@@ -186,6 +186,11 @@ else()
     )
 endif()
 
+if(BUILD_TESTING)
+  enable_testing()
+  find_package(GTest REQUIRED)
+endif()
+
 # Add a subdirectory per casacpp component
 foreach(_component IN LISTS casacpp_all_components)
   add_subdirectory(${_component})

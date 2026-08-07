@@ -34,6 +34,7 @@
 #include <synthesis/MeasurementEquations/MatrixCleaner.h>
 #include <synthesis/MeasurementEquations/AspMatrixCleaner.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
+#include <libracore/StateFile.h>
 #include <deque>
 
 namespace casa { //# NAMESPACE CASA - BEGIN
@@ -75,7 +76,7 @@ public:
   casacore::Bool computePrincipalSolution();
   void makeMTScaleImage(casacore::Matrix<casacore::Float>& iscale, const casacore::Float& scaleSize);
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
+  std::vector<casacore::Float> getActiveSetAspen(const float peakres);
 
 //protected:
 private:
@@ -167,6 +168,7 @@ private:
   casacore::Matrix<casacore::Complex> dirtyFT_p;
   casacore::IPosition blcDirty;
   casacore::IPosition trcDirty;
+  casacore::Float itsPrevOptimumScaleSize;
 
   // h(s) [nx,ny,nscales]
   casacore::Block<casacore::Matrix<casacore::Float> > vecScales_p;
@@ -187,6 +189,9 @@ private:
   // Shape of A : [ntaylor,ntaylor]
   casacore::Block<casacore::Matrix<casacore::Double>> matA_p;    // 2D matrix to be inverted.
   casacore::Block<casacore::Matrix<casacore::Double>> invMatA_p; // Inverse of matA_p;
+
+  // for storing variable states when called in hummbee
+  StateFile sf;
 
   casacore::Int setSupport(const casacore::Float scaleSize, const casacore::Int& nx, const casacore::Int& ny,
         const casacore::Float psfBeam=4.0, const casacore::Float nBeams=20.0);

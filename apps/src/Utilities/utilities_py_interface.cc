@@ -1,3 +1,26 @@
+// # Copyright (C) 2021, 2026
+// # Associated Universities, Inc. Washington DC, USA.
+// #
+// # This library is free software; you can redistribute it and/or modify it
+// # under the terms of the GNU Library General Public License as published by
+// # the Free Software Foundation; either version 2 of the License, or (at your
+// # option) any later version.
+// #
+// # This library is distributed in the hope that it will be useful, but WITHOUT
+// # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+// # License for more details.is
+// #
+// # You should have received a copy of the GNU Library General Public License
+// # along with this library; if not, write to the Free Software Foundation,
+// # Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+// #
+// # Correspondence concerning this should be addressed as follows:
+// #        Postal address: National Radio Astronomy Observatory
+// #                        1003 Lopezville Road,
+// #                        Socorro, NM - 87801, USA
+// #
+// # $Id$
 #include <iostream>
 #include <vector>
 #include <string>
@@ -11,6 +34,7 @@
 #include <casacore/casa/Logging/LogSink.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <synthesis/ImagerObjects/SIImageStore.h>
+#include <casacore/images/Images/PagedImage.h>
 
 #include <casacore/scimath/Fitting/NonLinearFitLM.h>
 #include <casacore/scimath/Functionals/Gaussian2D.h>
@@ -110,19 +134,75 @@ py::array_t<float> getchunk(const string& imageName, ImageType type)
     return result;
 }
 
+// Open any casa image directly by path (works for multi-term .tt0/.tt1
+// images, which SIImageStore-based getchunk cannot open). Returns the pixel
+// array with casacore's native axis order (x, y, pol, chan), matching
+// casatools' ia.getchunk().
+
+template <class T>
+py::array_t<T> getchunkFromPath(const string& imagePath)
+{
+    casacore::PagedImage<T> img(imagePath);
+    casacore::Array<T> arr;
+    img.get(arr, false);
+
+    const auto shape = arr.shape();
+    casacore::Bool deleteIt;
+    const T* data = arr.getStorage(deleteIt);
+
+    std::vector<py::ssize_t> dims, strides;
+    py::ssize_t stride = sizeof(T);
+    for (size_t i = 0; i < shape.nelements(); ++i) {
+        dims.push_back(static_cast<py::ssize_t>(shape(i)));
+        strides.push_back(stride);
+        stride *= shape(i);
+    }
+    py::array_t<T> result(dims, strides, data);  // copies
+    arr.freeStorage(data, deleteIt);
+    return result;
+}
+
+// The four getchunkFromPath<T>() instantiations differ only in their return
+// type, so neither C++ overloading nor pybind11's argument-based overload
+// resolution can pick between them.  Dispatch instead on the pixel type
+// recorded in the image on disk, and hand Python back a NumPy array whose
+// dtype matches it.
+
+py::object getchunkFromPathAuto(const string& imagePath)
+{
+    switch (casacore::imagePixelType(imagePath)) {
+        case casacore::TpFloat:
+            return getchunkFromPath<float>(imagePath);
+        case casacore::TpDouble:
+            return getchunkFromPath<double>(imagePath);
+        case casacore::TpComplex:
+            return getchunkFromPath<casacore::Complex>(imagePath);
+        case casacore::TpDComplex:
+            return getchunkFromPath<casacore::DComplex>(imagePath);
+        default:
+            throw std::invalid_argument("Unsupported pixel type in image "
+                                        + imagePath);
+    }
+}
 
 // Binding code
 PYBIND11_MODULE(utilities2py, m) {
-    py::enum_<ImageType>(m, "ImageType")
-        .value("PSF", PSF)
-        .value("RESIDUAL", RESIDUAL)
-        .value("MODEL", MODEL)
-        .value("MASK", MASK)
-        .value("PB", PB)
-        .value("IMAGE", IMAGE)
-        .export_values();
+  py::enum_<ImageType>(m, "ImageType")
+    .value("PSF", PSF)
+    .value("RESIDUAL", RESIDUAL)
+    .value("MODEL", MODEL)
+    .value("MASK", MASK)
+    .value("PB", PB)
+    .value("IMAGE", IMAGE)
+    .export_values();
 
-    m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
-          py::arg("imageName"), py::arg("type"));
+  m.def("getchunk", &getchunk, "Retrieve a chunk of casa image",
+        py::arg("imageName"), py::arg("type"));
+
+  m.def("getchunkfrompath", &getchunkFromPathAuto,
+        "Retrieve the pixel array of any casa image by path (axis order "
+        "x, y, pol, chan).  The dtype of the returned array follows the "
+        "pixel type of the image on disk (float32, float64, complex64 or "
+        "complex128).",
+        py::arg("imagePath"));
 }
-

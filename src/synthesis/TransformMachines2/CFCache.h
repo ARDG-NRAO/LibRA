@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# ConvFuncDiskCache.cc: Definition of the ConvFuncDiskCache class
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -119,7 +119,9 @@ namespace casa { //# NAMESPACE CASA - BEGIN
   class CFCacheTable
   {
   public:
-    CFCacheTable(): freqList(), wList(), muellerList(), cfNameList() {};
+    CFCacheTable(): freqList(), wList(), muellerList(), cfNameList(),
+		    miscInfoList(),refIDList(),listSize(0)
+    {};
     ~CFCacheTable() {};
     
     CFCacheTable& operator=(const CFCacheTable& other)
@@ -130,16 +132,40 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 	  wList = other.wList;
 	  muellerList = other.muellerList;
 	  cfNameList = other.cfNameList;
+	  miscInfoList = other.miscInfoList;
+          refIDList = other.refIDList;
+          listSize = other.listSize;
 	}
       return *this;
     }
 
     void init()
-    {freqList.resize(0); wList.resize(0); muellerList.resize(0); cfNameList.resize(0);}
+    {
+      freqList.resize(0); wList.resize(0); muellerList.resize(0); cfNameList.resize(0);
+      miscInfoList.resize(0);
+      refIDList.resize(0);
+      listSize=0;
+    }
 
-    std::vector<casacore::Double> freqList, wList;
-    std::vector<casacore::Int> muellerList;
+    void resizeLists(uint n=0)
+    {
+      if (n==0) n=listSize;
+      freqList.resize(n);
+      wList.resize(n);
+      muellerList.resize(n);
+      cfNameList.resize(n);
+      miscInfoList.resize(n);
+      refIDList.resize(n);
+    }
+
+    std::vector<double> freqList, wList;
+    std::vector<int> muellerList;
     std::vector<casacore::String> cfNameList;
+    std::vector<casacore::TableRecord> miscInfoList;
+    std::vector<int> refIDList;
+
+    // The actual number of elements in the lists
+    uint listSize;
   };
   //
   //----------------------------------------------------------------------
@@ -154,7 +180,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
       memCache2_p(), memCacheWt2_p(),memCache_p(), memCacheWt_p(), 
       cfCacheTable_p(), XSup(), YSup(), paList(), 
       paList_p(), key2IndexMap(),
-      Dir(""), WtImagePrefix(""), cfPrefix(cfDir), aux("aux.dat"), paCD_p(), avgPBReady_p(false),
+      Dir(cfDir), WtImagePrefix(""), cfPrefix(cfDir), aux("aux.dat"), paCD_p(), avgPBReady_p(false),
       avgPBReadyQualifier_p(""), OTODone_p(false), loadPixBuf_p(casacore::True)
     {};
     CFCache& operator=(const CFCache& other);
@@ -187,6 +213,28 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     // Compute the size of the memory cache in bytes
     //
     casacore::Long size();
+    inline casacore::IPosition shape(casacore::String whichCache="")
+    {
+      if (whichCache=="CF") return memCache2_p[0].shape();
+      else if (whichCache=="WTCF") return memCacheWt2_p[0].shape();
+      else
+	throw(SynthesisFTMachineError("CFCache::shape(): Incorrect whichCache spec"));
+    }
+
+    inline casacore::CountedPtr<CFStore2> getCFS()
+    {
+      if (memCache2_p.size()==0)
+	throw(SynthesisFTMachineError("CFCache::getCFS(): CFS not initialized (size()==0)"));
+      return casacore::CountedPtr<CFStore2>(&(memCache2_p)[0],false);
+    }
+
+    inline casacore::CountedPtr<CFStore2> getWTCFS()
+    {
+      if (memCacheWt2_p.size()==0)
+	throw(SynthesisFTMachineError("CFCache::getWTCFS(): WTCFS not initialized (size()==0)"));
+      return casacore::CountedPtr<CFStore2>(&(memCacheWt2_p)[0],false);
+    }
+
     //
     // Method to set the class to caluclate the differential
     // Parallactic Angle.  The ParAngleChangeDetector also holds the

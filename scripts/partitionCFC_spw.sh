@@ -1,14 +1,58 @@
+#!/bin/bash
+
+# Copyright (C) 2024
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning AIPS++ should be addressed as follows:
+#        Internet email: aips2-request@nrao.edu.
+#        Postal address: AIPS++ Project Office
+#                        National Radio Astronomy Observatory
+#                        520 Edgemont Road
+#                        Charlottesville, VA 22903-2475 USA
+#
 
 # A script to detect unique SPW indeces in the given CFC, and make
 # partitioned CFCs per SPW index with only the CFs for one SPW.
 #
+
+set -e
+
 CFCName=$1
+copymode=${2:-""}
+
+cfcbasename=`basename ${CFCName} .cfc`
+
+if [ "$copymode" = "deepcopy" ]
+then
+    deepcopy=true
+else
+    deepcopy=false
+fi
 
 CFNAMING="CFS_T_B_CF_SPW_W_POL.im"
 WTCFNAMING="WT"$CFNAMING
 
 copyCF(){
-    ln -s $1
+    if ${deepcopy}
+    then
+        cp -r $1 .
+    else
+        ln -s $1
+    fi
 }
 
 # Collect CF names
@@ -21,7 +65,7 @@ misc=`ls -d $CFCName/* | grep -v CFS*`
 #
 # Make a list of unique SPW indices found
 #
-SWPL=();
+SPWL=();
 for cfname in $cfs; do
     nm=`basename $cfname`;
     n=`echo $nm | awk -F_ '{print $5}' -`
@@ -43,7 +87,7 @@ for s in ${L[@]}; do
     #
     # Make the partitionend CFC dir, and copy the misc files
     #
-    PartName="SPW"$s".cfc";
+    PartName="${cfcbasename}_SPW"$s".cfc";
     mkdir -p $PartName;
     for m in $misc; do
 	echo $m;

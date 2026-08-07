@@ -1,3 +1,27 @@
+# Copyright (C) 2024, 2026
+# Associated Universities, Inc. Washington DC, USA.
+#
+# This library is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Library General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+# License for more details.is
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+#
+# Correspondence concerning this should be addressed as follows:
+#        Postal address: National Radio Astronomy Observatory
+#                        1003 Lopezville Road,
+#                        Socorro, NM - 87801, USA
+#
+# $Id$
+
 # This script is used to launch the `fillcf` script for processing CFs (Convolution Functions) in a distributed manner 
 # using SLURM job arrays. It validates inputs, checks directories, prepares necessary files, and optionally submits 
 # the job to a SLURM cluster.
@@ -216,15 +240,15 @@ class FillCFLauncher:
             self.logger.info(f"coyote_app path is now set to absolute path: {self.coyote_app}")
 
         checkfile = self.check_path(self.coyote_app)
-        if checkfile == "directory":
+        if "directory" in checkfile:
             self.logger.warning(f"{self.coyote_app} is a directory. Checking for binary in {self.coyote_app}/bin/coyote")
             checkfile = self.check_path(os.path.join(self.coyote_app, "bin/coyote"))
-            if checkfile == "file":
+            if "file" in checkfile:
                 self.coyote_app = os.path.join(self.coyote_app, "bin/coyote")
                 self.logger.info(f"coyote_app binary found at {self.coyote_app}")
         elif "file (executable)" in checkfile:
-                self.logger.warning(f"coyote_app binary not found in {self.coyote_app}. Please provide the correct path.")
-        elif checkfile == "file":
+                self.logger.info(f"coyote_app binary found in {self.coyote_app}.");
+        elif "file" in checkfile:
             self.logger.info(f"coyote_app binary found at {self.coyote_app}")
             return
         else:

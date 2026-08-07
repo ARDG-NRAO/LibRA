@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# CFCache.cc: Implementation of the CFCache class
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -29,6 +29,7 @@
 #include <synthesis/TransformMachines2/CFCache.h>
 #include <synthesis/TransformMachines2/Utils.h>
 #include <synthesis/TransformMachines2/ImageInformation.h>
+#include <synthesis/TransformMachines2/ParallelFor.h>
 #include <imageanalysis/Utilities/SpectralImageUtil.h>
 #include <casacore/lattices/LEL/LatticeExpr.h>
 #include <casacore/casa/System/ProgressMeter.h>
@@ -44,9 +45,7 @@ using namespace casacore;
 namespace casa{
   using namespace refim;
   CFCache::~CFCache()  
-  {
-    //cerr << "#################" << "~CFCache() called" << endl;
-  }
+  {}
   //
   //-------------------------------------------------------------------------
   // Load just the axillary info. if found.  The convolution functions
@@ -161,7 +160,7 @@ namespace casa{
     LogOrigin logOrigin("CFCache2", "summarize");
     LogIO log_l(logOrigin);
 
-    IPosition cfsShp=memStore[0].getShape();
+    IPosition cfsShp=memStore[0].shape();
     Int ipol=0;
 
     if (cfsInfo)
@@ -181,7 +180,7 @@ namespace casa{
       for(Int iPA=0; iPA<cfsShp(0); iPA++)
 	{
 	  CFBuffer& cfb=memStore[0](iPA,iBL);
-	  IPosition cfbShp=cfb.getShape();
+	  IPosition cfbShp=cfb.storageShape();
 	  for (Int iw=0; iw<cfbShp[1]; iw++)
 	    {
 	      log_l << "Support Size (w:"<< iw << ", PA:" << iPA << ", BL:" << iBL << ", C:*): ";
@@ -214,13 +213,13 @@ namespace casa{
       {
 	log_l << "Loading misc info from CFs.  " << LogIO::POST;
 	fillCFListFromDisk(cfFileNames, path, memCache2_p, true, selectedPA, dPA,verbose);
-	log_l << "CFStore shape: " << memCache2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << shape("CF") << LogIO::POST;
       }
     if (cfWtFileNames.nelements() > 0)
       {
 	log_l << "Loading misc info from WTCFs. " << LogIO::POST;
 	fillCFListFromDisk(cfWtFileNames, path, memCacheWt2_p, true, selectedPA, dPA, verbose);
-	log_l << "CFStore shape: " << memCacheWt2_p[0].getShape() << LogIO::POST;
+	log_l << "CFStore shape: " << shape("WTCF") << LogIO::POST;
       }
     memCache2_p[0].primeTheCFB();
     memCacheWt2_p[0].primeTheCFB();
@@ -275,8 +274,6 @@ namespace casa{
     //
     // Lambda function to fill CFs with a given prefix.
     //
-    memCache2_p.resize(1);
-    memCacheWt2_p.resize(1);
     auto fillCF_l = [&](CFStoreCacheType2& memCache2_l, casacore::String& cfprefix)
 		    {
 		      fillCFSFromDisk(dirObj,cfprefix, memCache2_l, true, selectedPA, dPA, verbose);
@@ -286,11 +283,30 @@ namespace casa{
 		      return 0.0;//memCache2_l[0].memUsage();
 		    };
 
-    if (prefix == "CFS*") memUsed0 = fillCF_l(memCache2_p, prefix);
-    else if (prefix == "WTCFS*") memUsed1 = fillCF_l(memCacheWt2_p, prefix);
+    if (prefix == "CFS*")
+      {
+	memCache2_p.resize(1);
+	memUsed0 = fillCF_l(memCache2_p, prefix);
+      }
+    else if (prefix == "WTCFS*")
+      {
+	memCacheWt2_p.resize(1);
+	memUsed1 = fillCF_l(memCacheWt2_p, prefix);
+      }
     else // Load both, CFS* and WTCFS* if prefix is blank or of unexpected value
       {
-	casacore::String s="CFS*";
+	memCache2_p.resize(1);
+	memCacheWt2_p.resize(1);
+	//
+	// If the CFCache on disk is empty, the first call to
+	// fillCF_l() will throw the CFISEmpty exception via
+	// fillCFSFromDisk() and the second call to fillCF_l() will
+	// not be made. The client code must resolve this exception.
+	// Like in CFCacheHelper::constrcutCFS() with mode="dryrun",
+	// where this exception is expected and ignored.
+	//
+	casacore::String s;
+	s="CFS*";
 	memUsed0 = fillCF_l(memCache2_p, s);
 	s="WTCFS*";
 	memUsed1 = fillCF_l(memCacheWt2_p, s);
@@ -303,7 +319,9 @@ namespace casa{
 	memUnit="KB";
       }
     if (tt > 0)
-      log_l << "Total CF Cache memory footprint: " << tt << " (" << memUsed0 << "," << memUsed1 << ") " << memUnit << LogIO::POST;
+      log_l << "Total CF Cache memory footprint: "
+	    << tt << " (" << memUsed0 << "," << memUsed1 << ") "
+	    << memUnit << LogIO::POST;
   }
   //
   //-----------------------------------------------------------------------
@@ -315,67 +333,100 @@ namespace casa{
   //
   void CFCache::fillCFListFromDisk(const Vector<String>& fileNames, 
 				   const String& CFCDir, CFStoreCacheType2& memStore,
-				   Bool showInfo, Float selectPAVal, Float dPA,
-				   const Int verbose)
+				   bool showInfo, float selectPAVal, float dPA,
+				   const int verbose)
   {
     (void)showInfo;
-    Bool selectPA = (fabs(selectPAVal) <= 360.0);
+    bool selectPA = (fabs(selectPAVal) <= 360.0);
     paList_p.resize(0);
+    LogIO log_l(LogOrigin("CFCache2", "fillCFListFromDisk"));
+
     try
       {
 	if (memStore.nelements() == 0) memStore.resize(1,true);
 	memStore[0].setLazyFill(!loadPixBuf_p);
-	memStore[0].setCFCacheDir(getCacheDir());
+	memStore[0].setCFCacheDir(CFCDir);
 	CFCacheTableType cfCacheTable_l;
-	// Regex regex(Regex::fromPattern(pattern));
-	// Vector<String> fileNames(dirObj.find(regex));
 
+	std::vector<SynthesisUtils::ImageInformation<Complex>> imInfoList(fileNames.nelements());
 	if (fileNames.nelements() > 0)
 	  {
-	    // String CFCDir=dirObj.path().absoluteName();
-	    // if (showInfo)
-	    //   log_l << "No. of " << pattern << " found in " 
-	    // 	    << dirObj.path().originalName() << ": " 
-	    // 	    << fileNames.nelements() << LogIO::POST;
+	    //
+	    // Gather the list of MiscInfo, into the imInfoList and
+	    // later use that to get CoordinateSystem and PA values.
+	    //
+	    // If ImageInformation<T>(cfName) fails, it is treated as
+	    // an indicator of accessing an old-format CFC. Tru
+	    // loading the miscInfo from the CF image (less efficient)
+	    // and also save the meta info back into the CFC to make
+	    // it into new format.
 
-	    //
-	    // Gather the list of PA values
-	    //
+
+	    paList_p.resize(fileNames.nelements());
+
+	    log_l << "Laoding CFCache metadata" << LogIO::POST;
 	    {
-	      ProgressMeter pm(1.0, Double(fileNames.nelements()),
+	      ProgressMeter pm(1.0, double(fileNames.nelements()),
 			       "Reading CFCache aux. info.", "","","",true);
-	      for (uInt i=0; i < fileNames.nelements(); i++)
-		{
-		  String cfName=CFCDir+'/'+fileNames[i];
-		  TableRecord miscinfo;
-		  ImageInformation<Complex> imInfo(cfName);
 
-		  try
-		    {
-		      miscinfo = imInfo.getMiscInfo();
-		      
-		      // String miName = cfName+'/'+String("miscInfo.rec");
-		      // miRec = SynthesisUtils::readRecord(miName);
-		      // miscinfo = TableRecord(miRec);
-		    }
-		  catch (AipsError &e)
-		    {
-		      //
-		      // In case of any error in reading the miscInfo
-		      // from a saved record (e.g. if this is an old
-		      // CFC where this file does not exist), resort
-		      // to getting the miscInfo via the ImageInterfnace.
-		      //
-		      //cerr << e.what();
-		      PagedImage<Complex> thisCF(cfName);
-		      miscinfo = thisCF.miscInfo();
-		    }
-		  //	    miscinfo.print(cerr);
-		  Double  paVal;
-		  miscinfo.get("ParallacticAngle",paVal);
-		  paList_p.push_back(paVal);
-		  pm.update(Double(i));
-		}
+	      bool useThreads=false;
+
+	      auto makeImInfoList = [this,&fileNames,&pm,&CFCDir,&imInfoList,&log_l,
+				     &useThreads](int ibegin, int iend)
+	      {
+		bool oto=true;
+
+		for (uint i=(uint)ibegin; i < (uint)iend; i++)
+		  {
+		    String cfName=CFCDir+'/'+fileNames[i];
+		    SynthesisUtils::ImageInformation<Complex> imInfo;
+		    try
+		      {
+			imInfo=SynthesisUtils::ImageInformation<Complex>(cfName);
+		      }
+		    catch (AipsError &e)
+		      {
+			//
+			// In case of any error in reading the miscInfo
+			// from a saved record (e.g. if this is an old
+			// CFC where this file does not exist), resort
+			// to getting the miscInfo via the ImageInterfnace.
+			//
+			if (oto)
+			  {
+                            std::string mesg="Old-format CFC detected. "
+                              "Successful loading of it will also convert it to the new format.";
+                            if (useThreads) cerr << mesg << endl;
+                            else            log_l << mesg << LogIO::POST;
+			    oto=false;
+			  }
+
+			PagedImage<Complex> thisCF(cfName);
+
+			// Construct ImageInformation from thisCF.
+			imInfo = SynthesisUtils::ImageInformation<Complex>(thisCF, cfName);
+			imInfo.save(cfName);
+		      }
+
+		    imInfoList[i] = imInfo;
+		    //imInfoList[i].getMiscInfo().print(cerr);
+
+		    double  paVal;
+		    imInfoList[i].getMiscInfo().get("ParallacticAngle",paVal);
+		    paList_p[i]=paVal;
+
+		    if (!useThreads) pm.update(double(i));
+		  };
+	      };
+
+	      //
+	      // Use a portable version of parallel-for loop to read
+	      // the CFs and load the necessary meta information.
+	      //
+	      // useThreads=false triggers the standard sequential
+	      // for-loop.
+	      //
+	      parallel_for(fileNames.nelements(),makeImInfoList,useThreads);
 	    }
 	    //
 	    // Make the PA-value list unique
@@ -383,76 +434,90 @@ namespace casa{
 	    sort( paList_p.begin(), paList_p.end() );
 	    paList_p.erase( unique( paList_p.begin(), paList_p.end() ), paList_p.end() );
 	    cfCacheTable_l.resize(paList_p.size());
-
-	    //	    
+	    log_l << "No. of PA values found " << paList_p.size() << LogIO::POST;
+	    //
 	    // For each CF, load the PA, Muelller element, WValue and
 	    // the Ref. Freq.  Insert these values in the lists in the
-	    // cfCacheTable
+	    // cfCacheTable which has one entry per PA value.  These
+	    // lists become th (non-uniform) coordinates of the
+	    // CFBuffer for tha PA value.
 	    //
-	    Array<Complex> pixBuf;
-
-	    // Int cfCount=0;
-	    // for (uInt i=0; i<fileNames.nelements(); i++)
-	    //   {
-	    // 	Double paVal, wVal, fVal, sampling; Int mVal, xSupport, ySupport;
-	    // 	CoordinateSystem coordSys;
-
-	    // 	getCFParams(fileNames[i], pixBuf, coordSys,  sampling, paVal, 
-	    // 		    xSupport, ySupport, fVal, wVal, mVal,false);
-	    // 	Bool pickThisCF=true;
-	    // 	if (selectPA) pickThisCF = (fabs(paVal - selectPAVal) <= dPA);
-	    // 	cerr << fileNames[i] << " " << paVal << " " << selectPAVal << " " << dPA << " " << pickThisCF << endl;
-	    // 	if (pickThisCF) cfCount++;
-	    //   }
-	    // cerr << "Will load " << cfCount << "CFs." << endl;
-	    TableRecord miscInfo;
+	    // Finally, make the CFBs associated with each PA value,
+	    // set the meta data info, coordinates etc. in the CFB,
+	    // and load the CF pixels of loadPixBuf_p=true
 	    {
-	      ProgressMeter pm(1.0, Double(fileNames.nelements()),
+	      log_l << "Making cfCacheTable" << LogIO::POST;
+	      TableRecord miscInfo;
+
+	      ProgressMeter pm(1.0, double(fileNames.nelements()),
 			       "Loading CFs", "","","",true);
-	      for (uInt i=0; i < fileNames.nelements(); i++)
+	      for (uint i=0; i < fileNames.nelements(); i++)
 		{
-		  Double paVal, wVal, fVal, sampling, conjFreq; Int mVal, xSupport, ySupport, conjPoln;
+		  double paVal, wVal, fVal, conjFreq,sampling;
+		  int mVal, xSupport, ySupport, conjPoln;
 		  CoordinateSystem coordSys;
 
 		  IPosition cfShape;
 		  try
 		    {
-		      miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
-							     xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
+		      SynthesisUtils::ImageInformation<Complex>& tmpImInfo=imInfoList[i];
+		      coordSys = imInfoList[i].getCoordinateSystem();
+		      miscInfo = SynthesisUtils::getCFParams(tmpImInfo, cfShape, coordSys,  sampling, paVal,
+						  xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln);
+		      // Array<Complex> pixBuf;
+		      // miscInfo = SynthesisUtils::getCFParams(Dir, fileNames[i], cfShape, pixBuf, coordSys,  sampling, paVal,
+		      // 					     xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln,false);
 		    }
 		  catch(AipsError &e)
 		    {
-		      cerr << "getCFParams:: " << e.what() << endl;
+		      log_l << "getCFParams:: " << e.what() << LogIO::WARN;
 		      throw(e);
 		    }
 		
-		  Bool pickThisCF=true;
+		  bool pickThisCF=true;
 		  if (selectPA) pickThisCF = (fabs(paVal - selectPAVal) <= dPA);
 		  if (pickThisCF)
 		    {
-		      Int ipos; SynthesisUtils::stdNearestValue(paList_p, (Float)paVal,ipos);
-		      uInt paPos=ipos;
+		      int ipos=0; SynthesisUtils::stdNearestValue(paList_p, (float)paVal,ipos);
+		      uint paPos=ipos;
+
+		      // Set internal lists to the maximum capacity needed.
+		      cfCacheTable_l[paPos].resizeLists(fileNames.nelements());
 		  
 		      if (paPos < paList_p.size())
 			{
-			  cfCacheTable_l[paPos].freqList.push_back(fVal);
-			  cfCacheTable_l[paPos].wList.push_back(wVal);
-			  cfCacheTable_l[paPos].muellerList.push_back(mVal);
-			  cfCacheTable_l[paPos].cfNameList.push_back(fileNames[i]);
+			  uint lPos=cfCacheTable_l[paPos].listSize;
+
+			  cfCacheTable_l[paPos].freqList[lPos]=fVal;
+			  cfCacheTable_l[paPos].wList[lPos]=wVal;
+			  cfCacheTable_l[paPos].muellerList[lPos]=mVal;
+			  cfCacheTable_l[paPos].cfNameList[lPos]=fileNames[i];
+			  cfCacheTable_l[paPos].miscInfoList[lPos]=miscInfo;
+                          cfCacheTable_l[paPos].refIDList[lPos]=i;
+			  cfCacheTable_l[paPos].listSize++;
 			  //cerr << paPos << " " << fileNames[i] << endl;
 			}
 		    }
-		  pm.update(Double(fileNames.nelements()));
+		  pm.update(double(i));
 		}
 	    }
-	    for (uInt ipa=0; ipa < cfCacheTable_l.size(); ipa++)
+	    //
+	    // Now, make a list of W-values, freq-values, Poln-values and MiscInfo for each
+	    // pixel of the CFB along the PA axis.
+	    //
+	    log_l << "Making CFB coordintes lists" << LogIO::POST;
+	    for (uint ipa=0; ipa < cfCacheTable_l.size(); ipa++)
 	      {
+		// Shrink the internal lists to the actual number of
+		// elements in the lists.
+		cfCacheTable_l[ipa].resizeLists();
+
 		//
 		// Resize the CFStore (poorly named private variable
 		// memCache2_p) to add CFBuffer for the each entry in
 		// the paList.
 		//
-		vector<String> fileNames(cfCacheTable_l[ipa].cfNameList);
+		vector<String> fileNames_pa(cfCacheTable_l[ipa].cfNameList);
 
 		Quantity paQuant(paList_p[ipa],"deg"), dPA(1.0,"deg");
 		memStore[0].resize(paQuant, dPA, 0,0);
@@ -463,9 +528,11 @@ namespace casa{
 		// the current ipa index.  Sort them.  And convert
 		// them into a list of unique entires.
 		//
-		vector<Double> fList(cfCacheTable_l[ipa].freqList), 
+		vector<double> fList(cfCacheTable_l[ipa].freqList),
 		  wList(cfCacheTable_l[ipa].wList);
-		vector<Int> mList(cfCacheTable_l[ipa].muellerList);
+		vector<int> mList(cfCacheTable_l[ipa].muellerList),
+                  refIDList(cfCacheTable_l[ipa].refIDList);
+
 		sort( fList.begin(), fList.end() );
 		sort( wList.begin(), wList.end() );
 		sort( mList.begin(), mList.end() );
@@ -473,35 +540,64 @@ namespace casa{
 		wList.erase(SynthesisUtils::Unique(wList.begin(), wList.end()), wList.end());
 		mList.erase(SynthesisUtils::Unique(mList.begin(), mList.end()), mList.end());
 		PolMapType muellerElements;
-		Int npol=mList.size();
+		int npol=mList.size();
 		muellerElements.resize(npol);
-		for (Int ii=0;ii<npol;ii++)
+		for (int ii=0;ii<npol;ii++)
 		  {
 		    muellerElements[ii].resize(1);
 		    muellerElements[ii][0]=mList[ii];
 		  }
-		Double wIncr; miscInfo.get("WIncr", wIncr);
-		Vector<Double> const wListV(wList);
-		Vector<Double> const fListV(fList);
+		//		double wIncr; miscInfo.get("WIncr", wIncr);
+
+		// Get the increment in W from the first MiscInfo...that value is constant for a CFCache
+		//!!!!!!!!!!!! RE-EVALUATE THIS ASSERTION !!!!!!!!!!!!!!!!!
+		double wIncr; cfCacheTable_l[ipa].miscInfoList[0].get("WIncr", wIncr);
+
+		Vector<double> const wListV(wList);
+		Vector<double> const fListV(fList);
 		cfb->resize(wIncr,0.0,wListV,fListV,
 			    muellerElements,muellerElements,muellerElements,muellerElements);
 		cfb->setPA(paList_p[ipa]);
 		cfb->setDir(Dir);
 		//
 		// Now go over the list of fileNames corresponding to
-		// the current PA value and them the current CFBuffer.
+		// the current PA value and load them in the current
+		// CFBuffer.
 		//
-		for (uInt nf=0; nf<fileNames.size(); nf++)
+		ProgressMeter pm(1.0, double(fileNames_pa.size()),
+				 "Making cfCacheTable", "","","",true);
+		log_l << "Setting up CFB parameters" << LogIO::POST;
+		for (uint nf=0; nf<fileNames_pa.size(); nf++)
 		  {
-		    Double paVal, wVal, fVal, sampling, conjFreq; 
-		    Int mVal, xSupport, ySupport, conjPoln;
-		    CoordinateSystem coordSys;
 		    //
 		    // Get the parameters from the CF file
 		    //
+                    // Reference ID of this CF the global list of CFs.
+                    int thisCFID=cfCacheTable_l[ipa].refIDList[nf];
+                    string thisCFFileName = fileNames_pa[nf];
 		    IPosition cfShape;
-		    TableRecord miscInfo = SynthesisUtils::getCFParams(Dir,fileNames[nf], cfShape, pixBuf, coordSys,  sampling, paVal,
-								       xSupport, ySupport, fVal, wVal, mVal, conjFreq, conjPoln,loadPixBuf_p,True);
+		    CoordinateSystem coordSys;
+		    double wVal, fVal;
+		    int mVal;
+
+		    //TableRecord miscInfo = imInfoList[nf].getMiscInfo();
+		    TableRecord thisMiscInfo = imInfoList[thisCFID].getMiscInfo();
+		    thisMiscInfo.get("MuellerElement", mVal);
+		    thisMiscInfo.get("WValue", wVal);
+
+		    cfShape = imInfoList[thisCFID].getImShape();
+
+		    coordSys=imInfoList[thisCFID].getCoordinateSystem();
+		    casacore::Int index= coordSys.findCoordinate(casacore::Coordinate::SPECTRAL);
+		    casacore::SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
+		    fVal=static_cast<float>(spCS.referenceValue()(0));
+
+		    // double paVal,  sampling, conjFreq;
+		    // int xSupport, ySupport, conjPoln;
+		    // SynthesisUtils::ImageInformation<Complex>& tmpImInfo=imInfoList[nf];
+		    // TableRecord miscInfo = SynthesisUtils::getCFParams(tmpImInfo, cfShape, coordSys,  sampling, paVal,
+		    // 				  xSupport, ySupport, fVal, wVal, mVal,conjFreq, conjPoln);
+
 		    //
 		    // Get the storage buffer from the CFBuffer and
 		    // fill it in what we got from the getCFParams
@@ -509,6 +605,11 @@ namespace casa{
 		    //
 		    if (loadPixBuf_p)
 		      {
+			Array<Complex> pixBuf;
+
+			casacore::PagedImage<casacore::Complex> thisCF(CFCDir+'/'+thisCFFileName);
+			pixBuf.assign(thisCF.get());
+
 			Array<Complex> &cfBuf=(*(cfb->getCFCellPtr(fVal, wVal,mVal)->storage_p));
 			//
 			// Fill the cfBuf with the pixel array from the
@@ -519,7 +620,7 @@ namespace casa{
 		      }
 
 		    //cfb->addCF(&cfBuf,coordSys,fsampling,xSupport,ySupport,fVal,wVal,mVal);
-		    Int fndx,wndx, mndx;
+		    int fndx,wndx, mndx;
 		    SynthesisUtils::stdNearestValue(fList, fVal, fndx);
 		    SynthesisUtils::stdNearestValue(wList, wVal, wndx);
 		    SynthesisUtils::stdNearestValue(mList, mVal, mndx);
@@ -538,18 +639,19 @@ namespace casa{
 		    //		   telescopeName, diameter);
 
 		    // cfb->setParams(fndx, wndx, mVal, miscInfo);
-		    auto ndx=cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,miscInfo);
+		    auto ndx=cfb->setParams(fndx, wndx, 0,0, fVal, wVal, mVal, coordSys,thisMiscInfo);
 		    (cfb->getCFCellPtr(ndx(0), ndx(1), ndx(2)))->shape_p=cfShape;
 
 		    if (verbose > 0)
 		      {
-			LogOrigin logOrigin("CFCache2", "fillCFListFromDisk");
-			LogIO log_l(logOrigin);
-
-			log_l << cfCacheTable_l[ipa].cfNameList[nf]
+			int xSupport, ySupport;
+			thisMiscInfo.get("Xsupport",xSupport);
+			thisMiscInfo.get("Ysupport",ySupport);
+			log_l << thisCFFileName
 			      << "[" << fndx << "," << wndx << "," << mndx << "] "
 			      << paList_p[ipa] << " " << xSupport << LogIO::POST;
 		      }
+		    pm.update(double(nf));
 		  }
 		//cfb->show("cfb: ");
 	      }
@@ -561,9 +663,7 @@ namespace casa{
 	throw(SynthesisFTMachineError(String("Error while initializing CF disk cache: ")
 				      +x.getMesg()));
       }
-
     //memStore[0].getCFBuffer(0,0)->show("CFB0: ");
-
   }
   //
   //-----------------------------------------------------------------------
@@ -577,8 +677,9 @@ namespace casa{
     LogIO log_l(logOrigin);
     try
       {
+	log_l << "Making list of " << pattern << LogIO::POST;
 	Regex regex(Regex::fromPattern(pattern));
-	Vector<String> fileNames(dirObj.find(regex));
+	Vector<String> fileNames(dirObj.find(regex,false,false));
 	if (fileNames.nelements() == 0)
 	  throw(casa::CFCIsEmpty(String("CFCache is empty!")));
 	String CFCDir=dirObj.path().absoluteName();
@@ -595,45 +696,6 @@ namespace casa{
 				      +x.getMesg()));
       }
   }
-  //
-  //-----------------------------------------------------------------------
-  //
-  // TableRecord CFCache::getCFParams(const String& fileName,
-  // 				   Array<Complex>& pixelBuffer,
-  // 				   CoordinateSystem& coordSys, 
-  // 				   Double& sampling,
-  // 				   Double& paVal,
-  // 				   Int& xSupport, Int& ySupport,
-  // 				   Double& fVal, Double& wVal, Int& mVal,
-  // 				   Double& conjFreq, Int& conjPoln,
-  // 				   Bool loadPixels)
-  // {
-  //   try
-  //     {
-  // 	PagedImage<Complex> thisCF(Dir+'/'+fileName);
-  // 	TableRecord miscinfo = thisCF.miscInfo();
-
-  // 	if (loadPixels) pixelBuffer.assign(thisCF.get());
-  // 	miscinfo.get("ParallacticAngle", paVal);
-  // 	miscinfo.get("MuellerElement", mVal);
-  // 	miscinfo.get("WValue", wVal);
-  // 	miscinfo.get("Xsupport", xSupport);
-  // 	miscinfo.get("Ysupport", ySupport);
-  // 	miscinfo.get("Sampling", sampling);
-  // 	miscinfo.get("ConjFreq", conjFreq);
-  // 	miscinfo.get("ConjPoln", conjPoln);
-  // 	Int index= thisCF.coordinates().findCoordinate(Coordinate::SPECTRAL);
-  // 	coordSys = thisCF.coordinates();
-  // 	SpectralCoordinate spCS = coordSys.spectralCoordinate(index);
-  // 	fVal=static_cast<casacore::Float>(spCS.referenceValue()(0));
-  // 	return miscinfo;
-  //     }
-  //   catch(AipsError& x)
-  //     {
-  // 	throw(SynthesisFTMachineError(String("Error in CFCache::getCFParams(): ")
-  // 				      +x.getMesg()));
-  //     }
-  // }
   //
   //-----------------------------------------------------------------------
   //

@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -24,14 +24,24 @@
 # Path and directory setup for LibRA
 
 # Path and directory variables moved from libraconfig.cmake
-set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
-set(INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install)
+set(BUILD_DIR ${CMAKE_BINARY_DIR})
+# Default the install prefix to <repo>/install, but honor -DCMAKE_INSTALL_PREFIX
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/install CACHE PATH "Install prefix" FORCE)
+endif()
+set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 set(TOP_LEVEL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBRA_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
+if (NOT DEFINED LIBRA_DEPENDENCIES_DIR)
+  set(LIBRA_DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
+endif()
+
+#get_filename_component(LIBRA_DEPENDENCIES_DIR "${LIBRA_DEPENDENCIES_DIR}" ABSOLUTE)
+
 # Exodus-specific paths
 set(LIBRA_PYTHON_VENV_DIR ${INSTALL_DIR}/librapython)
-set(LIBRA_EXODUS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/exodus)
+set(LIBRA_EXODUS_SOURCE_DIR ${LIBRA_DEPENDENCIES_DIR}/exodus)
 set(CMAKE_INSTALL_LIBDIR lib)
 set(CMAKE_INSTALL_INCLUDEDIR include)
 set(CMAKE_INSTALL_BINDIR bin)

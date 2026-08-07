@@ -136,7 +136,7 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     itsCleaner.setDirty( tempMat1 );
     // InitScaleXfrs and InitScaleMasks should already be set
     itsScaleSizes.clear();
-    itsScaleSizes = itsCleaner.getActiveSetAspen();
+    itsScaleSizes = itsCleaner.getActiveSetAspen(itsImages->getPeakResidualWithinMask());
     itsScaleSizes.push_back(0.0); // put 0 scale
     itsCleaner.defineAspScales(itsScaleSizes);
   }

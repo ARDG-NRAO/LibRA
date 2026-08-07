@@ -1,5 +1,5 @@
 //# AWProjectWBFTHPG.h: Definition for AWProjectWBFTHPG
-//# Copyright (C) 1996,1997,1998,1999,2000,2002
+//# Copyright (C) 1996,1997,1998,1999,2000,2002,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -99,11 +99,13 @@ namespace casa
 	    << LogIO::POST;
 	else
 	  {
-	    log_l << "Sum of weights: " << weights << " "
+	    log_l.output() << setprecision(5);
+	    log_l << "Sum of weights: " 
+		  << weights << " "
 		  << max(griddedData2) << " " << min(griddedData2)
 		  << LogIO::POST;
-	    cerr << "Sum of weights: " << setprecision(20) << weights
-		 << endl;
+	    // cerr << "Sum of weights: " << setprecision(20) << weights
+	    // 	 << endl;
 	  }
 	
 	//    

@@ -109,6 +109,8 @@
 #include <iostream>
 #include <casacore/casa/OS/Directory.h>
 #include <iomanip>
+#include <algorithm>
+#include <stdcasa/Quantity.h>
 
 using namespace std;
 using namespace casacore;
@@ -206,6 +208,34 @@ namespace librautils
                 logio << "Image " << partName + imExt << " does not exist." << LogIO::EXCEPTION;
         }
     }
-} // namespace utils
+    double parseRefFreq(LogIO &log_l, const std::string &reffreq_str);
+    std::vector<double> computeMidFrequencies(const std::vector<std::vector<double>> &freqs);
+    std::vector<double> computeWeights(const std::vector<double> &midFreqs, double refval);
+
+    // Statistical utilities
+    template <typename T>
+    T computeMean(const std::vector<T> &data)
+    {
+        T sum = 0;
+        for (const auto &d : data)
+            sum += d;
+        return sum / data.size();
+    }
+
+    template <typename T>
+    T computeMedian(std::vector<T> data)
+    {
+        size_t n = data.size();
+        std::sort(data.begin(), data.end());
+        if (n % 2 == 0)
+            return (data[n / 2 - 1] + data[n / 2]) / 2;
+        else
+            return data[n / 2];
+    }
+
+  std::string computeReferenceFrequency(const std::string& refFreqStr,
+                                         const std::vector<double>& freqList,
+					double& refFreqHz);
+} // namespace librautils
 
 #endif

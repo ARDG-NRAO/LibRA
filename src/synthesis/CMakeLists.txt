@@ -1,6 +1,6 @@
 # -*- mode: cmake -*-
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2022 CASA project
+# Copyright (C) 2022, 2026
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Library General Public License as published by
@@ -50,8 +50,8 @@ target_link_libraries(${LIB_NAME} PUBLIC ${CASACORE_LIBRARIES})
 if (LIBRA_USE_LIBSAKURA)
   target_link_libraries(${LIB_NAME} PUBLIC PkgConfig::SAKURA)
 endif()
-# Libhpg dependency
-target_link_libraries(${LIB_NAME} PUBLIC Hpg::hpg)
+# Libhpg dependency - use --as-needed to avoid pulling in GPU deps for apps that don't use gridding
+target_link_libraries(${LIB_NAME} PRIVATE -Wl,--push-state,--as-needed Hpg::hpg -Wl,--pop-state)
 # Libparafeed dependency
 target_link_libraries(${LIB_NAME} PUBLIC parafeed::parafeed)
 
@@ -73,3 +73,5 @@ endif()
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 # the top level source directory, so that we can find all the includes
 target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SOURCE_DIR})
+
+target_link_libraries(${LIB_NAME} PUBLIC stdc++fs)

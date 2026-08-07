@@ -148,14 +148,14 @@ namespace casa{
 	if ((storage_p->shape()).nelements()>0) thisCF.put(*storage_p);
 	thisCF.setMiscInfo(miscinfo);
 
-	ImageInformation<Complex> imInfo(thisCF,name);
+	SynthesisUtils::ImageInformation<Complex> imInfo(thisCF,name);
 	imInfo.save();
       }
     else
       {
 	casacore::Directory dir(name);
 	if (!dir.exists()) dir.create(true);
-	ImageInformation<Complex> imInfo;
+	SynthesisUtils::ImageInformation<Complex> imInfo;
 	imInfo.initPaths(name);
 	imInfo.save(coordSys_p,tmpShape,miscinfo);
       }

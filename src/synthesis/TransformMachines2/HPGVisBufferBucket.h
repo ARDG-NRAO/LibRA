@@ -111,8 +111,8 @@ public:
   {
     if (n != -1)
       {
-	//	cout << "###### Resizein VBB " << n << endl;
 	VBB_p.resize(n);
+	nVis_p=n;
       }
 
     rowCounter_p=0;
@@ -151,6 +151,12 @@ public:
     // //    vbbSOBuf().erase(vbbSOBuf().begin(),vbbSOBuf().end());
     // rowCounter_p=n;
 
+    // cout << "moveSOBuf(): "
+    // 	 << nVis_p << " "
+    // 	 << size() << " "
+    // 	 << vbbSOBuf().size() << " "
+    // 	 << counter() << " "
+    // 	 << endl;
     for (auto v : vbbSOBuf()) append(v);
     vbbSOBuf().resize(0);
 
@@ -162,10 +168,6 @@ public:
     // Resize internal storage. Copy the overflow buffer to the main storage.
     resize(nVis_p);
     moveSOBuf();
-    // cout << "ResetVBB: " << size()
-    // 	 << " " << vbbSOBuf().size()
-    // 	 << " " << counter() 
-    // 	 << endl;
     return size();
   }
 

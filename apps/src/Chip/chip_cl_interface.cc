@@ -29,9 +29,7 @@
 // # $Id$
 
 
-#include <cl.h>
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <chip.h>
 
 //
@@ -83,6 +81,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
 //
 //-------------------------------------------------------------------------
 //
+#ifndef CHIP_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -129,3 +128,4 @@ int main(int argc, char **argv)
     }
   //  if (restartUI) RestartUI(RENTER);
 }
+#endif // CHIP_LIBRARY_BUILD

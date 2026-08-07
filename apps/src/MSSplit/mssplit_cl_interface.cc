@@ -1,3 +1,26 @@
+// # Copyright (C) 2021
+// # Associated Universities, Inc. Washington DC, USA.
+// #
+// # This library is free software; you can redistribute it and/or modify it
+// # under the terms of the GNU Library General Public License as published by
+// # the Free Software Foundation; either version 2 of the License, or (at your
+// # option) any later version.
+// #
+// # This library is distributed in the hope that it will be useful, but WITHOUT
+// # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+// # License for more details.is
+// #
+// # You should have received a copy of the GNU Library General Public License
+// # along with this library; if not, write to the Free Software Foundation,
+// # Inc., 675 Massachusetts Ave, Cambridge, MA 02139, USA.
+// #
+// # Correspondence concerning this should be addressed as follows:
+// #        Postal address: National Radio Astronomy Observatory
+// #                        1003 Lopezville Road,
+// #                        Socorro, NM - 87801, USA
+// #
+// # $Id$
 /**
  * This file contains the implementation of the MSSplit command line interface.
  * It provides a UI function to interact with the user and parse command line arguments.
@@ -6,9 +29,7 @@
  */
 
 
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <parafeed.h>
 #include <mssplit.h>
 
 //
@@ -33,7 +54,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
   //else
   // clRetry();
-  REENTER:
+  //REENTER:
   try
     {
       int i;
@@ -71,6 +92,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
     }
 }
 
+#ifndef MSSPLIT_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -83,7 +105,7 @@ int main(int argc, char **argv)
   Bool deepCopy=0;
   Bool restartUI=False;
 
- REENTER:// UI re-entry point.
+ //REENTER:// UI re-entry point.
   //
   //---------------------------------------------------
   //
@@ -134,7 +156,8 @@ int main(int argc, char **argv)
   }
 
   showTableCache();
-  //if (restartUI) 
+  //if (restartUI)
   //restartUI=True;
   //RestartUI(REENTER);
 }
+#endif // MSSPLIT_LIBRARY_BUILD

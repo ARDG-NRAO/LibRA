@@ -92,9 +92,14 @@ MTAspMatrixCleaner::MTAspMatrixCleaner():
   ntaylor_p(0),
   psfntaylor_p(0),
   nx_p(0),
-  ny_p(0)
+  ny_p(0),
+  itsPrevOptimumScaleSize(0),
+  sf("state.txt")
 {
-
+  sf.load();  // read existing state, if any
+  // Read variable
+  itsSwitchedToHogbom = sf.getBool("itsSwitchedToHogbom", false);
+  itsNumHogbomIter = sf.getInt("itsNumHogbomIter", 0);
 }
 
 MTAspMatrixCleaner::~MTAspMatrixCleaner()
@@ -162,8 +167,8 @@ Int MTAspMatrixCleaner::mtaspclean()
   }
 
   
-  // calculate rms residual
-  float rms = 0.0;
+  // calculate rms residual WRONG--matR_p is not initialized yet until computeRHS
+  /*float rms = 0.0;
   // should be masked
   int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
   for (int j = blcDirty(1); j <= trcDirty(1); ++j)
@@ -175,28 +180,17 @@ Int MTAspMatrixCleaner::mtaspclean()
   }
   rms = rms / num;
   initRMSResidual = rms;
-  //os << LogIO::NORMAL3 << "initial rms residual " << initRMSResidual << LogIO::POST;
-
+  os << "initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
+  */
   initModelFlux = sum(vecModel_p[0]); 
   //os << LogIO::NORMAL3 << "initial model flux " << initModelFlux << LogIO::POST; 
+
 
   for (Int ii = itsStartingIter; ii < itsMaxNiter; ii++)
   {
     //cout << "cur iter " << itsIteration << " max iter is "<< itsMaxNiter << endl;
     itsIteration++;
 
-    // calculate rms residual
-    float rms = 0.0;
-    // should be masked
-    int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
-    for (int j = blcDirty(1); j <= trcDirty(1); ++j)
-    { 
-      for (int i = blcDirty(0); i <= trcDirty(0); ++i)
-      {
-        rms += pow((matR_p[IND2(0,0)])(i, j), 2);
-      }
-    }
-    rms = rms / num;
 
     // make single optimized scale image
     os << "Making optimized scale " << itsOptimumScaleSize << LogIO::POST;
@@ -259,6 +253,13 @@ Int MTAspMatrixCleaner::mtaspclean()
    // Reconcile box sizes/locations with the image size
    makeBoxesSameSize(blc, trc, blcPsf, trcPsf); 
 
+    // it's important to re-compute matR_p EVERY iteration since opt scales are different
+    // but to improve efficiency, only computes if scale changes or if it's 1st iteration.
+    // Calculating convolutions of residual images with the optimal scale
+    if (ii == itsStartingIter || 
+      itsOptimumScaleSize != itsPrevOptimumScaleSize)
+      computeRHS();
+
     // Compute all convolutions and matA, invMatA
     // If matrix is not invertible, return!
     // This is done repeatedly because opt scale is different each time
@@ -267,13 +268,24 @@ Int MTAspMatrixCleaner::mtaspclean()
     if (computeHessianPeak(compPrinSol, usePatch, blcPsf, trcPsf) == -1)
       return -1;
 
-    // Only need to do once for init. The rest of the RHS update is handled by updateRHS
-    // matR = residuals * the opt scale
+
+
+    float rms = 0.0;
+    // should be masked
+    int num = int((trcDirty(0) -blcDirty(0))* (trcDirty(1) - blcDirty(1))); 
+    for (int j = blcDirty(1); j <= trcDirty(1); ++j)
+    {
+      for (int i = blcDirty(0); i <= trcDirty(0); ++i)
+      {
+        rms += pow((matR_p[IND2(0,0)])(i, j), 2);
+      }
+    }
+    rms = rms / num;
+
     if (ii == itsStartingIter)
     {
-      os << "Calculating convolutions of residual images with the optimal scale" << LogIO::POST;
-      //cout << "Calculating convolutions of residual images with the optimal scale" << endl;
-      computeRHS();
+      initRMSResidual = rms;
+      os << "At ii= " << ii << ", initial rms residual " << initRMSResidual << " rms " << rms << " num " << num << LogIO::POST;
     }
 
     // solve matCoeffs (amplitudes) from invMatA and matR
@@ -281,6 +293,20 @@ Int MTAspMatrixCleaner::mtaspclean()
       solveMatrixEqn(ntaylor_p, scale, blc, trc);
     //cout << "matCoeffs_p[IND2(0,0)] " << matCoeffs_p[IND2(0,0)](itsPositionOptimum) << endl;
     //cout << "matCoeffs_p[IND2(0,1)] " << matCoeffs_p[IND2(0,1)](itsPositionOptimum) << endl;
+
+    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
+    //DEBUG
+    /*Float maxres = 0.0;
+    IPosition maxrespos;
+    findMaxAbsMask((matR_p[IND2(0,0)]), itsInitScaleMasks[0], maxres, maxrespos);
+    os << "DEBUG before: maxres " << fabs(maxres) << ", maxrespos " << maxrespos << " rms " << rms << LogIO::POST; */
+    //end DEBUG
+    // Fill the updated residual image for scale 0 back into vecDirty_p
+    for(Int taylor=0; taylor<ntaylor_p; taylor++)
+    {
+      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
+      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
+    }
 
     // updates itsPeakResidual
     updatePeakResidual();
@@ -313,10 +339,17 @@ Int MTAspMatrixCleaner::mtaspclean()
     // Various ways of stopping
     // matCoeffs should be available now.
     checkMTConvergence(converged, tmpMaximumResidual, minMaximumResidual);
-
+    
     // Break out of minor-cycle loop
     if(converged != 0)
+    {
+        // Write back
+        sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
         break;
+    }
+
 
     // determine if switch to hogbom or not
     // genie redo this
@@ -330,11 +363,12 @@ Int MTAspMatrixCleaner::mtaspclean()
         os << "Switch to hogbom b/c peak residual or optimum strength is small enough: " << itsFusedThreshold << LogIO::POST;
         bool runlong = false;
         
+        os << "initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         //option 1: use rms residual to detect convergence
         if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
-          os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
+          os << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         }
         //option 2: use model flux to detect convergence
         /*float modelFlux = 0.0;
@@ -346,9 +380,17 @@ Int MTAspMatrixCleaner::mtaspclean()
         }*/
 
         switchedToHogbom(runlong);
+        itsGain = 0.1;
+        //os << "Actually wasp breaks and exits b/c peak residual or optimum strength is small enough: " << itsFusedThreshold << LogIO::POST;
 
         if (itsNumNoChange >= 2)
           itsNumNoChange = 0;
+
+        // Write back
+        /*sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
+        break;*/
       }
 
       if (!itsSwitchedToHogbom && itsNumNoChange >= 2)
@@ -359,11 +401,12 @@ Int MTAspMatrixCleaner::mtaspclean()
         //os << LogIO::NORMAL3 << "total flux " << totalFlux << " model flux " << sum(vecModel_p[0]) << LogIO::POST; 
         bool runlong = false;
 
+	os << "initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         //option 1: use rms residual to detect convergence
         if (initRMSResidual > rms && initRMSResidual/rms < 1.5)
         {
           runlong = true;
-          os << LogIO::NORMAL3 << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
+          os << "Run hogbom for longer iterations b/c it's approaching convergence. initial rms " << initRMSResidual << " rms " << rms << LogIO::POST;
         }
         //option 2: use model flux to detect convergence
         /*float modelFlux = 0.0;
@@ -375,6 +418,14 @@ Int MTAspMatrixCleaner::mtaspclean()
         }*/
 
         switchedToHogbom(runlong);
+        itsGain = 0.1;
+        /*os << "Actually wasp breaks and exits at iteration "<< ii << " b/c peakres rarely changes" << LogIO::POST;
+        // Write back
+        sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+        sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+        sf.save();
+        break;*/
+
       }
     }
 
@@ -388,17 +439,6 @@ Int MTAspMatrixCleaner::mtaspclean()
         itsNumIterNoGoodAspen.push_back(0);
     }
 
-    // Update the model and matR from cubeA and matCoeffs
-    // also updates flux counters by nterm
-    //cout << "update model and rhs" << endl;
-    updateModelAndRHS(itsGain, blc, trc, blcPsf, trcPsf);
-
-    // Fill the updated residual image for scale 0 back into vecDirty_p
-    for(Int taylor=0; taylor<ntaylor_p; taylor++)
-    {
-      vecDirty_p[taylor] = matR_p[IND2(taylor,0)]; // This is the one that gets updated during iters.
-      //cout << "update residual: vecDirty_p[" << taylor <<"](positionOptimum) " << vecDirty_p[taylor](itsPositionOptimum) << " at " << itsPositionOptimum << endl;
-    }
 
     // If we switch to hogbom (i.e. only have 0 scale size),
     // we still need to do the following Aspen update to get the new optimumStrength
@@ -416,6 +456,10 @@ Int MTAspMatrixCleaner::mtaspclean()
           converged = 1;
           os << LogIO::NORMAL3 << "initial rms " << initRMSResidual << " final rms residual " << rms << LogIO::POST; 
 
+          // Write back
+          sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+          sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+          sf.save();
           break;
         }
         //option 2: use model flux to detect convergence
@@ -434,8 +478,10 @@ Int MTAspMatrixCleaner::mtaspclean()
         itsNumHogbomIter -= 1;
     }
 
+    itsPrevOptimumScaleSize = itsOptimumScaleSize;
+
     tempScaleSizes.clear();
-    tempScaleSizes = getActiveSetAspen();
+    tempScaleSizes = getActiveSetAspen(itsPeakResidual);
     tempScaleSizes.push_back(0.0); // put 0 scale
     defineAspScales(tempScaleSizes);
   }
@@ -452,24 +498,40 @@ Int MTAspMatrixCleaner::mtaspclean()
     os << LogIO::POST;
   }
   //cout << "end of minor cycle: vecDirty_p[0](256,231) " << (vecDirty_p[0])(256,231) << endl;
+  os << "end of minor cycle: itsSwitched " << itsSwitchedToHogbom << " itsNumHogbomIter " << itsNumHogbomIter << LogIO::POST;
+  // Write back
+  sf.setBool("itsSwitchedToHogbom", itsSwitchedToHogbom);
+  sf.setInt("itsNumHogbomIter", itsNumHogbomIter);
+  sf.save();
+  
   return converged;
 }
 
 
 
 // ALGLIB
-vector<Float> MTAspMatrixCleaner::getActiveSetAspen()
+vector<Float> MTAspMatrixCleaner::getActiveSetAspen(const float peakres)
 {
   LogIO os(LogOrigin("MTAspMatrixCleaner", "getActiveSetAspen()", WHERE));
 
   if(int(itsInitScaleXfrs.nelements()) == 0)
     throw(AipsError("Initial scales for Asp are not defined"));
 
+  //os << "start of minor iter: itsSwitched " << itsSwitchedToHogbom << " itsNumHogbomIter " << itsNumHogbomIter << LogIO::POST;
+
   if (!itsSwitchedToHogbom &&
   	  accumulate(itsNumIterNoGoodAspen.begin(), itsNumIterNoGoodAspen.end(), 0) >= 5)
   {
   	os << "Switched to hogbom because of frequent small components." << LogIO::POST;
     switchedToHogbom();
+  }
+
+  if(!itsSwitchedToHogbom && (abs(peakres) < itsFusedThreshold))
+  {
+    bool runlong = true;
+    switchedToHogbom(runlong);
+    itsGain=0.1;
+    os << "Run hogbom for the entire cycle b/c peak residual is small enough: " << itsFusedThreshold << LogIO::POST;
   }
 
   if (itsSwitchedToHogbom)
@@ -512,6 +574,12 @@ vector<Float> MTAspMatrixCleaner::getActiveSetAspen()
   //cout << " its dirty vecDirty_p[0] is " << (vecDirty_p[0])(positionOptimum);
   //cout << " at location " << positionOptimum[0] << " " << positionOptimum[1] << endl;
 
+  // debug
+  /*Float maxres = 0.0;
+  IPosition maxrespos;
+  findMaxAbsMask((matR_p[IND2(0,0)]), itsInitScaleMasks[0], maxres, maxrespos);
+  os << "DEBUG: matR_p[0] maxres " << fabs(maxres) << ", maxrespos " << maxrespos << endl;*/
+  // end debug
 
   itsStrengthOptimum = strengthOptimum;
   itsPositionOptimum = positionOptimum;
@@ -896,17 +964,18 @@ Int MTAspMatrixCleaner::computeHessianPeak(Bool compPrinSol, Bool usePatch, IPos
   }
 
   // debug info
-  float maxvalue;
-  IPosition peakpos;
+  //float maxvalue;
+  //IPosition peakpos;
   /*findMaxAbs(vecScales_p[0], maxvalue, peakpos);
   cout << "vecScales_p[0] pos " << peakpos << " maxval " << maxvalue << " itsPositionOptimum " << itsPositionOptimum << endl;
   findMaxAbs(vecScales_p[1], maxvalue, peakpos);
   cout << "vecScales_p[1] pos " << peakpos << " maxval " << maxvalue << endl;*/
 
-  findMaxAbs(cubeA_p[IND4(0,0,0,0)], maxvalue, peakpos);
-  //cout << "cubeA_p[0] pos " << peakpos << " maxval " << maxvalue << endl;
-  psfpeak_p = peakpos; //genie trial or norm to make cubeA_p[0](psfpeak_p) 1
-  //cout << "cubeA_p[0](psfpeak_p) " << cubeA_p[0](psfpeak_p) << " (psfpeak_p) " << (psfpeak_p) << endl;
+  //findMaxAbs(cubeA_p[IND4(0,0,0,0)], maxvalue, peakpos);
+  //os << "cubeA_p[0] peakpos " << peakpos << " maxval " << maxvalue << LogIO::POST;
+  // should not need the following since that matches MSMFS which is calculated once at the beginning.
+  // psfpeak_p = peakpos; //genie trial or norm to make cubeA_p[0](psfpeak_p) 1
+  //os << "cubeA_p[0](psfpeak_p) " << cubeA_p[0](psfpeak_p) << " (psfpeak_p) " << (psfpeak_p) << LogIO::POST;
 
   // Construct A, invA for each scale.
   if (itsPositionPeakPsf != IPosition(2,(nx_p/2),(ny_p/2)))
@@ -1065,7 +1134,14 @@ void MTAspMatrixCleaner::updatePeakResidual()
   itsPeakResidual = fabs(rmaxval);
   //cout << "maxres " << maxres << ", maxrespos " << maxrespos << " norma " << (1.0/(matA_p[0])(0,0)) << endl;
   //cout << "current peakres " << itsPeakResidual << endl;
-  os << "current peakres " << itsPeakResidual << LogIO::POST;
+  os << "current peakres " << itsPeakResidual << " at location " << maxrespos << LogIO::POST;
+
+  // DEBUG-- itsDirty should be updated with itsDirty->assign(vecDirty_p[0]); 
+  // but it doesn't matter because it's not used when it's not updated.
+  /*Float debug_maxres = 0.0;
+  IPosition debug_maxrespos;
+  findMaxAbsMask(*(itsDirty), itsInitScaleMasks[0], debug_maxres, debug_maxrespos);
+  os << "DEBUG: itsDirty current peakres " << fabs(debug_maxres) << " at location " << debug_maxrespos << LogIO::POST;*/
 }
 
 //mtasp
@@ -1112,12 +1188,13 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
   }
 
   //4. Diverging large scale
-  //If actual value is 50% above the maximum residual. ..good chance it will not recover at this stage
-  if ((abs(itsPeakResidual) - abs(tmpMaximumResidual)) > (abs(tmpMaximumResidual)/2.0) ||
-      (abs(itsPeakResidual) - abs(minMaximumResidual)) > (abs(minMaximumResidual)/2.0))
+  //If actual value is 200% above the maximum residual. ..good chance it will not recover at this stage
+  if (
+    (fabs((itsPeakResidual - tmpMaximumResidual)/tmpMaximumResidual) > 2.0) ||
+    (fabs((itsPeakResidual - minMaximumResidual)/minMaximumResidual) > 2.0))
   {
     //cout << "Diverging due to large scale?" << endl;
-    os << "Diverging due to large scale?" << LogIO::POST;
+    os << "Diverging ..." << LogIO::POST;
     os << "itsPeakResidual " << itsPeakResidual << " tmp " << tmpMaximumResidual << " minMaximumResidual " << minMaximumResidual << LogIO::POST;   
     converged = -2;
 
@@ -1133,6 +1210,11 @@ void MTAspMatrixCleaner::checkMTConvergence(Int &converged, Float tmpMaximumResi
  ****************************************/
 Int MTAspMatrixCleaner::updateModelAndRHS(Float loopgain, IPosition blc, IPosition trc, IPosition blcPsf, IPosition trcPsf)
 {
+   /*cout << "itsPositionOptimum : " << itsPositionOptimum << endl;
+   cout << "region around peak residual : " << blc << trc << endl;
+   cout << "around the PSF peak : " << blcPsf << trcPsf << endl;
+   cout << "loopgain " << loopgain << " nscales_p " << nscales_p << endl;*/
+
   // Update the model images
   Matrix<Float> scaleSub = (vecScales_p[1])(blcPsf, trcPsf);
   for(Int taylor=0; taylor<ntaylor_p; taylor++)

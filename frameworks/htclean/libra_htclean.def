@@ -1,4 +1,4 @@
-# Copyright (C) 2021
+# Copyright (C) 2024
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -23,32 +23,53 @@
 # $Id$
 
 
-vis                  = refim_point_wterm_vlad.ms
-imagename            = 
-modelimagename       =
+# General Imaging parameters
+imagename            = <basename of image products>
+pblimit              = 0.005
+
+
+# gridding parameters
+vis                  = <name of input MS>
 datacolumn           = data
 sowimageext          = sumwt
 complexgrid          =
-imsize               = 2048
-cell                 = 10
+imsize               = 12288
+cell                 = 0.15
 stokes               = I
-reffreq              = 1.0
-phasecenter          = 19:59:28.5 40.43.21.5 J2000
-weighting            = natural
+reffreq              = 3.0GHz
+phasecenter          = J2000 03:32:38.601000 -27.46.59.83001
+weighting            = briggs
 rmode                = none
-robust               = 0
-wprojplanes          = 16
+robust               = 0.5
+wprojplanes          = 192
 gridder              = awphpg
-cfcache              = use_awp.cf
-mode                 = 
+cfcache              = <name of cfcache>
 wbawp                = 1
-field                = 0
+field                = *
 spw                  = *
 uvrange              =
 pbcor                = 1
 conjbeams            = 1
-pblimit              = 0.005
 usepointing          = 0
+pointingoffsetsigdev =
+
+# deconvolution parameters
+deconvolver          = hogbom
+scales               =
+largestscale         = -1
+fusedthreshold       = 0
 nterms               = 1
-cycleniter           = 500
-nsigma               = 19
+cycleniter           = 10000
+nsigma               = 0
+gain                 = 0.1
+threshold            = 3e-6
+cyclefactor          = 1
+mask                 = 
+specmode             = mfs
+
+# normalization parameters
+normtype             = flatnoise
+imtype               = 
+computepb            = 0
+
+# Parameters changed dynamically will appear below

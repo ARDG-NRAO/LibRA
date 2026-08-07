@@ -1,5 +1,5 @@
 #-*- cmake -*-
-# Copyright (C) 2025
+# Copyright (C) 2025, 2026
 # Associated Universities, Inc. Washington DC, USA.
 #
 # This library is free software; you can redistribute it and/or modify it
@@ -28,7 +28,8 @@ ExternalProject_Add(
   Parafeed
   GIT_REPOSITORY ${LIBRA_PARAFEED_GIT_REPOSITORY}
   GIT_TAG        ${LIBRA_PARAFEED_GIT_TAG}
-  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dependencies/parafeed
+  UPDATE_DISCONNECTED TRUE
+  SOURCE_DIR     ${LIBRA_DEPENDENCIES_DIR}/parafeed
   BINARY_DIR     ${BUILD_DIR}/parafeed
   CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} 
                  -DCMAKE_INSTALL_LIBDIR=lib

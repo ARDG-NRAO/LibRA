@@ -322,6 +322,7 @@ namespace casa
 
     static BeamCalc* instance_p;
 
+    std::string casaDataPath_p;
     casacore::String obsName_p;
     casacore::String antType_p;
     casacore::MEpoch obsTime_p;

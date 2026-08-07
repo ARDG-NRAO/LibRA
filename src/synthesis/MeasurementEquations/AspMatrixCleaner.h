@@ -36,8 +36,45 @@
 #include <casacore/coordinates/Coordinates/CoordinateSystem.h>
 #include <casacore/coordinates/Coordinates/SpectralCoordinate.h>
 #include <casacore/casa/Utilities/CountedPtr.h>
+#include <libracore/StateFile.h>
+#include "lbfgs/optimization.h"
+
 
 namespace casa { //# NAMESPACE CASA - BEGIN
+
+
+// scale model template helper function
+template <typename ScaleFunc>
+inline void fillScaleImage(
+    casacore::Matrix<casacore::Float>& iscale,
+    ScaleFunc func,
+    double cx,
+    double cy,
+    float scaleSize)
+{
+    int nx = iscale.nrow();
+    int ny = iscale.ncolumn();
+
+    for (int j = 0; j < ny; ++j)
+    {
+        for (int i = 0; i < nx; ++i)
+        {
+            iscale(i,j) = func(i, j, cx, cy, scaleSize);
+        }
+    }
+}
+
+// Default Gaussian Scale Model
+inline double gaussianScaleValue(
+    int i, int j,
+    double cx, double cy,
+    float scaleSize)
+{
+    return (1.0/(sqrt(2*M_PI)*scaleSize)) *
+           exp(-(pow(i-cx,2) + pow(j-cy,2)) *
+           0.5 / pow(scaleSize,2));
+}
+
 
 class AspMatrixCleaner : public MatrixCleaner
 {
@@ -82,7 +119,7 @@ public:
   void maxDirtyConvInitScales(float& strengthOptimum, int& optimumScale, casacore::IPosition& positionOptimum);
 
   // returns the active-set aspen for cleaning
-  std::vector<casacore::Float> getActiveSetAspen();
+  std::vector<casacore::Float> getActiveSetAspen(const float peakres);
 
   // Juat define the active-set aspen scales
   void defineAspScales(std::vector<casacore::Float>& scaleSizes);
@@ -101,6 +138,15 @@ public:
 
   void setBinSizeForSumFlux(const casacore::Int binSize = 4) { itsBinSizeForSumFlux = binSize ; } ;
   void getFluxByBins(const std::vector<casacore::Float>& scaleSizes,const std::vector<casacore::Float>& optimum, casacore::Int binSize, std::vector<casacore::Float>&  sumFluxByBins, std::vector<casacore::Float>&  rangeFluxByBins);
+
+  virtual float computePeakNormalization(float width) { return sqrt(2 * M_PI * width);}
+  virtual float computeScaleNormalization(float width1, float width2) { return sqrt(2 * M_PI / (pow(1.0/width1, 2) + pow(1.0/width2, 2)));}
+  virtual void runLBFGS(
+    alglib::minlbfgsstate &state,
+    alglib::real_1d_array &x,
+    alglib::minlbfgsreport &rep,
+    const std::vector<casacore::IPosition> &activeSetCenter,
+    casacore::FFTServer<casacore::Float,casacore::Complex> &fft) const;
 
 
 protected:
@@ -182,6 +228,10 @@ protected:
   float itsLargestInitScale; // estimated largest initial scale
   float itsUserLargestScale; // user-specified largest initial scale
   casacore::IPosition blcDirty, trcDirty;
+
+  casacore::Bool itsdimensionsareeven;
+  // for storing variable states when called in hummbee
+  StateFile sf;
 };
 
 } //# NAMESPACE CASA - END

@@ -142,34 +142,7 @@ void Asp(std::vector<std::vector<T>>& model,
   }
   itsCleaner.setDirty(dirtyMat);
 
-  // InitScaleXfrs and InitScaleMasks should already be set
-  vector<Float> itsScaleSizes;
-  itsScaleSizes.clear();
-  itsScaleSizes = itsCleaner.getActiveSetAspen();
-  itsScaleSizes.push_back(0.0); // put 0 scale
-  itsCleaner.defineAspScales(itsScaleSizes);
-
-  //for (int i = 0; i < itsScaleSizes.size(); i++)
-  //  cout << "itsScale[" << i << "] = " << itsScaleSizes[i] << endl;
-
-
-
-  // takeOneStep
-  Quantity thresh(threshold, "Jy");
-  itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
-   
-  //Matrix<T> modelMatT(shape, *model); 
-  //Matrix<T> modelMat(transpose(modelMatT));
-  Matrix<T> modelMat(size_x, size_y, 0);
-  for (int j = 0; j < size_y; j++)
-  {
-    for (int i = 0; i < size_x; i++)
-    {
-      modelMat(i,j) = model[i][j];
-    }
-  }
   
-
   // get initial peak residual
   T masksum = sum(maskMat);
   bool validMask = ( masksum > 0 );
@@ -195,9 +168,35 @@ void Asp(std::vector<std::vector<T>>& model,
   {
     startpeakresidual = max(abs(dirtyMat));
   }
-
   //cout << "startpeakresidual " << startpeakresidual << ", masksum " << masksum << endl;
 
+  // InitScaleXfrs and InitScaleMasks should already be set
+  vector<Float> itsScaleSizes;
+  itsScaleSizes.clear();
+  itsScaleSizes = itsCleaner.getActiveSetAspen(startpeakresidual);
+  itsScaleSizes.push_back(0.0); // put 0 scale
+  itsCleaner.defineAspScales(itsScaleSizes);
+
+  //for (int i = 0; i < itsScaleSizes.size(); i++)
+  //  cout << "itsScale[" << i << "] = " << itsScaleSizes[i] << endl;
+
+
+
+  // takeOneStep
+  Quantity thresh(threshold, "Jy");
+  itsCleaner.setaspcontrol(cycleniter, gain, thresh, Quantity(0.0, "%"));
+   
+  //Matrix<T> modelMatT(shape, *model); 
+  //Matrix<T> modelMat(transpose(modelMatT));
+  Matrix<T> modelMat(size_x, size_y, 0);
+  for (int j = 0; j < size_y; j++)
+  {
+    for (int i = 0; i < size_x; i++)
+    {
+      modelMat(i,j) = model[i][j];
+    }
+  }
+  
 
   // retval
   //  1 = converged

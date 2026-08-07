@@ -1,4 +1,4 @@
-//# Copyright (C) 2021
+//# Copyright (C) 2021, 2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This program is free software; you can redistribute it and/or modify it
@@ -28,9 +28,7 @@
 //
 // Following are from the parafeed project (the UI library)
 //
-#include <cl.h> // C++ized version
-#include <clinteract.h>
-
+#include <parafeed.h>
 #ifdef ROADRUNNER_USE_MPI
 # include <mpi.h>
 #endif
@@ -78,7 +76,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       }
   // else
   //   clRetry();
- REENTER:
+  // REENTER:
   //  try
     {
       SMap watchPoints; VString exposedKeys;
@@ -97,7 +95,7 @@ void UI(Bool restart, int argc, char **argv, bool interactive,
       i=1;clgetValp("imsize", ImSize,i);
       i=1;clgetValp("cell", cellSize,i);
       i=1;clgetSValp("stokes", stokes,i);  clSetOptions("stokes",{"I","IV"});
-      i=1;clgetSValp("reffreq", refFreqStr,i);
+      i=1;clgetSValp("reffreq", refFreqStr,i); // clSetOptions("reffreq",{"mean","median"});
       i=1;clgetSValp("phasecenter", phaseCenter,i);
 
       InitMap(watchPoints,exposedKeys);
@@ -210,6 +208,8 @@ static const string defaultFtmName = "awphpg";
 #else // !ROADRUNNER_USE_HPG
 static const string defaultFtmName = "awproject";
 #endif // ROADRUNNER_USE_HPG
+
+#ifndef ROADRUNNER_LIBRARY_BUILD
 int main(int argc, char **argv)
 {
   //
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
   string MSNBuf,ftmName=defaultFtmName,
     cfCache, fieldStr="", spwStr="*", uvDistStr="", dataColumnName="",
     imageName, modelImageName,cmplxGridName="",phaseCenter, stokes="I",
-    refFreqStr="3.0e9", weighting="natural", sowImageExt,
+    refFreqStr="mean", weighting="natural", sowImageExt, // set to mean here as it always gives the mean of the band
     imagingMode="residual",
     rmode="norm"; // set to "norm" to match rWeightor.h
 
@@ -259,6 +259,7 @@ int main(int argc, char **argv)
   catch(clError& er)
     {
       cerr << er.what() << endl;
+      if (er.Severity() <= CL_FATAL) return -er.Severity();
     }
   catch(AipsError& er)
     {
@@ -273,3 +274,4 @@ int main(int argc, char **argv)
   //  cerr << rrr[MAKEVB_TIME] << " " << rrr[NVIS] << " " << rrr[DATA_VOLUME] << " " << rrr[IMAGING_RATE] << " " << rrr[NVIS]/rrr[CUMULATIVE_GRIDDING_ENGINE_TIME] << " vis/sec" << endl;
   return 0;
 }
+#endif // ROADRUNNER_LIBRARY_BUILD

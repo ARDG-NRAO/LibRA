@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //# AWConvFunc.h: Definition of the AWConvFunc class
-//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003
+//# Copyright (C) 1997,1998,1999,2000,2001,2002,2003,2026
 //# Associated Universities, Inc. Washington DC, USA.
 //#
 //# This library is free software; you can redistribute it and/or modify it
@@ -40,6 +40,7 @@
 #include <synthesis/TransformMachines2/WTerm.h>
 #include <synthesis/TransformMachines2/ATerm.h>
 #include <casacore/images/Images/ImageInterface.h>
+#include <synthesis/TransformMachines2/ImageInformation.h>
 #include <casacore/images/Images/TempImage.h>
 #include <casacore/casa/Logging/LogIO.h>
 #include <casacore/casa/Logging/LogSink.h>
@@ -101,13 +102,16 @@ namespace casa { //# NAMESPACE CASA - BEGIN
 				  CFStore2& cfwts,
 				  const casacore::Bool psTermOn,
 				  const casacore::Bool aTermOn,
-				  const casacore::Bool conjBeams);
+				  const casacore::Bool conjBeams,
+				  SynthesisUtils::ImageInformation<Complex> ImInfo=SynthesisUtils::ImageInformation<Complex>(),
+				  const casacore::Bool makePersistent=true);
     static void fillConvFuncBuffer2(CFBuffer& cfb, CFBuffer& cfWtb,
 				    const casacore::Int& nx, const casacore::Int& ny,
 				    const casacore::ImageInterface<casacore::Complex>* skyImage,
 				    const CFCStruct& miscInfo,
 				    PSTerm& psTerm, WTerm& wTerm, ATerm& aTerm,
-				    casacore::Bool conjBeams);
+				    casacore::Bool conjBeams,
+				    SynthesisUtils::ImageInformation<Complex>& ImInfo);
 
     virtual casacore::Bool makeAverageResponse(const VisBuffer2& vb, 
 				     const casacore::ImageInterface<casacore::Complex>& image,
@@ -120,11 +124,13 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual int getVisParams(const VisBuffer2& vb,const casacore::CoordinateSystem& skyCoord=casacore::CoordinateSystem())
     {return aTerm_p->getVisParams(vb,skyCoord);};
     virtual void setPolMap(const casacore::Vector<casacore::Int>& polMap) {aTerm_p->setPolMap(polMap);};
-    //    virtual void setFeedStokes(const casacore::Vector<casacore::Int>& feedStokes) {aTerm_p->setFeedStokes(feedStokes);};
+
     virtual casacore::Bool findSupport(casacore::Array<casacore::Complex>& func, casacore::Float& threshold,casacore::Int& origin, casacore::Int& R);
+
+    // Required to make this a non-abstract inhereted class.
     virtual casacore::Vector<casacore::Double> findPointingOffset(const casacore::ImageInterface<casacore::Complex>& /*image*/,
 					      const VisBuffer2& /*vb*/) {casacore::Vector<casacore::Double> tt(2); tt=0;return tt;};
-    //virtual void prepareConvFunction(const VisBuffer2& vb, VBRow2CFBMapType& cfs);
+
     virtual void prepareConvFunction(const VisBuffer2& vb, VB2CFBMap& cfs);
     casacore::Int mapAntIDToAntType(const casacore::Int& ant) {return aTerm_p->mapAntIDToAntType(ant);};
 
@@ -135,8 +141,6 @@ namespace casa { //# NAMESPACE CASA - BEGIN
     virtual casacore::Vector<casacore::Double> makeWValList(const casacore::Double &dW, const casacore::Int &nW);
 
     virtual void setMiscInfo(const casacore::RecordInterface& params);
-    virtual casacore::Matrix<casacore::Double> getFreqRangePerSpw(const VisBuffer2& vb);
-
 
 
     //
