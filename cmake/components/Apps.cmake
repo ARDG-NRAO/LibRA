@@ -46,6 +46,7 @@ ExternalProject_Add(
   Apps
   SOURCE_DIR      ${CMAKE_SOURCE_DIR}/apps
   DOWNLOAD_COMMAND ""
+  BUILD_ALWAYS    TRUE
   BINARY_DIR      ${BUILD_DIR}/Libra/apps
   DEPENDS         ${APPS_DEPENDS}
   CONFIGURE_COMMAND
