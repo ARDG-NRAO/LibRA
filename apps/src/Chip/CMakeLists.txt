@@ -21,7 +21,7 @@
 #                        Socorro, NM - 87801, USA
 #
 # $Id$
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(APP_NAME chip)
 string(TOUPPER ${APP_NAME} APP_NAME_UPPER)

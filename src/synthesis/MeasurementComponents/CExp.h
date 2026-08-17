@@ -55,8 +55,8 @@ inline double myhash(double arg)
 template <class T> class CExp
 {
 public:
-  CExp<T>() {Size=0;};
-  CExp<T>(int n) {Size=n;build(Size);};
+  CExp() {Size=0;};
+  CExp(int n) {Size=n;build(Size);};
   inline void build(int n)
   {
     if (n!=Size)

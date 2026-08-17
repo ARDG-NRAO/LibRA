@@ -134,12 +134,14 @@ TEST(RoadrunnerTest, InitializeTest) {
   {
     LibHPG lib_hpg;
   }
+#if KOKKOS_VERSION < 50000
   // Test that LibHPG::global_initialized_kokkos_backends is available
   // outside the LibHPG scope
   cerr << "RoadrunnerTest::InitializeTest: Kokkos backends from LibHPG::global_initialized_kokkos_backends: ";
   for (auto b : LibHPG::global_initialized_kokkos_backends)
     cerr << KokkosInterop::kokkos_backend_to_str(b) << " ";
   cerr << endl;
+#endif
   // Call the initialize() function -- THIS IS IN CORRECT USE OF AN RAII CLASS
   // bool ret = lib_hpg.initialize();
 

@@ -21,7 +21,7 @@
 #                        Socorro, NM - 87801, USA
 #
 # $Id$
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 set(OPT "-g -O2 ")
 
 find_package(Kokkos REQUIRED)

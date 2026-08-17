@@ -129,6 +129,7 @@ bool LibHPG::initialize()
       }
 #else // else associated with '#if KOKKOS_VERSION >= 50000'
 #warning "KOKKOS_VERSION >= 5.  All enabled Kokkos backends will be initialized at runtime, wheather they are used or not!"
+    LogIO log_l(LogOrigin("LibHPG","initialize()"));
     if (init_hpg)
       {
 	static bool once = [&]
@@ -151,7 +152,7 @@ bool LibHPG::initialize()
 		<< LogIO::POST;
 
       }
-    assert(hpg::is_intialized);
+    assert(hpg::is_initialized());
 #endif // endif associated with 'KOKKOS_VERSION >= 50000'
 #else //LIBRA_USE_HPG
     hpg_initialized=true;

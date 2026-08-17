@@ -28,7 +28,7 @@ set(Kokkos_CUDA_ARCH_NAME "" CACHE STRING "Kokkos CUDA architecture name, e.g. K
 # LibRA project configuration and global variables
 
 set(LIBRA_ID "LibRA INFO: ")
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(BUILD_TYPE "RelWithDebInfo")
 set(CASA_BUILD_TYPE "RelWithDebInfo")
 
@@ -38,7 +38,7 @@ set(CASA_BUILD_TYPE "RelWithDebInfo")
 # External project repositories and tags
 
 set(LIBRA_KOKKOS_GIT_REPOSITORY   "https://github.com/kokkos/kokkos.git")
-set(LIBRA_KOKKOS_GIT_TAG          "4.7.01")
+set(LIBRA_KOKKOS_GIT_TAG          "5.1.1")
 set(LIBRA_HPG_GIT_REPOSITORY      "https://gitlab.nrao.edu/mpokorny/hpg.git")
 set(LIBRA_HPG_GIT_TAG             "v3.4.2")
 set(LIBRA_CASACORE_GIT_REPOSITORY "https://github.com/casacore/casacore.git")
