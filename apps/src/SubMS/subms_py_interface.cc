@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -27,7 +27,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(subms2py, m) {
-    m.def("SubMS_func", &SubMS_func, 
+    m.def("SubMS", &SubMS_func,"A task-level interface for making selected sub-MS",
           py::arg("MSNBuf")="", 
           py::arg("OutMSBuf")="",
           py::arg("WhichColStr")="data", 
@@ -38,7 +38,12 @@ PYBIND11_MODULE(subms2py, m) {
           py::arg("baselineStr")="",
           py::arg("scanStr")="", 
           py::arg("arrayStr")="",
-          py::arg("uvdistStr")="", 
+          py::arg("uvdistStr")="",
           py::arg("taqlStr")="",
-          py::arg("integ")=-1);
+          py::arg("integ")=-1,
+          py::arg("chanStep")=1,
+          py::arg("combineStr")="",
+          py::arg("corrStr")="",
+          py::arg("intentStr")="",
+          py::arg("obsStr")="");
 }

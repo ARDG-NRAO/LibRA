@@ -34,10 +34,11 @@
 //#define RestartUI(Label)  {if(clIsInteractive()) {clRetry();goto Label;}}
 //
 
-void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, 
-	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
-	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
-	string& uvdistStr,string& taqlStr,float& integ)
+void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf,
+	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr,
+	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr,
+	string& uvdistStr,string& taqlStr,float& integ,int& chanStep,string& combineStr,
+	string& corrStr,string& intentStr,string& obsStr)
 {
   clSetPrompt(interactive);
 
@@ -64,8 +65,13 @@ void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, s
       clgetFullValp("baseline",baselineStr);  
       clgetFullValp("scan",scanStr);  
       clgetFullValp("array",arrayStr);  
-      clgetFullValp("uvdist",uvdistStr);  
-      dbgclgetFullValp("taql",taqlStr);  
+      clgetFullValp("uvdist",uvdistStr);
+      dbgclgetFullValp("taql",taqlStr);
+      i=1;clgetIValp("chanstep",chanStep,i);
+      clgetFullValp("combine",combineStr);
+      clgetFullValp("correlation",corrStr);
+      clgetFullValp("intent",intentStr);
+      clgetFullValp("observation",obsStr);
       clSetOptions("datacolumn", {"data","model","corrected","all","(a list of comma-separated names)"});
 
       EndCL();
@@ -99,8 +105,9 @@ int main(int argc, char **argv)
   //
   //  MSSelection msSelection;
   string MSNBuf,OutMSBuf,WhichColStr="data",fieldStr="*",timeStr,spwStr="*",
-    baselineStr,uvdistStr, taqlStr,scanStr,arrayStr,corrStr;
+    baselineStr,uvdistStr, taqlStr,scanStr,arrayStr,corrStr,combineStr,intentStr,obsStr;
   int deepCopy=0;
+  int chanStep=1;
   bool restartUI=false;;
   float integ=-1;
  RENTER:// UI re-entry point.
@@ -110,19 +117,21 @@ int main(int argc, char **argv)
   try
     {
       MSNBuf=OutMSBuf=WhichColStr=fieldStr=timeStr=spwStr=baselineStr=uvdistStr=
-	taqlStr=scanStr=corrStr=arrayStr="";
+	taqlStr=scanStr=corrStr=arrayStr=combineStr=intentStr=obsStr="";
       WhichColStr="data"; fieldStr="*"; spwStr="*";
       deepCopy=0;
+      chanStep=1;
       bool interactive = true;
 
       UI(restartUI,argc, argv, interactive, MSNBuf,OutMSBuf, WhichColStr, deepCopy,
-	 fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ);
+	 fieldStr,timeStr,spwStr,baselineStr,scanStr,arrayStr,uvdistStr,taqlStr,integ,
+	 chanStep,combineStr,corrStr,intentStr,obsStr);
       restartUI = false;
-      corrStr.resize(0);
 
       SubMS_func(MSNBuf,OutMSBuf, WhichColStr, deepCopy,
 		 fieldStr,timeStr,spwStr,baselineStr,
-		 scanStr,arrayStr,uvdistStr,taqlStr,integ);
+		 scanStr,arrayStr,uvdistStr,taqlStr,integ,
+		 chanStep,combineStr,corrStr,intentStr,obsStr);
       
       // //MS ms(MSNBuf,Table::Update),selectedMS(ms);
       // MeasurementSet ms(MSNBuf,TableLock(TableLock::AutoNoReadLocking)),selectedMS(ms);

@@ -55,7 +55,9 @@ void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
 		const string& spwStr="*", const string& baselineStr="",
 		const string& scanStr="", const string& arrayStr="",
 		const string& uvdistStr="",const string& taqlStr="",
-		const float integ=-1);
+		const float integ=-1, const int chanStep=1,
+		const string& combineStr="", const string& corrStr="",
+		const string& intentStr="", const string& obsStr="");
 
 
 /**
@@ -78,11 +80,17 @@ void SubMS_func(const string& MSNBuf="", const string& OutMSBuf="",
  * @param uvdistStr A string reference to store the uv distance range.
  * @param taqlStr A string reference to store the TAQL query.
  * @param integ A float reference to store the integration time.
+ * @param chanStep An integer reference to store the channel averaging width.
+ * @param combineStr A string reference to store the time-averaging combine columns.
+ * @param corrStr A string reference to store the correlation selection.
+ * @param intentStr A string reference to store the scan intent selection.
+ * @param obsStr A string reference to store the observation ID selection.
  */
-void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf, 
-	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr, 
-	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr, 
-	string& uvdistStr,string& taqlStr,float& integ);
+void UI(bool restart, int argc, char **argv, bool interactive, string& MSNBuf, string& OutMSBuf,
+	string& WhichColStr,int& deepCopy,string& fieldStr, string& timeStr,
+	string& spwStr, string& baselineStr,string& scanStr, string& arrayStr,
+	string& uvdistStr,string& taqlStr,float& integ,int& chanStep,string& combineStr,
+	string& corrStr,string& intentStr,string& obsStr);
 
 
 #endif
