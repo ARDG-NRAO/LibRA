@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -181,7 +181,7 @@ namespace librautils
     // Overwrite the pixels of an existing casa image on disk in place.
     // data's shape must match the image's on-disk shape exactly.
     template <class T>
-    void putChunkFromPath(const std::string &imagePath, const casacore::Array<T> &data)
+    void putChunkToPath(const std::string &imagePath, const casacore::Array<T> &data)
     {
         PagedImage<T> img(imagePath);
         if (!img.isWritable())
