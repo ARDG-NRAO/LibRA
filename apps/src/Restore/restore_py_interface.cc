@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -251,7 +251,7 @@ PYBIND11_MODULE(restore2py, m)
 
     m.doc() = "pybind11-based restore python plugin"; // optional module docstring
  
-    m.def("Restore2py", &Restore2py<float>, "A python interface for the restore API", 
+    m.def("Restore", &Restore2py<float>, "A python interface for the restore API", 
         py::arg("model"), 
         py::arg("residual"), 
         py::arg("image"),

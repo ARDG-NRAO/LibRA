@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import libra
 
 # Get the functions from the dynamically imported modules
-Restore2py = libra.restore2py.Restore2py
+Restore2py = libra.restore2py.Restore
 getchunk = libra.utilities2py.getchunk
 ImageType = libra.utilities2py.ImageType
 

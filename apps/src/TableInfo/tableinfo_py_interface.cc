@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -27,5 +27,5 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(tableinfo2py, m) {
-    m.def("TableInfo_func", &TableInfo_func, py::arg("MSNBuf")="", py::arg("OutBuf")="", py::arg("verbose")=false);
+    m.def("TableInfo", &TableInfo_func, py::arg("MSNBuf")="", py::arg("OutBuf")="", py::arg("verbose")=false);
 }

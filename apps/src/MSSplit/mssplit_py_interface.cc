@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -27,7 +27,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(mssplit2py, m) {
-    m.def("MSSplit_func", &MSSplit_func, 
+    m.def("MSSplit", &MSSplit_func, "An app for making sub-selected MSes",
           py::arg("MSNBuf")="", 
           py::arg("OutMSBuf")="",
           py::arg("deepCopy")=false, 

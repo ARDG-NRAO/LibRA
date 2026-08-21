@@ -1,4 +1,4 @@
-// # Copyright (C) 2021
+// # Copyright (C) 2021, 2026
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -29,8 +29,8 @@ using namespace Dale;
 namespace py = pybind11;
 
 PYBIND11_MODULE(dale2py, m) {
-    m.def("dale",
-	  &Dale::dale,
+    m.def("Dale", 
+	  &Dale::dale, "An app for normalizing various types of images",
 	  py::arg("imageName")="",
 	  py::arg("wtimageName")="",
 	  py::arg("sowimageName")="",
