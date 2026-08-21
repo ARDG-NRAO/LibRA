@@ -54,11 +54,21 @@
  * @param type The type to set.
  * @param subType The subtype to set.
  * 
+ * @function getChunkFromPath
+ * @brief Reads the full pixel array of any casa image by path.
+ * @param imagePath The path to the image.
+ * @return The pixel array, in the image's native on-disk axis order.
+ *
+ * @function putChunkFromPath
+ * @brief Overwrites the pixels of an existing casa image on disk in place.
+ * @param imagePath The path to the image.
+ * @param data The replacement pixel array; its shape must match the image's on-disk shape.
+ *
  * @function imageExists
  * @brief Checks if an image exists.
  * @param imagename The name of the image.
  * @return True if the image exists, false otherwise.
- * 
+ *
  * @function printImageMax
  * @brief Prints the maximum value of an image.
  * @param name The name of the image.
@@ -155,6 +165,30 @@ namespace librautils
         im.table().tableInfo().setType(type);
         im.table().tableInfo().setSubType(subType);
         im.table().flushTableInfo();
+    }
+
+    // Read the full pixel array of any casa image by path, in its native
+    // on-disk axis order (x, y, pol, chan for a standard image).
+    template <class T>
+    casacore::Array<T> getChunkFromPath(const std::string &imagePath)
+    {
+        PagedImage<T> img(imagePath);
+        casacore::Array<T> arr;
+        img.get(arr, false);
+        return arr;
+    }
+
+    // Overwrite the pixels of an existing casa image on disk in place.
+    // data's shape must match the image's on-disk shape exactly.
+    template <class T>
+    void putChunkFromPath(const std::string &imagePath, const casacore::Array<T> &data)
+    {
+        PagedImage<T> img(imagePath);
+        if (!img.isWritable())
+            throw AipsError("putChunkFromPath: image is not writable: " + imagePath);
+        if (data.shape() != img.shape())
+            throw AipsError("putChunkFromPath: array shape does not match image shape for " + imagePath);
+        img.put(data);
     }
 
     bool imageExists(const std::string &imagename);
