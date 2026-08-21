@@ -184,15 +184,15 @@ py::object getchunkFromPathAuto(const string& imagePath)
     }
 }
 
-// Write-back counterpart to getchunkFromPath: overwrite the pixels of an
+// Write-back counterpart to getchunkToPath: overwrite the pixels of an
 // existing casa image on disk with the contents of a NumPy array in place.
-// The array must already carry the on-disk pixel type and getchunkFromPath's
+// The array must already carry the on-disk pixel type and getchunkToPath's
 // (x, y, pol, chan) axis order -- a mismatch is a caller bug and is reported
 // as such rather than silently reshaped or cast. The actual write, and the
-// writability/shape checks, are in librautils::putChunkFromPath; 
+// writability/shape checks, are in librautils::putChunkToPath; 
 
 template <class T>
-void putChunkFromPath(const string& imagePath,
+void putChunkToPath(const string& imagePath,
     py::array_t<T, py::array::f_style | py::array::forcecast> array)
 {
     // f_style | forcecast makes pybind11 hand us an array already laid out
@@ -206,42 +206,42 @@ void putChunkFromPath(const string& imagePath,
         shape(i) = buf.shape[i];
 
     casacore::Array<T> arr(shape, static_cast<T*>(buf.ptr), casacore::SHARE);
-    librautils::putChunkFromPath<T>(imagePath, arr);
+    librautils::putChunkToPath<T>(imagePath, arr);
 }
 
-py::object putChunkFromPathAuto(const string& imagePath, py::array array)
+py::object putChunkToPathAuto(const string& imagePath, py::array array)
 {
     switch (casacore::imagePixelType(imagePath)) {
         case casacore::TpFloat:
             if (!array.dtype().is(py::dtype::of<float>()))
                 throw std::invalid_argument(
-                    "putchunkfrompath: image " + imagePath
+                    "putchunktopath: image " + imagePath
                     + " is float32, array is not");
-            putChunkFromPath<float>(imagePath, array);
+            putChunkToPath<float>(imagePath, array);
             break;
         case casacore::TpDouble:
             if (!array.dtype().is(py::dtype::of<double>()))
                 throw std::invalid_argument(
-                    "putchunkfrompath: image " + imagePath
+                    "putchunktopath: image " + imagePath
                     + " is float64, array is not");
-            putChunkFromPath<double>(imagePath, array);
+            putChunkToPath<double>(imagePath, array);
             break;
         case casacore::TpComplex:
             if (!array.dtype().is(py::dtype::of<std::complex<float>>()))
                 throw std::invalid_argument(
-                    "putchunkfrompath: image " + imagePath
+                    "putchunktopath: image " + imagePath
                     + " is complex64, array is not");
-            putChunkFromPath<casacore::Complex>(imagePath, array);
+            putChunkToPath<casacore::Complex>(imagePath, array);
             break;
         case casacore::TpDComplex:
             if (!array.dtype().is(py::dtype::of<std::complex<double>>()))
                 throw std::invalid_argument(
-                    "putchunkfrompath: image " + imagePath
+                    "putchunktopath: image " + imagePath
                     + " is complex128, array is not");
-            putChunkFromPath<casacore::DComplex>(imagePath, array);
+            putChunkToPath<casacore::DComplex>(imagePath, array);
             break;
         default:
-            throw std::invalid_argument("Unsupported pixel type in image "
+            throw std::invalid_argument("putchunktopath: Unsupported pixel type in image "
                                         + imagePath);
     }
     return py::none();
@@ -268,10 +268,10 @@ PYBIND11_MODULE(utilities2py, m) {
         "complex128).",
         py::arg("imagePath"));
 
-  m.def("putchunkfrompath", &putChunkFromPathAuto,
+  m.def("putchunktopath", &putChunkToPathAuto,
         "Overwrite the pixels of an existing casa image on disk with a "
         "NumPy array in place (axis order x, y, pol, chan).  The array's "
         "dtype and shape must already match the image; use "
-        "getchunkfrompath's output as the template.",
+        "getchunktopath's output as the template.",
         py::arg("imagePath"), py::arg("array"));
 }
