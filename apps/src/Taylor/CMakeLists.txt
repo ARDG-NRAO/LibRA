@@ -1,0 +1,56 @@
+set(CMAKE_CXX_STANDARD 17)
+
+set(APP_NAME taylor)
+string(TOUPPER ${APP_NAME} APP_NAME_UPPER)
+
+set(APP_SOURCES
+  taylor.cc
+)
+
+find_package(parafeed REQUIRED)
+
+file(GLOB APP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+install(FILES ${APP_HEADERS} DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
+
+add_library(${APP_NAME}_lib SHARED ${APP_SOURCES})
+target_link_libraries(${APP_NAME}_lib PUBLIC ${APP_LINK_LIBRARIES_LIBRA})
+set_target_properties(${APP_NAME}_lib PROPERTIES OUTPUT_NAME ${APP_NAME})
+install(TARGETS ${APP_NAME}_lib LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+set(BUILD_CLWRAPPER ON)
+if(BUILD_CLWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
+  add_executable(${APP_NAME}_bin "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
+  target_link_libraries(${APP_NAME}_bin PRIVATE ${APP_NAME}_lib ${READLINE_LDFLAGS} ${CURSES_LIBRARIES})
+  set_target_properties(${APP_NAME}_bin PROPERTIES OUTPUT_NAME ${APP_NAME})
+  install(TARGETS ${APP_NAME}_bin DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif()
+
+set(BUILD_PYWRAPPER ON)
+if(BUILD_PYWRAPPER AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_py_interface.cc")
+  pybind11_add_module(${APP_NAME}2py "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_py_interface.cc")
+  target_link_libraries(${APP_NAME}2py PRIVATE ${APP_NAME}_lib)
+  install(TARGETS ${APP_NAME}2py LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+if(Apps_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
+  add_library(${APP_NAME}_cl_interface SHARED "${CMAKE_CURRENT_SOURCE_DIR}/${APP_NAME}_cl_interface.cc")
+  target_compile_definitions(${APP_NAME}_cl_interface PRIVATE ${APP_NAME_UPPER}_LIBRARY_BUILD)
+  target_link_libraries(${APP_NAME}_cl_interface PRIVATE ${APP_NAME}_lib "-Wl,--disable-new-dtags")
+  install(TARGETS ${APP_NAME}_cl_interface LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+if(BUILD_TESTING)
+  find_package(GTest REQUIRED)
+  add_executable(test_${APP_NAME}
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_${APP_NAME}.cc)
+  target_include_directories(test_${APP_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/..)
+  target_link_libraries(test_${APP_NAME}
+    GTest::gtest_main stdc++fs ${APP_NAME}_lib)
+  # Must run from apps/src/tests: the gold_standard submodule (wasp_jet Taylor
+  # images) is resolved relative to the working directory.
+  add_test(NAME test_${APP_NAME} COMMAND test_${APP_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../tests)
+  install(TARGETS test_${APP_NAME}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin/tests")
+endif()

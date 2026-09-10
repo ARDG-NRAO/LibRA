@@ -23,22 +23,40 @@
 // # $Id$
 #pragma once
 
-// #include <filesystem>
+#include <filesystem>
 #include <gtest/gtest.h>
+#include <casacore/casa/Arrays/Array.h>
+#include <casacore/casa/Arrays/IPosition.h>
+#include <casacore/images/Images/PagedImage.h>
 #include <unistd.h>  // for gethostname()
 
+using namespace casacore;
+using namespace std;
+using namespace std::filesystem;
 
+namespace test
+{
+  inline bool directoryExists(const std::string &path) {
+    return std::filesystem::exists(path);
+  }
 
-// inline  bool directoryExists(const std::string& path) {
-//     std::filesystem::path dir(path);
-//     return std::filesystem::is_directory(dir);
-// }
-// inline  bool create_directory(const std::filesystem::path& path) {
-//     return std::filesystem::create_directory(path);
-// }
-// inline  bool remove_directory(const std::filesystem::path& path) {
-//     return std::filesystem::remove_all(path);
-// }
+  inline bool create_directory(const std::filesystem::path &path) {
+    return std::filesystem::create_directory(path);
+  }
+
+  inline bool remove_directory(const std::filesystem::path &path) {
+    return std::filesystem::remove_all(path) > 0;
+  }
+
+  // Helper function to get the values at a position in an image
+  inline vector<float> getValues(const string& imageName, const IPosition &pos) {
+    PagedImage<float> image(imageName);
+    vector<float> values;
+    for (size_t i = 0; i < pos.nelements(); ++i) {
+      values.push_back(image(pos));
+    }
+    return values;
+  }
 
 inline  bool IsGpuHost003() {
     char hostname[256];
@@ -46,6 +64,7 @@ inline  bool IsGpuHost003() {
         return false;  
     }
     return std::string(hostname) == "gpuhost003";
+}
 }
 
 

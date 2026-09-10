@@ -32,6 +32,8 @@ class jobmode(Flag):
     GATHER           = auto()
     NORMALIZE        = auto()
     RESTORE          = auto()
+    TAYLOR           = auto()
+    COYOTE           = auto()
     MAKEPSF          = WEIGHT | PSF
     GATHERPSF        = GATHER | NORMALIZE
     RUNRESIDUALCYCLE = RESIDUAL
@@ -86,4 +88,10 @@ class execModes(Enum):
         jobmode.MODEL,
         jobmode.RESTORE,
         jobmode.RUNMODELCYCLE
+    ]
+    taylor = [
+        jobmode.TAYLOR
+    ]
+    coyote = [
+        jobmode.COYOTE
     ]

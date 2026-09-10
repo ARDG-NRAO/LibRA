@@ -46,7 +46,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         string& normtype, string& imType,
         float& pblimit, 
         //float& psfcutoff,
-        bool& computePB)// bool& normalize_weight)
+        bool& computePB,
+        std::string& taylorWtName)// bool& normalize_weight)
 {
   clSetPrompt(interactive);
 
@@ -79,6 +80,7 @@ void UI(bool restart, int argc, char **argv, bool interactive,
       i=1;clgetValp("pblimit", pblimit,i);
       //      i=1;clgetValp("psfcutoff", psfcutoff,i);
       i=1;clgetValp("computepb", computePB, i);
+      i=1;clgetValp("taylorwt", taylorWtName, i);
       //      i=1;clgetValp("normalizeweight", normalize_weight, i);
       
 
@@ -105,6 +107,8 @@ int main(int argc, char **argv)
   string wtImageName="", sowImageName="";
   float pblimit=0.2, psfcutoff=0.35;
   bool computePB=false;
+  // tt0 weight image (roadrunner's term-0 PSF peak); empty = ordinary path
+  string taylorWtName="";
   // Setting the default to false, in prep for removing it in the next commmit
   bool normalize_weight=false;
   bool restartUI=false;
@@ -118,7 +122,7 @@ int main(int argc, char **argv)
 	 normtype, 
 	 imType, pblimit,
 	 //psfcutoff,
-	 computePB);
+	 computePB, taylorWtName);
 	 //normalize_weight);
       
       restartUI = False;
@@ -129,7 +133,7 @@ int main(int argc, char **argv)
 		 normtype, imType,
 		 pblimit,
 		 //psfcutoff,
-		 computePB);
+		 computePB, taylorWtName);
 	//		 normalize_weight);
     }
   catch (clError& x)

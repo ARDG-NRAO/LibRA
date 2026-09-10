@@ -1,4 +1,4 @@
-// # Copyright (C) 2021, 2026
+// # Copyright (C) 2021
 // # Associated Universities, Inc. Washington DC, USA.
 // #
 // # This library is free software; you can redistribute it and/or modify it
@@ -25,44 +25,34 @@
 /**
  * @file utils.h
  * @brief Utility functions for image processing.
- * 
+ *
  * This file contains various utility functions for handling and processing images.
- * 
+ *
  * @namespace utils
  * @brief Namespace for utility functions.
- * 
+ *
  * @tparam T The data type of the image.
- * 
+ *
  * @function getImageType
  * @brief Retrieves the type and subtype of a PagedImage.
  * @param im The PagedImage object.
  * @param type The type of the image.
  * @param subType The subtype of the image.
- * 
+ *
  * @function isNormalized
  * @brief Checks if a PagedImage is normalized.
  * @param im The PagedImage object.
  * @return True if the image is normalized, false otherwise.
- * 
+ *
  * @function setNormalized
  * @brief Sets the subtype of a PagedImage to "normalized".
  * @param im The PagedImage object.
- * 
+ *
  * @function setImType
  * @brief Sets the type and subtype of a PagedImage.
  * @param im The PagedImage object.
  * @param type The type to set.
  * @param subType The subtype to set.
- * 
- * @function getChunkFromPath
- * @brief Reads the full pixel array of any casa image by path.
- * @param imagePath The path to the image.
- * @return The pixel array, in the image's native on-disk axis order.
- *
- * @function putChunkFromPath
- * @brief Overwrites the pixels of an existing casa image on disk in place.
- * @param imagePath The path to the image.
- * @param data The replacement pixel array; its shape must match the image's on-disk shape.
  *
  * @function imageExists
  * @brief Checks if an image exists.
@@ -73,34 +63,34 @@
  * @brief Prints the maximum value of an image.
  * @param name The name of the image.
  * @param logio The LogIO object for logging.
- * 
+ *
  * @function printImageMax
  * @brief Prints the maximum value of a list of images.
  * @param nameList The list of image names.
  * @param logio The LogIO object for logging.
- * 
+ *
  * @function removeExtension
  * @brief Removes the extension from a file path.
  * @param path The file path.
  * @return The file path without the extension.
- * 
+ *
  * @function checkImageMax
  * @brief Checks the maximum value of an image and logs it.
  * @param name The name of the image.
  * @param target The ImageInterface object.
  * @param logio The LogIO object for logging.
  * @throws AipsError if the image amplitude is out of range.
- * 
+ *
  * @function printImageMax
  * @brief Prints the maximum value of a PagedImage.
  * @param name The name of the image.
  * @param image The PagedImage object.
  * @param logio The LogIO object for logging.
- * 
+ *
  * @function resetImage
  * @brief Resets an image to zero.
  * @param target The ImageInterface object.
- * 
+ *
  * @function addImages
  * @brief Adds multiple images to a target image.
  * @param target The target ImageInterface object.
@@ -108,6 +98,22 @@
  * @param imExt The image extension.
  * @param reset_target Flag to reset the target image before adding.
  * @param logio The LogIO object for logging.
+ *
+ * @function computeMean
+ * @brief Computes the mean of a vector of data.
+ * @param data The list of data.
+ * @return The mean of the data.
+ *
+ * @function computeMedian
+ * @brief Computes the median of a vector of data.
+ * @param data The list of data.
+ * @return The median of the data.
+ *
+ * @function getFreqList
+ * @brief Extracts the frequency list from a casacore matrix. *
+ * @param freqSelection The frequency selection matrix.
+ * @param sorted Flag to sort the frequency list.
+ * @return The frequency list as a vector.
  */
 
 #ifndef LIBRAUTILS_UTILS_H
@@ -119,8 +125,11 @@
 #include <iostream>
 #include <casacore/casa/OS/Directory.h>
 #include <iomanip>
-#include <algorithm>
-#include <stdcasa/Quantity.h>
+#include <sys/stat.h>                      // For pathExists()
+#include <stdcasa/Quantity.h>              // For parseRefFreq()
+#include <algorithm>                       // For computeMidFrequencies()
+#include <casacore/coordinates/Coordinates/SpectralCoordinate.h>  // For checkAndGetImageInfo()
+#include <casacore/coordinates/Coordinates/CoordinateSystem.h>    // For checkAndGetImageInfo()
 
 using namespace std;
 using namespace casacore;
@@ -191,7 +200,28 @@ namespace librautils
         img.put(data);
     }
 
-    bool imageExists(const std::string &imagename);
+    template <typename T>
+    void checkForNaN(LogIO &log_l, const std::string &varName, T value)
+    {
+        if (std::isnan(value))
+        {
+            log_l << varName << " contains NaN value" << LogIO::WARN << LogIO::POST;
+        }
+    }
+
+    template <typename T>
+    bool allPixelsAreNaN(const ImageInterface<T> &image, LogIO &log_l)
+    {
+        LatticeExprNode node = all(iif(isnan(image), true, false));
+        bool allNaN = node.getBool();
+        if (allNaN)
+        {
+            log_l << "All pixels in the image are NaN" << LogIO::WARN << LogIO::POST;
+        }
+        return allNaN;
+    }
+
+    bool imageExists(const std::string &img);
     void printImageMax(const std::string &name, LogIO &logio);
     void printImageMax(const std::vector<std::string> &nameList, LogIO &logio);
     std::string removeExtension(const std::string &path);
@@ -214,7 +244,6 @@ namespace librautils
         if (mim >= threshold)
             throw AipsError("Image amplitude is out of range.");
     }
-
 
     template <class T>
     void printImageMax(const std::string &name, const PagedImage<T> &image, LogIO &logio)
@@ -242,11 +271,77 @@ namespace librautils
                 logio << "Image " << partName + imExt << " does not exist." << LogIO::EXCEPTION;
         }
     }
+
+    inline std::vector<double> getFreqList(casacore::Matrix<double> &freqSelection, bool sorted = false)
+    {
+        std::vector<double> freqList;
+        for (unsigned i = 0; i < freqSelection.shape()(0); i++)
+        {
+            freqList.push_back(freqSelection(i, 1));
+        }
+        if (sorted)
+            std::sort(freqList.begin(), freqList.end());
+
+        return freqList;
+    }
+
+    // File system utilities
+    bool pathExists(const std::string &path);
+    
+    // Frequency processing utilities
     double parseRefFreq(LogIO &log_l, const std::string &reffreq_str);
     std::vector<double> computeMidFrequencies(const std::vector<std::vector<double>> &freqs);
     std::vector<double> computeWeights(const std::vector<double> &midFreqs, double refval);
 
-    // Statistical utilities
+    // Image validation utilities
+
+    // Resolve the SPECTRAL coordinate of `coords` into (a) its coordinate index,
+    // as accepted by CoordinateSystem::spectralCoordinate(), and (b) the pixel
+    // axis it maps onto, as used to index an IPosition shape. These two are NOT
+    // interchangeable: for the usual (direction, stokes, spectral) layout the
+    // coordinate index is 2 while the pixel axis is 3, because the direction
+    // coordinate occupies two pixel axes. Both outputs are set to -1 when the
+    // image has no spectral coordinate (or it has been removed from the pixel
+    // axes). Returns true only when both are valid for `shape`.
+    bool findSpectralAxis(const casacore::CoordinateSystem &coords,
+                          const casacore::IPosition &shape,
+                          int &spectralCoordIndex, int &spectralPixelAxis);
+
+    void checkShapesConsistency(LogIO &log_l, const std::vector<std::vector<int>> &shapes,
+                               const std::string &imageType);
+    void checkAndGetImageInfo(LogIO &log_l, const std::vector<std::string> &names,
+                             const std::string &imageType,
+                             std::vector<std::vector<int>> &shapes,
+                             std::vector<std::vector<double>> &freqs,
+                             bool isTaylorCube = false, bool zeroImageContent = false);
+
+    // Pattern helper classes
+    class ImageValidator {
+    public:
+        static void validateAndGetInfo(LogIO &log_l, const std::vector<std::string> &names,
+                                     const std::string &imageType,
+                                     std::vector<std::vector<int>> &shapes,
+                                     std::vector<std::vector<double>> &freqs,
+                                     bool isTaylorCube = false, bool zeroImageContent = false);
+    };
+
+    class FrequencyProcessor {
+    public:
+        static double parseFrequency(LogIO &log_l, const std::string &freq_str);
+        static std::vector<double> computeMidFrequencies(const std::vector<std::vector<double>> &freqs);
+        static std::vector<double> computeWeights(const std::vector<double> &midFreqs, double refval);
+        static void validateFrequencyRange(LogIO &log_l, double refval, const std::string &reffreq_str,
+                                         const std::vector<double> &midFreqs);
+    };
+
+    template<typename T>
+    class ImageOperations {
+    public:
+        static void applyLatticeExpression(ImageInterface<T>& image, const LatticeExpr<T>& expr);
+        static void initializeToZero(const std::string& imgName, const IPosition& shape, 
+                                    const CoordinateSystem& coord);
+    };
+
     template <typename T>
     T computeMean(const std::vector<T> &data)
     {

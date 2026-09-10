@@ -36,6 +36,139 @@ def writeParfile(impars, parfile, logdir = '.'):
         for key,value in impars[parfile].items():
             outfile.write(f'{key:22}= {value}\n')
 
+
+# -------- taylor / coyote CLI parameter builders --------
+# Ported directly from the validated argument construction in
+# scripts/run_taylor_fixed.py (TaylorPipeline._taylor_* / _build_cfcaches):
+# these do not re-derive the Taylor math or cfcache build sequence, they
+# reproduce the exact CLI arguments already proven correct there, adapted to
+# the per-stage parfile dict built by _makeProcessingList/_changeImageParameters.
+# 'gatherimagelist' (the per-SPW image basenames) is populated the same way
+# GATHER modes already require it (see inputArgs.makeUnitParfiles).
+
+def _spwImages(basenames, suffix):
+    return [f'{base}.{suffix}' for base in basenames]
+
+
+def _buildComputeAvgPBParams(impars, cubetype=None):
+    basenames = impars['gatherimagelist']
+    outputimagename = impars['imagename']
+    impars['cubeImage'] = ','.join(_spwImages(basenames, 'residual'))
+    impars['pbimage'] = ','.join(_spwImages(basenames, 'pb'))
+    impars['taylorImages'] = ''
+    impars['sumwtImage'] = ','.join(_spwImages(basenames, 'taylorwt'))
+    impars['overwrite'] = '1'
+    impars['mode'] = 'computeavgpb'
+    impars.setdefault('avgpbname', f'{outputimagename}.avgpb')
+    impars.setdefault('minfreqpbname', f'{outputimagename}.minfreq')
+    impars['avgpbmode'] = 'mean'
+    return impars
+
+
+def _buildRemoveFreqDepPBParams(impars, cubetype=None):
+    imtype = cubetype or 'residual'
+    basenames = impars['gatherimagelist']
+    impars['cubeImage'] = ','.join(_spwImages(basenames, imtype))
+    impars['pbimage'] = ','.join(_spwImages(basenames, 'pb'))
+    impars['taylorImages'] = ''
+    impars['sumwtImage'] = ''
+    impars['overwrite'] = '1'
+    impars['mode'] = 'removefreqdepPB'
+    # avgpbname must already have been set by a prior computeavgpb stage
+    return impars
+
+
+def _buildCube2TaylorParams(impars, cubetype=None):
+    # cubetype: 'residual', 'psf', 'pb' or 'sumwt' - selects which per-SPW
+    # cube is Taylor-summed (run_taylor_fixed.py's
+    # TaylorPipeline._taylor_cube2taylor(imtype)). Passed via the imext
+    # suffix, e.g. '-t cube2taylor_psf', the same way NORMALIZE's dale calls
+    # already vary by imext (e.g. '-t psf' vs '-t residual').
+    imtype = cubetype or 'residual'
+    basenames = impars['gatherimagelist']
+    outputimagename = impars['imagename']
+
+    taylorwts = _spwImages(basenames, 'taylorwt')
+    cube_images = taylorwts if imtype == 'sumwt' else _spwImages(basenames, imtype)
+    pb_list = _spwImages(basenames, 'pb') + [impars['avgpbname']]
+
+    impars['cubeImage'] = ','.join(cube_images)
+    impars['taylorImages'] = f'{outputimagename}.{imtype}'
+    impars['pbimage'] = ','.join(pb_list)
+    impars['sumwtImage'] = ','.join(taylorwts)
+    impars['overwrite'] = '1'
+    impars['mode'] = 'cube2taylor'
+    impars['imtype'] = imtype
+    # reffreq, nTerms, pblimit are expected to already be static parfile keys
+    return impars
+
+
+def _buildTaylor2CubeParams(impars, cubetype=None):
+    basenames = impars['gatherimagelist']
+    outputimagename = impars['imagename']
+    nterms = int(impars['nTerms'])
+    taylor_images = [f'{outputimagename}.model.tt{i}' for i in range(nterms)]
+
+    impars['cubeImage'] = ','.join(_spwImages(basenames, 'model'))
+    impars['taylorImages'] = ','.join(taylor_images)
+    # pbimage='' skips the internal applyPB(divide, pbnames[0]); avgPB
+    # removal / per-SPW PB apply would be explicit applyPB stages, but the
+    # validated pipeline (run_taylor_fixed.py) feeds roadrunner's awp
+    # degridder the true-sky model directly and never calls applyPB here -
+    # see stage_prepare_model's docstring there.
+    impars['pbimage'] = ''
+    impars['sumwtImage'] = ','.join(_spwImages(basenames, 'sumwt'))
+    impars['overwrite'] = '1'
+    impars['mode'] = 'taylor2cube'
+    impars['pblimit'] = '0'
+    impars['imtype'] = 'model'
+    return impars
+
+
+# Keyed by the taylor-mode prefix of the imext string (e.g. 'cube2taylor' out
+# of '-t cube2taylor_psf'). applyPB is intentionally not wired in as an
+# active stage: run_taylor_fixed.py's validated pipeline never calls it (the
+# old applyPB+dale-divmodel chain over-subtracted by 1/PB - see that file's
+# Bug 4 note and stage_prepare_model docstring).
+TAYLOR_PARAM_BUILDERS = {
+    'computeavgpb': _buildComputeAvgPBParams,
+    'removefreqdeppb': _buildRemoveFreqDepPBParams,
+    'cube2taylor': _buildCube2TaylorParams,
+    'taylor2cube': _buildTaylor2CubeParams,
+}
+
+
+def _buildCoyoteCommonParams(impars):
+    impars.setdefault('telescope', 'EVLA')
+    impars.setdefault('wbawp', '1')
+    impars.setdefault('aterm', '1')
+    impars.setdefault('psterm', '0')
+    impars.setdefault('muellertype', 'diagonal')
+    impars.setdefault('dpa', '360')
+    impars.setdefault('buffersize', '0')
+    impars.setdefault('oversampling', '20')
+    return impars
+
+
+def _buildCoyoteDryrunParams(impars):
+    impars = _buildCoyoteCommonParams(impars)
+    impars['mode'] = 'dryrun'
+    impars['cflist'] = ''
+    return impars
+
+
+def _buildCoyoteFillcfParams(impars):
+    impars = _buildCoyoteCommonParams(impars)
+    impars['mode'] = 'fillcf'
+    impars['cflist'] = 'CFS*'
+    return impars
+
+
+COYOTE_PARAM_BUILDERS = {
+    'dryrun': _buildCoyoteDryrunParams,
+    'fillcf': _buildCoyoteFillcfParams,
+}
+
 def runtimeWorkarounds(stage, undo = False):
     this_mode = stage['jobmode']
     imagename,imext = os.path.splitext(stage['outputImages'][0])
@@ -54,7 +187,31 @@ def runtimeWorkarounds(stage, undo = False):
     else:
         if this_mode == jobmode.MODEL or this_mode == jobmode.RESTORE:
             shutil.move(f'{imagename}.sumwt.noop',f'{imagename}.sumwt')
-        
+        elif this_mode == jobmode.TAYLOR and stage.get('taylorMode') == 'taylor2cube':
+            # taylor2cube's per-SPW .model cubes inherit the 'residual
+            # normalized' SubType from their source residual images. dale's
+            # isNormalized() guard (dale.cc:305) then skips normalization on
+            # every cycle after the first when roadrunner/dale next reads
+            # these as the model. Equivalent of
+            # run_taylor_fixed.py::_strip_normalized_subtype.
+            for cubeimage in stage['outputImages']:
+                info_path = f'{cubeimage}/table.info'
+                if os.path.exists(info_path):
+                    with open(info_path, 'r') as tableinfo:
+                        lines = tableinfo.readlines()
+                    newlines = []
+                    for line in lines:
+                        if line.startswith('SubType'):
+                            stripped = (line.replace(' normalized', '')
+                                            .replace('normalized', '')
+                                            .rstrip('\n').rstrip())
+                            if stripped.endswith('='):
+                                stripped = 'SubType = model'
+                            line = stripped + '\n'
+                        newlines.append(line)
+                    with open(info_path, 'w') as tableinfo:
+                        tableinfo.writelines(newlines)
+
 
 
 class libra_cl_imager(object):
@@ -193,7 +350,7 @@ class libra_cl_imager(object):
                 for j,mode in enumerate(jobmode.list(this_mode)):
                     for imext in imextlist[j]:
                         modename = mode.name.lower()
-                        if imext in ['gather', 'normalize']:
+                        if imext in ['gather', 'normalize', 'taylor', 'coyote']:
                             if not inputArgs.imtype:
                                 raise ValueError(f'{mode}: imtype cannot be empty')
                             else:
@@ -227,27 +384,45 @@ class libra_cl_imager(object):
                             outputImages = [impars[this_parfile]['imagename'] + '.image']
                             if impars[this_parfile]['pbcor'] == '1':
                                 outputImages.append(impars[this_parfile]['imagename'] + '.image.pbcor')
-                        processingList.append({
+                        elif mode == jobmode.TAYLOR:
+                            taylormode = impars[this_parfile]['mode']
+                            if taylormode == 'computeavgpb':
+                                outputImages = [impars[this_parfile]['avgpbname'],
+                                                 impars[this_parfile]['minfreqpbname']]
+                            elif taylormode in ('removefreqdepPB', 'applyPB', 'taylor2cube'):
+                                # taylor2cube's actual output is the per-SPW
+                                # .model cubes (cubeImage); taylorImages
+                                # (tt0/tt1) are its inputs.
+                                outputImages = impars[this_parfile]['cubeImage'].split(',')
+                            else:
+                                # cube2taylor
+                                outputImages = impars[this_parfile]['taylorImages'].split(',')
+                        elif mode == jobmode.COYOTE:
+                            outputImages = [impars[this_parfile]['cfcache']]
+                        stageDict = {
                             'jobmode' : mode,
                             'parfile' : this_parfile,
                             'outputImages' : outputImages
-                        })
+                        }
+                        if mode == jobmode.TAYLOR:
+                            stageDict['taylorMode'] = taylormode
+                        processingList.append(stageDict)
 
-        # Remove raw and redundant processing entries
-        # (general solution, although only gather was observed to create redundant entries)
-        removeProcessingEntries = []    
-        for i,stage in enumerate(processingList):
-            this_jobmode = stage['jobmode']
+        # Remove raw entries (superseded by their expanded per-imtype entries)
+        # and redundant duplicate entries (same jobmode + same outputImages),
+        # keyed on (jobmode, tuple(outputImages)) rather than an O(n^2) scan.
+        removeProcessingEntries = []
+        seenStageKeys = set()
+        for stage in processingList:
             if 'outputImages' not in stage.keys():
                 removeProcessingEntries.append(stage)
+                continue
+            stageKey = (stage['jobmode'], tuple(stage['outputImages']))
+            if stageKey in seenStageKeys:
+                removeProcessingEntries.append(stage)
             else:
-                this_outputs = stage['outputImages']
-                if i > 0:
-                    for pstage in processingList[0:i]:
-                        if 'outputImages' in pstage.keys():
-                            if this_jobmode == pstage['jobmode'] and this_outputs == pstage['outputImages']:
-                                removeProcessingEntries.append(stage)
-        
+                seenStageKeys.add(stageKey)
+
         for stage in removeProcessingEntries:
             if os.path.exists(f"{logdir}/{stage['parfile']}"):
                 os.remove(f"{logdir}/{stage['parfile']}")
@@ -263,9 +438,17 @@ class libra_cl_imager(object):
         if mode in execModes.gridding.value:
             if mode == jobmode.RESIDUAL:
                 if 'modelimagename' not in this_impars.keys() or len(this_impars['modelimagename']) == 0:
-                    modelimagename = f"{imagename.split('.')[0]}.divmodel"
-                    if os.path.exists(f'{self.workdir}/{modelimagename}'):
-                        this_impars['modelimagename'] = modelimagename
+                    basename = imagename.split('.')[0]
+                    # single-term MFS predicts from dale's normalized
+                    # .divmodel; the Taylor path (taylor2cube) writes the
+                    # true-sky model directly to .model instead, since
+                    # roadrunner's awp degridder applies PB(nu) itself
+                    # during predict (see run_taylor_fixed.py stage_prepare_model)
+                    for modelext in ('divmodel', 'model'):
+                        modelimagename = f'{basename}.{modelext}'
+                        if os.path.exists(f'{self.workdir}/{modelimagename}'):
+                            this_impars['modelimagename'] = modelimagename
+                            break
             imext = f'.{mode.name.lower()}'
             imagename += imext
         elif mode in execModes.deconvolution.value:
@@ -288,6 +471,24 @@ class libra_cl_imager(object):
             imagename = imagename.split('.')[0] if '.' in imagename else imagename
             if imext == 'psf':
                 this_impars['computepb'] = '1'
+            elif imext == 'taylorpsf':
+                # dale imtype=taylorpsf operates on .psf but the SoW image
+                # it reads/writes is the raw sumwt, not taylorwt (see
+                # scripts/run_taylor_fixed.py::_dale)
+                this_impars['sowimage'] = f'{imagename}.sumwt'
+        elif mode in execModes.taylor.value:
+            # imext carries 'taylormode[_cubetype]', e.g. 'cube2taylor_psf'
+            # or 'taylor2cube', passed through via '-t' the same way
+            # NORMALIZE's per-call imtype (e.g. '-t psf') already is.
+            appmode = ''
+            taylormode, _, cubetype = imext.partition('_')
+            this_impars = TAYLOR_PARAM_BUILDERS[taylormode](this_impars, cubetype or None)
+            appmode = this_impars['mode']
+        elif mode in execModes.coyote.value:
+            # imext carries the coyote CLI submode (dryrun, fillcf)
+            appmode = ''
+            this_impars = COYOTE_PARAM_BUILDERS[imext](this_impars)
+            appmode = this_impars['mode']
         this_impars['imagename'] = imagename
         this_impars['mode'] = appmode
         if 'gatherimagelist' in this_impars.keys():

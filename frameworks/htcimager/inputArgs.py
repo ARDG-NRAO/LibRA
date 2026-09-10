@@ -24,6 +24,7 @@
 
 import os
 import sys
+import ast
 from jobmode import jobmode, execModes
 
 ia2param = [
@@ -201,7 +202,7 @@ class inputArgs(object):
                         if line != '\n' and '#' not in line[0]:
                             line = line.split('#')[0].split('=')
                             if "'" in line[1]:
-                                value = eval(line[1].strip())
+                                value = ast.literal_eval(line[1].strip())
                             else:
                                 value = line[1].strip()
                             
@@ -228,7 +229,8 @@ class inputArgs(object):
         newpars = {}
         for key in iter(pars):
             this_pars = pars[key]
-            if any(mode in execModes.gather.value for mode in self.jobmode):
+            if any(mode in execModes.gather.value or mode in execModes.taylor.value
+                   for mode in self.jobmode):
                 this_pars['gatherimagelist'] = this_pars['imagename']
                 # this is a simple fix for the issue in jobmode = gather,normalize with odd number of images
                 # review and test carefully to verify the validity for a wider range of use cases
