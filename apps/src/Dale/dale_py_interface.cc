@@ -38,6 +38,7 @@ PYBIND11_MODULE(dale2py, m) {
 	  py::arg("imType")="psf",
 	  py::arg("pblimit")=0.2,
 	  //py::arg("psfcutoff")=0.35,
-	  py::arg("computePB")=False);
+	  py::arg("computePB")=False,
+	  py::arg("taylorWtName")="");
     //py::arg("normalize_weight")=True);
 }

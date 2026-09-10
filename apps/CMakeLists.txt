@@ -144,6 +144,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/Asp_mdspan
     ${CMAKE_SOURCE_DIR}/src/Restore
     ${CMAKE_SOURCE_DIR}/src/Restore_mdspan
+    ${CMAKE_SOURCE_DIR}/src/Taylor
     # for libracore
     ${CMAKE_SOURCE_DIR}/../src
     # for mdspan
@@ -169,6 +170,111 @@ if(BUILD_TESTING)
 endif()
 
 # add and build each APP
+set(APP_LIST Coyote Hummbee RoadRunner Dale Chip MSSplit SubMS TableInfo Asp Asp_mdspan Restore Restore_mdspan Acme Taylor)
+
+set (ACME_SOURCES
+  Acme/acme.cc
+  Acme/acme.h
+)
+
+set (ASP_SOURCES
+  Asp/asp.cc
+  Asp/asp.h
+)
+
+set (ASP_MDSPAN_SOURCES
+  Asp_mdspan/asp_mdspan.cc
+  Asp_mdspan/asp_mdspan.h
+)
+
+set (CHIP_SOURCES
+  Chip/chip.cc
+  Chip/chip.h
+)
+
+set (COYOTE_SOURCES
+  Coyote/coyote.cc
+  Coyote/coyote.h
+)
+
+set (DALE_SOURCES
+  Dale/dale.cc
+  Dale/dale.h
+)
+
+set (HUMMBEE_SOURCES
+  Hummbee/hummbee.cc
+  Hummbee/hummbee.h
+)
+
+set (MSSPLIT_SOURCES
+  MSSplit/mssplit.cc
+  MSSplit/mssplit.h
+)
+
+set (RESTORE_SOURCES
+  Restore/restore.cc
+  Restore/restore.h
+)
+
+set (RESTORE_MDSPAN_SOURCES
+  Restore_mdspan/restore_mdspan.cc
+  Restore_mdspan/restore_mdspan.h
+)
+
+set (ROADRUNNER_SOURCES
+  RoadRunner/roadrunner.cc
+  RoadRunner/roadrunner.h
+  # RoadRunner/DataBase.h
+  # RoadRunner/DataIterations.h
+  # RoadRunner/MakeComponents.h
+  # RoadRunner/rWeightor.h
+  # RoadRunner/ThreadCoordinator.h
+)
+
+set (SUBMS_SOURCES
+  SubMS/subms.cc
+  SubMS/subms.h
+)
+
+set (TABLEINFO_SOURCES
+  TableInfo/tableinfo.cc
+  TableInfo/tableinfo.h
+)
+
+# set(UTILITIES_SOURCES 
+  # Utilities/backup.cc
+  # Utilities/backup.h
+# )
+
+set(TAYLOR_SOURCES
+  Taylor/taylor.cc
+  Taylor/taylor.h
+)
+
+set (LIBRA_SOURCES
+  ${ACME_SOURCES}
+  ${ASP_SOURCES}
+  ${ASP_MDSPAN_SOURCES}
+  ${CHIP_SOURCES}
+  ${COYOTE_SOURCES}
+  ${HUMMBEE_SOURCES}
+  ${MSSPLIT_SOURCES}
+  ${RESTORE_SOURCES}
+  ${RESTORE_MDSPAN_SOURCES}
+  ${ROADRUNNER_SOURCES}
+  ${SUBMS_SOURCES}
+  ${TABLEINFO_SOURCES}
+  # ${UTILITIES_SOURCES}
+  ${DALE_SOURCES}
+  ${TAYLOR_SOURCES}
+)
+
+# add and build googletest
+if(Apps_BUILD_TESTS)
+  add_subdirectory(src/tests)
+endif()
+
 add_subdirectory(src)
 
 

@@ -313,13 +313,14 @@ TEST(DaleTest, UIFactory) {
   bool normalize_weight=false;
   bool restartUI=false;;
   bool interactive = false;
-  
+  string taylorWtName;
+
   UI(restartUI, argc, argv, interactive,
      imageName, weightImageName, sowImageName,
-     normtype, imType, 
+     normtype, imType,
      pblimit,
-     //psfcutoff, 
-     computePB);// normalize_weight);
+     //psfcutoff,
+     computePB, taylorWtName);// normalize_weight);
 }
 
 
