@@ -1,0 +1,78 @@
+# syntax=docker/dockerfile:1
+# Standalone LibRA Docker container - builds complete working LibRA environment
+FROM nvidia/cuda:12.9.0-devel-@CONTAINER_OS_BASE@
+
+ARG GIT_COMMIT_SHA=@GIT_COMMIT_SHA@
+ARG BUILD_DATE=@BUILD_DATE@
+ARG NPROC=@NPROC@
+
+LABEL git.commit.sha="${GIT_COMMIT_SHA}"
+LABEL build.date="${BUILD_DATE}"
+LABEL Author=pjaganna@nrao.edu
+LABEL Version=v2.0.0-standalone
+LABEL Description="LibRA Standalone Container - @CONTAINER_OS_DESCRIPTION@"
+
+WORKDIR /data
+
+@ROCKYLINUX_SETUP@
+
+@UBUNTU_SETUP@
+
+# Set up environment variables
+ENV PATH=/data/libra/install/bin:$PATH
+ENV LD_LIBRARY_PATH=/data/libra/install/lib:/usr/local/cuda-12.9/compat:$LD_LIBRARY_PATH
+ENV LIBRA_PATH=/data/libra
+ENV CCACHE_BASEDIR=/data/libra
+ENV CCACHE_COMPILERCHECK=content
+
+@ROCKYLINUX_ENV@
+
+# Copy workspace into container
+WORKDIR /data/libra
+COPY . /data/libra/
+
+# Initialize git submodules
+RUN git submodule update --init --recursive || echo "Warning: git submodule update failed or not needed"
+
+# Build LibRA
+RUN @SOURCE_GCC_TOOLSET@ \
+    mkdir -p build && cd build && \
+    cmake \
+        -DKokkos_CUDA_ARCH_NAME=@CONTAINER_CUDA_ARCH@ \
+        -DApps_BUILD_TESTS=OFF \
+        -DLIBRA_ENABLE_CUDA_BACKEND=ON \
+        .. && \
+    make -j${NPROC} && \
+    echo "" && \
+    echo "========================================" && \
+    echo "✓ LibRA Docker Container Built Successfully!" && \
+    echo "========================================" && \
+    echo "  OS: @CONTAINER_OS_DESCRIPTION@" && \
+    echo "  CUDA Arch: @CONTAINER_CUDA_ARCH@" && \
+    echo "  Install: /data/libra/install" && \
+    echo "  Apps: roadrunner hummbee coyote chip dale mssplit subms tableinfo" && \
+    echo "========================================"
+
+# Create container greeting script
+RUN echo '#!/bin/bash' > /usr/local/bin/libra-info && \
+    echo 'echo "========================================="' >> /usr/local/bin/libra-info && \
+    echo 'echo "LibRA Docker Container - Ready!"' >> /usr/local/bin/libra-info && \
+    echo 'echo "========================================="' >> /usr/local/bin/libra-info && \
+    echo 'echo "OS: @CONTAINER_OS_DESCRIPTION@"' >> /usr/local/bin/libra-info && \
+    echo 'echo "CUDA: 12.9 | Kokkos Arch: @CONTAINER_CUDA_ARCH@"' >> /usr/local/bin/libra-info && \
+    echo 'echo ""' >> /usr/local/bin/libra-info && \
+    echo 'echo "Available LibRA Applications:"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - roadrunner  : Radio interferometry imaging"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - hummbee     : Gridder application"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - coyote      : Data processing"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - chip, dale  : Additional utilities"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - mssplit     : Measurement set splitting"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - subms       : Sub-measurement set"' >> /usr/local/bin/libra-info && \
+    echo 'echo "  - tableinfo   : Table information"' >> /usr/local/bin/libra-info && \
+    echo 'echo ""' >> /usr/local/bin/libra-info && \
+    echo 'echo "Install Location: /data/libra/install"' >> /usr/local/bin/libra-info && \
+    echo 'echo "========================================="' >> /usr/local/bin/libra-info && \
+    chmod +x /usr/local/bin/libra-info
+
+# Show info on container start
+CMD ["/bin/bash", "-c", "libra-info && exec /bin/bash"]

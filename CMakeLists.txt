@@ -75,3 +75,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/components/Scripts.cmake)
 if(LIBRA_USE_EXODUS)
   include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/exodus.cmake)
 endif()
+
+# Container building - Needs to be here so Apps is created first.
+if(LIBRA_BUILD_DOCKER_CONTAINER OR LIBRA_BUILD_SINGULARITY_CONTAINER)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/container.cmake)
+endif()

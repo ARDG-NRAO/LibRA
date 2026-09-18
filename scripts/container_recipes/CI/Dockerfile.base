@@ -1,0 +1,31 @@
+# syntax=docker/dockerfile:1
+# Base container — CUDA version is arch-dependent, passed as build arg.
+ARG CUDA_VERSION=13.0.0
+FROM docker.io/nvidia/cuda:${CUDA_VERSION}-devel-rockylinux8 as base
+
+LABEL Author=pjaganna@nrao.edu
+LABEL Version=v1.0.0-base
+LABEL Description="LibRA Base Container with CUDA 13.0 and system dependencies"
+
+COPY scripts/container_recipes/CI/readline.pc /usr/lib64/pkgconfig/
+
+# Install system packages and development tools
+RUN dnf -y clean all \
+    && dnf -y install epel-release \
+    && dnf install -y dnf-plugins-core \
+    && dnf config-manager --set-enabled powertools \
+    && dnf -y install git cmake gcc-toolset-13 flex bison tar curl bzip2 make which \
+    && dnf -y install {readline,ncurses,blas,lapack,cfitsio,fftw,wcslib,gsl,eigen3,openmpi,python38}-devel \
+    && dnf clean all \
+    && echo 'source /opt/rh/gcc-toolset-13/enable' >> /etc/profile.d/gcc-toolset.sh
+
+ENV PATH=/opt/rh/gcc-toolset-13/root/usr/bin:/data/libra/install/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/rh/gcc-toolset-13/root/usr/lib64:/data/libra/install/lib:/usr/local/cuda/compat:$LD_LIBRARY_PATH
+ENV LIBRA_PATH=/data/libra
+
+COPY . /data/libra
+
+RUN nvcc --version \
+    && nvidia-smi || echo "GPU not available during build"
+
+CMD ["/bin/bash"]

@@ -2,16 +2,21 @@ workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "container-production"'
+    - if: '$CI_COMMIT_TAG'
     - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
     - if: '$CI_COMMIT_MESSAGE =~ /SPACK BUILD/'
     - if: '$FORCE_CI == "true"'
     - if: '$FORCE_SPACK == "true"'
+    - if: '$FORCE_CONTAINER == "true"'
     - when: never
 
 stages:
   - build
   - test
   - spack-test
+  - container
+  - deploy
 
 variables:
   CCACHE_BASEDIR: $CI_PROJECT_DIR
@@ -28,381 +33,610 @@ cache:
       - "${CI_BUILDS_DIR}/spack-cache"
     when: on_success
 
-# Check ccache integration first
-check-ccache:
-  stage: build
-  script:
-    - |
-      echo "=== Checking ccache integration ==="
-      which ccache || echo "ccache not found in PATH"
-      ccache --version || echo "ccache not working"
-      echo "CMAKE_CXX_COMPILER_LAUNCHER: ${CMAKE_CXX_COMPILER_LAUNCHER:-not set}"
-      echo "CMAKE_C_COMPILER_LAUNCHER: ${CMAKE_C_COMPILER_LAUNCHER:-not set}"
-      echo "=== Checking Python version ==="
-      python3 --version || echo "python3 not found"
-      python3.11 --version || echo "python3.11 not found"
-      /usr/bin/python3.11 --version || echo "/usr/bin/python3.11 not found"
-      echo "=== Checking system info ==="
-      cat /etc/redhat-release
-      nproc
-      df -h ${CI_BUILDS_DIR}
-  rules:
-    - when: manual
-  allow_failure: true
+# Retired: pure-shell build/test jobs. Container pipeline is now
+# production. Kept for reference, not executed.
+# # Check ccache integration first
+# check-ccache:
+#   stage: build
+#   script:
+#     - |
+#       echo "=== Checking ccache integration ==="
+#       which ccache || echo "ccache not found in PATH"
+#       ccache --version || echo "ccache not working"
+#       echo "CMAKE_CXX_COMPILER_LAUNCHER: ${CMAKE_CXX_COMPILER_LAUNCHER:-not set}"
+#       echo "CMAKE_C_COMPILER_LAUNCHER: ${CMAKE_C_COMPILER_LAUNCHER:-not set}"
+#       echo "=== Checking Python version ==="
+#       python3 --version || echo "python3 not found"
+#       python3.11 --version || echo "python3.11 not found"
+#       /usr/bin/python3.11 --version || echo "/usr/bin/python3.11 not found"
+#       echo "=== Checking system info ==="
+#       cat /etc/redhat-release
+#       nproc
+#       df -h ${CI_BUILDS_DIR}
+#   rules:
+#     - when: manual
+#   allow_failure: true
 
-build-job:
-  stage: build
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - "**/*"
-        - "!README.md"
-        - "!scripts/**/*"
-        - "!doc/**/*"
-        - "!spack-repo/**/*"
-    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
-    - if: '$FORCE_CI == "true"'
-    - when: never
-  before_script:
-    # Ensure submodules are in sync with the index
-    - git submodule sync
-    - git submodule update --init --recursive
-    - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_COMPILERCHECK=content
-    - export CCACHE_MAXSIZE=5G
-    - mkdir -p $CCACHE_DIR
-    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
-    - ccache --show-stats || true
-    - git clean -ffdx
-    # Persistent Python virtual environment, reused across pipelines on this
-    # runner.
-    - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
-    - python3.11 --version
-    - if [ ! -d "${BUILD_VENV_DIR}" ]; then python3.11 -m venv "${BUILD_VENV_DIR}"; fi
-    - source "${BUILD_VENV_DIR}/bin/activate"
-    - pip install --upgrade pip setuptools wheel # prevents pip and setuptools warnings.
-    - pip install --upgrade pytest numpy # checks latest pytest and numpy which are deps.
-    - python --version
-    - which python
-  script:
-    - echo "=== Compiling with ccache integration ==="
-    - source "${BUILD_VENV_DIR}/bin/activate"
-    - echo $PATH
-    - python --version
-    - nvidia-smi
-    - which nvcc
-    - mkdir -p build
-    - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
-    - make
-  after_script:
-    - echo "=== ccache statistics ==="
-    - ccache --show-stats || true
-    - ccache --show-config || true
+# build-job:
+#   stage: build
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#       changes:
+#         - "**/*"
+#         - "!README.md"
+#         - "!scripts/**/*"
+#         - "!doc/**/*"
+#         - "!spack-repo/**/*"
+#     - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+#     - if: '$FORCE_CI == "true"'
+#     - when: never
+#   before_script:
+#     # Ensure submodules are in sync with the index
+#     - git submodule sync
+#     - git submodule update --init --recursive
+#     - export CCACHE_BASEDIR="$PWD"
+#     - export CCACHE_COMPILERCHECK=content
+#     - export CCACHE_MAXSIZE=5G
+#     - mkdir -p $CCACHE_DIR
+#     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
+#     - ccache --show-stats || true
+#     - git clean -ffdx
+#     # Persistent Python virtual environment, reused across pipelines on this
+#     # runner.
+#     - export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
+#     - python3.11 --version
+#     - if [ ! -d "${BUILD_VENV_DIR}" ]; then python3.11 -m venv "${BUILD_VENV_DIR}"; fi
+#     - source "${BUILD_VENV_DIR}/bin/activate"
+#     - pip install --upgrade pip setuptools wheel # prevents pip and setuptools warnings.
+#     - pip install --upgrade pytest numpy # checks latest pytest and numpy which are deps.
+#     - python --version
+#     - which python
+#   script:
+#     - echo "=== Compiling with ccache integration ==="
+#     - source "${BUILD_VENV_DIR}/bin/activate"
+#     - echo $PATH
+#     - python --version
+#     - nvidia-smi
+#     - which nvcc
+#     - mkdir -p build
+#     - cd build
+#     - time cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
+#     - time make
+#   after_script:
+#     - echo "=== ccache statistics ==="
+#     - ccache --show-stats || true
+#     - ccache --show-config || true
 
-test-job:
-  stage: test
-  needs:
-    - job: build-job
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - "**/*"
-        - "!README.md"
-        - "!scripts/**/*"
-        - "!doc/**/*"
-        - "!spack-repo/**/*"
-    - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
-    - if: '$FORCE_CI == "true"'
-    - when: never
-  script: |
-    # Ensure we are in the project root directory
-    cd "${CI_PROJECT_DIR}"
-    echo "Current working directory: $PWD"
-    base_path=$PWD
+# test-job:
+#   stage: test
+#   needs:
+#     - job: build-job
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#       changes:
+#         - "**/*"
+#         - "!README.md"
+#         - "!scripts/**/*"
+#         - "!doc/**/*"
+#         - "!spack-repo/**/*"
+#     - if: '$CI_COMMIT_MESSAGE =~ /CI BUILD/'
+#     - if: '$FORCE_CI == "true"'
+#     - when: never
+#   script: |
+#     # Ensure we are in the project root directory
+#     cd "${CI_PROJECT_DIR}"
+#     echo "Current working directory: $PWD"
+#     base_path=$PWD
 
-    export LD_LIBRARY_PATH="${base_path}/install/lib:${LD_LIBRARY_PATH:-}"
-    export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
-    export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
-    source "${BUILD_VENV_DIR}/bin/activate"
-    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-    echo "PYTHONPATH: $PYTHONPATH"
+#     export LD_LIBRARY_PATH="${base_path}/install/lib:${LD_LIBRARY_PATH:-}"
+#     export PYTHONPATH="${base_path}/install/lib:${PYTHONPATH:-}"
+#     export BUILD_VENV_DIR="${CI_BUILDS_DIR}/build_venv_persistent"
+#     source "${BUILD_VENV_DIR}/bin/activate"
+#     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+#     echo "PYTHONPATH: $PYTHONPATH"
 
-    mkdir -p ${base_path}/reports
+#     mkdir -p ${base_path}/reports
 
-    # Ensure libra-python is importable for pytest
-    export PYTHONPATH="${base_path}/libra-python:${PYTHONPATH:-}"
+#     # Ensure libra-python is importable for pytest
+#     export PYTHONPATH="${base_path}/libra-python:${PYTHONPATH:-}"
 
-    # Symlink test data if needed for both python and cpp tests
-    cd ${base_path}/libra-python
-    if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "gold_standard" ]; then
-      ln -sf ../../apps/src/tests/gold_standard gold_standard
-      echo "Symlinked test data for tests"
-    fi
+#     # Symlink test data if needed for both python and cpp tests
+#     cd ${base_path}/libra-python
+#     if [ -d "${base_path}/apps/src/tests/gold_standard" ] && [ ! -e "gold_standard" ]; then
+#       ln -sf ../../apps/src/tests/gold_standard gold_standard
+#       echo "Symlinked test data for tests"
+#     fi
 
-    # --- C++ GTest section via ctest ---
-    # The top-level CMakeLists.txt emits build/Libra/CTestTestfile.cmake that
-    # recurses into both src/ and apps/ ExternalProject build trees.
-    # -R '^test_' picks up only the new-style gtest binaries (test_dale,
-    # test_libracoretypes, ...) and skips the legacy t<Name> tests in src/.
-    ctest --test-dir ${base_path}/build/Libra \
-          -R '^test_' \
-          --output-on-failure \
-          --output-junit "${base_path}/reports/cpp_ctest_report.xml"
+#     # --- C++ GTest section via ctest ---
+#     # The top-level CMakeLists.txt emits build/Libra/CTestTestfile.cmake that
+#     # recurses into both src/ and apps/ ExternalProject build trees.
+#     # -R '^test_' picks up only the new-style gtest binaries (test_dale,
+#     # test_libracoretypes, ...) and skips the legacy t<Name> tests in src/.
+#     ctest --test-dir ${base_path}/build/Libra \
+#           -R '^test_' \
+#           --output-on-failure \
+#           --output-junit "${base_path}/reports/cpp_ctest_report.xml"
 
-    # --- Python pytest section ---
-    cd "${base_path}/apps/src/tests/"
-    pytest ${base_path}/libra-python/tests --junitxml=${base_path}/reports/pytest_report.xml -v
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - ${CI_PROJECT_DIR}/reports/pytest_report.xml
-        - ${CI_PROJECT_DIR}/reports/cpp_ctest_report.xml
-    expire_in: 1 week
-  after_script: |
-    echo "=== Test job completed ==="
-    echo "Current working directory: $PWD"
-    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-    echo "PYTHONPATH: $PYTHONPATH"
-    echo "Python version: $(python --version)"
-    echo "CMake version: $(cmake --version)"
-    echo "ccache stats:"
-    ccache --show-stats || true
-    echo "=== Persistent venv retained for reuse across pipelines ==="
-    rm -rf ${base_path}/reports
-    rm -rf ${base_path}/cpp_test_dir
-  timeout: 1h
 
-spack-test:
-  needs: []
-  stage: spack-test
-  variables:
-    SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-persistent"
-    SPACK_TEST_BASE_ENV: "spack-test-base"
-    LIBRA_TEST_ENV: "libra-test-${CI_PIPELINE_ID}"
-    SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes:
-        - spack-repo/**/*
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - spack-repo/**/*
-    - when: manual
-      allow_failure: true
-  before_script:
-    # Ensure submodules are in sync with the index
-    - git submodule sync
-    - git submodule update --init --recursive
-    - echo "=== RHEL8 Spack Setup ==="
-    - cat /etc/redhat-release
+#     # --- Python pytest section ---
+#     cd "${base_path}/apps/src/tests/"
+#     pytest ${base_path}/libra-python/tests --junitxml=${base_path}/reports/pytest_report.xml -v
+#   artifacts:
+#     when: always
+#     reports:
+#       junit:
+#         - ${CI_PROJECT_DIR}/reports/pytest_report.xml
+#         - ${CI_PROJECT_DIR}/reports/cpp_ctest_report.xml
+#     expire_in: 1 week
+#   after_script: |
+#     echo "=== Test job completed ==="
+#     echo "Current working directory: $PWD"
+#     echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+#     echo "PYTHONPATH: $PYTHONPATH"
+#     echo "Python version: $(python --version)"
+#     echo "CMake version: $(cmake --version)"
+#     echo "ccache stats:"
+#     ccache --show-stats || true
+#     echo "=== Persistent venv retained for reuse across pipelines ==="
+#     rm -rf ${base_path}/reports
+#     rm -rf ${base_path}/cpp_test_dir
+#   timeout: 1h
 
-    - mkdir -p ${SPACK_ROOT}
-    - mkdir -p ${SPACK_CACHE_DIR}
-    - mkdir -p ${CI_BUILDS_DIR}/spack-installs
+# spack-test:
+#   needs: []
+#   stage: spack-test
+#   variables:
+#     SPACK_ROOT: "${CI_BUILDS_DIR}/spack-installs/spack-persistent"
+#     SPACK_TEST_BASE_ENV: "spack-test-base"
+#     LIBRA_TEST_ENV: "libra-test-${CI_PIPELINE_ID}"
+#     SPACK_CACHE_DIR: "${CI_BUILDS_DIR}/spack-cache"
+#   rules:
+#     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#       changes:
+#         - spack-repo/**/*
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+#       changes:
+#         - spack-repo/**/*
+#     - when: manual
+#       allow_failure: true
+#   before_script:
+#     # Ensure submodules are in sync with the index
+#     - git submodule sync
+#     - git submodule update --init --recursive
+#     - echo "=== RHEL8 Spack Setup ==="
+#     - cat /etc/redhat-release
 
-    # Setup ccache for spack
-    - export CCACHE_DIR="${SPACK_CACHE_DIR}/ccache"
-    - export CCACHE_MAXSIZE=5G
-    - mkdir -p ${CCACHE_DIR}
+#     - mkdir -p ${SPACK_ROOT}
+#     - mkdir -p ${SPACK_CACHE_DIR}
+#     - mkdir -p ${CI_BUILDS_DIR}/spack-installs
 
-    # Create or reuse persistent Python virtual environment for spack
-    - export SPACK_VENV_DIR="${CI_BUILDS_DIR}/spack_venv_persistent"
-    - python3.11 --version
-    - |
-      if [ ! -d "${SPACK_VENV_DIR}" ]; then
-        echo "Creating persistent spack Python venv..."
-        python3.11 -m venv "${SPACK_VENV_DIR}"
-        source "${SPACK_VENV_DIR}/bin/activate"
-        pip install --upgrade pip setuptools wheel
-      else
-        echo "Using existing persistent spack Python venv..."
-        source "${SPACK_VENV_DIR}/bin/activate"
-      fi
-    - export PYTHON_CMD=$(which python)
-    - ${PYTHON_CMD} --version
+#     # Setup ccache for spack
+#     - export CCACHE_DIR="${SPACK_CACHE_DIR}/ccache"
+#     - export CCACHE_MAXSIZE=5G
+#     - mkdir -p ${CCACHE_DIR}
 
-    # Clone spack if not exists
-    - |
-      if [ ! -d "${SPACK_ROOT}/.git" ]; then
-        echo "Cloning fresh spack..."
-          git clone --depth=1 --branch v1.0.0 https://github.com/spack/spack.git ${SPACK_ROOT}
-      else
-        echo "Using existing spack installation"
-        cd ${SPACK_ROOT} && git pull
-      fi
+#     # Create or reuse persistent Python virtual environment for spack
+#     - export SPACK_VENV_DIR="${CI_BUILDS_DIR}/spack_venv_persistent"
+#     - python3.11 --version
+#     - |
+#       if [ ! -d "${SPACK_VENV_DIR}" ]; then
+#         echo "Creating persistent spack Python venv..."
+#         python3.11 -m venv "${SPACK_VENV_DIR}"
+#         source "${SPACK_VENV_DIR}/bin/activate"
+#         pip install --upgrade pip setuptools wheel
+#       else
+#         echo "Using existing persistent spack Python venv..."
+#         source "${SPACK_VENV_DIR}/bin/activate"
+#       fi
+#     - export PYTHON_CMD=$(which python)
+#     - ${PYTHON_CMD} --version
 
-    # Setup spack environment
-    - source ${SPACK_ROOT}/share/spack/setup-env.sh
+#     # Clone spack if not exists
+#     - |
+#       if [ ! -d "${SPACK_ROOT}/.git" ]; then
+#         echo "Cloning fresh spack..."
+#           git clone --depth=1 --branch v1.0.0 https://github.com/spack/spack.git ${SPACK_ROOT}
+#       else
+#         echo "Using existing spack installation"
+#         cd ${SPACK_ROOT} && git pull
+#       fi
 
-    # Use a minimal/vanilla spack config for RHEL8 (store config in ${SPACK_ROOT}/.spack, not ~/.spack)
-    - mkdir -p ${SPACK_ROOT}/.spack
-    - |
-      cat > ${SPACK_ROOT}/.spack/config.yaml << EOF
-      config: {}
-      EOF
-    - export SPACK_USER_CONFIG_PATH=${SPACK_ROOT}/.spack
+#     # Setup spack environment
+#     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
-    # Show spack info
-    - spack debug report
-  script:
-    - source "${SPACK_VENV_DIR}/bin/activate"
-    - source ${SPACK_ROOT}/share/spack/setup-env.sh
+#     # Use a minimal/vanilla spack config for RHEL8 (store config in ${SPACK_ROOT}/.spack, not ~/.spack)
+#     - mkdir -p ${SPACK_ROOT}/.spack
+#     - |
+#       cat > ${SPACK_ROOT}/.spack/config.yaml << EOF
+#       config: {}
+#       EOF
+#     - export SPACK_USER_CONFIG_PATH=${SPACK_ROOT}/.spack
 
-    # Add custom repo only if not already added
-    - |
-      if ! spack repo list | grep -q "${CI_PROJECT_DIR}/spack-repo"; then
-        spack repo add ${CI_PROJECT_DIR}/spack-repo
-      else
-        echo "Repo already added: ${CI_PROJECT_DIR}/spack-repo"
-      fi
-    - spack repo list
-    - spack list libra
+#     # Show spack info
+#     - spack debug report
+#   script:
+#     - source "${SPACK_VENV_DIR}/bin/activate"
+#     - source ${SPACK_ROOT}/share/spack/setup-env.sh
 
-    # Check if persistent base environment exists, create if not
-    - |
-      if spack env list | grep -q "^${SPACK_TEST_BASE_ENV}$"; then
-        echo "Persistent base environment ${SPACK_TEST_BASE_ENV} already exists, reusing it"
-      else
-        echo "Creating persistent base environment ${SPACK_TEST_BASE_ENV}..."
-        spack env create ${SPACK_TEST_BASE_ENV}
-        spack env activate ${SPACK_TEST_BASE_ENV}
+#     # Add custom repo only if not already added
+#     - |
+#       if ! spack repo list | grep -q "${CI_PROJECT_DIR}/spack-repo"; then
+#         spack repo add ${CI_PROJECT_DIR}/spack-repo
+#       else
+#         echo "Repo already added: ${CI_PROJECT_DIR}/spack-repo"
+#       fi
+#     - spack repo list
+#     - spack list libra
+
+#     # Check if persistent base environment exists, create if not
+#     - |
+#       if spack env list | grep -q "^${SPACK_TEST_BASE_ENV}$"; then
+#         echo "Persistent base environment ${SPACK_TEST_BASE_ENV} already exists, reusing it"
+#       else
+#         echo "Creating persistent base environment ${SPACK_TEST_BASE_ENV}..."
+#         spack env create ${SPACK_TEST_BASE_ENV}
+#         spack env activate ${SPACK_TEST_BASE_ENV}
         
-        # Add all dependencies to base environment (everything except libra)
-        spack add kokkos+cuda+cuda_lambda+wrapper cuda_arch=70
-        spack add casacore~python
-        spack add cuda@12.2
-        spack add fftw@3.3.10:+openmp
-        spack add hpg@3.0.3:+cuda
-        spack add parafeed@1.1.4:
-        spack add py-pybind11@2.10.2:
-        spack add googletest@1.14.0:
-        spack add cmake@3.18:
-        spack add pkgconfig
-        spack add cfitsio
-        spack add blas
-        spack add lapack
-        spack add boost
-        spack add wcslib
-        spack add readline
-        spack add ncurses
+#         # Add all dependencies to base environment (everything except libra)
+#         spack add kokkos+cuda+cuda_lambda+wrapper cuda_arch=70
+#         spack add casacore~python
+#         spack add cuda@12.2
+#         spack add fftw@3.3.10:+openmp
+#         spack add hpg@3.0.3:+cuda
+#         spack add parafeed@1.1.4:
+#         spack add py-pybind11@2.10.2:
+#         spack add googletest@1.14.0:
+#         spack add cmake@3.18:
+#         spack add pkgconfig
+#         spack add cfitsio
+#         spack add blas
+#         spack add lapack
+#         spack add boost
+#         spack add wcslib
+#         spack add readline
+#         spack add ncurses
         
-        # Concretize and install base environment
-        spack concretize -f
-        spack install --fail-fast --verbose --no-checksum
+#         # Concretize and install base environment
+#         spack concretize -f
+#         spack install --fail-fast --verbose --no-checksum
         
-        echo "Persistent base environment ${SPACK_TEST_BASE_ENV} created and installed"
-      fi
+#         echo "Persistent base environment ${SPACK_TEST_BASE_ENV} created and installed"
+#       fi
 
-    # Create job-specific libra test environment
-    - spack env create ${LIBRA_TEST_ENV}
-    - spack env activate ${LIBRA_TEST_ENV}
+#     # Create job-specific libra test environment
+#     - spack env create ${LIBRA_TEST_ENV}
+#     - spack env activate ${LIBRA_TEST_ENV}
     
-    # Add only libra to this environment with appropriate CUDA constraint
+#     # Add only libra to this environment with appropriate CUDA constraint
+#     - |
+#       GCC_VERSION=$(gcc --version | head -n1 | grep -oP 'gcc \(.*\) \K[0-9]+')
+#       if [ "$GCC_VERSION" = "8" ]; then
+#         echo "Using CUDA 12.2 constraint for GCC 8.x"
+#         spack add libra+cuda ^cuda@12.2
+#       else
+#         echo "Using latest CUDA for GCC $GCC_VERSION"
+#         spack add libra+cuda
+#       fi
+
+#     # Concretize and install libra (fresh build each time)
+#     - spack concretize -f
+#     - spack install --fail-fast --verbose --no-checksum --no-cache
+
+#     # Verify installation
+#     - spack find libra
+#     - spack find --deps libra
+#   after_script: |
+#     if [ -d "${SPACK_VENV_DIR}" ]; then
+#       source "${SPACK_VENV_DIR}/bin/activate"
+#       source ${SPACK_ROOT}/share/spack/setup-env.sh
+#     fi
+
+#     if [ "$CI_JOB_STATUS" = "success" ]; then
+#       echo "=== Build succeeded - cleaning up job-specific test environment ==="
+#       spack env remove --yes-to-all ${LIBRA_TEST_ENV} || true
+#       echo "Spack environment ${LIBRA_TEST_ENV} removed"
+#       echo "Persistent base environment ${SPACK_TEST_BASE_ENV} preserved for future runs"
+#     else
+#       echo "=== Build failed - preserving test environment for debugging ==="
+#       echo "Test environment preserved: ${LIBRA_TEST_ENV}"
+#       echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${LIBRA_TEST_ENV}"
+#     fi
+#   artifacts:
+#     when: always
+#     paths:
+#       - ${SPACK_CACHE_DIR}
+#     expire_in: 1 year
+#   timeout: 3h
+
+# # Manual jobs (simplified)
+# manual-trigger:
+#   stage: build
+#   before_script:
+#     # Ensure submodules are in sync with the index
+#     - git submodule sync
+#     - git submodule update --init --recursive
+#   script:
+#     - echo "Manual full build trigger initiated..."
+#     - export CCACHE_BASEDIR="$PWD"
+#     - export CCACHE_COMPILERCHECK=content
+#     - export CCACHE_MAXSIZE=2G
+#     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
+#     - mkdir -p $CCACHE_DIR
+#     - ccache --show-stats || true
+#     - git clean -ffdx
+#     - mkdir -p build
+#     - cd build
+#     - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
+#     - make -j$(nproc)
+#     - ccache --show-stats || true
+#   when: manual
+#   only:
+#     - branches
+#   allow_failure: true
+
+# manual-cpu-only:
+#   stage: build
+#   rules:
+#     - when: manual
+#   allow_failure: true
+#   before_script:
+#     # Ensure submodules are in sync with the index
+#     - git submodule sync
+#     - git submodule update --init --recursive
+#     - export CCACHE_BASEDIR="$PWD"
+#     - export CCACHE_COMPILERCHECK=content
+#     - export CCACHE_MAXSIZE=5G
+#     - mkdir -p $CCACHE_DIR
+#     - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
+#     - ccache --show-stats || true
+#     - git clean -ffdx
+#   script:
+#     - echo "=== CPU-only build with LIBRA_DISABLE_CUDA=ON ==="
+#     - echo $PATH
+#     - echo "=== System Info (CPU-only build) ==="
+#     - nproc
+#     - echo "=== Building without CUDA ==="
+#     - mkdir -p build
+#     - cd build
+#     - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DLIBRA_DISABLE_CUDA=ON ..
+#     - make -j$(nproc)
+#   after_script:
+#     - echo "=== ccache statistics ==="
+#     - ccache --show-stats || true
+#     - ccache --show-config || true
+
+# manual-spack:
+#   extends: spack-test
+#   when: manual
+#   rules:
+#     - when: manual
+#   allow_failure: true
+
+# =============================================================================
+# Container Build Jobs (production pipeline)
+# Run on existing shell runner against rootless Docker.
+# Staged: base (no arch) -> deps (arch matrix) -> components (arch matrix) -> tests (arch matrix)
+# Each stage only fires when its inputs change, or when FORCE_CONTAINER=true.
+# VOLTA70 builds automatically on changes; AMPERE80/HOPPER90 are manual
+# (when: manual, allow_failure: true) on the container-production branch,
+# triggered from the pipeline UI when needed.
+# Requires GitLab CI variables: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN
+# Images are tagged by arch only — no :latest to avoid ambiguity.
+# =============================================================================
+
+.container-common:
+  stage: container
+  cache: []
+  variables:
+    DOCKERHUB_ORG: "ardgnrao"
+    DOCKER_BUILDKIT: "1"
+  before_script:
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    # buildx with docker-container driver is required for registry-mode cache export
+    - docker buildx create --use --name libra-builder --driver docker-container 2>/dev/null || docker buildx use libra-builder
+    - docker buildx inspect --bootstrap
+    - git submodule sync
+    - git submodule update --init --recursive
+
+# base is per-arch because CUDA version compatibility is arch-dependent:
+#   volta70  -> cuda 12.9.1   (V100 max supported)
+#   ampere80 -> cuda 13.0.0
+#   hopper90 -> cuda 13.0.0
+container-base:
+  extends: .container-common
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH != "VOLTA70"'
+      when: manual
+      allow_failure: true
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.base
+        - scripts/container_recipes/CI/readline.pc
+    - if: '$CI_COMMIT_BRANCH == "main" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.base
+        - scripts/container_recipes/CI/readline.pc
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.base
+        - scripts/container_recipes/CI/readline.pc
+    - if: '$FORCE_CONTAINER == "true"'
+    - when: never
+  parallel:
+    matrix:
+      - CUDA_ARCH: VOLTA70
+        CUDA_VERSION: "12.9.1"
+      - CUDA_ARCH: AMPERE80
+        CUDA_VERSION: "13.0.0"
+      - CUDA_ARCH: HOPPER90
+        CUDA_VERSION: "13.0.0"
+  script:
+    - ARCH_TAG=$(echo ${CUDA_ARCH} | tr '[:upper:]' '[:lower:]')
     - |
-      GCC_VERSION=$(gcc --version | head -n1 | grep -oP 'gcc \(.*\) \K[0-9]+')
-      if [ "$GCC_VERSION" = "8" ]; then
-        echo "Using CUDA 12.2 constraint for GCC 8.x"
-        spack add libra+cuda ^cuda@12.2
-      else
-        echo "Using latest CUDA for GCC $GCC_VERSION"
-        spack add libra+cuda
-      fi
+      time docker buildx build \
+        --build-arg CUDA_VERSION=${CUDA_VERSION} \
+        --cache-from type=registry,ref=${DOCKERHUB_ORG}/libra-base:${ARCH_TAG}-buildcache \
+        --cache-to type=registry,ref=${DOCKERHUB_ORG}/libra-base:${ARCH_TAG}-buildcache,mode=max \
+        -f scripts/container_recipes/CI/Dockerfile.base \
+        -t ${DOCKERHUB_ORG}/libra-base:${ARCH_TAG} \
+        -t ${DOCKERHUB_ORG}/libra-base:${ARCH_TAG}-${CI_COMMIT_SHORT_SHA} \
+        --push \
+        .
 
-    # Concretize and install libra (fresh build each time)
-    - spack concretize -f
-    - spack install --fail-fast --verbose --no-checksum --no-cache
-
-    # Verify installation
-    - spack find libra
-    - spack find --deps libra
-  after_script: |
-    if [ -d "${SPACK_VENV_DIR}" ]; then
-      source "${SPACK_VENV_DIR}/bin/activate"
-      source ${SPACK_ROOT}/share/spack/setup-env.sh
-    fi
-
-    if [ "$CI_JOB_STATUS" = "success" ]; then
-      echo "=== Build succeeded - cleaning up job-specific test environment ==="
-      spack env remove --yes-to-all ${LIBRA_TEST_ENV} || true
-      echo "Spack environment ${LIBRA_TEST_ENV} removed"
-      echo "Persistent base environment ${SPACK_TEST_BASE_ENV} preserved for future runs"
-    else
-      echo "=== Build failed - preserving test environment for debugging ==="
-      echo "Test environment preserved: ${LIBRA_TEST_ENV}"
-      echo "To debug: source ${SPACK_ROOT}/share/spack/setup-env.sh && spack env activate ${LIBRA_TEST_ENV}"
-    fi
-  artifacts:
-    when: always
-    paths:
-      - ${SPACK_CACHE_DIR}
-    expire_in: 1 year
-  timeout: 3h
-
-# Manual jobs (simplified)
-manual-trigger:
-  stage: build
-  before_script:
-    # Ensure submodules are in sync with the index
-    - git submodule sync
-    - git submodule update --init --recursive
-  script:
-    - echo "Manual full build trigger initiated..."
-    - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_COMPILERCHECK=content
-    - export CCACHE_MAXSIZE=2G
-    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache"; else echo "No active ccache found"; fi
-    - mkdir -p $CCACHE_DIR
-    - ccache --show-stats || true
-    - git clean -ffdx
-    - mkdir -p build
-    - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DKokkos_CUDA_ARCH_NAME=VOLTA70 ..
-    - make -j$(nproc)
-    - ccache --show-stats || true
-  when: manual
-  only:
-    - branches
-  allow_failure: true
-
-manual-cpu-only:
-  stage: build
+# deps is arch-specific — one job per arch via parallel matrix
+container-deps:
+  extends: .container-common
+  needs:
+    - job: container-base
+      optional: true
   rules:
-    - when: manual
-  allow_failure: true
-  before_script:
-    # Ensure submodules are in sync with the index
-    - git submodule sync
-    - git submodule update --init --recursive
-    - export CCACHE_BASEDIR="$PWD"
-    - export CCACHE_COMPILERCHECK=content
-    - export CCACHE_MAXSIZE=5G
-    - mkdir -p $CCACHE_DIR
-    - if [ -d "$CCACHE_DIR" ] && [ "$(ls -A $CCACHE_DIR)" ]; then echo "Using existing ccache with $(ccache --show-stats | grep 'files in cache')"; else echo "Starting with empty ccache"; fi
-    - ccache --show-stats || true
-    - git clean -ffdx
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH != "VOLTA70"'
+      when: manual
+      allow_failure: true
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.deps
+    - if: '$CI_COMMIT_BRANCH == "main" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.deps
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.deps
+    - if: '$FORCE_CONTAINER == "true"'
+    - when: never
+  parallel:
+    matrix:
+      - CUDA_ARCH: [VOLTA70, AMPERE80, HOPPER90]
   script:
-    - echo "=== CPU-only build with LIBRA_DISABLE_CUDA=ON ==="
-    - echo $PATH
-    - echo "=== System Info (CPU-only build) ==="
-    - nproc
-    - echo "=== Building without CUDA ==="
-    - mkdir -p build
-    - cd build
-    - cmake -DApps_BUILD_TESTS=ON -DNCORES=8 -DLIBRA_DISABLE_CUDA=ON ..
-    - make -j$(nproc)
-  after_script:
-    - echo "=== ccache statistics ==="
-    - ccache --show-stats || true
-    - ccache --show-config || true
+    - ARCH_TAG=$(echo ${CUDA_ARCH} | tr '[:upper:]' '[:lower:]')
+    - |
+      time docker buildx build \
+        --build-arg BASE_IMAGE=${DOCKERHUB_ORG}/libra-base:${ARCH_TAG} \
+        --build-arg CUDA_ARCH=${CUDA_ARCH} \
+        --build-arg nproc=8 \
+        --cache-from type=registry,ref=${DOCKERHUB_ORG}/libra-deps:${ARCH_TAG}-buildcache \
+        --cache-to type=registry,ref=${DOCKERHUB_ORG}/libra-deps:${ARCH_TAG}-buildcache,mode=max \
+        -f scripts/container_recipes/CI/Dockerfile.deps \
+        -t ${DOCKERHUB_ORG}/libra-deps:${ARCH_TAG} \
+        -t ${DOCKERHUB_ORG}/libra-deps:${ARCH_TAG}-${CI_COMMIT_SHORT_SHA} \
+        --push \
+        scripts/container_recipes/CI/
 
-manual-spack:
-  extends: spack-test
-  when: manual
+# components pulls the arch-matched deps image
+container-components:
+  extends: .container-common
+  needs:
+    - job: container-deps
+      optional: true
   rules:
-    - when: manual
-  allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH != "VOLTA70"'
+      when: manual
+      allow_failure: true
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - src/**/*
+        - apps/**/*
+        - cmake/**/*
+        - CMakeLists.txt
+        - scripts/container_recipes/CI/Dockerfile.components
+    - if: '$CI_COMMIT_BRANCH == "main" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - src/**/*
+        - apps/**/*
+        - cmake/**/*
+        - CMakeLists.txt
+        - scripts/container_recipes/CI/Dockerfile.components
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - src/**/*
+        - apps/**/*
+        - cmake/**/*
+        - CMakeLists.txt
+        - scripts/container_recipes/CI/Dockerfile.components
+    - if: '$FORCE_CONTAINER == "true"'
+    - when: never
+  parallel:
+    matrix:
+      - CUDA_ARCH: [VOLTA70, AMPERE80, HOPPER90]
+  script:
+    - ARCH_TAG=$(echo ${CUDA_ARCH} | tr '[:upper:]' '[:lower:]')
+    - |
+      time docker buildx build \
+        --build-arg nproc=8 \
+        --build-arg BASE_IMAGE=${DOCKERHUB_ORG}/libra-deps:${ARCH_TAG} \
+        --cache-from type=registry,ref=${DOCKERHUB_ORG}/libra-components:${ARCH_TAG}-buildcache \
+        --cache-to type=registry,ref=${DOCKERHUB_ORG}/libra-components:${ARCH_TAG}-buildcache,mode=max \
+        -f scripts/container_recipes/CI/Dockerfile.components \
+        -t ${DOCKERHUB_ORG}/libra-components:${ARCH_TAG} \
+        -t ${DOCKERHUB_ORG}/libra-components:${ARCH_TAG}-${CI_COMMIT_SHORT_SHA} \
+        --push \
+        scripts/container_recipes/CI/
+
+# tests pulls the arch-matched components image
+container-tests:
+  extends: .container-common
+  needs:
+    - job: container-components
+      optional: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH != "VOLTA70"'
+      when: manual
+      allow_failure: true
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.tests
+        - apps/src/tests/**/*
+        - libra-python/tests/**/*
+    - if: '$CI_COMMIT_BRANCH == "main" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.tests
+        - apps/src/tests/**/*
+        - libra-python/tests/**/*
+    - if: '$CI_COMMIT_BRANCH == "container-production" && $CUDA_ARCH == "VOLTA70"'
+      changes:
+        - scripts/container_recipes/CI/Dockerfile.tests
+        - apps/src/tests/**/*
+        - libra-python/tests/**/*
+    - if: '$FORCE_CONTAINER == "true"'
+    - when: never
+  parallel:
+    matrix:
+      - CUDA_ARCH: [VOLTA70, AMPERE80, HOPPER90]
+  script:
+    - ARCH_TAG=$(echo ${CUDA_ARCH} | tr '[:upper:]' '[:lower:]')
+    - |
+      time docker buildx build \
+        --build-arg BASE_IMAGE=${DOCKERHUB_ORG}/libra-components:${ARCH_TAG} \
+        --cache-from type=registry,ref=${DOCKERHUB_ORG}/libra-tests:${ARCH_TAG}-buildcache \
+        --cache-to type=registry,ref=${DOCKERHUB_ORG}/libra-tests:${ARCH_TAG}-buildcache,mode=max \
+        -f scripts/container_recipes/CI/Dockerfile.tests \
+        -t ${DOCKERHUB_ORG}/libra-tests:${ARCH_TAG} \
+        -t ${DOCKERHUB_ORG}/libra-tests:${ARCH_TAG}-${CI_COMMIT_SHORT_SHA} \
+        --push \
+        scripts/container_recipes/CI/
+
+# =============================================================================
+# Deploy: repackages the already-tested libra-tests:volta70 image onto a slim
+# CUDA runtime base (no compilers/headers/build tree). Only on a tag push.
+# Pushes a single tag, libra:volta-release, no history kept.
+# =============================================================================
+deploy-release:
+  extends: .container-common
+  stage: deploy
+  needs:
+    - job: container-tests
+      optional: true
+  rules:
+    - if: '$CI_COMMIT_TAG'
+  script:
+    - |
+      time docker buildx build \
+        --build-arg BASE_IMAGE=${DOCKERHUB_ORG}/libra-tests:volta70 \
+        -f scripts/container_recipes/CI/Dockerfile.release \
+        -t ${DOCKERHUB_ORG}/libra:volta-release \
+        --push \
+        scripts/container_recipes/CI/
 

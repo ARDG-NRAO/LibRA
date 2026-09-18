@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+# Dependencies container — builds all LibRA external dependencies.
+# Tagged per CUDA arch: ardgnrao/libra-deps:volta70, :ampere80, :hopper90
+ARG BASE_IMAGE=ardgnrao/libra-base:volta70
+FROM ${BASE_IMAGE} as dependencies
+
+LABEL Description="LibRA Dependencies Container"
+
+# ARCH values: VOLTA70, AMPERE80, AMPERE86, HOPPER90
+ARG CUDA_ARCH=VOLTA70
+ARG nproc=8
+
+WORKDIR /data/libra
+
+RUN mkdir -p build && cd build \
+    && cmake \
+         -DApps_BUILD_TESTS=ON \
+         -DKokkos_CUDA_ARCH_NAME=${CUDA_ARCH} \
+         ..
+
+RUN cd build \
+    && make -j${nproc} \
+        Kokkos \
+        FFTW_source \
+        FFTW_double \
+        FFTW_float \
+        Hpg \
+        Casacore \
+        Parafeed \
+        Pybind11 \
+        GTest
+
+CMD ["/bin/bash"]

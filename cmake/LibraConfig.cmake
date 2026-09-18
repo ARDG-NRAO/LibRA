@@ -69,6 +69,15 @@ option(BUILD_TESTING "Build and register C++ test suite (gmake test / ctest)" OF
 option(Apps_BUILD_TESTS_PYTHON "Build and register Python pytest tests" OFF)
 option(LIBRA_USE_SPACK "Enable use of Spack" OFF)
 option(LIBRA_ENABLE_CUDA_BACKEND "Enable CUDA acceleration" ON)
+option(LIBRA_BUILD_DOCKER_CONTAINER "Build Docker container during make" OFF)
+option(LIBRA_BUILD_SINGULARITY_CONTAINER "Build Singularity container during make" OFF)
+
+# Container build configuration. Consumed by cmake/dependencies/container.cmake
+# and the container guard at CMakeLists.txt:80; without these declarations
+# LIBRA_CONTAINER_OS is empty and the OS dispatch in container.cmake never
+# matches.
+set(LIBRA_CONTAINER_OS "rockylinux8" CACHE STRING "Container OS variant: rockylinux8 or ubuntu24.04")
+set(LIBRA_CONTAINER_CUDA_ARCH "" CACHE STRING "Override CUDA arch for container (empty = use Kokkos_CUDA_ARCH_NAME)")
 
 # Backward-compat alias: -DApps_BUILD_TESTS=ON still works
 if(Apps_BUILD_TESTS AND NOT BUILD_TESTING)
