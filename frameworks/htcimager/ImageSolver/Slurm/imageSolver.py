@@ -52,6 +52,9 @@ Parameters:
     --gridMem       : Memory footprint of gridding operations. Default: 10G (corresponds to 10 GB)
     --imdmMem       : Memory footprint of image domain operations. Default: 10G (same as above)
     --libra_install : Path to LibRA installation (binaries) directory (if different from {libra_home_install_path}).
+    --taylor        : Run the multi-SPW MTMFS Taylor-term pipeline (nterms>1) instead of
+                       single-term MFS. Requires -p/--partition (per-SPW split) and a
+                       parfile with nTerms, reffreq set. Default: off (single-term MFS).
 '''
 #    Following options are not printed in usage summary but are available in the interface
 #    for testing and specific use cases:
@@ -81,6 +84,7 @@ queuename     = ''
 usespackenv   = ''
 taccqueues    = ['gg', 'gh']
 verbose       = False
+taylor        = False
 
 
 args = sys.argv
@@ -89,7 +93,7 @@ if len(args) > 1:
     readArg = ''
     for arg in args:
         if readArg:
-            exec(f"{readArg} = '{arg}'")
+            globals()[readArg] = arg
             readArg = ''
         elif arg in ['-m','--msname']:
             readArg = 'msname'
@@ -119,6 +123,8 @@ if len(args) > 1:
             readArg = 'max_iter'
         elif arg in ['--libra_install']:
             readArg = 'libra_install'
+        elif arg in ['--taylor']:
+            taylor = True
         elif arg in ['-h','--help']:
             usage()
             sys.exit(0)
@@ -128,6 +134,9 @@ if len(args) > 1:
 else:
     usage()
     raise ValueError('No arguments.')
+
+if taylor and not partition:
+    raise ValueError('--taylor requires -p/--partition (per-SPW MS/CFCache split).')
 
 if not imagename or not msname or not cfcache:
     imagename, msname, cfcache = readParfile(parfile)
@@ -164,103 +173,248 @@ if nparts > 1:
     griddingResources += f' {array}'
     gnimagename = f','.join([f'{imagename}.n{i}' for i in range(nparts)])
 
-makePSFjid = sbatchComm(stageName = 'makePSF',
-                        resources = griddingResources,
-                        msname = msname,
-                        imagename = imagename,
-                        cfcache = cfcache,
-                        parfile = parfile,
-                        logdir = logdir,
-                        libra_install_path = libra_install,
-                        verbose = verbose)
+if not taylor:
+    makePSFjid = sbatchComm(stageName = 'makePSF',
+                            resources = griddingResources,
+                            msname = msname,
+                            imagename = imagename,
+                            cfcache = cfcache,
+                            parfile = parfile,
+                            logdir = logdir,
+                            libra_install_path = libra_install,
+                            verbose = verbose)
 
-stage = 'gatherPSF' if nparts > 1 else 'normalizePSF'
-gnpsfjid = sbatchComm(stageName = stage,
-                      resources = imdomainResources,
-                      dependencies = f'afterok:{makePSFjid}',
-                      imagename = gnimagename,
-                      parfile = parfile,
-                      logdir = logdir,
-                      libra_install_path = libra_install,
-                      verbose = verbose)
+    stage = 'gatherPSF' if nparts > 1 else 'normalizePSF'
+    gnpsfjid = sbatchComm(stageName = stage,
+                          resources = imdomainResources,
+                          dependencies = f'afterok:{makePSFjid}',
+                          imagename = gnimagename,
+                          parfile = parfile,
+                          logdir = logdir,
+                          libra_install_path = libra_install,
+                          verbose = verbose)
 
-makeDirtyImagejid = sbatchComm(stageName = 'makeDirtyImage',
-                               resources = griddingResources,
-                               dependencies = f'afterok:{gnpsfjid}',
-                               msname = msname,
-                               imagename = imagename,
-                               cfcache = cfcache,
-                               parfile = parfile,
-                               logdir = logdir,
-                               libra_install_path = libra_install,
-                               verbose = verbose)
+    makeDirtyImagejid = sbatchComm(stageName = 'makeDirtyImage',
+                                   resources = griddingResources,
+                                   dependencies = f'afterok:{gnpsfjid}',
+                                   msname = msname,
+                                   imagename = imagename,
+                                   cfcache = cfcache,
+                                   parfile = parfile,
+                                   logdir = logdir,
+                                   libra_install_path = libra_install,
+                                   verbose = verbose)
 
-stage = 'gather,normalize' if nparts > 1 else 'normalize'
-gathernormjid = sbatchComm(stageName = stage,
-                           resources = imdomainResources,
-                           dependencies = f'afterok:{makeDirtyImagejid}',
-                           imagename = gnimagename,
-                           parfile = parfile,
-                           logdir = logdir,
-                           waitForJob = True,
-                           libra_install_path = libra_install,
-                           verbose = verbose)
-
-notConverged = 1
-imcycle = 1
-while notConverged == 1 and imcycle < max_iter:
-    stage = f'runModelCycle.imcycle{imcycle:02}'
-    modelCyclejid = sbatchComm(stageName = stage,
-                               resources = imdomainResources,
-                               dependencies = '',
-                               imagename = imagename,
-                               parfile = parfile,
-                               logdir = logdir,
-                               libra_install_path = libra_install,
-                               verbose = verbose)
-
-    stage = f'runResidualCycle.imcycle{imcycle:02}'
-    residualCyclejid = sbatchComm(stageName = stage,
-                                  resources = griddingResources,
-                                  dependencies = f'afterok:{modelCyclejid}',
-                                  msname = msname,
-                                  imagename = imagename,
-                                  cfcache = cfcache,
-                                  parfile = parfile,
-                                  logdir = logdir,
-                                  libra_install_path = libra_install,
-                                  verbose = verbose)
-
-    # Remove image prior to gather step to avoid NOOP in chip (as part of job to avoid race condition)
-    if nparts > 1:
-        stage = f'gather,normalize.imcycle{imcycle:02}'
-        removeImage = f'{imagename}.residual'
-    else:
-        stage = f'normalize.imcycle{imcycle:02}'
-        removeImage = ''
+    stage = 'gather,normalize' if nparts > 1 else 'normalize'
     gathernormjid = sbatchComm(stageName = stage,
                                resources = imdomainResources,
-                               dependencies = f'afterok:{residualCyclejid}',
+                               dependencies = f'afterok:{makeDirtyImagejid}',
                                imagename = gnimagename,
                                parfile = parfile,
                                logdir = logdir,
                                waitForJob = True,
                                libra_install_path = libra_install,
-                               removeImage = removeImage,
                                verbose = verbose)
 
-    notConverged = checkConvergence(logdir)
-    imcycle += 1
+    notConverged = 1
+    imcycle = 1
+    while notConverged == 1 and imcycle < max_iter:
+        stage = f'runModelCycle.imcycle{imcycle:02}'
+        modelCyclejid = sbatchComm(stageName = stage,
+                                   resources = imdomainResources,
+                                   dependencies = '',
+                                   imagename = imagename,
+                                   parfile = parfile,
+                                   logdir = logdir,
+                                   libra_install_path = libra_install,
+                                   verbose = verbose)
 
-stage = 'restore'
-sbatchComm(stageName = stage,
-           resources = imdomainResources,
-           dependencies = '',
-           imagename = imagename,
-           parfile = parfile,
-           logdir = logdir,
-           libra_install_path = libra_install,
-           verbose = verbose)
+        stage = f'runResidualCycle.imcycle{imcycle:02}'
+        residualCyclejid = sbatchComm(stageName = stage,
+                                      resources = griddingResources,
+                                      dependencies = f'afterok:{modelCyclejid}',
+                                      msname = msname,
+                                      imagename = imagename,
+                                      cfcache = cfcache,
+                                      parfile = parfile,
+                                      logdir = logdir,
+                                      libra_install_path = libra_install,
+                                      verbose = verbose)
+
+        # Remove image prior to gather step to avoid NOOP in chip (as part of job to avoid race condition)
+        if nparts > 1:
+            stage = f'gather,normalize.imcycle{imcycle:02}'
+            removeImage = f'{imagename}.residual'
+        else:
+            stage = f'normalize.imcycle{imcycle:02}'
+            removeImage = ''
+        gathernormjid = sbatchComm(stageName = stage,
+                                   resources = imdomainResources,
+                                   dependencies = f'afterok:{residualCyclejid}',
+                                   imagename = gnimagename,
+                                   parfile = parfile,
+                                   logdir = logdir,
+                                   waitForJob = True,
+                                   libra_install_path = libra_install,
+                                   removeImage = removeImage,
+                                   verbose = verbose)
+
+        notConverged = checkConvergence(logdir)
+        imcycle += 1
+
+    stage = 'restore'
+    sbatchComm(stageName = stage,
+               resources = imdomainResources,
+               dependencies = '',
+               imagename = imagename,
+               parfile = parfile,
+               logdir = logdir,
+               libra_install_path = libra_install,
+               verbose = verbose)
+
+else:
+    # Multi-SPW MTMFS Taylor pipeline (nterms>1). Stage sequence and CLI
+    # argument construction ported directly from the validated
+    # scripts/run_taylor_fixed.py (TaylorPipeline.initial_setup/major_cycle/
+    # final_restore) - the math is unchanged, only its execution shape (one
+    # sbatch step per stage, instead of in-process method calls).
+    perSpwImagenames = [f'{imagename}.n{i}' for i in range(nparts)]
+    spwGatherImagelist = ','.join(perSpwImagenames)
+
+    # 1. Build per-SPW cfcaches (coyote: dryrun then fillcf)
+    coyoteDryrunjid = sbatchComm(stageName = 'coyote', resources = griddingResources,
+                                 msname = msname, cfcache = cfcache, imagename = imagename,
+                                 parfile = parfile, logdir = logdir,
+                                 libra_install_path = libra_install, verbose = verbose,
+                                 imtypeArg = 'dryrun')
+    coyoteFillcfjid = sbatchComm(stageName = 'coyote', resources = griddingResources,
+                                 dependencies = f'afterok:{coyoteDryrunjid}',
+                                 msname = msname, cfcache = cfcache, imagename = imagename,
+                                 parfile = parfile, logdir = logdir,
+                                 libra_install_path = libra_install, verbose = verbose,
+                                 imtypeArg = 'fillcf')
+
+    # 2. Per-SPW psf, weight, residual (array jobs)
+    psfjid = sbatchComm(stageName = 'psf', resources = griddingResources,
+                        dependencies = f'afterok:{coyoteFillcfjid}',
+                        msname = msname, imagename = imagename, cfcache = cfcache,
+                        parfile = parfile, logdir = logdir,
+                        libra_install_path = libra_install, verbose = verbose)
+    weightjid = sbatchComm(stageName = 'weight', resources = griddingResources,
+                           dependencies = f'afterok:{coyoteFillcfjid}',
+                           msname = msname, imagename = imagename, cfcache = cfcache,
+                           parfile = parfile, logdir = logdir,
+                           libra_install_path = libra_install, verbose = verbose)
+
+    # 3. dale taylorpsf (writes PSF peak to .taylorwt); the taylor app's own
+    #    cube2taylor_sumwt step Taylor-sums the per-SPW weight images
+    #    directly, so no external normalization pass is needed here.
+    taylorpsfjid = sbatchComm(stageName = 'normalize', resources = imdomainResources,
+                              dependencies = f'afterok:{psfjid}:{weightjid}',
+                              imagename = gnimagename, parfile = parfile, logdir = logdir,
+                              libra_install_path = libra_install, verbose = verbose,
+                              imtypeArg = 'taylorpsf')
+
+    residualjid = sbatchComm(stageName = 'residual', resources = griddingResources,
+                             dependencies = f'afterok:{taylorpsfjid}',
+                             msname = msname, imagename = imagename, cfcache = cfcache,
+                             parfile = parfile, logdir = logdir,
+                             libra_install_path = libra_install, verbose = verbose)
+
+    # 4. computeavgpb, then Taylor-sum psf/pb/sumwt support cubes and the residual
+    avgpbjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                          dependencies = f'afterok:{residualjid}', imagename = gnimagename,
+                          parfile = parfile, logdir = logdir,
+                          libra_install_path = libra_install, verbose = verbose,
+                          imtypeArg = 'computeavgpb')
+
+    supportjids = []
+    for cubetype in ('psf', 'pb', 'sumwt'):
+        supportjids.append(sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                      dependencies = f'afterok:{avgpbjid}', imagename = gnimagename,
+                                      parfile = parfile, logdir = logdir,
+                                      libra_install_path = libra_install, verbose = verbose,
+                                      imtypeArg = f'cube2taylor_{cubetype}'))
+
+    removefreqdeppbjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                    dependencies = f'afterok:{avgpbjid}', imagename = gnimagename,
+                                    parfile = parfile, logdir = logdir,
+                                    libra_install_path = libra_install, verbose = verbose,
+                                    imtypeArg = 'removefreqdeppb_residual')
+    cube2taylorresidualjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                        dependencies = f'afterok:{removefreqdeppbjid}',
+                                        imagename = gnimagename, parfile = parfile, logdir = logdir,
+                                        libra_install_path = libra_install, verbose = verbose,
+                                        imtypeArg = 'cube2taylor_residual', waitForJob = True)
+
+    # 5. hummbee mtmfs deconvolve, then taylor2cube -> per-SPW true-sky model
+    deconvDeps = ':'.join(['afterok'] + supportjids + [cube2taylorresidualjid])
+    modelCyclejid = sbatchComm(stageName = 'model', resources = imdomainResources,
+                               dependencies = deconvDeps, imagename = imagename,
+                               parfile = parfile, logdir = logdir,
+                               libra_install_path = libra_install, verbose = verbose)
+
+    notConverged = checkConvergence(logdir)
+    imcycle = 1
+    while notConverged == 1 and imcycle < max_iter:
+        taylor2cubejid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                    dependencies = f'afterok:{modelCyclejid}', imagename = gnimagename,
+                                    parfile = parfile, logdir = logdir,
+                                    libra_install_path = libra_install, verbose = verbose,
+                                    imtypeArg = 'taylor2cube', waitForJob = True)
+
+        stage = f'residual.imcycle{imcycle:02}'
+        residualCyclejid = sbatchComm(stageName = stage, resources = griddingResources,
+                                      dependencies = f'afterok:{taylor2cubejid}',
+                                      msname = msname, imagename = imagename, cfcache = cfcache,
+                                      parfile = parfile, logdir = logdir,
+                                      libra_install_path = libra_install, verbose = verbose)
+
+        removefreqdeppbjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                        dependencies = f'afterok:{residualCyclejid}',
+                                        imagename = gnimagename, parfile = parfile, logdir = logdir,
+                                        libra_install_path = libra_install, verbose = verbose,
+                                        imtypeArg = 'removefreqdeppb_residual')
+        cube2taylorresidualjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                            dependencies = f'afterok:{removefreqdeppbjid}',
+                                            imagename = gnimagename, parfile = parfile, logdir = logdir,
+                                            libra_install_path = libra_install, verbose = verbose,
+                                            imtypeArg = 'cube2taylor_residual', waitForJob = True)
+
+        stage = f'model.imcycle{imcycle:02}'
+        modelCyclejid = sbatchComm(stageName = stage, resources = imdomainResources,
+                                   dependencies = f'afterok:{cube2taylorresidualjid}',
+                                   imagename = imagename, parfile = parfile, logdir = logdir,
+                                   libra_install_path = libra_install, verbose = verbose)
+
+        notConverged = checkConvergence(logdir)
+        imcycle += 1
+
+    # 6. final residual update + hummbee restore
+    taylor2cubejid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                dependencies = f'afterok:{modelCyclejid}', imagename = gnimagename,
+                                parfile = parfile, logdir = logdir,
+                                libra_install_path = libra_install, verbose = verbose,
+                                imtypeArg = 'taylor2cube', waitForJob = True)
+    finalResidualjid = sbatchComm(stageName = 'residual', resources = griddingResources,
+                                  dependencies = f'afterok:{taylor2cubejid}',
+                                  msname = msname, imagename = imagename, cfcache = cfcache,
+                                  parfile = parfile, logdir = logdir,
+                                  libra_install_path = libra_install, verbose = verbose)
+    removefreqdeppbjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                    dependencies = f'afterok:{finalResidualjid}',
+                                    imagename = gnimagename, parfile = parfile, logdir = logdir,
+                                    libra_install_path = libra_install, verbose = verbose,
+                                    imtypeArg = 'removefreqdeppb_residual')
+    cube2taylorresidualjid = sbatchComm(stageName = 'taylor', resources = imdomainResources,
+                                        dependencies = f'afterok:{removefreqdeppbjid}',
+                                        imagename = gnimagename, parfile = parfile, logdir = logdir,
+                                        libra_install_path = libra_install, verbose = verbose,
+                                        imtypeArg = 'cube2taylor_residual', waitForJob = True)
+    sbatchComm(stageName = 'restore', resources = imdomainResources,
+              dependencies = f'afterok:{cube2taylorresidualjid}', imagename = imagename,
+              parfile = parfile, logdir = logdir,
+              libra_install_path = libra_install, verbose = verbose)
 
 timing['end'] = datetime.now()
 walltime = (timing['end'] - timing['start']).total_seconds()

@@ -1,0 +1,86 @@
+Bootstrap: docker
+From: nvidia/cuda:12.9.0-devel-@CONTAINER_OS_BASE@
+
+%labels
+    Author pjaganna@nrao.edu
+    Version v2.0.0-standalone
+    Description LibRA Standalone Singularity Container - @CONTAINER_OS_DESCRIPTION@
+    GitCommitSHA @GIT_COMMIT_SHA@
+    BuildDate @BUILD_DATE@
+
+%files
+    . /data/libra
+
+%post
+    echo "========================================="
+    echo "Building LibRA Singularity Container"
+    echo "OS: @CONTAINER_OS_DESCRIPTION@"
+    echo "========================================="
+
+@ROCKYLINUX_POST@
+
+@UBUNTU_POST@
+
+    # Clean any build artifacts from copied workspace
+    cd /data/libra
+    rm -f CMakeCache.txt
+    rm -rf CMakeFiles/
+    rm -rf build/
+    echo "Cleaned workspace build artifacts"
+
+    # Set up environment for build
+    export PATH=/data/libra/install/bin:$PATH
+    export LD_LIBRARY_PATH=/data/libra/install/lib:/usr/local/cuda-12.9/compat:$LD_LIBRARY_PATH
+    export LIBRA_PATH=/data/libra
+    export CCACHE_BASEDIR=/data/libra
+    export CCACHE_COMPILERCHECK=content
+
+    # Initialize git submodules
+    cd /data/libra
+    git submodule update --init --recursive || echo "Warning: git submodule update failed or not needed"
+
+    # Build LibRA
+    cd /data/libra
+@ROCKYLINUX_BUILD_PREFIX@    mkdir -p build && cd build
+@ROCKYLINUX_BUILD_PREFIX@    cmake \
+        -DKokkos_CUDA_ARCH_NAME=@CONTAINER_CUDA_ARCH@ \
+        -DApps_BUILD_TESTS=OFF \
+        -DLIBRA_ENABLE_CUDA_BACKEND=ON \
+        ..
+@ROCKYLINUX_BUILD_PREFIX@    make -j@NPROC@
+
+    echo ""
+    echo "========================================="
+    echo "✓ LibRA Singularity Container Built Successfully!"
+    echo "========================================="
+    echo "  OS: @CONTAINER_OS_DESCRIPTION@"
+    echo "  CUDA Arch: @CONTAINER_CUDA_ARCH@"
+    echo "  Install: /data/libra/install"
+    echo "  Apps: roadrunner hummbee coyote chip dale mssplit subms tableinfo"
+    echo "========================================="
+
+%environment
+    export PATH=/data/libra/install/bin:$PATH
+    export LD_LIBRARY_PATH=/data/libra/install/lib:/usr/local/cuda-12.9/compat:$LD_LIBRARY_PATH
+    export LIBRA_PATH=/data/libra
+@ROCKYLINUX_ENVIRONMENT@
+
+%runscript
+    echo "========================================="
+    echo "LibRA Singularity Container - Ready!"
+    echo "========================================="
+    echo "OS: @CONTAINER_OS_DESCRIPTION@"
+    echo "CUDA: 12.9 | Kokkos Arch: @CONTAINER_CUDA_ARCH@"
+    echo ""
+    echo "Available LibRA Applications:"
+    echo "  - roadrunner  : Radio interferometry imaging"
+    echo "  - hummbee     : Gridder application"
+    echo "  - coyote      : Data processing"
+    echo "  - chip, dale  : Additional utilities"
+    echo "  - mssplit     : Measurement set splitting"
+    echo "  - subms       : Sub-measurement set"
+    echo "  - tableinfo   : Table information"
+    echo ""
+    echo "Install Location: /data/libra/install"
+    echo "========================================="
+    exec /bin/bash "$@"

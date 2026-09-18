@@ -25,6 +25,7 @@
 import os
 import time
 import shutil
+import ast
 from subprocess import Popen,PIPE
 from datetime import datetime
 
@@ -47,9 +48,10 @@ def sbatchComm(stageName : str,
                cfcache : str = '',
                dependencies : str = '',
                waitForJob : bool = False,
-               removeImage : str = ''):
+               removeImage : str = '',
+               imtypeArg : str = ''):
     jobid = ''
-    addcmdflag = ''
+    addcmdflag = f' -t {imtypeArg}' if imtypeArg else ''
 
     if dependencies:
         resources += f' -d {dependencies}'
@@ -69,11 +71,12 @@ def sbatchComm(stageName : str,
         outputName += '.n%a'
     
     jobmode = stageName.split('.')[0]
-    if stageName == 'normalizePSF':
-        jobmode = 'normalize'
-        addcmdflag = ' -t psf'
-    elif 'normalize' in jobmode:
-        addcmdflag = ' -t residual'
+    if not imtypeArg:
+        if stageName == 'normalizePSF':
+            jobmode = 'normalize'
+            addcmdflag = ' -t psf'
+        elif 'normalize' in jobmode:
+            addcmdflag = ' -t residual'
     
     if not libra_install_path:
         libra_install_path = libra_home_install_path
@@ -130,12 +133,12 @@ def readParfile(parfile : str):
             if line != '\n' and '#' not in line[0]:
                 line = line.split('#')[0].split('=')
                 if "'" in line[1]:
-                    value = eval(line[1].strip())
+                    value = ast.literal_eval(line[1].strip())
                 else:
                     value = line[1].strip()
-                
+
                 impars[line[0].strip()] = value
-    
+
     msname    = impars['vis']
     cfcache   = impars['cfcache']
     imagename = impars['imagename']
@@ -154,7 +157,6 @@ def readParfile(parfile : str):
     return imagename, msname, cfcache
 
 
-# The following is copied (simplified) from libra_cl_imager.py - this must be added to a common library
 def writeParfile(impars, parfile, logdir = '.'):
     with open(f'{logdir}/{parfile}', 'w') as outfile:
         for key,value in impars.items():

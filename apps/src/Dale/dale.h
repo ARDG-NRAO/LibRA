@@ -53,7 +53,8 @@ namespace Dale
 		  const std::string& imType,
 		  const float& pblimit,
 		  //const float& psfcutoff,
-		  const bool& computePB);
+		  const bool& computePB,
+		  const std::string& taylorWtName="");
   //const bool& normalize_weight);
 }
 
@@ -64,7 +65,8 @@ void UI(bool restart, int argc, char **argv, bool interactive,
         string& normtype, string& imType,
         float& pblimit, 
         //float& psfcutoff,
-        bool& computePB);// bool& normalize_weight);
+        bool& computePB,
+        std::string& taylorWtName);// bool& normalize_weight);
 
 
 #endif

@@ -64,7 +64,7 @@ if len(args) > 1:
     readArg = ''
     for arg in args:
         if readArg:
-            exec(f"{readArg} = '{arg}'")
+            globals()[readArg] = arg
             readArg = ''
         elif arg in ['-z', '--packagename']:
             readArg = 'packagename'

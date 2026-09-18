@@ -57,6 +57,8 @@ class setupLibRA(object):
         self.gatherApp = self.path + '/bin/chip'
         self.normalizationApp = self.path + '/bin/dale'
         self.deconvolutionApp = self.path + '/bin/hummbee'
+        self.taylorApp = self.path + '/bin/taylor'
+        self.coyoteApp = self.path + '/bin/coyote'
         self.rrenviron = False
 
 

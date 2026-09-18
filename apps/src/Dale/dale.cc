@@ -24,12 +24,15 @@
 
 
 #include <dale.h>
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <regex>
 #include <sstream>
 #include <sys/types.h>
 #include <unistd.h>
 #include <casacore/casa/OS/DirectoryIterator.h>
+#include <casacore/casa/OS/Directory.h>
 #include <casacore/casa/OS/File.h>
 #include <casacore/casa/OS/Path.h>
 #include <librautils/utils.h>
@@ -136,7 +139,8 @@ namespace Dale
 		 const std::string& imType,
 		 const float& pblimit,
 		 const bool normalize_weight,
-		 LogIO& logio)
+		 LogIO& logio,
+		 const float taylorWtValue)
   // normtype, nterms, facets, psfcutoff and restoring beam are not functional yet, will add to interface as needed
   // Normalization equations implemented in this version:
   // pb = sqrt(weight / max(weight))
@@ -150,17 +154,55 @@ namespace Dale
     
     IPosition pos(4,0,0,0,0);
     float SoW = sumwt.getAt(pos);
-    
-    if (imType == "psf")
+
+    // Taylor path: normalize this term's PSF by the tt0 PSF peak, supplied as
+    // taylorWtValue, not by its own peak.  psf.tt_k and residual.tt_k are the
+    // two sides of one set of normal equations, and the ratio between terms
+    // is what carries the spectral index; scaling each term by its own peak
+    // would destroy it.  A term's own weight, sum(w*fac_k), is a small signed
+    // number and is emphatically not the right divisor.  taylorWtValue is
+    // legitimately negative for odd terms, so NaN (not sign) selects the
+    // ordinary, non-Taylor behaviour.
+    //
+    // Only the PSF needs this.  The residual branch below is already
+    // term-independent: SoW cancels out of it exactly (newIM/deno reduces to
+    // target/sqrt(weight*max(weight)), and the pblimit mask reduces to
+    // sqrt(weight/max(weight)) > pblimit), and the weight image it does
+    // depend on is gridded once at term 0.
+    const bool useTaylorWt = ! std::isnan(taylorWtValue);
+
+    if ((imType == "psf") || (imType == "taylorpsf"))
       {
-	float psfFactor = max(target.get());
+	float psfFactor = useTaylorWt ? taylorWtValue : max(target.get());
+	if (useTaylorWt)
+	  logio << "Taylor PSF normalization by tt0 peak " << psfFactor
+		<< " (this term's own peak is " << max(target.get()) << ")"
+		<< LogIO::POST;
 	LatticeExpr<T> newPSF = target / psfFactor;
 	target.copyData(newPSF);
-	// if (normalize_weight)
-	//   {
-	//     LatticeExpr<T> newWeight = weight / SoW;
-	//     //	    weight.copyData(newWeight);
-	//   }
+	// taylorpsf: emit the PSF peak to a dedicated .taylorwt image, leaving
+	// the gridding sumwt untouched. HPG getSumWeights() = raw Σ w_ij (flat
+	// across SPWs), which roadrunner writes to .sumwt and rewrites every
+	// residual pass. The PSF peak = Σ w_ij |A_ij|²_max is frequency-varying
+	// and matches what CASA awproject holds in memory as sumwt; taylor's
+	// cube2taylor must weight by this for correct MTMFS spectral terms.
+	// Keeping it in a separate file makes it the stable per-SPW weight that
+	// no major-cycle roadrunner pass clobbers.
+	if (imType == "taylorpsf")
+	  {
+	    string taylorWtName = librautils::removeExtension(imageName) + ".taylorwt";
+	    casacore::File twf(taylorWtName);
+	    if (twf.exists()) casacore::Directory(taylorWtName).removeRecursive();
+	    PagedImage<T> taylorWt(sumwt.shape(), sumwt.coordinates(), taylorWtName);
+	    casacore::Array<T> sowArr(sumwt.shape(), (T)psfFactor);
+	    taylorWt.put(sowArr);
+	    taylorWt.flush();
+	    stringstream os;
+	    os << "taylorpsf: wrote PSF peak=" << psfFactor << " to "
+	       << taylorWtName << " (gridding sumwt SoW=" << SoW << " left intact)";
+	    logio << os.str() << LogIO::POST;
+	    std::cerr << "[dale] " << os.str() << "\n";
+	  }
       }
     else if ((imType == "residual") || (imType == "model"))
       {
@@ -179,21 +221,29 @@ namespace Dale
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
 	       << "Dividing " << imageName << " by [ sqrt(weightimage) * "
-	       << itsPBScaleFactor << " ] to get flat noise with unit pb peak.";
+	       << itsPBScaleFactor << " ] to get flat noise with unit pb peak."
+	       << " SoW=" << SoW
+	       << " itsPBScaleFactor=" << itsPBScaleFactor
+	       << " SoW*itsPBScaleFactor=" << SoW * itsPBScaleFactor;
 	    logio << os.str() << LogIO::POST;
-	    
+	    std::cerr << "[dale] " << os.str() << "\n";
+
 	    scalepb=fabs(pblimit)*itsPBScaleFactor*itsPBScaleFactor;
 	  }
 	else if (imType == "model")
 	  {
 	    deno = sqrt(abs(normWt)) / itsPBScaleFactor;
-	    
+
 	    stringstream os;
 	    os << fixed << setprecision(numeric_limits<float>::max_digits10)
 	       << "Dividing " << imageName << " by [ sqrt(weightimage) / "
-	       << itsPBScaleFactor << " ] to get to flat sky model before prediction.";
+	       << itsPBScaleFactor << " ] to get to flat sky model before prediction."
+	       << " SoW=" << SoW
+	       << " itsPBScaleFactor=" << itsPBScaleFactor
+	       << " SoW*itsPBScaleFactor=" << SoW * itsPBScaleFactor;
 	    logio << os.str() << LogIO::POST;
-	    
+	    std::cerr << "[dale] " << os.str() << "\n";
+
 	    scalepb=fabs(pblimit);
 	  }
 	
@@ -238,7 +288,8 @@ namespace Dale
 	    const std::string& imType,
 	    const float& pblimit, 
 	    //const float& psfcutoff,
-	    const bool& computePB)
+	    const bool& computePB,
+	    const std::string& taylorWtName)
   //const bool& normalize_weight)
   {
     float psfcutoff=0.35;
@@ -253,14 +304,16 @@ namespace Dale
     try
       {
 	targetName = imageName;
-	if ((imType == "residual") || (imType == "psf") || (imType == "model"))
+	if ((imType == "residual") || (imType == "psf") || (imType == "taylorpsf") || (imType == "model"))
 	  {
-	    // Use name extension conventions only if targetName did not have an extension
-	    if ( librautils::getExtension(targetName)=="") targetName += "." + imType;
+	    // Use name extension conventions only if targetName did not have an extension.
+	    // taylorpsf operates on the .psf image (same file, extra sumwt update).
+	    string extToAppend = (imType == "taylorpsf") ? "psf" : imType;
+	    if ( librautils::getExtension(targetName)=="") targetName += "." + extToAppend;
 	    logio << "Running normalization for " << targetName << LogIO::POST;
 	  }
 	else
-	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf, residual or model."));
+	  throw(AipsError("Unrecognized imtype (" + imType +"). Allowed values are psf, taylorpsf, residual or model."));
 	
 	// Use a convention for image names only if the names aren't provided.
 	if (weightName == "") weightName   = librautils::removeExtension(targetName) + ".weight";
@@ -290,7 +343,17 @@ namespace Dale
 		  << endl;
 	
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "before");
-	    normalize<float>(targetName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio);
+	    // Read the tt0 weight (the term-0 PSF peak roadrunner wrote) if one
+	    // was named; NaN keeps the ordinary, non-Taylor normalization. This
+	    // value is legitimately negative for odd Taylor terms, so it cannot
+	    // be validated by sign; only its presence matters.
+	    float taylorWtValue = std::numeric_limits<float>::quiet_NaN();
+	    if (taylorWtName != "")
+	      {
+		PagedImage<float> twImage(taylorWtName);
+		taylorWtValue = twImage.getAt(IPosition(4,0,0,0,0));
+	      }
+	    normalize<float>(targetName, *targetImage, *wImage, *swImage, imType, pblimit, normalize_weight, logio, taylorWtValue);
 	    printImageMax(imType, *targetImage, *wImage, *swImage, logio, "after");
 	
 	    librautils::setNormalized<float>(*targetImage);

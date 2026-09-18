@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1
+# Components container — builds LibRA apps, casacpp, frameworks.
+# Tagged per CUDA arch: ardgnrao/libra-components:volta70, :ampere80, :hopper90
+ARG BASE_IMAGE=ardgnrao/libra-deps:volta70
+FROM ${BASE_IMAGE} as components
+
+LABEL Description="LibRA Components Container"
+
+ARG nproc=8
+
+WORKDIR /data/libra
+
+RUN cd build \
+    && make -j${nproc} \
+        Casacpp \
+        Apps \
+        Frameworks \
+        Scripts
+
+RUN cd build \
+    && exodus_enabled=$(cmake -L -N . 2>/dev/null | grep "LIBRA_USE_EXODUS:BOOL=ON" || true) \
+    && if [ -n "$exodus_enabled" ]; then \
+         make -j${nproc} exodus; \
+       else \
+         echo "Exodus not enabled, skipping"; \
+       fi
+
+CMD ["/bin/bash"]
