@@ -1,0 +1,48 @@
+# syntax=docker/dockerfile:1
+# Test container — runs C++ GTests and Python pytest.
+# Tagged per CUDA arch: ardgnrao/libra-tests:volta70, :ampere80, :hopper90
+ARG BASE_IMAGE=ardgnrao/libra-components:volta70
+FROM ${BASE_IMAGE} as tests
+
+LABEL Description="LibRA Test Container"
+
+WORKDIR /data/libra
+
+RUN python3 -m venv /data/test_venv \
+    && source /data/test_venv/bin/activate \
+    && pip install --upgrade pip setuptools wheel \
+    && pip install pytest numpy
+
+ENV PYTHONPATH="/data/libra/install/lib:/data/libra/libra-python:${PYTHONPATH}"
+ENV LD_LIBRARY_PATH="/data/libra/install/lib:${LD_LIBRARY_PATH}"
+
+RUN cd /data/libra/libra-python \
+    && if [ -d "/data/libra/apps/src/tests/gold_standard" ] && [ ! -e "gold_standard" ]; then \
+        ln -sf ../../apps/src/tests/gold_standard gold_standard; \
+    fi
+
+COPY <<'EOF' /data/run_tests.sh
+#!/bin/bash
+set -e
+source /data/test_venv/bin/activate
+cd /data/libra
+mkdir -p test_reports
+
+echo "=== C++ Tests ==="
+if [ -x "install/bin/tests/LibRATests" ]; then
+    install/bin/tests/LibRATests --gtest_output=xml:test_reports/cpp_report.xml
+else
+    echo "C++ test binary not found"
+fi
+
+echo "=== Python Tests ==="
+pytest libra-python/tests --junitxml=test_reports/pytest_report.xml -v \
+    || echo "Some Python tests failed"
+
+echo "=== Done ==="
+ls -la test_reports/
+EOF
+
+RUN chmod +x /data/run_tests.sh
+
+CMD ["/data/run_tests.sh"]

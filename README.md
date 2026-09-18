@@ -52,8 +52,9 @@ does not require an RA-specific software stack and dependencies.
 - [ ] a build system to build the library of algorithms, the [apps](#currently-available-apps), and all the dependencies other than the [System Requirements](#system-requirements).
 
 
-A containerized means of building the LibRA project is available
-[here](https://gitlab.nrao.edu/ardg/libra-containers).  This is mirrored [here](https://github.com/ARDG-NRAO/libra-containers).
+A containerized means of building the LibRA project is produced by this repo's
+own CI pipeline and pushed to Docker Hub, per GPU architecture. See
+[Resources](#resources) below.
 Please create a ticket on github to interact with us.
 
 
@@ -180,6 +181,11 @@ The `-R '^test_'` filter restricts execution to the gtest-based suite and skips 
 
 ## Resources
 - [ ] Container recipes (Docker and Singularity) for LibRA live in [`scripts/container_recipes/`](scripts/container_recipes).
+- [ ] Prebuilt container images (pushed by CI, tagged by GPU arch):
+  - [libra-base](https://hub.docker.com/r/ardgnrao/libra-base/tags) — volta70, ampere80, hopper90
+  - [libra-deps](https://hub.docker.com/r/ardgnrao/libra-deps/tags) — volta70, ampere80, hopper90
+  - [libra-components](https://hub.docker.com/r/ardgnrao/libra-components/tags) — volta70, ampere80, hopper90
+  - [libra-tests](https://hub.docker.com/r/ardgnrao/libra-tests/tags) — volta70
 
 ## ToDo List
 - [ ] An app for (self-) calibration
