@@ -98,14 +98,23 @@ TEST(HtcleanTest, Loops) {
    
   EXPECT_TRUE( ans );
 
-  PagedImage<casacore::Float> psfimage("cygA.model");
-  float tol = 0.1;
+  PagedImage<casacore::Float> modelimage("cygA.model");
+  float tol = 0.01;
   float goldValLoc0 = 0.095916;
   float goldValLoc1 = 0.0876324;
 
-  EXPECT_NEAR(psfimage(IPosition(4,2937,2352,0,0)), goldValLoc0, tol);
-  EXPECT_NEAR(psfimage(IPosition(4,1076,1785,0,0)), goldValLoc1, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,2937,2352,0,0)), goldValLoc0, tol);
+  EXPECT_NEAR(modelimage(IPosition(4,1076,1785,0,0)), goldValLoc1, tol);
 
+  PagedImage<Float> residualImage("cygA.residual");
+  PagedImage<Float> maskImage("cygA.mask");
+  Array<Float> residualValues;
+  Array<Float> maskValues;
+  residualImage.get(residualValues, true);
+  maskImage.get(maskValues, true);
+  const Float peakres = max(abs(residualValues) * maskValues);
+  const float goldpeak = 2.7702;
+  EXPECT_NEAR(peakres, goldpeak, tol);
 
 
   //move to parent directory
