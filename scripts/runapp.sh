@@ -61,7 +61,7 @@ do
 done
 
 # Get imagename from the input parameter file
-eval "`grep imagename.*\= ${input_file} | sed 's/ //g'`"
+eval "`grep ^imagename.*\= ${input_file} | sed 's/ //g'`"
 
 case "$mode" in
     weight | psf | residual)
