@@ -1031,10 +1031,12 @@ auto Roadrunner(//bool& restartUI, int& argc, char** argv,
       rrr[MAKEVB_TIME] = getMakeHPGVBTime(visResampler);
     }
   // Looks like AipsError is now derived from std::exception.  Nice.
+  // Log, then rethrow so callers see the failure.
   catch (std::exception& stdErr)
     {
       LogIO log_l(LogOrigin("roadrunner","Roadrunner"));
-      log_l << stdErr.what() << LogIO::SEVERE;
+      log_l << stdErr.what() << LogIO::SEVERE << LogIO::POST;
+      throw;
     }
 
   return rrr;

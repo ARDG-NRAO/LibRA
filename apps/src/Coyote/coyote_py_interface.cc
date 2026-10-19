@@ -27,6 +27,7 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <pybind11/stl.h>
 #include <coyote.h>
 
@@ -60,9 +61,10 @@ using namespace py::literals;  // to bring in the "_a" literal
  * @param mode A string parameter.
  */
 PYBIND11_MODULE(coyote2py, m) {
+    register_libra_exceptions(m);
     m.doc() = "pybind11-based roadrunner python plugin"; // optional module docstring
     std::vector<string> cfList(1); cfList[0] = "";;  
-    m.def("Coyote", &Coyote, "Coyote app pybind11 wrapper"
+    m.def("Coyote", &Coyote, "Coyote app pybind11 wrapper",
         "MSNBuf"_a,  // std::string
         "telescopeName"_a,  // std::string
         "NX"_a,  // int
@@ -72,8 +74,8 @@ PYBIND11_MODULE(coyote2py, m) {
         "nW"_a,  // int
         "cfCacheName"_a,  // std::string
         "WBAwp"_a,  // bool
-        "psTerm"_a,  // bool
         "aTerm"_a,  // bool
+        "psTerm"_a,  // bool
         "mType"_a,  // std::string
         "pa"_a,  // double
         "dpa"_a,  // double

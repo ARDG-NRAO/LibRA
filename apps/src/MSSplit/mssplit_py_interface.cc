@@ -22,11 +22,13 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <mssplit.h>
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(mssplit2py, m) {
+    register_libra_exceptions(m);
     m.def("MSSplit", &MSSplit_func, "An app for making sub-selected MSes",
           py::arg("MSNBuf")="", 
           py::arg("OutMSBuf")="",

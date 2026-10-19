@@ -183,7 +183,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
   bool doPBCorr = false;
   string imagingMode="deconvolve";
 
-  float PeakRes = Hummbee(imageName, modelImageName,
+  HBReturnType hbr = Hummbee(imageName, modelImageName,
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
@@ -200,7 +200,7 @@ TEST(HummbeeTest, AppLevelCubeAsp) {
 
   float tol = 0.1;
   float goldPeakRes = 4.98845;
-  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+  EXPECT_NEAR(hbr.at(HB_PEAK_RESIDUAL), goldPeakRes, tol);
 
   float goldValchan0 = 0.0442593;
   float goldValchan2 = 0.0384871;
@@ -267,7 +267,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
   bool doPBCorr = false;
   string imagingMode="deconvolve";
 
-  float PeakRes = Hummbee(imageName, modelImageName,
+  HBReturnType hbr = Hummbee(imageName, modelImageName,
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
@@ -284,7 +284,7 @@ TEST(HummbeeTest,  AppLevelMfsAsp) {
 
   float tol = 0.1;
   float goldPeakRes = 26.0554;
-  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+  EXPECT_NEAR(hbr.at(HB_PEAK_RESIDUAL), goldPeakRes, tol);
 
   float goldValLoc0 = 0.000332008;
   float goldValLoc1 = 0.000176319;
@@ -351,7 +351,7 @@ TEST(HummbeeTest,  AppLevelWAsp) {
   vector<string> mask;
   string imagingMode="deconvolve";
 
-  float PeakRes = Hummbee(imageName, modelImageName,
+  HBReturnType hbr = Hummbee(imageName, modelImageName,
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
@@ -368,7 +368,7 @@ TEST(HummbeeTest,  AppLevelWAsp) {
 
   float tol = 0.05;
   float goldPeakRes = 2.43175;
-  EXPECT_NEAR(PeakRes, goldPeakRes, tol);
+  EXPECT_NEAR(hbr.at(HB_PEAK_RESIDUAL), goldPeakRes, tol);
 
   float goldValLoc0 = 0.000633522;
   EXPECT_NEAR(modelimage(IPosition(4,254,331,0,0)), goldValLoc0, tol);
@@ -426,7 +426,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   string imagingMode="restore";
 
 
-  float PeakRes = Hummbee(imageName, modelImageName,
+  HBReturnType hbr = Hummbee(imageName, modelImageName,
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,
@@ -454,7 +454,7 @@ TEST(HummbeeTest,  AppLevelMfsRestore) {
   remove_all(current_path()/"unittest_hummbee_mfs_revE_restore.image");
   doPBCorr = true;
 
-  PeakRes = Hummbee(imageName, modelImageName,
+  hbr = Hummbee(imageName, modelImageName,
                  deconvolver,
                  scales,
                  largestscale, fusedthreshold,

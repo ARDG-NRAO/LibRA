@@ -22,6 +22,7 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <dale.h>
 
 using namespace Dale;
@@ -29,11 +30,12 @@ using namespace Dale;
 namespace py = pybind11;
 
 PYBIND11_MODULE(dale2py, m) {
+    register_libra_exceptions(m);
     m.def("Dale", 
 	  &Dale::dale, "An app for normalizing various types of images",
 	  py::arg("imageName")="",
-	  py::arg("wtimageName")="",
-	  py::arg("sowimageName")="",
+	  py::arg("wtImageName")="",
+	  py::arg("sowImageName")="",
 	  py::arg("normtype")="flatnoise",
 	  py::arg("imType")="psf",
 	  py::arg("pblimit")=0.2,

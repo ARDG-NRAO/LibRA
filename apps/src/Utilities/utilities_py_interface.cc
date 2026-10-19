@@ -42,6 +42,7 @@
 #include <librautils/utils.h>
 
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
@@ -249,6 +250,7 @@ py::object putChunkToPathAuto(const string& imagePath, py::array array)
 
 // Binding code
 PYBIND11_MODULE(utilities2py, m) {
+    register_libra_exceptions(m);
   py::enum_<ImageType>(m, "ImageType")
     .value("PSF", PSF)
     .value("RESIDUAL", RESIDUAL)

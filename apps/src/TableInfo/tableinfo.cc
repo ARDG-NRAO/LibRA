@@ -91,7 +91,6 @@ void TableInfo_func(const string& MSNBuf,
 	      logio << "Image data type  : Float" << LogIO::NORMAL;
 	      ImageSummary<Float> ims(*fImage);
 	      Vector<String> list = ims.list(logio);
-	      ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=fImage->miscInfo();
 	    }
 	  else if (dImage != 0)
@@ -99,7 +98,6 @@ void TableInfo_func(const string& MSNBuf,
 	      logio << "Image data type  : Double" << LogIO::NORMAL;
 	      ImageSummary<double> ims(*dImage);
 	      Vector<String> list = ims.list(logio);
-	      ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=dImage->miscInfo();
 	    }
 	  else if (cImage != 0)
@@ -107,7 +105,6 @@ void TableInfo_func(const string& MSNBuf,
 	      logio << "Image data type  : Complex" << LogIO::NORMAL;
 	      ImageSummary<Complex> ims(*cImage);
 	      Vector<String> list = ims.list(logio);
-	      ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=cImage->miscInfo();
 	    }
 	  else if (dCImage != 0)
@@ -115,7 +112,6 @@ void TableInfo_func(const string& MSNBuf,
 	      logio << "Image data type  : DComplex" << LogIO::NORMAL;
 	      ImageSummary<DComplex> ims(*dCImage);
 	      Vector<String> list = ims.list(logio);
-	      ofs << (os.str().c_str()) << endl;
 	      miscInfoRec=dCImage->miscInfo();
 	    }
 	  else
@@ -125,8 +121,9 @@ void TableInfo_func(const string& MSNBuf,
 	    {
 	      logio << endl << "Attached miscellaneous Information : " << endl << LogIO::NORMAL;
 	      miscInfoRec.print(oss,25," MiscInfo : ");
-	      logio << oss.str() << LogIO::NORMAL;
+	      logio << oss.str() << LogIO::POST;
 	    }
+	  ofs << (os.str().c_str()) << endl;
 	}
       else
 	{

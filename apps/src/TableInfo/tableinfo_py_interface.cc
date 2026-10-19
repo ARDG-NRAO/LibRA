@@ -22,10 +22,12 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <tableinfo.h>
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(tableinfo2py, m) {
+    register_libra_exceptions(m);
     m.def("TableInfo", &TableInfo_func, py::arg("MSNBuf")="", py::arg("OutBuf")="", py::arg("verbose")=false);
 }
