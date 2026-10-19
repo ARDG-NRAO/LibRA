@@ -22,6 +22,7 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <pybind11/stl.h>
 #include <string>
 #include <iostream>
@@ -247,7 +248,7 @@ PYBIND11_MODULE(restore2py, m)
 {
     // Using the simplest helper function to translate AipsError exceptions (from C++) to
     // PyAipsError (in Python).
-    pybind11::register_exception<AipsError>(m, "PyAipsError");
+    register_libra_exceptions(m);
 
     m.doc() = "pybind11-based restore python plugin"; // optional module docstring
  

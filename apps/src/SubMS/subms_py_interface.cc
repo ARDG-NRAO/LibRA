@@ -22,11 +22,13 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <subms.h>
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(subms2py, m) {
+    register_libra_exceptions(m);
     m.def("SubMS", &SubMS_func,"A task-level interface for making selected sub-MS",
           py::arg("MSNBuf")="", 
           py::arg("OutMSBuf")="",

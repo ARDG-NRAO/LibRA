@@ -224,7 +224,7 @@ int cleanComplete()
 
 
 
-float Hummbee(
+HBReturnType Hummbee(
         string& imageName, string& modelImageName,
         string& deconvolver,
         vector<float>& scales,
@@ -240,6 +240,7 @@ float Hummbee(
   LogIO os(LogOrigin("Hummbee","hummbee_func"));
 
   Float PeakResidual = 0.0;
+  HBReturnType hbr;
 
   try
     { 
@@ -370,6 +371,16 @@ float Hummbee(
       // return the peak residual for unit test
       PeakResidual= validMask ? itsImages->getPeakResidualWithinMask() : itsImages->getPeakResidual();
 
+      // Result record. The restore path leaves these fields unset.
+      hbr[HB_PEAK_RESIDUAL] = double(PeakResidual);
+      hbr[HB_CYCLE_THRESHOLD] = double(threshold);
+      if (iterBotRec_p.isDefined("iterdone"))
+        hbr[HB_ITER_DONE] = double(iterBotRec_p.asInt("iterdone"));
+      if (iterBotRec_p.isDefined("maxcycleiterdone"))
+        hbr[HB_MAXCYCLE_ITER_DONE] = double(iterBotRec_p.asInt("maxcycleiterdone"));
+      if (iterBotRec_p.isDefined("updatedmodelflag"))
+        hbr[HB_UPDATED_MODEL] = double(iterBotRec_p.asBool("updatedmodelflag"));
+
       //don't need this. Handled by SynthesisDeconvolver already.
       /*stopflag = cleanComplete();
       if(stopflag > 0)
@@ -436,11 +447,13 @@ float Hummbee(
       */
 
     }
+  // Log, then rethrow so callers see the failure.
   catch(AipsError& er)
     {
-      os << er.what() << LogIO::SEVERE;
+      os << er.what() << LogIO::SEVERE << LogIO::POST;
+      throw;
     }
 
-    return (float(PeakResidual));
+    return hbr;
 
 }

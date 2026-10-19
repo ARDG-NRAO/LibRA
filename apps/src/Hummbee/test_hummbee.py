@@ -77,7 +77,7 @@ class TestHummbee(unittest.TestCase):
         self.imagingMode = "deconvolve"
 
         # Call the function equivalent to Hummbee in Python
-        self.PeakRes = hummbee2py.Hummbee(self.imageName, self.modelImageName,
+        self.result = hummbee2py.Hummbee(self.imageName, self.modelImageName,
                                           self.deconvolver,
                                           self.scales,
                                           self.largestscale, self.fusedthreshold,
@@ -90,7 +90,8 @@ class TestHummbee(unittest.TestCase):
                                           self.imagingMode)
 
     def test_peak_res(self):
-        self.assertAlmostEqual(self.PeakRes, goldPeakRes, delta=tol)
+        self.assertIn("peakresidual", self.result)
+        self.assertAlmostEqual(self.result["peakresidual"], goldPeakRes, delta=tol)
 
 
     def test_residual_value(self):

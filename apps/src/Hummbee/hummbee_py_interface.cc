@@ -22,8 +22,10 @@
 // #
 // # $Id$
 #include <pybind11/pybind11.h>
+#include <translation/libra_pyexcept.h>
 #include <pybind11/stl.h>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <hummbee.h>
 
@@ -45,7 +47,7 @@ PYBIND11_MODULE(hummbee2py, m)
 {
     // Using the simplest helper function to translate AipsError exceptions (from C++) to
     // PyAipsError (in Python).
-    pybind11::register_exception<AipsError>(m, "PyAipsError");
+    register_libra_exceptions(m);
 
     m.doc() = "pybind11-based hummbee python plugin"; // optional module docstring
     m.def("Hummbee", &Hummbee, "A task-level interface for the model update component",
@@ -61,7 +63,7 @@ PYBIND11_MODULE(hummbee2py, m)
     "nsigma"_a=0.0,
     "cycleniter"_a=-1,
     "cyclefactor"_a=1.0,
-    "mask"_a="",
+    "mask"_a=std::vector<std::string>{},
     "specmode"_a="mfs",
     "pbcor"_a=false,
     "mode"_a="deconvolve"

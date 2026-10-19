@@ -37,6 +37,13 @@ install(TARGETS casacore_asp
         LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 
 
+## libraexcept2py: shared Python exception types (needs casacpp_synthesis)
+find_package(pybind11 REQUIRED)
+pybind11_add_module(libraexcept2py "${CMAKE_CURRENT_SOURCE_DIR}/libraexcept2py.cc")
+target_link_libraries(libraexcept2py PRIVATE casacpp_synthesis)
+install(TARGETS libraexcept2py
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
 ## casacore_restore
 add_library(casacore_restore SHARED casacore_restore.cc)
 target_link_libraries(casacore_restore PRIVATE ${APP_LINK_LIBRARIES} libracore "-Wl,--disable-new-dtags")

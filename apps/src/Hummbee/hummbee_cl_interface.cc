@@ -233,7 +233,7 @@ int main(int argc, char **argv)
 	 doPBCorr, imagingMode);
 
       set_terminate(NULL);
-      float PeakRes = Hummbee(/*MSNBuf,*/imageName, modelImageName,
+      HBReturnType hbr = Hummbee(/*MSNBuf,*/imageName, modelImageName,
 			      /*NX, nW, cellSize,
 				stokes, refFreqStr, phaseCenter, weighting, robust,
 				cfCache, fieldStr,spwStr,
@@ -251,13 +251,21 @@ int main(int argc, char **argv)
 			      ); // genie - only need imagename (for .psf and .residual, cycleniter, deconvolver)
     
     }
+  // Exit non-zero on failure.
   catch(clError& er)
     {
-      cerr << er.what() << endl;
+      cerr << "###clError: " << er.what() << endl;
+      return 1;
     }
   catch(AipsError& er)
     {
-      cerr << er.what() << endl;
+      cerr << "###AipsError: " << er.what() << endl;
+      return 1;
+    }
+  catch(std::exception& er)
+    {
+      cerr << "###Error: " << er.what() << endl;
+      return 1;
     }
 
   return 0;

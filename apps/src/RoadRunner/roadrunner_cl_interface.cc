@@ -261,16 +261,20 @@ int main(int argc, char **argv)
       cerr << er.what() << endl;
       if (er.Severity() <= CL_FATAL) return -er.Severity();
     }
+  // Exit non-zero on failure.
   catch(AipsError& er)
     {
-      cerr << er.what() << endl;
+      cerr << "###AipsError: " << er.what() << endl;
+      return 1;
     }
   catch(std::exception& e)
     {
-      cerr << e.what() << endl;
+      cerr << "###Error: " << e.what() << endl;
+      return 1;
     }
 
-  // An example code below for extracting the info from RRRetrunType (a std::unordered_map).
+  // An example of extracting info from RRReturnType (a std::map keyed by the
+  // string constants in roadrunner.h).
   //  cerr << rrr[MAKEVB_TIME] << " " << rrr[NVIS] << " " << rrr[DATA_VOLUME] << " " << rrr[IMAGING_RATE] << " " << rrr[NVIS]/rrr[CUMULATIVE_GRIDDING_ENGINE_TIME] << " vis/sec" << endl;
   return 0;
 }

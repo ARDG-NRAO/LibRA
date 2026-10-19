@@ -29,6 +29,9 @@
 #include <casacore/casa/namespace.h>
 #include <casacore/casa/Logging/LogIO.h>
 
+#include <map>
+#include <string>
+
 #include <casacore/casa/aips.h>
 #include <casacore/casa/OS/Timer.h>
 #include <casacore/casa/Containers/Record.h>
@@ -78,7 +81,16 @@ using namespace casacore;
  * @param doPBCorr A boolean indicating whether to do PB correction.
  * @param imagingMode The imaging mode.
  */
-float Hummbee(std::string& imageName, std::string& modelImageName,
+// String keys so the record becomes a Python dict. Names match executeMinorCycle().
+inline constexpr const char* HB_PEAK_RESIDUAL        = "peakresidual";
+inline constexpr const char* HB_ITER_DONE            = "iterdone";
+inline constexpr const char* HB_MAXCYCLE_ITER_DONE   = "maxcycleiterdone";
+inline constexpr const char* HB_UPDATED_MODEL        = "updatedmodelflag";
+inline constexpr const char* HB_CYCLE_THRESHOLD      = "cyclethreshold";
+
+typedef std::map<std::string, double> HBReturnType;
+
+HBReturnType Hummbee(std::string& imageName, std::string& modelImageName,
         std::string& deconvolver,
         std::vector<float>& scales,
         float& largestscale, float& fusedthreshold,

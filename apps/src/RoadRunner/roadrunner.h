@@ -59,21 +59,23 @@
 
 #include <LibHPG.h>
 #include <stdexcept>
+#include <map>
+#include <string>
 using namespace casa;
 using namespace casa::refim;
 using namespace casacore;
 using namespace libracore;
 
-enum {
-      IMAGING_TIME=0,
-      IMAGING_RATE,
-      CUMULATIVE_GRIDDING_ENGINE_TIME,
-      MAKEVB_TIME,
-      SOW,
-      NVIS,
-      DATA_VOLUME
-} RETURN_ITEMS;
-typedef std::unordered_map<int, double> RRReturnType;
+// String keys so the record becomes a Python dict.
+inline constexpr const char* IMAGING_TIME                    = "imaging_time";
+inline constexpr const char* IMAGING_RATE                    = "imaging_rate";
+inline constexpr const char* CUMULATIVE_GRIDDING_ENGINE_TIME = "cumulative_gridding_engine_time";
+inline constexpr const char* MAKEVB_TIME                     = "makevb_time";
+inline constexpr const char* SOW                             = "sow";
+inline constexpr const char* NVIS                            = "nvis";
+inline constexpr const char* DATA_VOLUME                     = "data_volume";
+
+typedef std::map<std::string, double> RRReturnType;
 
 //vi::VisBuffer2 *vb_cfsrvr;
 //vi::VisibilityIterator2 *vi2_cfsrvr;
