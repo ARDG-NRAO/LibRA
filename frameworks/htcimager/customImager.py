@@ -26,7 +26,7 @@ from subprocess import Popen,PIPE
 
 class customImager(object):
     def __init__(self, inputArgs):
-        self.prescript = inputArgs.preScript
+        self.prescript = inputArgs.prescript
         self.command = inputArgs.command
         self.postscript = inputArgs.postscript
 
@@ -38,6 +38,7 @@ class customImager(object):
                 self._custom(stage)
 
     def _custom(self, stage):
+        print(stage)
         cmd = stage.split()
         stagelog = open(stage + '.log','w')
         with Popen(cmd, stdout = PIPE, stderr = PIPE) as runner:

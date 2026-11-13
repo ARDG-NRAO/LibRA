@@ -36,6 +36,18 @@ class staging(object):
         
         if scheduler == 'HTCondor':
             self.scratchdir = os.environ['_CONDOR_SCRATCH_DIR']
+            if inputArgs.interface == 'casa_multiterm':
+                parfile = list(inputArgs.getImagingParameters())[0]
+                try:
+                    casadata = list(inputArgs.getImagingParameters(par = 'casa-data')[parfile].values())[0]
+                except:
+                    casadata = None
+
+                if not casadata: casadata = f'{self.scratchdir}/casa-data'
+                if os.path.isdir(casadata):
+                    os.environ['CASADATA'] = casadata
+                else:
+                    raise FileNotFoundError(f"{casadata}: could not find directory. Check inputs.")
 
 
         if not inputArgs.workdir:
@@ -75,10 +87,11 @@ class staging(object):
             self.move_to_workdir()
 
     def move_to_workdir(self):
-        extlist = ['ms', 'cfc', 'psf', 'pb', 'mask', 'residual', 'model', 'divmodel', 'weight', 'sumwt']
+        extlist = ['ms', 'mms', 'cfc', 'psf', 'pb', 'mask', 'residual', 'model', 'divmodel', 'weight', 'sumwt']
         movelist = []
         for ext in extlist:
             movelist += glob(f'*.{ext}')
+            movelist += glob(f'*.{ext}.tt*')
         for file in movelist:
             print(f'Moving {file} to {self.workdir}')
             shutil.move(file, self.workdir)

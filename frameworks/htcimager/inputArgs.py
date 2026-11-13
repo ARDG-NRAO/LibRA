@@ -25,6 +25,8 @@
 import os
 import sys
 import ast
+import json
+import argparse
 from jobmode import jobmode, execModes
 
 ia2param = [
@@ -84,88 +86,11 @@ def spwRange2List(pardict):
 class inputArgs(object):
 
     def __init__(self, args):
-        self.interface = ''
-        self.jobmode = ''
-        self.parfile = ''
-        self.jobname = ''
-        self.mslist = ''
-        self.cfclist = ''
-        self.imagelist = ''
-        self.imtype = ''
-        self.workdir = ''
-        self.logdir = ''
-        self.vbbucketsize = ''
-        self.libra_path = ''
-        self.libra_bundle = ''
-        self.usegpu = True
-        self.prescript = ''
-        self.postscript = ''
-        self.command = ''
+        self._parseargs(args)
+        self.printInputArgs()
 
-        if len(args) == 0:
-           self._usage()
-           raise TypeError('No arguments given')
-
-        readArg = False
-        for arg in args:
-            if (readArg):
-                setattr(self, readArg, arg)
-                readArg = ''
-            elif arg in ['-j', '--jobmode']:
-                readArg = 'jobmode'
-            elif arg in ['-f', '--parfile']:
-                readArg = 'parfile'
-            elif arg in ['-m', '--mslist']:
-                readArg = 'mslist'
-            elif arg in ['-c', '--cfclist']:
-                readArg = 'cfclist'
-            elif arg in ['-i', '--imagelist']:
-                readArg = 'imagelist'
-            elif arg in ['-n', '--jobname']:
-                readArg = 'jobname'
-            elif arg in ['-t', '--imtype']:
-                readArg = 'imtype'
-            elif arg in ['-w', '--workdir']:
-                readArg = 'workdir'
-            elif arg in ['-l', '--logdir']:
-                readArg = 'logdir'
-            elif arg in ['-b', '--libra_bundle']:
-                readArg = 'libra_bundle'
-            elif arg in ['-p', '--libra_path']:
-                readArg = 'libra_path'
-            elif arg == '--vbbucketsize':
-                readArg = 'vbbucketsize'
-            elif arg == '--interface':
-                readArg = 'interface'
-            elif arg == '--prescript':
-                readArg = 'prescript'
-            elif arg == '--postscript':
-                readArg = 'postscript'
-            elif arg == '--command':
-                readArg = 'command'
-            elif arg == '--nogpu':
-                self.usegpu = False
-            elif arg in ['-h','--help']:
-                self._usage()
-                sys.exit(0)
-            else:
-                self._usage()
-                raise TypeError(arg + ': unknown argument.')
-
-        if not self.interface:
-            self.interface = 'libra_cl'
-               
-        if not self.jobmode:
-            raise TypeError('jobmode cannot be empty')
-        elif not self.parfile:
-            raise TypeError('parfile cannot be empty')
-        elif not self.jobname:
-            raise TypeError('jobname cannot be empty')
-        else:
-            self.printInputArgs()
-                
         # Following are converted to lists at this point
-        for attr in ['jobmode', 'parfile', 'mslist', 'cfclist', 'imagelist']:
+        for attr in ['jobmode', 'parfile', 'mslist', 'cfclist', 'imagelist', 'concatimagelist', 'gatherimagelist','spwlist']:
             value = getattr(self, attr)
             setattr(self, attr, value.split(','))
 
@@ -194,28 +119,48 @@ class inputArgs(object):
 
     def getImagingParameters(self, par = None):
         pars = {}
-        try:
-            for parfile in self.parfile:
+        for parfile in self.parfile:
+            if os.path.exists(parfile):
                 this_pars = {}
-                with open(parfile, 'r') as infile:
-                    for line in infile.readlines():
-                        if line != '\n' and '#' not in line[0]:
-                            line = line.split('#')[0].split('=')
-                            if "'" in line[1]:
-                                value = ast.literal_eval(line[1].strip())
-                            else:
-                                value = line[1].strip()
-                            
-                            if not par or line[0].strip() == par:
-                                this_pars[line[0].strip()] = value
+                try:
+                    with open(parfile, 'r') as infile:
+                        inpars = json.load(infile)
+                        jsonInput = True
+                        for pargroup in list(inpars):
+                            if pargroup != 'HTCondorConfig':
+                                this_pars.update(inpars[pargroup])
 
-                pars[parfile] = this_pars
+                        parfile = os.path.splitext(parfile)[0] + '.def'
 
-            return pars
-            
-        except Exception as e:
-            raise e
-    
+                        if par != None:
+                            for key in list(this_pars):
+                                if key != par:
+                                    del this_pars[key]
+
+                except json.decoder.JSONDecodeError:
+                    this_pars = {}
+                    jsonInput = False
+
+                    with open(parfile, 'r') as infile:
+                        for line in infile.readlines():
+                            if line != '\n' and '#' not in line[0]:
+                                line = line.split('#')[0].split('=')
+                                if "'" in line[1]:
+                                    value = ast.literal_eval(line[1].strip())
+                                else:
+                                    value = line[1].strip()
+                                
+                                if not par or line[0].strip() == par:
+                                    this_pars[line[0].strip()] = value
+
+                finally:
+                    pars[parfile] = this_pars
+
+            else:
+                raise FileNotFoundError(f'{parfile}: file not found.')
+
+        return pars
+                
 
     def makeUnitParfiles(self):
         pars = self.getImagingParameters()
@@ -231,10 +176,13 @@ class inputArgs(object):
             this_pars = pars[key]
             if any(mode in execModes.gather.value or mode in execModes.taylor.value
                    for mode in self.jobmode):
-                this_pars['gatherimagelist'] = this_pars['imagename']
-                # this is a simple fix for the issue in jobmode = gather,normalize with odd number of images
-                # review and test carefully to verify the validity for a wider range of use cases
-                this_pars['imagename'] = this_pars['baseimagename']
+                if not self.gatherimagelist:
+                    this_pars['gatherimagelist'] = this_pars['imagename']
+                    # this is a simple fix for the issue in jobmode = gather,normalize with odd number of images
+                    # review and test carefully to verify the validity for a wider range of use cases
+                    this_pars['imagename'] = this_pars['baseimagename']
+                else:
+                    this_pars['gatherimagelist'] = self.gatherimagelist
             spwRange2List(this_pars)
             if 'spw' in list(this_pars) and type(this_pars['spw']) == list and len(this_pars['spw']) > 0:
                 splitParamList(key, newpars, this_pars, 'spw', self.jobname)
@@ -260,39 +208,59 @@ class inputArgs(object):
         return result
     
 
-    def _usage(self):
-        print(f'''
-Name:
-    htcimager.py - wrapper to configure environment and execute imaging components
-                   of the LibRA algorithm architecture.
+    def _parseargs(self, args) -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser(
+            description = 'Wrapper to configure environment and execute imaging components of the LibRA algorithm architecture.')
+        parser.add_argument('-f', '--parfile', required = True,
+            help = 'Name of parameter file to use for imaging. Single value or comma-separated list.')
+        parser.add_argument('-j', '--jobmode', required = True,
+            help = f"Job mode to execute. Single value or comma-separated list. Supported values: {', '.join([x.lower() for x in jobmode.__members__.keys()])}")
+        parser.add_argument('-n', '--jobname', required = True,
+            help = 'A string defining the name of the job. Used for naming parameter files and logs.')
+        parser.add_argument('-m', '--mslist', default = '',
+            help = 'Name of input MS(es). Single value or comma-separated list.')
+        parser.add_argument('-c', '--cfclist', default = '',
+            help = 'Name of CF cache(s). Single value or comma-separated list (length must match mslist)')
+        parser.add_argument('-i', '--imagelist', default = '',
+            help = 'Name of output image(s). Single value or comma-separated list.')
+        parser.add_argument('-t', '--imtype', default = '',
+            help = 'Image type (extension) to normalize (applies only to normalization jobs).')
+        parser.add_argument('-w', '--workdir', default = '',
+            help = 'Name of working directory. Default is <condor scratch directory>/working for HTCondor jobs and <current directory> for local or SLURM jobs.')
+        parser.add_argument('-l', '--logdir', default = '',
+            help = 'Name of directory to save log files. Default is <working directory>/logs.')
+        parser.add_argument('-b', '--libra_bundle', default = '',
+            help = 'Name of relocatable bundle containing LibRA applications, more commonly used on HTCondor jobs.')
+        parser.add_argument('-p', '--libra_path', default = '',
+            help = 'Path to local LibRA installation, more commonly used with SLURM or local jobs.')
+        parser.add_argument('--nogpu', action = 'store_true',
+            help = 'Do not use GPUs for processing. Default is to use GPUs for gridding.')
+        parser.add_argument('--vbbucketsize', default = '',
+            help = 'Size of visibility buffer for gridding jobs.')
+        parser.add_argument('--concatimagelist', default = '',
+            help = 'Name of input images to concatenate in a cube to make multiterm images in interface casa_multiterm. This is also used in mode TT2CUBE to extract per SPW model images for subtraction in the residual cycle.')
+        parser.add_argument('--gatherimagelist', default = '',
+            help = 'Name of input images to gather. Comma-separated list, no extension.')
+        # following are commented because they are fixed in current use cases
+        #parser.add_argument('--spwlist',
+        #    help = 'Do not use.')
+        #parser.add_argument('--nstokes',
+        #    help = '')
+        parser.add_argument('--fitsconcatpath', default = '',
+            help = "Path to the directory containing fitsconcat.py. If this parameter is not set, use CASA's imageconcat instead to concatenate cubes.")
+        parser.add_argument('--interface', default = 'libra_cl',
+            help = 'Name of imaging interface to use. Supported values: libra_cl, casa_multiterm, casalith_script, custom.')
+        parser.add_argument('--prescript', default = '',
+            help = 'Command line to execute script before processing (optional, only for interface = custom).')
+        parser.add_argument('--postscript', default = '',
+            help = 'Command line to execute script after processing (optional, only for interface = custom).')
+        parser.add_argument('--command', default = '',
+            help = 'Command line to execute processing application (only for interface = custom).')
+        iargs = parser.parse_args(args)
 
-Usage:
-    htcimager.py -f <parfile> -j <jobmode> -n <jobname> [--nogpu] [-h]
-                [-m <ms list>] [-c <cfcache list>] [-i <image list>] [-t <image type>]
-                [-w <working directory>] [-l <log directory>]
-                [-b </path/to/libra/bundle>] [-p </path/to/libra/install>]
-                [--vbbucketsize <vbbcuketsize>] [--interface <interface>]
-                [--prescript <prescript>] [--postscript <postscript>] [--command <command>]
+        for arg, value in vars(iargs).items():
+            setattr(self, arg, value)
 
-Parameters:
-    -f, --parfile      : Name of parameter file to use for imaging. Single value or comma-separated list.
-    -j, --jobmode      : Job mode to execute. Single value or comma-separated list.
-                         Supported values: {', '.join([x.lower() for x in jobmode.__members__.keys()])}
-    -n, --jobname      : A string defining the name of the job. Used for naming parameter files and logs.
-    -m, --mslist       : Name of input MS(es). Single value or comma-separated list.
-    -c, --cfclist      : Name of CF cache(s). Single value or comma-separated list (length must match mslist)
-    -i, --imagename    : Name of output image(s). For gather modes, this becomes the list of input images to gather. Single value or comma-separated list.
-    -t, --imtype       : Image type (extension) to normalize (applies only to normalization jobs).
-    -w, --workdir      : Name of working directory. Default is <condor scratch directory>/working for HTCondor jobs and <current directory> for local or SLURM jobs.
-    -l, --logdir       : Name of directory to save log files. Default is <working directory>/logs.
-    -b, --libra_bundle : Name of relocatable bundle containing LibRA applications, more commonly used on HTCondor jobs.
-    -p, --libra_path   : Path to local LibRA installation, more commonly used with SLURM or local jobs.
-    -h, --help         : Print this usage summary and exit.
-    --nogpu            : Do not use GPUs for processing. Default is to use GPUs for gridding.
-    --vbbucketsize     : Size of visibility buffer for gridding jobs.
-    --interface        : Name of imaging interface to use. Supported values: libra_cl, custom.
-    --prescript        : Command line to execute script before processing (optional, only for interface = custom). 
-    --postscript       : Command line to execute script after processing (optional, only for interface = custom).
-    --command          : Command line to execute processing application (only for interface = custom).
-'''
-        )
+        self.spwlist = ''
+        self.nstokes = 1
+        self.usegpu = not iargs.nogpu

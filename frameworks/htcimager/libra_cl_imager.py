@@ -24,11 +24,14 @@
 
 import os
 import shutil
+
+from subprocess import Popen,PIPE
+from datetime   import datetime
+from glob       import glob
+
 from GPUMonitor import GPUMonitor
 from setupLibRA import setupLibRA
-from subprocess import Popen,PIPE
-from datetime import datetime
-from jobmode import jobmode, execModes
+from jobmode    import jobmode, execModes
 
 
 def writeParfile(impars, parfile, logdir = '.'):
@@ -183,10 +186,13 @@ def runtimeWorkarounds(stage, undo = False):
                 with open(f'{imagename}.model/table.info','w') as tableinfo:
                     tableinfo.writelines(lines)
         elif this_mode == jobmode.MODEL or this_mode == jobmode.RESTORE:
-            shutil.move(f'{imagename}.sumwt',f'{imagename}.sumwt.noop')
+            for imname in glob(f'{imagename}.sumwt*'):
+                shutil.move(imname,f'{imname}.noop')
     else:
         if this_mode == jobmode.MODEL or this_mode == jobmode.RESTORE:
-            shutil.move(f'{imagename}.sumwt.noop',f'{imagename}.sumwt')
+            for imname in glob(f'{imagename}.sumwt*.noop'):
+                dstimname = imname.replace('.noop','')
+                shutil.move(imname, dstimname)
         elif this_mode == jobmode.TAYLOR and stage.get('taylorMode') == 'taylor2cube':
             # taylor2cube's per-SPW .model cubes inherit the 'residual
             # normalized' SubType from their source residual images. dale's
@@ -211,7 +217,6 @@ def runtimeWorkarounds(stage, undo = False):
                         newlines.append(line)
                     with open(info_path, 'w') as tableinfo:
                         tableinfo.writelines(newlines)
-
 
 
 class libra_cl_imager(object):
@@ -370,10 +375,15 @@ class libra_cl_imager(object):
                         elif mode in jobmode.GATHER:
                             outputImages = [impars[this_parfile]['outputimage']]
                         elif mode == jobmode.MODEL:
-                            outputImages = [
-                                impars[this_parfile]['imagename'] + '.model',
-                                impars[this_parfile]['imagename'] + '.mask',
-                                impars[this_parfile]['imagename'] + '.residual']
+                            outputName = impars[this_parfile]['imagename']
+                            outputImages = [f'{outputName}.mask']
+                            if impars[this_parfile]['deconvolver'] == 'mtmfs':
+                                nterms = int(impars[this_parfile]['nterms'])
+                                for imtype in ['model', 'residual']:
+                                    for n in range(nterms):
+                                        outputImages.append(f'{outputName}.{imtype}.tt{n}')
+                            else:
+                                outputImages += [f'{outputName}.model', f'{outputName}.residual']
                         elif mode == jobmode.NORMALIZE and imext == 'model':
                             outputImages = [impars[this_parfile]['imagename'] + '.divmodel']
                         elif mode == jobmode.NORMALIZE:
@@ -381,9 +391,17 @@ class libra_cl_imager(object):
                             if imext == 'psf':
                                 outputImages.append(impars[this_parfile]['imagename'] + '.pb') 
                         elif mode == jobmode.RESTORE:
-                            outputImages = [impars[this_parfile]['imagename'] + '.image']
-                            if impars[this_parfile]['pbcor'] == '1':
-                                outputImages.append(impars[this_parfile]['imagename'] + '.image.pbcor')
+                            pbcor = (impars[this_parfile]['pbcor'] == '1')
+                            imtypes = ['image']
+                            if pbcor: imtypes.append('image.pbcor')
+                            outputName = impars[this_parfile]['imagename']
+                            if impars[this_parfile]['deconvolver'] == 'mtmfs':
+                                nterms = int(impars[this_parfile]['nterms'])
+                                outputImages = [f'{outputName}.{imtype}.tt{n}'
+                                                for n in range(nterms) for imtype in imtypes]
+                            else:
+                                outputImages = [f'{outputName}.{imtype}' 
+                                                for imtype in imtypes]
                         elif mode == jobmode.TAYLOR:
                             taylormode = impars[this_parfile]['mode']
                             if taylormode == 'computeavgpb':
@@ -438,17 +456,26 @@ class libra_cl_imager(object):
         if mode in execModes.gridding.value:
             if mode == jobmode.RESIDUAL:
                 if 'modelimagename' not in this_impars.keys() or len(this_impars['modelimagename']) == 0:
-                    basename = imagename.split('.')[0]
                     # single-term MFS predicts from dale's normalized
                     # .divmodel; the Taylor path (taylor2cube) writes the
                     # true-sky model directly to .model instead, since
                     # roadrunner's awp degridder applies PB(nu) itself
                     # during predict (see run_taylor_fixed.py stage_prepare_model)
                     for modelext in ('divmodel', 'model'):
-                        modelimagename = f'{basename}.{modelext}'
+                        modelimagename = f'{os.path.splitext(imagename)[0]}.{modelext}'
                         if os.path.exists(f'{self.workdir}/{modelimagename}'):
                             this_impars['modelimagename'] = modelimagename
                             break
+                        else:
+                            divmodellist = glob(f'{self.workdir}/*.{modelext}')
+                            if len(divmodellist) == 1:
+                                this_impars['modelimagename'] = os.path.basename(divmodellist[0])
+                            elif len(divmodellist) > 1:
+                                for item in divmodellist:
+                                    modelname = os.path.splitext(item)[0]
+                                    if modelname in modelimagename:
+                                        this_impars['modelimagename'] = os.path.basename(item)
+                                        break
             imext = f'.{mode.name.lower()}'
             imagename += imext
         elif mode in execModes.deconvolution.value:
@@ -468,7 +495,8 @@ class libra_cl_imager(object):
         elif mode in execModes.normalization.value:
             appmode = ''
             this_impars['imtype'] = imext
-            imagename = imagename.split('.')[0] if '.' in imagename else imagename
+            imagename = imagename.replace(f'.{imext}','')
+            #imagename = imagename.split('.')[0] if '.' in imagename else imagename
             if imext == 'psf':
                 this_impars['computepb'] = '1'
             elif imext == 'taylorpsf':

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Copyright (C) 2024
 # Associated Universities, Inc. Washington DC, USA.
@@ -29,86 +29,73 @@ import sys
 import tarfile
 import json
 import shutil
+import argparse
 from glob import glob
 
 
-def usage():
-    print(f'''
-Name:
-    checkConvergence.py - process model cycle logs to determine convergence/divergence trends
-          
-Usage:
-    checkConvergence.py [-n] [-h] [-z <package name>] [-l <log name>] [-o <output file>]
-                        [-t <divergence threshold>]
+parser = argparse.ArgumentParser(description = 'process model cycle logs to determine convergence/divergence trends')
+parser.add_argument('-z', '--packagename', default = '../logs.runModelCycle*.tgz',
+    help = 'Name pattern of tarball containing log files.')
+parser.add_argument('-l', '--logname', default = 'logs/*.model.*.log',
+    help = 'Pattern of model cycle log file names.')
+parser.add_argument('-o', '--outputfile', default = '../checkConvergence.out',
+    help = 'Name of output file.')
+parser.add_argument('-t', '--threshold', default = 0,
+    help = 'Divergence threshold.')
+parser.add_argument('-d', '--dagname', default = 'imagingCycle.dag',
+    help = 'If given, will look for variable exitcode in file <dagname>.metrics.')
+parser.add_argument('-n', '--nopackage', action = 'store_true',
+    help = 'Do not expand tarball with log files.')
+parser.add_argument('--nodag', action = 'store_true',
+    help = 'Do not read dag metrics file.')
+inputargs = parser.parse_args()
 
-Parameters:
-    -n, --nopackage    : Do not expand tarball with log files. Default is to look for package with default name.
-    -h, --help         : Print this usage summary and exit.
-    -l, --logname      : Pattern of model cycle log file names. Default is logs/*.model.*.log.
-    -o, --outputfile   : Name of output file. Default is checkConvergence.out.
-    -t, --threshold    : Divergence threshold. Default is 0.
-    -z, --packagename  : Name pattern of tarball containing log files. Default is ../logs.runModelCycle.imcycle*.tgz.
-'''
-    )
-
-args = sys.argv
 dag_excode = 0
+divergence_threshold = inputargs.threshold
+packagename          = inputargs.packagename if not inputargs.nopackage else ''
+logname              = inputargs.logname
+outputfile           = inputargs.outputfile
+dagname              = inputargs.dagname if not inputargs.nodag else ''
 
-divergence_threshold = 0
-packagename = '../logs.runModelCycle.imcycle*.tgz'
-logname = 'logs/*.model.*.log'
-outputfile = '../checkConvergence.out'
 
-if len(args) > 1:
-    args = args[1:]
-    readArg = ''
-    for arg in args:
-        if readArg:
-            globals()[readArg] = arg
-            readArg = ''
-        elif arg in ['-z', '--packagename']:
-            readArg = 'packagename'
-        elif arg in ['-l', '--logname']:
-            readArg = 'logname'
-        elif arg in ['-o', '--outputfile']:
-            readArg = 'outputfile'
-        elif arg in ['-t','--threshold']:
-            readArg = 'divergence_threshold'
-        elif arg in ['-n','--nopackage']:
-            packagename = ''
-        elif arg in ['-h','--help']:
-            usage()
-            sys.exit(0)
-        else:
-            usage()
-            raise ValueError(f'{arg}: unknown argument.')
-
-try:
-    with open('imagingCycle.dag.metrics', 'r') as infile:
-        dag_metrics = json.load(infile)
-    if dag_metrics['exitcode'] == 10:
-        sys.exit(2)
-except:
-    print('Did not find file imagingCycle.dag.metrics.')
+if dagname:
+    dagname = f'{dagname}.dag' if '.dag' not in dagname else dagname
+    try:
+        with open(f'{dagname}.metrics', 'r') as infile:
+            dag_metrics = json.load(infile)
+        if dag_metrics['exitcode'] == 10:
+            sys.exit(2)
+        # when restarting a run that completed any imaging cycles, remove the rescue file now
+        if dag_metrics['dag_nodes_failed'] == 0:
+            rescuefilelist = glob(f'{dagname}.rescue*')
+            if len(rescuefilelist) > 0:
+                for rescuefile in rescuefilelist:
+                    os.remove(rescuefile)
+    except:
+        print(f'Did not find file {dagname}.metrics.')
 
 
 divergence_threshold = float(divergence_threshold)
     
 if packagename:
     packagelist = glob(packagename)
-    if len(packagelist) > 1:
+    if len(packagelist) > 0:
         for package in packagelist:
             with tarfile.open(package) as tar:
                 tar.extractall(filter = 'tar')
     
 loglist = glob(logname)
+
+if len(loglist) == 0:
+    raise ValueError(f"{logname}: couldn't find log files matching this name pattern.")
+
 loglist.sort()
 
 outfile = open(outputfile, 'w')
 
 peakreslist = []
 converged = False
-for i, logfile in enumerate(loglist):
+for logfile in loglist:
     with open(logfile, 'r') as log:
         for line in log.readlines():
             if 'peakres=' in line:
@@ -116,13 +103,13 @@ for i, logfile in enumerate(loglist):
                 outfile.writelines(logmsg)
                 peakres = logmsg[2].replace('peakres=','').strip().split('->')
                 message = logmsg[3]
-                if any(msg in message for msg in ['Reached n-sigma threshold', 'Reached global stopping criteria']):
+                if any(msg in message for msg in ['Reached n-sigma threshold', 'Reached global stopping criterion']):
                     print('Converged!')
                     converged = True
                     break
                 peakres = [float(num) for num in peakres]
                 peakreslist += peakres
-                 
+
 d_peakreslist = [y-x for x,y in zip(peakreslist[:-1],peakreslist[1:])]
 peakres_trend = sum(d_peakreslist)/len(d_peakreslist)
 
@@ -136,10 +123,10 @@ if packagename:
 
 if converged:
     excode = 0
-elif peakres_trend > 0:
+elif peakres_trend > divergence_threshold:
     divmsg = f'Possibly diverging: the derivative of peakres is greater than the threshold of {divergence_threshold}.'
     print(divmsg)
-    outfile.writelines(divmsg)
+    outfile.writelines(f'{divmsg}\n')
     excode = 2
 else:
     excode = 1
