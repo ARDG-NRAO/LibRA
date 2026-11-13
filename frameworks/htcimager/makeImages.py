@@ -31,13 +31,19 @@ class makeImages(object):
             imager = libra_cl_imager(inputArgs)
         elif interface == 'libra_py':
             raise TypeError('Not integrated')
-        elif interface == 'casa_htclean':
-            raise TypeError('Not integrated')
+        elif interface == 'casa_multiterm':
+            from casa_multiterm import casa_multiterm
+
+            imager = casa_multiterm(inputArgs)
+        elif interface == 'casalith_script':
+            from casalith_script import casalith_script
+
+            imager = casalith_script(inputArgs)
         elif interface == 'custom':
             from customImager import customImager
 
             imager = customImager(inputArgs)
         else:
-            raise TypeError(interface + ': unknown interface')
+            raise TypeError(f'{interface}: unknown interface')
         
         self.outputImageList = imager.outputImageList

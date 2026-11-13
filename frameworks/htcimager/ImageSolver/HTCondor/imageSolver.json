@@ -1,0 +1,100 @@
+{
+"HTCondorConfig"           : {
+    "memResidual"          : "50 G",
+    "memModel"             : "20 G",
+    "min_disk_residual"    : "40 G",
+    "min_disk_model"       : "50 G",
+    "projectdir"           : "my/test/project",
+    "initialdir"           : "/user/home/dir/$(projectdir)",
+    "dataorigin"           : "osdf:///path-facility/data/<username>",
+    "softwaredir"          : "$(dataorigin)/apps",
+    "cuda_cap"             : "8",
+    "cuda_drv"             : "13",
+    "libra_bundle"         : "libra.$(cuda_cap)x_cuda$(cuda_drv).sh",
+    "imagesdir"            : "$(dataorigin)/imagingdata/$(projectdir)/working",
+    "cfcachedir"           : "$(dataorigin)/cfcache/$(projectdir)",
+    "msdir"                : "$(dataorigin)/data/$(projectdir)",
+    "und_sites_grid"       : 
+        "\"<site names to avoid, comma-separated list>\"",
+    "notify_user"          : "username@domain",
+    "htcimagerdir"         : "<LibRA_root>/frameworks/htcimager",
+    "wantOSPool"           : "False",
+    "+SingularityImage"    : "\"/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-el8:latest\"",
+    "NRPexclusive"         : "False",
+    "disconnected_timeout" : "2500",
+    "min_pelican_version"  : "\"7.22\"",
+    "min_gpu_capability"   : "7.0",
+    "min_gpu_memory"       : "16000",
+    "min_gpu_driver"       : "12.0",
+    "casa"                 : "casa-6.7.5-18-py3.12.el8"
+    },
+
+"GeneralImagingParameters" : {
+    "useStartModel"        : "False",
+    "useStartMask"         : "False",
+    "msnamelist"           : {
+	    "spw0"             : ["concat_SPW0_chunk0.mms", "concat_SPW0_chunk1.mms"],
+	    "spw1"             : ["concat_SPW1_chunk0.mms", "concat_SPW1_chunk1.mms"],
+	    "spw2"             : ["concat_SPW2_chunk0.mms"],
+	    "spw3"             : ["concat_SPW3_chunk0.mms", "concat_SPW3_chunk1.mms", "concat_SPW3_chunk2.mms"]
+        },
+    "cfcachelist"          : [
+        "12K_0p7arcsec_w128_wbawp_conjbeams0_SPW0.cfc",
+	    "12K_0p7arcsec_w128_wbawp_conjbeams0_SPW1.cfc",
+	    "12K_0p7arcsec_w128_wbawp_conjbeams0_SPW2.cfc",
+	    "12K_0p7arcsec_w128_wbawp_conjbeams0_SPW3.cfc"
+        ],
+    "baseimagename"        : "my12kimage",
+    "pblimit"              : 0.01,
+    "nmajor"               : 10,
+    "allspwvis"            : "mysmallms_allspws.ms"
+    },
+
+"GriddingParameters"       : {
+    "datacolumn"           : "data",
+    "sowimageext"          : "sumwt",
+    "complexgrid"          : "",
+    "imsize"               : 12288,
+    "cell"                 : 0.7,
+    "stokes"               : "I",
+    "reffreq"              : "1.44691GHz",
+    "phasecenter"          : "J2000 10:01:24.000000 +02.21.00.00000",
+    "weighting"            : "briggs",
+    "rmode"                : "none",
+    "robust"               : -0.5,
+    "wprojplanes"          : 128,
+    "gridder"              : "awphpg",
+    "wbawp"                : "True",
+    "field"                : "*",
+    "spw"                  : "*",
+    "uvrange"              : "",
+    "pbcor"                : "True",
+    "conjbeams"            : "True",
+    "usepointing"          : "False",
+    "pointingoffsetsigdev" : ""
+    },
+
+"DeconvolutionParameters" : {
+    "deconvolver"          : "mtmfs",
+    "scales"               : "",
+    "largestscale"         : -1,
+    "fusedthreshold"       : 0,
+    "nterms"               : 2,
+    "nchan"                : -1,
+    "cycleniter"           : 1000,
+    "nsigma"               : 0,
+    "gain"                 : 0.1,
+    "threshold"            : 3e-6,
+    "cyclefactor"          : 1,
+    "mask"                 : "",
+    "specmode"             : "mvc"
+    },
+    
+"NormalizationParameters"  : {
+    "normtype"             : "flatnoise",
+    "imtype"               : "",
+    "resetimages"          : "True",
+    "computepb"            : "False"
+    }
+}
+

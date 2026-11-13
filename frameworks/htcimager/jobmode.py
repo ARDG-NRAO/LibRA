@@ -22,6 +22,7 @@
 #
 # $Id$
 
+import math
 from enum import Enum,Flag,auto
 
 class jobmode(Flag):
@@ -32,13 +33,19 @@ class jobmode(Flag):
     GATHER           = auto()
     NORMALIZE        = auto()
     RESTORE          = auto()
+    RESC2TT          = auto()
+    PSFC2TT          = auto()
+    TT2CUBE          = auto()
     TAYLOR           = auto()
     COYOTE           = auto()
     MAKEPSF          = WEIGHT | PSF
+    MAKEPSFC2TT      = WEIGHT | PSF | NORMALIZE
     GATHERPSF        = GATHER | NORMALIZE
     RUNRESIDUALCYCLE = RESIDUAL
+    RUNRESIDUALC2TT  = RESIDUAL | NORMALIZE
     MAKEDIRTYIMAGE   = RESIDUAL
     RUNMODELCYCLE    = MODEL | NORMALIZE
+    UPDATEMODEL      = MODEL
 
     @classmethod
     def ismode(self, mode):
@@ -48,10 +55,8 @@ class jobmode(Flag):
     def list(self, mode):
         modelist = []
         for imode in self:
-            if imode in mode:
+            if imode in mode and math.log2(imode.value).is_integer():
                 modelist.append(imode)
-        if len(modelist) > 1 and mode in modelist:
-            modelist.remove(mode)
         return modelist
     
     @property
@@ -63,6 +68,12 @@ class jobmode(Flag):
             imtype = [[''], ['model']]
         elif self == self.MAKEPSF:
             imtype = [['weight'], ['psf']]
+        elif self == self.MAKEPSFC2TT:
+            imtype = [['weight'],['psf'],['psf']]
+        elif self == self.RUNRESIDUALC2TT:
+            imtype = [['residual'],['residual']]
+        elif self == self.UPDATEMODEL:
+            imtype = [['']]
         else:
             imtype = [[self.name.lower()]]
         return imtype
@@ -72,9 +83,11 @@ class execModes(Enum):
     gridding = [
         jobmode.MAKEDIRTYIMAGE,
         jobmode.MAKEPSF,
+        jobmode.MAKEPSFC2TT,
         jobmode.PSF,
         jobmode.RESIDUAL,
         jobmode.RUNRESIDUALCYCLE,
+        jobmode.RUNRESIDUALC2TT,
         jobmode.WEIGHT
     ]
     gather = [
@@ -87,7 +100,8 @@ class execModes(Enum):
     deconvolution = [
         jobmode.MODEL,
         jobmode.RESTORE,
-        jobmode.RUNMODELCYCLE
+        jobmode.RUNMODELCYCLE,
+        jobmode.UPDATEMODEL
     ]
     taylor = [
         jobmode.TAYLOR

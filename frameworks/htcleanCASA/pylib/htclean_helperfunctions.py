@@ -23,12 +23,6 @@
 # $Id$
 
 
-import os
-import re
-import shutil
-import subprocess
-
-# import params.py
 import sys
 sys.path.append('.')
 
@@ -81,99 +75,6 @@ def import_tclean_parameters(infile = 'tclean.last'):
 
     return pars
 
-
-#def setImagerParameters(vis, field='', phasecenter, spw='', imagename, imsize, cell, datacolumn='data', cfcache='cfcache', gridder = 'mosaic', conjbeams = False, deconvolver = 'hogbom', scales=[0], weighting = 'natural', robust=0.5, uvtaper='', niter=0, gain=0.1, nsigma=2.0, cycleniter=5000, cyclefactor=1, mask='', savemodel="none", intent = '', uvrange = '', usepointing = False):
-#    paramList =  ImagerParameters(
-#        msname               = vis,
-#        
-#        datacolumn           = datacolumn,
-#        imagename            = imagename,
-#        imsize               = imsize,
-#        cell                 = cell,
-#        phasecenter          = phasecenter,
-#        stokes               = 'I',
-#        projection           = 'SIN',
-#        startmodel           = '',
-#        specmode             = 'mfs',
-#        gridder              = gridder,
-#        deconvolver          = deconvolver,
-#        
-#        outlierfile          = '',
-#        weighting            = weighting,
-#        niter                = niter,
-#        usemask              = 'user',
-#        fastnoise            = True,
-#        restart              = True,
-#        savemodel            = savemodel,
-#        
-#        
-#        parallel             = False,
-#        field                = field,
-#        spw                  = spw,
-#        
-#        uvdist               = uvrange,
-#        antenna              = '',
-#        scan                 = '',
-#        
-#        state                = intent,
-#        reffreq              = '',
-#        nchan                = -1,
-#        start                = '',
-#        width                = '',
-#        outframe             = 'LSRK',
-#        veltype              = 'radio',
-#        restfreq             = [],
-#        interpolation        = 'linear',
-#        perchanweightdensity = True,
-#        facets               = 1,
-#        
-#        chanchunks           = 1,
-#        wprojplanes          = wprojplanes,
-#        vptable              = '',
-#        mosweight            = False,
-#        aterm                = True,
-#        psterm               = False,
-#        wbawp                = True,
-#        conjbeams            = conjbeams,
-#        cfcache              = cfcache,
-#        usepointing          = usepointing,
-#        computepastep        = 360.0,
-#        rotatepastep         = 360.0,
-#        pointingoffsetsigdev = pointingoffsetsigdev,
-#        pblimit              = 0.2,
-#        normtype             = 'flatnoise',
-#        scales               = scales,
-#        nterms               = 2,
-#        scalebias            = 0.0,
-#        restoringbeam        =  [],
-#        
-#        robust               = robust,
-#        noise                = '1.0Jy',
-#        npixels              = 0,
-#        uvtaper              = uvtaper,
-#        loopgain             = gain,
-##        threshold            = 0.2,
-#        nsigma               = nsigma,
-#        cycleniter           = cycleniter,
-#        cyclefactor          = cyclefactor,
-#        minpsffraction       = 0.05,
-#        maxpsffraction       = 0.8,
-#        interactive          = False,
-#        mask                 = mask,
-#        pbmask               = 0.0,
-#        sidelobethreshold    = 3.0,
-#        noisethreshold       = 5.0,
-#        lownoisethreshold    = 1.5,
-#        negativethreshold    = 0.0,
-#        smoothfactor         = 1.0,
-#        minbeamfrac          = 0.3,
-#        cutthreshold         = 0.01,
-#        growiterations       = 75,
-#        dogrowprune          = True,
-#        minpercentchange     = -1.0,
-#        verbose              = False,
-#)
-#    return paramList
 
 def getRowRanges(msname,nparts):
 
